@@ -1,4 +1,4 @@
-import { ZenzaWatch, global } from './ZenzaWatchIndex';
+import { ZenzaWatch, global } from './FutatsumeWatchIndex';
 import { Config, PlayerSession, util, WatchPageHistory } from './util';
 import type { ConfigStore } from './Config';
 import { NicoComment } from './CommentPlayer';

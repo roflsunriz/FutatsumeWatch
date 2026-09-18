@@ -12,7 +12,7 @@ import { PlayListView } from './PlayListView';
 
 import { textUtil } from '../../../lib/src/text/textUtil';
 import { MylistApiLoader } from '../../../lib/src/nico/MylistApiLoader';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 import type { SearchQueryParams } from '../../../lib/src/nico/VideoSearch';
 
 // lib波が packages/lib/src/nico/PlaylistApiLoader.ts に export を追加するまでの暫定措置。

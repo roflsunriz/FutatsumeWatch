@@ -55,7 +55,7 @@ interface GlobalLike {
 
 import { Emitter } from '../Emitter';
 import type { PromiseHandlerCallback } from '../Emitter';
-import { global, PRODUCT } from '../../../../src/ZenzaWatchIndex';
+import { global, PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 import { Config } from '../../../../src/Config';
 import { NicoVideoApi } from '../nico/NicoVideoApi';
 
@@ -162,11 +162,11 @@ const BroadcastEmitter = (messageUtil.BroadcastEmitter = (() => {
    */
   const onStorage = (e: StorageEvent) => {
     const command: string | null = e.key;
-    if (e.type !== 'storage' || !command!.startsWith(`${PRODUCT}_`)) {
+    if (e.type !== 'storage' || !(command!.startsWith(`${PRODUCT}_`) || command!.startsWith('ZenzaWatch_'))) {
       return;
     }
 
-    const name = command!.replace('ZenzaWatch_', '');
+    const name = command!.replace('FutatsumeWatch_', '').replace('ZenzaWatch_', '');
     const oldValue = e.oldValue;
     const newValue = e.newValue;
     if (oldValue === newValue) {

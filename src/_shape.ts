@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        Masked Watch
-// @namespace   https://github.com/segabito/
+// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
 // @description 動画上のテキストや顔を検出してコメントを透過する
 // @match       *://www.nicovideo.jp/*
 // @match       *://live.nicovideo.jp/*

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        HeatSync
-// @namespace   https://github.com/segabito/
-// @description コメントの少ないところだけ自動で早送りする、忙しい人のためのZenzaWatch拡張
+// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
+// @description コメントの少ないところだけ自動で早送りする、忙しい人のためのFutatsumeWatch拡張
 // @match       *://www.nicovideo.jp/*
 // @match       *://ext.nicovideo.jp/
 // @match       *://ext.nicovideo.jp/#*

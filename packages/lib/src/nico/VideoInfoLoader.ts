@@ -518,7 +518,7 @@ const VideoInfoLoader = (function () {
       if (!isNeedPayment) {
         return {
           reason: 'not supported',
-          message: 'この動画はZenzaWatchで再生できません',
+          message: 'この動画はFutatsumeWatchで再生できません',
         };
       }
       const err = {

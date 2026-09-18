@@ -1,19 +1,24 @@
-# ZenzaWatch
+# FutatsumeWatch
 
 Ginzaから独立して単体で動くHTML5版ニコニコ動画プレイヤーです。
 Greasemonkeyスクリプトとして動作します。
-
-## ライセンス
-
-`master` から分岐させたコードにライセンスするなら CC0 あるいは WTFPL あたり
+ZenzaWatch（segabito氏・kphrx氏）の流れを引き継ぐ後継です。
 
 ## インストール
 
-[dist](/dist) から `*.user.js` を開き raw ボタンを押すことでインストールできます
+[dist](/dist) から `FutatsumeWatch.user.js` を開き raw ボタンを押すことでインストールできます
+
+- 安定版: `dist/FutatsumeWatch.user.js`
+- 開発先行版: `dist/FutatsumeWatch-dev.user.js`
+- 関連: `dist/FutatsumeHLS.user.js`、`dist/FutatsumeGamePad.user.js`、`dist/FutatsumeBlogPartsButton.user.js`、`dist/FutatsumeAdvancedSettings.user.js`
 
 ## フィードバック
 
 雑にDiscussionsでコメントしたり、バグの原因がわかってたらIssue開いたり
+
+## ライセンス
+
+`LICENSE` は未整備（`package.json` は MIT、`README.md` の旧記載は CC0/WTFPL で矛盾）。利用者の判断が必要なため独断で作成しない（`AGENTS.md` 移行バックログ参照）。
 
 ## 開発者向け
 

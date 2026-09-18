@@ -48,7 +48,7 @@ interface GateInitializeParams {
 
 import { Emitter, PromiseHandler } from '../Emitter';
 import type { AnyPromiseHandler } from '../Emitter';
-import { PRODUCT } from '../../../../src/ZenzaWatchIndex';
+import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 import { BroadcastEmitter } from '../message/messageUtil';
 
 const TOKEN = 'ranbu';

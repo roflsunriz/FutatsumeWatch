@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name        CapTube
-// @namespace   https://github.com/segabito/
+// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
 // @description "S"キーでYouTubeのスクリーンショット保存
 // @include     https://www.youtube.com/*
 // @include     https://www.youtube.com/embed/*

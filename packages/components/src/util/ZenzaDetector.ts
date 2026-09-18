@@ -7,20 +7,26 @@ interface ZenzaWatchLike {
 
 interface WindowWithZenzaWatch extends Window {
   ZenzaWatch?: ZenzaWatchLike;
+  FutatsumeWatch?: ZenzaWatchLike;
 }
 //===BEGIN===
 
 const ZenzaDetector = (() => {
   const zenzaWindow = window as unknown as WindowWithZenzaWatch;
+  const current = zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch;
   const promise =
-    zenzaWindow.ZenzaWatch && zenzaWindow.ZenzaWatch.ready
-      ? Promise.resolve(zenzaWindow.ZenzaWatch)
+    current && current.ready
+      ? Promise.resolve(current)
       : new Promise<unknown>((resolve) => {
-          [window, document.body || document.documentElement].forEach((e) =>
+          [window, document.body || document.documentElement].forEach((e) => {
+            e.addEventListener('FutatsumeWatchInitialize', () => {
+              resolve(zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch);
+            });
+            // 旧イベント名との互換のため旧名も購読する
             e.addEventListener('ZenzaWatchInitialize', () => {
-              resolve(zenzaWindow.ZenzaWatch);
-            })
-          );
+              resolve(zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch);
+            });
+          });
         });
   return { detect: () => promise };
 })();

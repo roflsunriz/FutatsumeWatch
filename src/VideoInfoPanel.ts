@@ -1,4 +1,4 @@
-import { ZenzaWatch, global } from './ZenzaWatchIndex';
+import { ZenzaWatch, global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';
 import { Config } from './Config';
 import { IchibaLoader } from '../packages/lib/src/nico/loader';

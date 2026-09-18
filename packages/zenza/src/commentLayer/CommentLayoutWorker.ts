@@ -1,4 +1,4 @@
-import { ZenzaWatch } from '../../../../src/ZenzaWatchIndex';
+import { ZenzaWatch } from '../../../../src/FutatsumeWatchIndex';
 import { workerUtil } from '../../../lib/src/infra/workerUtil';
 
 interface LayoutChat {

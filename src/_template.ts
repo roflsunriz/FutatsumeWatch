@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name           ZenzaWatch
-// @namespace      https://github.com/segabito/
+// @name           FutatsumeWatch
+// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
 // @description    ニコニコ動画の速くて軽い動画プレイヤー
 // @match          *://www.nicovideo.jp/*
 // @match          *://ext.nicovideo.jp/
@@ -95,7 +95,7 @@ import { CONSTANT } from './constant';
 import { TextLabel } from '../packages/lib/src/ui/TextLabel';
 import { parseThumbInfo } from '../packages/lib/src/nico/parseThumbInfo';
 import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
-import { ENV, VER } from './ZenzaWatchIndex';
+import { ENV, VER } from './FutatsumeWatchIndex';
 import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
 import { netUtil } from '../packages/lib/src/infra/netUtil';
 import { initCssProps } from '../packages/zenza/src/init/inintCssProps';

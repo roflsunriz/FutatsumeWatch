@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        ZenzaWatch 上級者用設定
-// @namespace   https://github.com/segabito/
-// @description1 ZenzaWatchの上級者向け設定。変更する時だけ有効にすればOK
+// @name        FutatsumeWatch 上級者用設定
+// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
+// @description1 FutatsumeWatchの上級者向け設定。変更する時だけ有効にすればOK
 // @include     *//www.nicovideo.jp/my*
 // @version     0.3.3-another.6
 // @author      segabito macmoto

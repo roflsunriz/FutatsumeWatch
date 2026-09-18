@@ -1,5 +1,5 @@
 import { workerUtil } from '../../../lib/src/infra/workerUtil';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 // import {WatchInfoCacheDb} from '../../../lib/src/nico/WatchInfoCacheDb';
 
 interface HeatMapEmitter {

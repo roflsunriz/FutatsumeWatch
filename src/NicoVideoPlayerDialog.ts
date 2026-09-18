@@ -1,6 +1,6 @@
 import * as $ from 'jquery';
 import * as _ from 'lodash';
-import { global } from './ZenzaWatchIndex';
+import { global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';
 import { PlaybackPosition, VideoInfoLoader, NVWatchCaller } from '../packages/lib/src/nico/loader';
 import { Fullscreen, ShortcutKeyEmitter, util } from './util';

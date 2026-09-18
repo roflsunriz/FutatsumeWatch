@@ -7,7 +7,7 @@ import { NicoChat } from './NicoChat';
 import type { NicoChatType, NicoChatData, NicoChatOptions } from './NicoChat';
 import { NicoChatGroup } from './NicoChatGroup';
 import { NicoScripter } from './NicoScripter';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 import { sleep } from '../../../lib/src/infra/sleep';
 import { textUtil } from '../../../lib/src/text/textUtil';
 import { CommentLayer } from './CommentLayer';

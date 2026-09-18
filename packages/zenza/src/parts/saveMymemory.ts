@@ -1,4 +1,4 @@
-import { ZenzaWatch } from '../../../../src/ZenzaWatchIndex';
+import { ZenzaWatch } from '../../../../src/FutatsumeWatchIndex';
 
 interface MymemoryPlayer {
   currentTime: number;

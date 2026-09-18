@@ -1,4 +1,4 @@
-import { PRODUCT } from '../../../../src/ZenzaWatchIndex';
+import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 
 interface PlayingStatusStore {
   removeItem(key: string): void;
@@ -25,12 +25,14 @@ const PlayerSession = {
   restore(this: PlayerSessionLike): Record<string, unknown> {
     let ss: Record<string, unknown> = {};
     try {
-      const data = (this.storage as unknown as PlayingStatusRecord)[this.KEY];
+      const store = this.storage as unknown as PlayingStatusRecord;
+      const data = store[this.KEY] ?? store[LEGACY_PLAYING_STATUS_KEY];
       if (!data) {
         return ss;
       }
-      ss = JSON.parse((this.storage as unknown as PlayingStatusRecord)[this.KEY] as string) as Record<string, unknown>;
+      ss = JSON.parse(store[this.KEY] ?? (store[LEGACY_PLAYING_STATUS_KEY] as string)) as Record<string, unknown>;
       this.storage.removeItem(this.KEY);
+      this.storage.removeItem(LEGACY_PLAYING_STATUS_KEY);
     } catch (e) {
       window.console.error('PlayserSession restore fail: ', this.KEY, e);
     }
@@ -45,6 +47,7 @@ const PlayerSession = {
     return this.storage.hasOwnProperty(this.KEY);
   },
 };
-(PlayerSession as unknown as PlayerSessionLike).KEY = `ZenzaWatch_PlayingStatus`;
+(PlayerSession as unknown as PlayerSessionLike).KEY = `${PRODUCT}_PlayingStatus`;
+const LEGACY_PLAYING_STATUS_KEY = 'ZenzaWatch_PlayingStatus';
 //===END===
 export { PlayerSession };

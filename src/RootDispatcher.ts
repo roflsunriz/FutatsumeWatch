@@ -1,4 +1,4 @@
-import { ZenzaWatch, PRODUCT } from './ZenzaWatchIndex';
+import { ZenzaWatch, PRODUCT } from './FutatsumeWatchIndex';
 import { PopupMessage } from './util';
 import { PlayerConfig } from './NicoVideoPlayerDialog';
 import type { ConfigStore } from './Config';

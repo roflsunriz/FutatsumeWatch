@@ -1,6 +1,6 @@
 // import * as _ from 'lodash';
 // const emitter;
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 import { ClassList } from './ClassListWrapper';
 
 interface LegacyFullscreen {

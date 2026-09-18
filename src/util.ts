@@ -2,7 +2,7 @@ import { CONSTANT } from './constant';
 import { Emitter } from './baselib';
 import { Config } from './Config';
 import { browser } from './browser';
-import { ZenzaWatch, PRODUCT } from './ZenzaWatchIndex';
+import { ZenzaWatch, PRODUCT } from './FutatsumeWatchIndex';
 import { StyleSwitcher } from '../packages/lib/src/css/StyleSwitcher';
 import { dimport } from '../packages/lib/src/infra/dimport';
 import { VideoItemObserver } from '../packages/lib/src/nico/VideoItemObserver';

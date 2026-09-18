@@ -93,3 +93,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 9波の並列作業で `src`・`packages/*/src`・`packages/components/mock`・`test` の `.js` を `.ts` 化した（lib-core / lib-nico / zenza / components / src-small / giant-a・b・c / test）。作業メモは `subagents/*/MEMO.md` に残し、要点を本文書へ統合後に整理する。
 - 検証は `bun run lint`（error 0件）・`format`・`type-check`・`build`（`node --check` 付き）・`bun test`（103件 passing）で全通過。`any` はコード内にゼロ。
 - 存在しない API を参照していたテスト（`Storyboard` 系）は削除し、陳腐化した期待値（`VideoInfo` の2016年判定）は現行仕様で書き直した。いずれも理由を `verification.md` とコミット文に記録している。
+
+### FutatsumeWatch改名とCDP基盤（2026-09-19〜）
+
+- `src/FutatsumeWatchIndex.ts` を正本化し `PRODUCT='FutatsumeWatch'` に切替えた。`src/ZenzaWatchIndex.ts` は互換シムとして残す。旧保存キー（`ZenzaWatchPlaylist`・`ZenzaWatch_PlayingStatus`）・旧メッセージ（`ZenzaWatch_`）・旧イベント（`ZenzaWatchInitialize`）・旧window名は読替互換を維持し、DOM ID・CSS・イベント名前空間（`ZenzaWatchVideoPlayerContainer` 等）は互換のため温存する（`verification.md` 参照）。
+- `build.js` の出力と `src/_*.ts` の `==UserScript==` を新リポジトリ（`https://github.com/roflsunriz/FutatsumeWatch/`・`downloadURL .../raw/main/dist/...`）へ寄せた。`dist/Zenza*.user.js` 6件は削除し `FutatsumeWatch.user.js` 系へ置換した。`package.json` の `main` は `src/FutatsumeWatchIndex.ts` を指す。
+- CDP基盤は `test/fixtures/cdp/`（`network-policy.ts`・`scene.ts`・`offline.ts`・`scenes/watch-basic-sm9.json`・`scenes/hls-playback-sm9.json`）と採取雛形 `scripts/cdp-capture.ts` で構成する。実ページ採取は `chrome-debug.ps1` 起動後の手動実行が前提で、現行シーンは最小再現に留める。`installOfflineScene` は未登録・広告系を例外にして外部へ出さない。
+- 製品コードを直接 import するテストは `window` 前提の依存（`Observable.ts` 等）を引くため、改名固定は原文照合に留め静的 import を避けること（`test/unit/futatsume-branding.test.ts`）。
+- `bun run format` は改名前に既存2件（`packages/lib/src/css/css.ts`・`src/Config.ts`）で非準拠だった。改名で触れた `.ts` は `prettier --write` で準拠化した。`test/fixtures` と `packages/components/mock` は `.prettierignore` の対象外・対象を維持する。

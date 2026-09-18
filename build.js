@@ -1,5 +1,5 @@
 var srcDir = './src';
-var outFile = 'dist/ZenzaWatch.user.js';
+var outFile = 'dist/FutatsumeWatch.user.js';
 var watchDirs = [
   srcDir,
   './packages/components/src',
@@ -9,14 +9,14 @@ var watchDirs = [
 ];
 
 var templates = [
-  { src: '_template.js', dist: 'dist/ZenzaWatch.user.js',            dev: true  },
+  { src: '_template.js', dist: 'dist/FutatsumeWatch.user.js',            dev: true  },
   { src: '_uquery.js',   dist: 'dist/uQuery.user.js',                dev: false },
   { src: '_pocket.js',   dist: 'dist/MylistPocket.user.js',          dev: false },
   { src: '_shape.js',    dist: 'dist/MaskedWatch.user.js',           dev: false },
-  { src: '_setting.js',  dist: 'dist/ZenzaAdvancedSettings.user.js', dev: false },
-  { src: '_hls.js',      dist: 'dist/ZenzaHLS.user.js',              dev: false },
-  { src: '_gamepad.js',  dist: 'dist/ZenzaGamePad.user.js',          dev: false },
-  { src: '_blog.js',     dist: 'dist/ZenzaBlogPartsButton.user.js',  dev: false },
+  { src: '_setting.js',  dist: 'dist/FutatsumeAdvancedSettings.user.js', dev: false },
+  { src: '_hls.js',      dist: 'dist/FutatsumeHLS.user.js',              dev: false },
+  { src: '_gamepad.js',  dist: 'dist/FutatsumeGamePad.user.js',          dev: false },
+  { src: '_blog.js',     dist: 'dist/FutatsumeBlogPartsButton.user.js',  dev: false },
   { src: '_captube.js',  dist: 'dist/CapTube.user.js',               dev: false },
   { src: '_heatsync.js', dist: 'dist/HeatSync.user.js',              dev: false },
   // { src: '_my4.js',      dist: 'dist/MylistFilter.user.js',          dev: false },
@@ -27,9 +27,9 @@ var templates = [
 
 const DEV_HEADER = {
   '_template.js': {
-    //name: '// @name           ZenzaWatch DEV版',
-    name: '// @name           ZenzaWatch DEV版 fix playlist',
-    description: '// @description    ZenzaWatchの開発 先行バージョン'
+    //name: '// @name           FutatsumeWatch DEV版',
+    name: '// @name           FutatsumeWatch DEV版 fix playlist',
+    description: '// @description    FutatsumeWatchの開発 先行バージョン'
   },
   '_uquery.js': {},
   '_pocket.js': {},
@@ -398,7 +398,7 @@ function loadTemplateFile(srcDir, indexFile, outFile, params) {
       }
     }
     if (line.match(/\/\/ *==\/UserScript==/)) {
-      lines.push(`// @downloadURL    https://github.com/kphrx/ZenzaWatch/raw/playlist-deploy/${outFile}`);
+      lines.push(`// @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/${outFile}`);
       // meta.js でUserScriptブロックのみを含んだファイルを用意すると嬉しいやつ。そうでなければdownloadURLだけ持っていれば良い
       // lines.push(`// @updateURL      https://github.com/kphrx/ZenzaWatch/raw/playlist-deploy/${outFile}`);
       lines.push(line);

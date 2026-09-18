@@ -103,9 +103,9 @@ interface FetchResultPayload {
 }
 
 import { netUtil } from './netUtil';
-// import {globalEmitter} from '../../../../src/ZenzaWatchIndex';
+// import {globalEmitter} from '../../../../src/FutatsumeWatchIndex';
 import { Config } from '../../../../src/Config';
-import { TOKEN, PRODUCT } from '../../../../src/ZenzaWatchIndex';
+import { TOKEN, PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 import { PopupMessage } from '../ui/PopupMessage';
 import { EmitterInitFunc } from '../Emitter';
 const PID = 'PID';

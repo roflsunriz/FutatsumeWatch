@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        ZenzaGamePad
-// @namespace   https://github.com/segabito/
-// @description ZenzaWatchをゲームパッドで操作
+// @name        FutatsumeGamePad
+// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
+// @description FutatsumeWatchをゲームパッドで操作
 // @include     *://*.nicovideo.jp/*
 // @version     1.5.3
 // @author      segabito macmoto

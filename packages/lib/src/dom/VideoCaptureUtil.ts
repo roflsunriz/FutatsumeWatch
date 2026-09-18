@@ -38,7 +38,7 @@ interface VideoCaptureUtilShape {
 import { createVideoElement } from '../../../zenza/src/videoPlayer/createVideoElement';
 import { sleep } from '../infra/sleep';
 import { CrossDomainGate } from '../infra/CrossDomainGate';
-import { PRODUCT } from '../../../../src/ZenzaWatchIndex';
+import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 //===BEGIN===
 
 const VideoCaptureUtil = (() => {

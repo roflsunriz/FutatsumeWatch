@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           ZenzaWatch HLS Support
-// @namespace      https://github.com/segabito/
-// @description    ZenzaWatchをHLSに対応させる
+// @name           FutatsumeWatch HLS Support
+// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
+// @description    FutatsumeWatchをHLSに対応させる
 // @match          *://www.nicovideo.jp/*
 // @match          *://blog.nicovideo.jp/*
 // @match          *://ch.nicovideo.jp/*

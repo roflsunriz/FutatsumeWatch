@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           ZenzaBlogPartsButton
-// @namespace      https://github.com/segabito/
-// @description    ニコニコ動画のブログパーツにZenzaWatch起動用ボタンを追加
+// @name           FutatsumeBlogPartsButton
+// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
+// @description    ニコニコ動画のブログパーツにFutatsumeWatch起動用ボタンを追加
 // @match          *://ext.nicovideo.jp/thumb/*
 // @grant          none
 // @author         segabito macmoto

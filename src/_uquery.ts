@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           uQuery
-// @namespace      https://github.com/
+// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
 // @description    コンソールのデバッグ補助ツール(開発者用)
 // @match          *://*/*
 // @grant          none

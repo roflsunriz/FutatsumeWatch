@@ -1,6 +1,6 @@
 import { cssUtil } from '../../../lib/src/css/css';
 import { uQuery } from '../../../lib/src/uQuery';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 import { StoryboardWorker } from './StoryboardWorker';
 import { ClassList } from '../../../lib/src/dom/ClassListWrapper';
 

@@ -55,7 +55,7 @@ interface CssUtil {
 }
 
 // const PRODUCT = 'Zenza';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 import { bounce, throttle } from '../infra/bounce';
 //===BEGIN===
 /**

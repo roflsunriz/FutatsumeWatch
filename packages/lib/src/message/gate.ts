@@ -32,7 +32,8 @@ interface GateInitParams {
   type?: string;
 }
 
-const PRODUCT = 'ZenzaWatch';
+const PRODUCT = 'FutatsumeWatch';
+const LEGACY_PRODUCT = 'ZenzaWatch';
 import { workerUtil } from '../infra/workerUtil';
 /*
 post = {
@@ -102,7 +103,9 @@ const gate = () => {
     if (['localhost', '127.0.0.1'].includes(host)) {
       return true;
     }
-    const whiteHost = (localStorage as unknown as Record<string, string | undefined>).ZenzaWatch_whiteHost;
+    const whiteHost =
+      (localStorage as unknown as Record<string, string | undefined>).FutatsumeWatch_whiteHost ??
+      (localStorage as unknown as Record<string, string | undefined>).ZenzaWatch_whiteHost;
     if (whiteHost) {
       if (whiteHost.split(',').includes(host)) {
         return true;

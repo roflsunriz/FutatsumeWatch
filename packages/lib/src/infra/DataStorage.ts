@@ -20,7 +20,7 @@ import { Observable } from './Observable';
 import type { AnySubscription, SubscriberCallback, SubscriberParams } from './Observable';
 import { bounce } from './bounce';
 import { dimport } from './dimport';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 
 // objUtil.bridge で Emitter のメソッドが束縛コピーされる。実行時の姿を型で表す。
 interface DataStorageEmitter {

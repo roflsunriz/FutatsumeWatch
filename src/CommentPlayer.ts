@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { global } from './ZenzaWatchIndex';
+import { global } from './FutatsumeWatchIndex';
 import { Config, PopupMessage, VideoCaptureUtil } from './util';
 import { NicoScripter } from '../packages/zenza/src/commentLayer/NicoScripter';
 import { SlotLayoutWorker } from '../packages/zenza/src/commentLayer/SlotLayoutWorker';

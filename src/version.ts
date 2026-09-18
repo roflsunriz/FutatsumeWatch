@@ -1,8 +1,8 @@
 // FutatsumeWatch のユーザースクリプト生成に関する小さく型安全な基盤。
 // 既存の build.js（// @version ヘッダー連結方式）と将来の Bun バンドラー移行の橋渡しを担う。
 
-export const STABLE_USERSCRIPT_FILE = 'dist/ZenzaWatch.user.js';
-export const DEV_USERSCRIPT_FILE = 'dist/ZenzaWatch-dev.user.js';
+export const STABLE_USERSCRIPT_FILE = 'dist/FutatsumeWatch.user.js';
+export const DEV_USERSCRIPT_FILE = 'dist/FutatsumeWatch-dev.user.js';
 
 const VERSION_LINE_PATTERN = /^\s*\/\/\s*@version\s+(.+?)\s*$/m;
 

@@ -68,7 +68,10 @@ const MylistApiLoader = (() => {
   let cacheStorage: CacheStorageLike = null as unknown as CacheStorageLike;
   let token = '';
 
-  if ((window as unknown as { ZenzaWatch?: unknown }).ZenzaWatch) {
+  if (
+    (window as unknown as { ZenzaWatch?: unknown; FutatsumeWatch?: unknown }).FutatsumeWatch ??
+    (window as unknown as { ZenzaWatch?: unknown }).ZenzaWatch
+  ) {
     emitter.on('csrfTokenUpdate', (t: unknown) => {
       token = t as string;
       if (cacheStorage) {

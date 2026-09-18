@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           Mylist Filter
-// @namespace      https://github.com/segabito/
+// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
 // @description    視聴不可能な動画だけ表示して一括削除とかできるやつ
 // @match          *://www.nicovideo.jp/my/mylist*
 // @grant          none

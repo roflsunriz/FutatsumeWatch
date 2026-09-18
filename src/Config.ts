@@ -1,5 +1,6 @@
-// import {PRODUCT} from './ZenzaWatchIndex';
-const PRODUCT = 'ZenzaWatch';
+// import {PRODUCT} from './FutatsumeWatchIndex';
+const PRODUCT = 'FutatsumeWatch';
+const LEGACY_PRODUCT = 'ZenzaWatch';
 import { DataStorage } from '../packages/lib/src/infra/DataStorage';
 
 export interface ConfigProps {
@@ -278,8 +279,8 @@ const Config = (() => {
 
     allowOtherDomain: true,
 
-    overrideWatchLink: false, // すべての動画リンクをZenzaWatchで開く
-    'overrideWatchLink:others': false, // すべての動画リンクをZenzaWatchで開く
+    overrideWatchLink: false, // すべての動画リンクをFutatsumeWatchで開く
+    'overrideWatchLink:others': false, // すべての動画リンクをFutatsumeWatchで開く
 
     speakLark: false, // 一発ネタのコメント読み上げ機能. 飽きたら消す
     speakLarkVolume: 1.0, // 一発ネタのコメント読み上げ機能. 飽きたら消す
@@ -418,7 +419,7 @@ Config.exportToFile = () => {
   const blob = new Blob([json], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'), {
-    download: `${new Date().toLocaleString().replace(/[:/]/g, '_')}_ZenzaWatch.config.json`,
+    download: `${new Date().toLocaleString().replace(/[:/]/g, '_')}_FutatsumeWatch.config.json`,
     rel: 'noopener',
     href: url,
   });

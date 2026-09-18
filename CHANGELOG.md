@@ -14,8 +14,13 @@
 - 参照のないデッドコード `src/yomi` を削除し、解決不能だった import 4件を実在パスへ修正した（`boot` の `GateAPI` など。挙動不変）
 - `src`・`packages`・`test` の全ソースを TypeScript 化し（`any` ゼロ、strict 維持）、`bun:test` へ移行した退行防止テスト群を追加した（103件 passing）
 - テスト環境 `test/setup.ts`（`bun test --preload`）を追加し、ブラウザー由来グローバル（`localStorage`・`location`・`_`・`CSS`・`console.nicoru`）の最小実装を与えた（製品コード側は不変）
+- CDP記録再生のオフライン基盤を追加し、不要通信の遮断と必要通信の固定を可能にした（`test/fixtures/cdp/network-policy.ts`・`scene.ts`・`offline.ts`、採取雛形 `scripts/cdp-capture.ts`、初期シーン `watch-basic-sm9.json`・`hls-playback-sm9.json`）
+- 機能別テストにオフライン解決と改名退行防止を追加した（`test/unit/cdp-offline.test.ts`・`test/unit/futatsume-branding.test.ts`、113件 passing）
 
 ### Changed
+
+- ZenzaWatch から FutatsumeWatch へ全面改名し、製品定数・版管理・ビルド定義・全ユーザースクリプトのメタデータを新リポジトリへ寄せた（`src/FutatsumeWatchIndex.ts` を正本化し `src/ZenzaWatchIndex.ts` は互換シムに、旧保存キー・旧メッセージ・旧イベント・旧window名は読替互換を維持、機能ID・DOM ID・CSS は互換のため温存）
+- `dist/ZenzaWatch.user.js` 系を `dist/FutatsumeWatch.user.js` 系へ置き換え、関連4種を `FutatsumeHLS`・`FutatsumeGamePad`・`FutatsumeBlogPartsButton`・`FutatsumeAdvancedSettings` に改名した（旧 dist は削除）
 
 - 連結ビルドの import 解決を正規表現から TypeScript AST 方式へ強化し、複数行 import・`import type`・別名に対応した（transpile による型のみ import 除去で解決漏れが起きないよう、解決マップは原文から生成する）
 - `packages/components/src/dll.ts` の `https://esm.run/lit` 静的 import を npm の `lit` へ切り替え、オフラインの `bun test` でも解決できるようにした（連結時は import 行自体が除去されるため製品出力は不変）

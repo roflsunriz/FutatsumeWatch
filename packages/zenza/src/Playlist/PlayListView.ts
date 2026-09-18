@@ -4,7 +4,7 @@ import { Emitter } from '../../../lib/src/Emitter';
 import { cssUtil } from '../../../lib/src/css/css';
 import { ClassList } from '../../../lib/src/dom/ClassListWrapper';
 import { uq } from '../../../lib/src/uQuery';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 
 interface PlayListViewParams {
   container: Element;

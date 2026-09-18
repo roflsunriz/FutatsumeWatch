@@ -1,5 +1,5 @@
 import { Emitter } from './baselib';
-import { global } from './ZenzaWatchIndex';
+import { global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';
 import type { ConfigProps } from './Config';
 import { bounce } from '../packages/lib/src/infra/bounce';

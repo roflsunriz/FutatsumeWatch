@@ -1,5 +1,5 @@
 import { nicoUtil } from '../../../lib/src/nico/nicoUtil';
-import { PRODUCT } from '../../../../src/ZenzaWatchIndex';
+import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 
 interface NicoUtilLike {
   isGinzaWatchUrl(url: string): boolean;

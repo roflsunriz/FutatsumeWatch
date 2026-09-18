@@ -194,7 +194,7 @@ const { NicoSearchApiV2Query, NicoSearchApiV2Loader } = (function () {
       }
       const sortTable = SORT;
       this._filters = [];
-      this._q = word || params.searchWord || 'ZenzaWatch';
+      this._q = word || params.searchWord || 'FutatsumeWatch';
       this._targets = params.searchType === 'tag' ? ['tagsExact'] : ['tagsExact', 'title', 'description'];
       this._sort =
         (params.order === 'd' ? '-' : '+') +
@@ -216,7 +216,7 @@ const { NicoSearchApiV2Query, NicoSearchApiV2Loader } = (function () {
         'startTime',
         'thumbnailUrl',
       ];
-      this._context = 'ZenzaWatch';
+      this._context = 'FutatsumeWatch';
 
       const n = new Date(),
         now = this.now;

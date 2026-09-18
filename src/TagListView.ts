@@ -1,4 +1,4 @@
-import { ZenzaWatch } from './ZenzaWatchIndex';
+import { ZenzaWatch } from './FutatsumeWatchIndex';
 import { BaseViewComponent } from '../packages/zenza/src/parts/BaseViewComponent';
 import { TagEditApi } from '../packages/lib/src/nico/TagEditApi';
 import { Config } from './Config';

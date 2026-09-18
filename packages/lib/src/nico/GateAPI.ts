@@ -84,7 +84,8 @@ interface BridgeDbParams {
   };
 }
 
-const PRODUCT = 'ZenzaWatch';
+const PRODUCT = 'FutatsumeWatch';
+const LEGACY_PRODUCT = 'ZenzaWatch';
 //===BEGIN===
 
 const GateAPI = (() => {
@@ -168,7 +169,7 @@ const GateAPI = (() => {
       }
     };
 
-    const PREFIX = PRODUCT || 'ZenzaWatch';
+    const PREFIX = PRODUCT || LEGACY_PRODUCT;
 
     // const kvs = dimport('std:kv-storage')
     //   .then(({StorageArea}) => new StorageArea(PREFIX)).catch(() => null);

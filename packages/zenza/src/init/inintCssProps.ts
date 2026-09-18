@@ -1,6 +1,6 @@
 import { cssUtil } from '../../../lib/src/css/css';
 import { CONSTANT } from '../../../../src/constant';
-import { global } from '../../../../src/ZenzaWatchIndex';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 
 interface CssUtilLike {
   s(value: number): unknown;

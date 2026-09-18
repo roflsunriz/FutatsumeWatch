@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        MylistPocket
-// @namespace   https://github.com/segabito/
-// @description 動画をあとで見る ＋ 簡易NG機能。 ZenzaWatchとの連携も可能。
+// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
+// @description 動画をあとで見る ＋ 簡易NG機能。 FutatsumeWatchとの連携も可能。
 // @match       *://www.nicovideo.jp/*
 // @match       *://ext.nicovideo.jp/
 // @match       *://ext.nicovideo.jp/#*

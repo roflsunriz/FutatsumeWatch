@@ -1,10 +1,10 @@
 {
-  "name": "ZenzaWatch",
-  "description": "niconico HTML5 Player",
+  "name": "FutatsumeWatch",
+  "description": "niconico HTML5 Player (ZenzaWatch successor)",
   "version": "0.0.0",
-  "author": "segabito",
+  "author": "roflsunriz",
   "bugs": {
-    "url": "https://github.com/segabito/ZenzaWatch/issues"
+    "url": "https://github.com/roflsunriz/FutatsumeWatch/issues"
   },
   "dependencies": {},
   "devDependencies": {
@@ -70,16 +70,16 @@
     "lib",
     "test"
   ],
-  "homepage": "https://github.com/segabito/ZenzaWatch",
+  "homepage": "https://github.com/roflsunriz/FutatsumeWatch",
   "keywords": [
     "ES6",
     "test"
   ],
   "license": "MIT",
-  "main": "src/ZenzaWatchIndex.js",
+  "main": "src/FutatsumeWatchIndex.ts",
   "repository": {
     "type": "git",
-    "url": "git://github.com/segabito/ZenzaWatch.git"
+    "url": "git://github.com/roflsunriz/FutatsumeWatch.git"
   },
   "scripts": {
     "lint": "eslint .",

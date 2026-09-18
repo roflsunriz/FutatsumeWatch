@@ -1,4 +1,4 @@
-import { global } from './ZenzaWatchIndex';
+import { global } from './FutatsumeWatchIndex';
 import { NicoCommentPlayer } from './CommentPlayer';
 import type { CommentPlayerOptions, CommentPlayerChatFilter, CommentPlayerParams } from './CommentPlayer';
 import { util, Config, Fullscreen, VideoCaptureUtil, BaseViewComponent } from './util';
