@@ -16,17 +16,18 @@ bun run test
 - `format`: prettier 準拠を確認する。既存資産の除外は `.prettierignore` に理由付きで記載する。
 - `type-check`: `tsc --noEmit` が成功すること。
 - `build`: `scripts/build.ts` が既存 `build.js` を実行し、`dist/ZenzaWatch.user.js` の `==UserScript==` と `@version` を検証すること。加えて全 `dist/*.user.js` へ `node --check` 構文検証を行い、静的 `import`/`export` 宣言の混入を検出すること。`.ts` 連結対象は `typescript.transpileModule`（ES2020/ESNext）で型注釈のみ除去する。
-- `test`: `bun test` が成功すること（`src/version.ts` の退行防止テスト）。
+- `test`: `bun test --preload ./test/setup.ts` が成功すること（103件 passing）。環境依存（`localStorage`・`location`・`_`・`CSS`・`console.nicoru`・`Config` の restore 待ち）は `test/setup.ts` と各テストの起動順序で吸収し、製品コード側は変えない。
 
-従来の mocha テストは `bun run test:mocha` に退避している。
+従来の mocha 基盤は退役済み（`test/setup.js`・`test/mocha.opts`・`test:mocha` スクリプトを削除）。
 
 ## 既知の未解消事項（今回の検証では直さない）
 
-- 現 `src` ツリーから `build.js` を実行すると `dist/ZenzaWatch.user.js` が約300行しか生成されず、コミット済みの生成物（約33652行）を再現できない。`packages/*` 側に `//==BEGIN==` マーカーがなく連結対象として拾われないことが主因の見込み。生成物の検証はヘッダー（`==UserScript==`・`@version`）と構文（`node --check`）までに留める。コミット済み `dist` は復元済みで、今回の変更では製品コードと生成物に手を入れていない。
-- `src/_hls.js` の `preloadFragment` 内に束縛のない `stats` 参照があり、実行時に到達すると `ReferenceError` になる可能性がある。HLS ローダーの挙動変更になるため、別タスクで上流差分と実機検証のうえ修正する。
-- 実ブラウザでの動作確認は未実施。理由は製品コードと生成物を変更していないため。`src` 変換や `dist` 再生成を行う際は、対象操作の実ブラウザ確認が必要になる。
+- `bun run build` の生成物は正規規模に回復した（`dist/ZenzaWatch.user.js` が約35052行。以前の約300行は prettier 複数行 import への未対応が原因で、AST 方式への強化で解消）。ただしコミット済み生成物（約33652行）との差分比較は未実施のため、`dist` は復元済みでコミット対象外とする。差分比較が完了するまではリリース手順を確定しない。
+- `src/_hls.ts` の `preloadFragment` 内に束縛のない `stats` 参照があり、実行時に到達すると `ReferenceError` になる可能性がある。HLS ローダーの挙動変更になるため、別タスクで上流差分と実機検証のうえ修正する（`@ts-expect-error` で温存）。
+- `src/boot.ts` が呼ぶ `GateAPI.exApi()` は上流3系統（segabito/kphrx/現行）いずれにも存在しないことを一次情報で確認済みのため別タスク化が確定した（`@ts-expect-error` で温存）。
+- 実ブラウザでの動作確認は未実施。理由はランタイムコードを同一に保つ機械変換であり、生成物の構文検証（`node --check`）と単体テストで担保しているため。`src`/`dist` 差分比較と実機検証は別途行う。
 
 ## 再開条件
 
-- `src` と `dist` の乖離を解消した後は、`bun run build` の生成物とコミット済み `dist` の差分比較を検証に加える。
-- 新規ファイルは最初から lint・format・型検査の対象にする。TS へ変換したファイルは例外規定から外す。
+- `dist` 再生成時は、生成物とコミット済み `dist` の差分比較を行い、型注釈除去・整形以外の差がないことを確認してからリリース手順（`how-to-update.md`）を確定する。
+- 新規ファイルは最初から lint・format・型検査の対象にする。

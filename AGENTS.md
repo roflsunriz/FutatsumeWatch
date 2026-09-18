@@ -69,12 +69,15 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ### 移行バックログ（次の作業者向け）
 
-- `src` と `dist` の乖離解消が最優先。現 `src` から `build.js` を実行すると `dist/ZenzaWatch.user.js` が約300行しか生成されず、コミット済み（約33652行）を再現できない。`packages/*` 側に `//==BEGIN==` マーカーがなく連結対象として拾われないことが主因の見込み（`Emitter.js` 自体は存在する）。検証は `verification.md` の既知事項を参照し、`dist` を壊したら `git checkout -- dist/` で復元する。
-- `src/_hls.js:773` の束縛なし `stats` 参照（潜在 `ReferenceError`）は別タスクで上流差分と実機検証のうえ修正する。`bun run lint` では warn として残る。
-- `src/boot.js` が呼ぶ `GateAPI.exApi()` は現 `GateAPI` の返却値に存在しない（潜在 `TypeError`）。`boot.ts` 変換時に上流（kphrx/ZenzaWatch 系）で `exApi` の正体を確認して移植する。見つからなければ別タスク化する。
+- `src` と `dist` の乖離は縮小した。`build.js` の import 解決を AST 方式に強化後は `dist/ZenzaWatch.user.js` が約35052行生成され、正規規模に回復した（以前の約300行は prettier 複数行 import への未対応が原因）。ただしコミット済み（約33652行）との差分比較は未実施のため、`dist` 再生成時は `git checkout -- dist/` で復元できる状態を保ち、差分比較を検証に加えること（`verification.md` 参照）。
+- `src/_hls.ts` の束縛なし `stats` 参照（潜在 `ReferenceError`）は別タスクで上流差分と実機検証のうえ修正する。`@ts-expect-error` で温存している。
+- `src/boot.ts` が呼ぶ `GateAPI.exApi()` は上流3系統（segabito/kphrx/現行）いずれにも存在しないことを一次情報で確認済みのため、別タスク化が確定した。`@ts-expect-error` で温存している。
+- 1000行超ファイル（`_pocket`・`VideoInfoPanel`・`NicoVideoPlayerDialog` 等9件）は構造不変で TS 化した。責務分離は退行防止テストを先行させる必要があるため別タスクとする。
+- `NetUtilLike` 等の波間で重複した最小 interface、`CommentPlayerParams` 等の不足型は、他波の型拡充で自然解消する見込み。無理な共通化はしない。
 - `.eslintignore` は eslint 10 で無効（警告のみ）。旧 `.eslintrc` 系と `.babelrc` は Bun 移行完了時に削除する。
 - `LICENSE` が未整備（`package.json` は MIT、`README.md` は CC0/WTFPL と記載が矛盾）。利用者の判断が必要なため独断で作成しない。
-- リリース手順書（`how-to-update.md`）は未整備。`src`/`dist` 乖離がある現状で手順を確定できないため、乖離解消後に作成する。
+- リリース手順書（`how-to-update.md`）は未整備。`src`/`dist` 差分比較の検証が完了してから作成する。
+- mocha は退役済み（`test/setup.js`・`test/mocha.opts`・`test:mocha`・`build:legacy`・`test:browser` スクリプトを削除）。babel/webpack/mocha の依存自体は将来の整理対象として残置する。
 
 ### 変換規約（TS化の作業者向け）
 
@@ -82,3 +85,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `//==BEGIN==`/`//==END==` マーカーと `//@require` 解決を壊さない。import/export 文と型宣言はマーカー外に置く。
 - transpile 分離方式のため `enum`・`namespace`・パラメータープロパティ・デコレーターは禁止。型の再 export は `export type` 形式にする。
 - 連結由来グローバル（`$`・`_`・`VER`・`ENV` 等）は `src/concat-globals.d.ts` を使う。同ファイルの追記は競合回避のため `src` 波の担当に集約する。
+- `build.js` の import 解決は原文ベースの AST 方式である。transpile は型のみ import を除去するため、解決マップの生成元とスキップ範囲の生成元を使い分けている。安易な正規表現に戻さないこと。
+- テスト環境は `test/setup.ts`（`bun test --preload`）でブラウザー由来グローバル（`localStorage`・`location`・`_`・`CSS`・`console.nicoru`）の最小実装を与える。製品コード側をテスト用に変えないこと。`Config` の restore 待ちが必要なテストは製品の起動順序と同じく `await Config.promise('restore')` してから対象を動的 import する。
+
+### 全面変換（第2段階・完了）
+
+- 9波の並列作業で `src`・`packages/*/src`・`packages/components/mock`・`test` の `.js` を `.ts` 化した（lib-core / lib-nico / zenza / components / src-small / giant-a・b・c / test）。作業メモは `subagents/*/MEMO.md` に残し、要点を本文書へ統合後に整理する。
+- 検証は `bun run lint`（error 0件）・`format`・`type-check`・`build`（`node --check` 付き）・`bun test`（103件 passing）で全通過。`any` はコード内にゼロ。
+- 存在しない API を参照していたテスト（`Storyboard` 系）は削除し、陳腐化した期待値（`VideoInfo` の2016年判定）は現行仕様で書き直した。いずれも理由を `verification.md` とコミット文に記録している。
