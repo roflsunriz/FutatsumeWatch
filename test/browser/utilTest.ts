@@ -1,22 +1,40 @@
-const test = (({assert, ZenzaWatch}) => {
+interface BrowserAssert {
+  equal(actual: unknown, expected: unknown, msg?: string): void;
+}
+
+interface UtilQuery {
+  on(events: string, handler: () => void): unknown;
+  off(events: string, handler?: () => void): unknown;
+}
+
+interface TestArgs {
+  assert: BrowserAssert;
+  ZenzaWatch: {
+    util: {
+      $<T extends Element>(el: T): UtilQuery;
+    };
+  };
+}
+
+const test = ({ assert, ZenzaWatch }: TestArgs): void => {
   const util = ZenzaWatch.util;
 
-  let called = {};
+  let called: Record<string, number> = {};
   let count = 0;
-  const a = () => {
+  const a = (): void => {
     called.a = 1;
     count++;
   };
-  const b = () => {
+  const b = (): void => {
     called.b = 1;
     count++;
   };
-  const c = () => {
+  const c = (): void => {
     called.c = 1;
     count++;
   };
-  let $body;
-  let body;
+  let $body: UtilQuery;
+  let body: Element;
 
   body = document.createElement('span');
   $body = util.$(body);
@@ -62,7 +80,6 @@ const test = (({assert, ZenzaWatch}) => {
   assert.equal(count, 1);
   assert.equal(called.a, 1);
 
-
   called = {};
   count = 0;
   body = document.createElement('span');
@@ -85,7 +102,6 @@ const test = (({assert, ZenzaWatch}) => {
   body.dispatchEvent(new CustomEvent('hoge'));
   assert.equal(count, 1);
   assert.equal(called.a, 1);
+};
 
-});
-
-export {test};
+export { test };
