@@ -14,8 +14,9 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowUmdGlobalAccess": true,
     "types": ["bun"],
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts", "packages/**/*.ts"]
 }

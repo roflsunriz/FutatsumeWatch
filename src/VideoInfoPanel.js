@@ -3,7 +3,7 @@ import {CONSTANT} from './constant';
 import {Config} from './Config';
 import {IchibaLoader} from '../packages/lib/src/nico/loader';
 import {UaaLoader} from '../packages/lib/src/nico/loader';
-import {RelatedVideoList} from './VideoList';
+import {RelatedVideoList} from '../packages/zenza/src/Playlist/RelatedVideoList';
 import {TagListView} from './TagListView';
 import {BaseViewComponent} from '../packages/zenza/src/parts/BaseViewComponent';
 import {Emitter} from '../packages/lib/src/Emitter';

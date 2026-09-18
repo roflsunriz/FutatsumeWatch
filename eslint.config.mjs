@@ -30,7 +30,7 @@ const legacyGlobals = {
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'dist/**', '**/dist/**', 'lib/**', '**/lib/**', 'bun.lock', 'subagents/**'],
+    ignores: ['node_modules/**', 'dist/**', '**/dist/**', 'lib/**', 'bun.lock', 'subagents/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -45,6 +45,9 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/consistent-type-imports': 'error',
+      // transpile 分離方式のため、値 export と型 export の混在は
+      // 実行時破綻の原因になる。型は export type / interface で出す。
+      '@typescript-eslint/consistent-type-exports': 'error',
     },
   },
   {

@@ -15,6 +15,8 @@
     "@babel/register": "^7.0.0-beta.42",
     "@eslint/js": "^10.0.1",
     "@types/bun": "^1.4.2",
+    "@types/jquery": "3",
+    "@types/lodash": "^4.17.25",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.2.2",

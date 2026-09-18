@@ -69,8 +69,16 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ### 移行バックログ（次の作業者向け）
 
-- `src` と `dist` の乖離解消が最優先。現 `src` から `build.js` を実行すると `dist/ZenzaWatch.user.js` が約300行しか生成されず、コミット済み（約33652行）を再現できない。`_template.js` が参照する `packages/lib/src/Emitter` などが存在しない。検証は `verification.md` の既知事項を参照し、`dist` を壊したら `git checkout -- dist/` で復元する。
+- `src` と `dist` の乖離解消が最優先。現 `src` から `build.js` を実行すると `dist/ZenzaWatch.user.js` が約300行しか生成されず、コミット済み（約33652行）を再現できない。`packages/*` 側に `//==BEGIN==` マーカーがなく連結対象として拾われないことが主因の見込み（`Emitter.js` 自体は存在する）。検証は `verification.md` の既知事項を参照し、`dist` を壊したら `git checkout -- dist/` で復元する。
 - `src/_hls.js:773` の束縛なし `stats` 参照（潜在 `ReferenceError`）は別タスクで上流差分と実機検証のうえ修正する。`bun run lint` では warn として残る。
+- `src/boot.js` が呼ぶ `GateAPI.exApi()` は現 `GateAPI` の返却値に存在しない（潜在 `TypeError`）。`boot.ts` 変換時に上流（kphrx/ZenzaWatch 系）で `exApi` の正体を確認して移植する。見つからなければ別タスク化する。
 - `.eslintignore` は eslint 10 で無効（警告のみ）。旧 `.eslintrc` 系と `.babelrc` は Bun 移行完了時に削除する。
 - `LICENSE` が未整備（`package.json` は MIT、`README.md` は CC0/WTFPL と記載が矛盾）。利用者の判断が必要なため独断で作成しない。
 - リリース手順書（`how-to-update.md`）は未整備。`src`/`dist` 乖離がある現状で手順を確定できないため、乖離解消後に作成する。
+
+### 変換規約（TS化の作業者向け）
+
+- ランタイムコードは同一に保ち、型注釈・interface・`import type` の追加に留める。`any` 禁止、`unknown` は境界のみ＋型ガードで絞り込む。
+- `//==BEGIN==`/`//==END==` マーカーと `//@require` 解決を壊さない。import/export 文と型宣言はマーカー外に置く。
+- transpile 分離方式のため `enum`・`namespace`・パラメータープロパティ・デコレーターは禁止。型の再 export は `export type` 形式にする。
+- 連結由来グローバル（`$`・`_`・`VER`・`ENV` 等）は `src/concat-globals.d.ts` を使う。同ファイルの追記は競合回避のため `src` 波の担当に集約する。

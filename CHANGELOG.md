@@ -10,3 +10,5 @@
 - 既存の連結ビルド（`build.js`）を Bun から呼び出して生成物を検証する TypeScript の入口（`scripts/build.ts`）を追加し、製品経路との接続を確保した
 - ユーザースクリプトのヘッダー検証に使う型安全な版管理基盤（`src/version.ts`）と退行防止テスト（`test/unit/version.test.ts`）を追加した
 - 新規 TypeScript には strict（`any` 禁止）な lint・型検査を適用し、既存 JavaScript は段階移行の例外として warn 表示に留める方針を `eslint.config.mjs` とローカル `AGENTS.md` に明記した
+- 連結ビルド（`build.js`）に TypeScript 解決・トランスパイル対応を追加し、生成物全体へ `node --check` 構文検証を導入した（製品コードの挙動は不変）
+- 参照のないデッドコード `src/yomi` を削除し、解決不能だった import 4件を実在パスへ修正した（`boot` の `GateAPI` など。挙動不変）

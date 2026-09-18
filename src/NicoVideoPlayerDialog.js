@@ -13,7 +13,7 @@ import {VideoInfoPanel} from './VideoInfoPanel';
 import {SettingPanel} from './SettingPanel';
 import {PlayList, PlayListSession} from '../packages/zenza/src/playlist/PlayList';
 import {Emitter} from './baselib';
-import {ThreadLoader} from './loader/ThreadLoader';
+import {ThreadLoader} from '../packages/lib/src/nico/ThreadLoader';
 import {sleep} from '../packages/lib/src/infra/sleep';
 import {VideoSessionWorker} from '../packages/lib/src/nico/VideoSessionWorker';
 import {PlayerState} from './State';

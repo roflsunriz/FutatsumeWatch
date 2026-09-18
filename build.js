@@ -98,6 +98,30 @@ const debounce = (func, interval) => {
   return result;
 };
 
+// TypeScript 移行期: 連結対象の .ts を取り除く前の型注釈だけを取り除く。
+// 型検査は tsc（bun run type-check）が担い、ここでは transpile のみ行う。
+// isolatedModules 相当のため、値として残る構文（enum・namespace・
+// パラメータープロパティ・デコレーター）は .ts 資産で使用禁止とする。
+// import/export 文はマーカー外に置く規約とし、生成物への混入は
+// scripts/build.ts の node --check で検出する。
+function transpileTypeScript(text, filename) {
+  let ts;
+  try {
+    ts = require('typescript');
+  } catch (e) {
+    console.error('TypeScript が見つかりません。bun install を実行してください。');
+    throw e;
+  }
+  const result = ts.transpileModule(text, {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2020,
+      module: ts.ModuleKind.ESNext,
+    },
+    fileName: filename,
+  });
+  return result.outputText;
+}
+
 async function writeIfModified(file, newData, callback) {
   var fs = require('fs');
   return new Promise(res => setTimeout(res, Math.random() * 1000)).then(() => {
@@ -130,6 +154,13 @@ function requireFile(srcDir, file, params, parent = '') {
   var isComment = false;
   var trim = false; //!params.dev && !/NicoTextParser\.js/.test(file);
   var srcFile = path.join(srcDir, file);
+  // TypeScript 移行期: .js がなければ .ts へフォールバックする。
+  if (!fs.existsSync(srcFile) && srcFile.endsWith('.js')) {
+    const tsFile = srcFile.slice(0, -3) + '.ts';
+    if (fs.existsSync(tsFile)) {
+      srcFile = tsFile;
+    }
+  }
   var ignore = false;
   const imports = {};
   const fullpath = path.resolve(srcFile);
@@ -149,7 +180,11 @@ function requireFile(srcDir, file, params, parent = '') {
     notify('build error', `${e.message}\n${file}`);
     return `fild not exist "${srcFile}"\nfrom "${parent}"`;
   }
-  fs.readFileSync(srcFile, 'utf-8').split('\n').some(function(line) {
+  let sourceText = fs.readFileSync(srcFile, 'utf-8');
+  if (srcFile.endsWith('.ts')) {
+    sourceText = transpileTypeScript(sourceText, srcFile);
+  }
+  sourceText.split('\n').some(function(line) {
     let lt = line.trim();
     if (!begin && line.trim().match(/^import\s+\{?(.+)\}?\s+from\s+['"](.+)['"]/)) {
       const [$1, $2] = [RegExp.$1, RegExp.$2];
@@ -253,9 +288,20 @@ function loadTemplateFile(srcDir, indexFile, outFile, params) {
   var lines = [];
   var ver = null;
   const imports = {};
-  const srcFile = path.join(srcDir, indexFile);
+  let srcFile = path.join(srcDir, indexFile);
+  // テンプレート自体が .ts 化された場合のフォールバック（現状は .js）。
+  if (!fs.existsSync(srcFile) && srcFile.endsWith('.js')) {
+    const tsFile = srcFile.slice(0, -3) + '.ts';
+    if (fs.existsSync(tsFile)) {
+      srcFile = tsFile;
+    }
+  }
 
-  fs.readFileSync(srcFile, 'utf-8').split('\n').some(function(line) {
+  let templateText = fs.readFileSync(srcFile, 'utf-8');
+  if (srcFile.endsWith('.ts')) {
+    templateText = transpileTypeScript(templateText, srcFile);
+  }
+  templateText.split('\n').some(function(line) {
     if (line.trim().match(/^import\s+\{?(.+)\}?\s+from\s+['"](.+)['"]/)) {
       const [$1, $2] = [RegExp.$1, RegExp.$2];
       const modules = $1.split(/[\s,]+/).map(m => m.replace(/[{}*]/g, '').trim()).filter(m => m);
