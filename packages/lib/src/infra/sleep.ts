@@ -1,4 +1,3 @@
-
 //===BEGIN===
 type SleepResolver = (value: unknown) => void;
 
@@ -30,7 +29,7 @@ const sleep: SleepFunction = Object.assign(
       }),
     promise: (): Promise<void> => Promise.resolve(),
     resolve: Promise.resolve(),
-  },
+  }
 );
 //===END===
 export { sleep };

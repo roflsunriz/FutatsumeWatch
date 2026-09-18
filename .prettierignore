@@ -1,19 +1,18 @@
-# 生成物・依存・一時領域
+# 生成物・依存・一時領域（先頭 / はリポジトリ直下に固定。素の名前は全階層に効くため使わない）
 node_modules
-dist
-**/dist
-lib
-**/lib
 bun.lock
 subagents
+/dist
+/lib
+/**/dist
+test/fixtures
 
-# 段階移行の例外: 既存 .js 資産はファイル単位の TS 変換時に整形する。
-# TS へ変換したファイルはこの例外から外し、prettier 準拠を必須とする。
-# 新規ファイル（.ts/.mjs/.json/.md）は最初から prettier 準拠とする。
+# 段階移行の例外: 既存 .js はファイル単位の TS 変換時に整形する。
+# .ts へ変換したファイルは自動で prettier 準拠が必須になる。
+# *.js は全階層の .js に効く。TS 変換で .js が消えれば自動で対象外になる。
 src/**/*.js
-packages
+packages/**/*.js
 test/**/*.js
-test/browser
 *.js
 !eslint.config.mjs
 
@@ -21,10 +20,7 @@ test/browser
 sample
 **/*.html
 
-# 実 API スナップショット等の JSON フィクスチャ（空白正規化は差分 noise のみ）
-test/fixtures
-
-# 旧ビルド資産（babel/eslint4 系設定。Bun 移行時に削除予定）
+# 旧ビルド資産（Bun 移行時に削除予定）
 .babelrc
 .eslintrc
 packages/components/.babelrc
