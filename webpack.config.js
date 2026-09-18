@@ -13,7 +13,7 @@ module.exports = {
   },
   module: {
     loaders: [{
-      test: /\.m?jsx?$/,
+      test: /\.m?[jt]sx?$/,
       include: [
         // `${__dirname}/src`,
         `${__dirname}/test`,

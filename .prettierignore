@@ -6,6 +6,9 @@ subagents
 /lib
 /**/dist
 test/fixtures
+# 実 API スナップショットの TS モック（本文は検証用データのため整形対象外。
+# 注釈行の追加時は手で prettier 準拠を保つ）
+packages/components/mock
 
 # 段階移行の例外: 既存 .js はファイル単位の TS 変換時に整形する。
 # .ts へ変換したファイルは自動で prettier 準拠が必須になる。

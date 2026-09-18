@@ -98,6 +98,67 @@ const debounce = (func, interval) => {
   return result;
 };
 
+// import/export 文の解決は TypeScript パーサーで行う。
+// prettier による複数行 import や `import type`、`as` 別名に対応するため、
+// 行単位の正規表現ではなく AST で文の範囲を求める。
+// skipExports が真の場合は export 系宣言（値を持たない物）も除外する。
+// 値を持つ export（export const 等）は除外せず、生成物に混入したら
+// scripts/build.ts の node --check で検出する。
+function parseModuleStatements(text, filename, skipExports) {
+  let ts;
+  try {
+    ts = require('typescript');
+  } catch (e) {
+    console.error('TypeScript が見つかりません。bun install を実行してください。');
+    throw e;
+  }
+  const sourceFile = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true);
+  const imports = {};
+  const skipRanges = [];
+  const toRange = node => {
+    const start = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line;
+    const end = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line;
+    return [start, end];
+  };
+  const toModulePath = specText => {
+    const raw = specText.replace(/^['"]|['"]$/g, '');
+    return raw.replace(/\.(js|ts)$/, '') + '.js';
+  };
+  sourceFile.statements.forEach(node => {
+    if (ts.isImportDeclaration(node)) {
+      const clause = node.importClause;
+      const modulePath = toModulePath(node.moduleSpecifier.getText(sourceFile));
+      if (clause) {
+        if (clause.name) {
+          imports[clause.name.text] = modulePath;
+        }
+        const bindings = clause.namedBindings;
+        if (bindings) {
+          if (ts.isNamespaceImport(bindings)) {
+            imports[bindings.name.text] = modulePath;
+          } else if (ts.isNamedImports(bindings)) {
+            bindings.elements.forEach(el => {
+              imports[el.name.text] = modulePath;
+            });
+          }
+        }
+      }
+      skipRanges.push(toRange(node));
+    } else if (
+      skipExports &&
+      (ts.isExportDeclaration(node) || ts.isExportAssignment(node) ||
+        ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node))
+    ) {
+      skipRanges.push(toRange(node));
+    }
+  });
+  return { imports, skipRanges };
+}
+
+function isSkippedLine(ranges, index) {
+  return ranges.some(([s, e]) => index >= s && index <= e);
+}
+
 // TypeScript 移行期: 連結対象の .ts を取り除く前の型注釈だけを取り除く。
 // 型検査は tsc（bun run type-check）が担い、ここでは transpile のみ行う。
 // isolatedModules 相当のため、値として残る構文（enum・namespace・
@@ -181,17 +242,34 @@ function requireFile(srcDir, file, params, parent = '') {
     return `fild not exist "${srcFile}"\nfrom "${parent}"`;
   }
   let sourceText = fs.readFileSync(srcFile, 'utf-8');
+  // インポートマップは原文から作る。transpile は型のみの import を除去するため、
+  // transpiled テキストから作ると実行時に必要な名前が欠落する。
+  const parsedMap = parseModuleStatements(sourceText, srcFile, false);
+  Object.assign(imports, parsedMap.imports);
   if (srcFile.endsWith('.ts')) {
     sourceText = transpileTypeScript(sourceText, srcFile);
   }
-  sourceText.split('\n').some(function(line) {
-    let lt = line.trim();
-    if (!begin && line.trim().match(/^import\s+\{?(.+)\}?\s+from\s+['"](.+)['"]/)) {
-      const [$1, $2] = [RegExp.$1, RegExp.$2];
-      const modules = $1.split(/[\s,]+/).map(m => m.replace(/[{}*]/g, '').trim()).filter(m => m);
-      const modulePath = $2.replace(/\.js$/, '') + '.js';
-      modules.forEach(m => imports[m] = modulePath);
+  const parsed = parseModuleStatements(sourceText, srcFile, false);
+  const sourceLines = sourceText.split('\n');
+  let beginLine = -1;
+  let endLine = -1;
+  sourceLines.forEach((l, i) => {
+    if (beginLine < 0 && /\/\/=+BEGIN=+/.test(l)) {
+      beginLine = i;
+    } else if (beginLine >= 0 && endLine < 0 && /\/\/=+END=+/.test(l)) {
+      endLine = i;
     }
+  });
+  parsed.skipRanges.forEach(([s, e]) => {
+    if (beginLine >= 0 && endLine >= 0 && s > beginLine && s < endLine) {
+      throw new Error(`import 文が //==BEGIN== 内にあります: ${srcFile}:${s + 1}`);
+    }
+  });
+  sourceLines.some(function(line, index) {
+    if (isSkippedLine(parsed.skipRanges, index)) {
+      return;
+    }
+    let lt = line.trim();
 
     if (lt.startsWith('//@ignore-disable')) {
       ignore = false;
@@ -298,15 +376,16 @@ function loadTemplateFile(srcDir, indexFile, outFile, params) {
   }
 
   let templateText = fs.readFileSync(srcFile, 'utf-8');
+  // インポートマップは原文から作る（transpile による型のみ import の除去で欠落するため）。
+  const parsedMapTemplate = parseModuleStatements(templateText, srcFile, false);
+  Object.assign(imports, parsedMapTemplate.imports);
   if (srcFile.endsWith('.ts')) {
     templateText = transpileTypeScript(templateText, srcFile);
   }
-  templateText.split('\n').some(function(line) {
-    if (line.trim().match(/^import\s+\{?(.+)\}?\s+from\s+['"](.+)['"]/)) {
-      const [$1, $2] = [RegExp.$1, RegExp.$2];
-      const modules = $1.split(/[\s,]+/).map(m => m.replace(/[{}*]/g, '').trim()).filter(m => m);
-      const modulePath = $2.replace(/\.js$/, '') + '.js';
-      modules.forEach(m => imports[m] = modulePath);
+  const parsedTemplate = parseModuleStatements(templateText, srcFile, true);
+  Object.assign(imports, parsedTemplate.imports);
+  templateText.split('\n').some(function(line, index) {
+    if (isSkippedLine(parsedTemplate.skipRanges, index)) {
       return;
     }
     if (params.dev) {

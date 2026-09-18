@@ -88,10 +88,7 @@
     "type-check": "tsc --noEmit",
     "build": "bun scripts/build.ts",
     "build:dev": "bun scripts/build.ts --dev",
-    "test": "bun test",
-    "test:mocha": "NODE_ENV=test mocha --require ./test/setup.js test/**/unit/*.js",
-    "test:browser": "webpack-dev-server --inline",
-    "build:legacy": "NODE_ENV=development babel src --out-dir lib --compilers js:@babel/register --source-maps",
+    "test": "bun test --preload ./test/setup.ts",
     "build:production": "node ./build.js",
     "build:monkey": "node ./build.js --dev",
     "watch:monkey": "node ./build.js --dev --watch"
