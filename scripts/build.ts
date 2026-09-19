@@ -1,8 +1,9 @@
 // `bun run build` のエントリーポイント。
 // 既存の build.js（//@require 連結方式）へ委譲し、生成物を検証する薄い TypeScript 層。
 
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { isDevUserscript, parseUserscriptVersion, resolveUserscriptOutFile } from '../src/version';
+import * as ts from 'typescript';
 
 function hasFlag(flag: string): boolean {
   return Bun.argv.includes(flag);
@@ -21,6 +22,22 @@ function checkClassicScriptSyntax(path: string): void {
   if (result.exitCode !== 0) {
     const detail = result.stderr.toString().trim().split('\n').slice(0, 3).join('\n');
     fail(`構文検証に失敗しました: ${path}\n${detail}`);
+  }
+  // node --check はモジュール検出により export 混入を ESM として通過させるため、
+  // 静的宣言の有無は AST で直接検出する（コメント・文字列中の断片は誤検出しない）。
+  const text = readFileSync(path, 'utf8');
+  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
+  const hits: string[] = [];
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node) || ts.isExportAssignment(node)) {
+      const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
+      hits.push(`${line + 1}行目: ${text.split('\n')[line]?.trim().slice(0, 80)}`);
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(source, visit);
+  if (hits.length > 0) {
+    fail(`静的な import/export 宣言が混入しています: ${path}\n${hits.slice(0, 5).join('\n')}`);
   }
 }
 

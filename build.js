@@ -183,9 +183,11 @@ function transpileTypeScript(text, filename) {
   return result.outputText;
 }
 
-async function writeIfModified(file, newData, callback) {
+function writeIfModified(file, newData, callback) {
   var fs = require('fs');
-  return new Promise(res => setTimeout(res, Math.random() * 1000)).then(() => {
+  // 同期書き込みにする。非同期（setTimeout 待機）ではプロセス終了時に
+  // 書き込みが失われ、dist が更新されないことがある。
+  try {
     var oldData = fs.readFileSync(file, 'utf-8');
     if (oldData === newData) {
       // callback('Not Modified', null);
@@ -194,11 +196,11 @@ async function writeIfModified(file, newData, callback) {
 
     fs.writeFileSync(file, newData);
     callback('OK', newData);
-  }).catch(e => {
+  } catch (e) {
     console.log('Exception: ', e);
     fs.writeFileSync(file, newData);
     callback('OK', newData);
-  });
+  }
 }
 
 async function notify(title, message, options = {timeout: 3, subtitle: undefined}) {
@@ -249,22 +251,30 @@ function requireFile(srcDir, file, params, parent = '') {
   if (srcFile.endsWith('.ts')) {
     sourceText = transpileTypeScript(sourceText, srcFile);
   }
-  const parsed = parseModuleStatements(sourceText, srcFile, false);
-  const sourceLines = sourceText.split('\n');
-  let beginLine = -1;
-  let endLine = -1;
-  sourceLines.forEach((l, i) => {
-    if (beginLine < 0 && /\/\/=+BEGIN=+/.test(l)) {
-      beginLine = i;
-    } else if (beginLine >= 0 && endLine < 0 && /\/\/=+END=+/.test(l)) {
-      endLine = i;
+  // 連結される BEGIN/END 内に値なし export 宣言が残ると生成物が classic script として
+  // 死ぬ（node --check は ESM 検出で通過するため検出できない）。値なし export 節・
+  // 空 export・型宣言はここで除外する。値付き export が BEGIN/END 内にあれば
+  // 規約違反のため、除外せず残して scripts/build.ts の直接検出で落とす。
+  const parsed = parseModuleStatements(sourceText, srcFile, true);
+  // BEGIN/END 内配置の規約違反チェックは原文の位置で行う。transpile が
+  // 副作用なし export（`export {};` 等）を末尾へ移動させるため、
+  // transpiled 位置で判定すると誤検出になる。
+  const origLines = fs.readFileSync(srcFile, 'utf-8').split('\n');
+  let origBegin = -1;
+  let origEnd = -1;
+  origLines.forEach((l, i) => {
+    if (origBegin < 0 && /\/\/=+BEGIN=+/.test(l)) {
+      origBegin = i;
+    } else if (origBegin >= 0 && origEnd < 0 && /\/\/=+END=+/.test(l)) {
+      origEnd = i;
     }
   });
-  parsed.skipRanges.forEach(([s, e]) => {
-    if (beginLine >= 0 && endLine >= 0 && s > beginLine && s < endLine) {
+  parsedMap.skipRanges.forEach(([s]) => {
+    if (origBegin >= 0 && origEnd >= 0 && s > origBegin && s < origEnd) {
       throw new Error(`import 文が //==BEGIN== 内にあります: ${srcFile}:${s + 1}`);
     }
   });
+  const sourceLines = sourceText.split('\n');
   sourceLines.some(function(line, index) {
     if (isSkippedLine(parsed.skipRanges, index)) {
       return;
