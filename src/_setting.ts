@@ -656,6 +656,9 @@ interface SettingScriptCssUtil {
       const openPanel = (): void => {
         initializePanel();
         panel!.toggle();
+        const host = document.querySelector('#zenzaVideoPlayerDialog.is-open .zenzaPlayerContainer') ?? document.body;
+        const view = document.querySelector('.zenzaAdvancedSettingPanel');
+        if (view) host.append(view);
       };
       void FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady').then((value) => {
         const { container } = value as { container: HTMLElement };
@@ -678,8 +681,7 @@ interface SettingScriptCssUtil {
         : $('.accountEdit').after($button);
 
       $button.on('click', () => {
-        initializePanel();
-        panel!.toggle();
+        openPanel();
       });
     };
 

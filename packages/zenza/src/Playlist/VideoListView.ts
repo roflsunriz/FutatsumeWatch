@@ -579,7 +579,10 @@ VideoListView.__tpl__ = `
 
   body {
     user-select: none;
-    background: #333;
+    background: #131923;
+    color: #f1f4f9;
+    font-family: system-ui, sans-serif;
+    scrollbar-color: #526173 #131923;
     overflow: hidden;
   }
 
@@ -595,6 +598,8 @@ VideoListView.__tpl__ = `
   }
 
   #listContainer {
+    scrollbar-color: #526173 #131923;
+    scrollbar-width: thin;
     position: absolute;
     top: 0;
     left:0;

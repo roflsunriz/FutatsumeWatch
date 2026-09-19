@@ -44,7 +44,7 @@ class VideoListItemView {
     overflow: hidden;
     grid-template-columns: ${this.THUMBNAIL_WIDTH}px 1fr;
     grid-template-rows: ${this.THUMBNAIL_HEIGHT}px 1fr;
-    padding: 2px;
+    padding: 4px;
     transition:
       box-shadow 0.4s ease;
     contain: layout size paint;
@@ -250,7 +250,7 @@ class VideoListItemView {
 
   .postedAt {
     font-size: 12px;
-    color: #ccc;
+    color: #aab4c6;
   }
   .is-played .postedAt::after {
     content: ' ●';
@@ -271,11 +271,13 @@ class VideoListItemView {
 
   .videoLink {
     font-size: 14px;
-    color: #ff9;
+    color: #edf2f9;
+    text-decoration: none;
+    line-height: 1.5;
     transition: background 0.4s ease, color 0.4s ease;
   }
   .videoLink:visited {
-    color: #ffd;
+    color: #bac8da;
   }
   .videoLink:active {
     color: #fff;
@@ -288,8 +290,8 @@ class VideoListItemView {
     display: none;
   }
   .counter {
-    font-size: 12px;
-    color: #ccc;
+    font-size: 11px;
+    color: #aab4c6;
   }
   .counter .value {
     font-weight: bolder;
@@ -303,7 +305,7 @@ class VideoListItemView {
 
   .videoItem.is-active {
     border: none !important;
-    background: #776;
+    background: #233b3c;
   }
 
   @media screen and (min-width: 600px)
@@ -415,9 +417,10 @@ class VideoListItemView {
                 </div>
               </div>
               <div class="counter">
-                <span class="count">再生: <span class="value viewCount">${addComma(count.view)}</span></span>
-                <span class="count">コメ: <span class="value commentCount">${addComma(count.comment)}</span></span>
-                <span class="count">マイ: <span class="value mylistCount">${addComma(count.mylist)}</span></span>
+                <span class="count" title="再生数">▷ <span class="value viewCount">${addComma(count.view)}</span></span>
+                <span class="count" title="コメント数">▤ <span class="value commentCount">${addComma(count.comment)}</span></span>
+                <span class="count" title="マイリスト数">♧ <span class="value mylistCount">${addComma(count.mylist)}</span></span>
+                <span class="count" title="いいね数">♡ <span class="value likeCount">${count.like === undefined ? '—' : addComma(count.like)}</span></span>
               </div>
             `
       }

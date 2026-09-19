@@ -12,6 +12,7 @@ import { CommentPanel } from './CommentPanel';
 import { VideoControlBar } from './VideoControlBar';
 import { VideoInfoPanel } from './VideoInfoPanel';
 import { SettingPanel } from './SettingPanel';
+import { PlayerShell } from './player-shell';
 import { PlayList, PlayListSession } from '../packages/zenza/src/Playlist/PlayList';
 import type { PlaylistDescriptor } from '../packages/zenza/src/Playlist/PlayList';
 import { Emitter } from './baselib';
@@ -382,6 +383,7 @@ class VideoWatchOptions {
 }
 
 class NicoVideoPlayerDialogView extends Emitter {
+  private shell?: PlayerShell;
   declare private _dialog: NicoVideoPlayerDialog;
   declare private _playerConfig: DialogPlayerConfig;
   declare private _nicoVideoPlayer: NicoVideoPlayer | undefined;
@@ -556,6 +558,14 @@ class NicoVideoPlayerDialogView extends Emitter {
 
     await sleep.idle();
     this._initializeVideoInfoPanel();
+    this.shell = new PlayerShell(
+      container as HTMLElement,
+      config,
+      state,
+      this._dialog,
+      (name, param) => this._onCommand(name, param),
+      () => this.toggleSettingPanel()
+    );
     this._initializeResponsive();
 
     this.selectTab(this._state.currentTab);
@@ -709,10 +719,12 @@ class NicoVideoPlayerDialogView extends Emitter {
     this.emit('error', e);
   }
   _onBeforeVideoOpen(): void {
+    this.shell?.reset();
     this._setThumbnail();
   }
   _onVideoInfoLoad(videoInfo: unknown): void {
     this.videoInfoPanel.update(videoInfo as Parameters<VideoInfoPanel['update']>[0]);
+    this.shell?.updateVideo(videoInfo as VideoInfoModel);
   }
   _onVideoInfoFail(videoInfo: unknown): void {
     if (videoInfo) {
@@ -723,6 +735,9 @@ class NicoVideoPlayerDialogView extends Emitter {
     this.emit('videoServerType', type, sessionInfo);
   }
   _onVideoPlay() {}
+  repeatOnEnded(): boolean {
+    return this.shell?.repeatOnEnded() ?? false;
+  }
   _onVideoPlaying() {}
   _onVideoPause() {}
   _onVideoStalled() {}
@@ -882,6 +897,7 @@ class NicoVideoPlayerDialogView extends Emitter {
     this._updateScreenModeStyle();
   }
   hide(): void {
+    this.shell?.close();
     ClassList(this._$dialog[0] as Element).remove('is-open');
     if (this.settingPanel) {
       this.settingPanel.close();
@@ -2816,6 +2832,7 @@ class NicoVideoPlayerDialog extends Emitter {
     this.emit('aspectRatioFix', ratio);
   }
   _onVideoEnded() {
+    if (this._view.repeatOnEnded()) return;
     // ループ再生中は飛んでこない
     this.emitAsync('ended');
     this._state.setVideoEnded();

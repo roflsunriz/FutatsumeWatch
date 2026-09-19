@@ -820,8 +820,8 @@ CommentListView.__tpl__ = `
     overflow-x: hidden;
     overscroll-behavior: none;
     will-change: transform;
-    scrollbar-width: 16px;
-    scrollbar-color: #039393;
+    scrollbar-width: thin;
+    scrollbar-color: #526173 #131923;
   }
   .is-firefox #listContainer {
     will-change: auto;
@@ -1126,7 +1126,7 @@ const CommentListItemView = (() => {
         white-space: nowrap;
         margin: 0;
         padding: 0;
-        background: #222;
+        background: #131923;
         z-index: 50;
         contain: strict;
       }
@@ -1145,7 +1145,7 @@ const CommentListItemView = (() => {
       }
 
       .commentListItem.odd {
-        background: #333;
+        background: #19212e;
       }
       .commentListItem[data-nicoru] {
         background: #332;
@@ -1198,7 +1198,7 @@ const CommentListItemView = (() => {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        color: #888;
+        color: #aab4c6;
         margin: 0;
         padding: 0 8px 0;
       }

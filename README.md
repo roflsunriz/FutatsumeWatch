@@ -4,14 +4,16 @@
 
 ## インストールと使い方
 
-配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（バージョン **0.0.4**）。
+配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（ローカル開発版 **0.0.5**。公開リンクへの反映はプッシュ後です）。
 
 Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。今回の実動作確認はTampermonkeyで実施しています。Violentmonkey・Greasemonkeyは未検証です。
 
 1. 旧ZenzaWatch・FutatsumeWatch開発版や、以前に個別導入したHLS・GamePad・MylistPocketなどの同梱対象を無効にします。設定は削除しないでください。
 2. 視聴ページでは、タイトル・いいねボタン・投稿者プロフィール・タグの間にある **四角形が二つ重なったアイコン** を押します。
 3. キーワード検索・タグ検索では、各動画タイトルのそばにある **同じアイコン** を押します。右下のポップアップはありません。
-4. 再生バーから再生・一時停止・シーク・ミュート・コメント表示を操作します。設定、HLS、ゲームパッド、HeatSync、MaskedWatch、詳細設定も同じプレイヤーから開けます。
+4. 動画はブラウザの表示領域いっぱいに開きます。中央のボタンで前の動画・再生／一時停止・次の動画を操作します。操作UIはマウスを動かすと表示され、未操作3秒で消えます。入力中・パネル表示中は消えません。
+5. 左上のメニューから一般設定、詳細設定、画質、HLS、MaskedWatch、GamePad、HeatSyncを開きます。右上の紙に「i」のアイコンから動画情報・関連動画・コメント・プレイリストを開きます。背景クリックまたはEscapeでパネルを閉じます。
+6. 下部でリピート、ABリピート、速度、音量、コメント表示、全画面を操作します。最下部のシークバーにはコメントの盛り上がりを表示します。ABリピートは1回目で開始A、2回目で終了B、3回目で解除します。通常リピートとABリピートはボタンで切り替えます。動画切替・プレイヤー終了でもAB指定が解除されます。
 
 ボタンの説明・準備状態は、マウスを重ねたときのツールチップと読み上げ用ラベルで確認できます。起動に失敗した場合はページを再読み込みしてください。アイコンが出ない場合は、マネージャで有効になっていることも確認してください。ZenzaWatchの操作を知っている必要はありません。
 
@@ -50,6 +52,7 @@ bun audit
 bun run dev:setup   # 初回のみ
 bun run dev         # ビルド・導入・ページ適用確認・検索/視聴からの実操作検証
 bun run dev:verify:addons # 別ページ機能の通信を遮断した検証
+bun run dev:verify:ui     # 新UIの実操作・左右パネル・設定・画面サイズ検証
 ```
 
 `bun run dev` は登録・有効化だけで導入成功にせず、ページに埋め込んだ版情報まで確認します。専用Chromeの未適用・旧版のニコニコタブも再読み込みします（入力中のタブは保護します）。検索からの遷移検証だけなら `bun run dev:verify:entry` を実行できます。

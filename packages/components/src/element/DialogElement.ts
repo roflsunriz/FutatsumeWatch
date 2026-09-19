@@ -61,6 +61,7 @@ const { DialogElement, DialogProps } = (() => {
       events: ElementEvents = {}
     ): Promise<TemplateResult> {
       const { html } = (dll.list || (await this.importLit())) as LitModule;
+      const contents = state.isOpen ? await this.getContentsTemplate(html, state, props, events) : null;
       const body = html`
         <style>
           * {
@@ -304,7 +305,7 @@ const { DialogElement, DialogProps } = (() => {
           }
         </style>
         <div class="dialog-background" data-command="nop">
-          <div class="dialog-inner">${this.getContentsTemplate(html, state, props, events)}</div>
+          <div class="dialog-inner">${contents}</div>
         </div>
       `;
 

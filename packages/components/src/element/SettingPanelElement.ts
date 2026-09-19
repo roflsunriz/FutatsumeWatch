@@ -683,6 +683,66 @@ const { SettingPanelElement } = (() => {
       const conf = props.config.props;
       return Promise.resolve(html`
         <style>
+          .dialog {
+            width: min(760px, calc(100vw - 32px));
+            height: min(800px, calc(100dvh - 32px));
+            border-radius: 12px;
+            animation: none;
+            font:
+              14px/1.6 system-ui,
+              sans-serif;
+          }
+          .dialog.is-open .dialog-background {
+            animation: none;
+          }
+          .dialog-background {
+            border: 1px solid #ffffff30;
+            box-shadow: 0 24px 80px #0009;
+            border-radius: 12px;
+          }
+          .dialog-inner {
+            inset: 0;
+            padding: 20px;
+            border: 0;
+            background: #131923;
+            color: #f1f4f9;
+            border-radius: 12px;
+          }
+          summary {
+            background: #253141;
+            color: #f1f4f9;
+            text-shadow: none;
+            font-size: 16px;
+            padding: 12px;
+            margin: 0 0 12px;
+          }
+          details {
+            margin-bottom: 12px;
+          }
+          input,
+          select,
+          textarea {
+            accent-color: #8ddbc7;
+          }
+          :focus-visible {
+            outline: 2px solid #8ddbc7;
+            outline-offset: 2px;
+          }
+          .setting-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          }
+          .setting-close {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            border-radius: 8px;
+            background: #253141;
+            color: #fff;
+            font-size: 24px;
+          }
           label {
             display: block;
             margin: 8px;
@@ -757,6 +817,17 @@ const { SettingPanelElement } = (() => {
           }
         </style>
         <div data-revision="${state.revision}">
+          <div class="setting-heading">
+            <strong>FutatsumeWatch</strong
+            ><button
+              type="button"
+              class="setting-close"
+              aria-label=${navigator.language.startsWith('ja') ? '閉じる' : 'Close'}
+              @click=${events.onSettingClose}
+            >
+              ×
+            </button>
+          </div>
           ${this.getPlayerSettingMenu(html, conf)} ${this.getCommentSettingMenu(html, conf)}
           ${this.getFilterSettingMenu(html, conf)}
 
@@ -781,6 +852,11 @@ const { SettingPanelElement } = (() => {
     constructor() {
       super();
       Object.assign(this.events, {
+        onSettingClose: (event: Event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.close();
+        },
         onChange: this.onChange.bind(this),
         onImportFileSelect: this.onImportFileSelect.bind(this),
       });
@@ -802,6 +878,16 @@ const { SettingPanelElement } = (() => {
         return;
       }
       super.onUIEvent(e);
+    }
+
+    onKey(e: Event): void {
+      if ((e as KeyboardEvent).key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        this.close();
+        return;
+      }
+      super.onKey(e);
     }
 
     onChange(e: Event): void {

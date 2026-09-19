@@ -107,3 +107,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 空配列のフィルター結果が元配列と同じ実体だと、投稿時に二重追加される。NicoChatGroupはコピーを保持する。取得後の非フィルター一覧と描画用一覧を混同しない。
 - scripts/dev-verify.tsはコメントCanvasの画素・重なり・比率・NG・投稿プレビュー取り消し・全画面・保存まで検証する。FUTATSUME_DEV_PORTで別ポートへ接続でき、--bundleは配布物を文書生成時に注入する（マネージャ導入検証とは区別する）。今回の環境・制約はverification.mdを参照する。
 - buildはdistを一旦空にし、futatsume-branding.test.tsはdistの実ファイルを読むため、buildとtestを並列実行しない。ビルド完了後に単体テストを実行する。
+
+## スケッチに基づくプレイヤーUI（2026-09-20）
+
+- `src/player-shell.ts`は既存のDialogコマンド・Config・PlayerStateへ接続し、`src/player-layout.css`でブラウザ表示領域を使う。通常の動画・コメントの比率は既存プレイヤーに任せる。操作UIは未操作3秒で隠すが、パネル・入力・ドラッグ中は保持する。
+- 右の動画情報・関連動画・コメント・プレイリストは既存のパネルとモデルを使う。タグは既存ヘッダーから同じDOMを移動する。関連動画とコメント一覧は隔離iframeなので、外側CSSだけで配色や表示を変更できない。仮想スクロールの固定行高は変えない。
+- ABリピートは動画切替・closeで消す。Bが動画終端でもプレイリストの自動遷移に先行してAへ戻す。新規UIの実操作検証は`bun scripts/dev-verify-shell.ts`。配布物注入による検証で、マネージャへの登録確認とは区別する。
+- 一般設定の`DialogElement.getContentsTemplate`はPromiseを返す。litへPromiseをそのまま渡すと`[object Promise]`だけが表示されるため、`getTemplate`でawaitする。`isOpen`だけの確認ではこの不具合を検出できない。設定項目の表示・実入力・保存・閉じるまで検証する。
+- 詳細設定はbody直下のz-index 200000ではプレイヤー（6000002）の背後になる。開く際に表示中のプレイヤー内へ移す。DOMのshow属性とJavaScriptのclickだけで検証せず、ヒットテストと実入力で確認する。

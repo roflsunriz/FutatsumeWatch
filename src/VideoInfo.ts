@@ -87,6 +87,7 @@ interface VideoDetail {
   commentCount: number;
   mylistCount: number;
   viewCount: number;
+  likeCount?: number;
   channelId?: string | number | null;
   isMymemory?: boolean | null;
   communityId?: string | number | null;
@@ -430,6 +431,7 @@ interface VideoCount {
   comment: number;
   mylist: number;
   view: number;
+  like?: number;
 }
 
 interface VideoSize {
@@ -607,6 +609,7 @@ class VideoInfoModel extends JSONable {
       comment: vd.commentCount,
       mylist: vd.mylistCount,
       view: vd.viewCount,
+      like: vd.likeCount,
     };
   }
 

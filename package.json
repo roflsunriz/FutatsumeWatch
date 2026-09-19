@@ -1,7 +1,7 @@
 {
   "name": "FutatsumeWatch",
   "description": "niconico HTML5 Player (ZenzaWatch successor)",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "roflsunriz",
   "bugs": {
     "url": "https://github.com/roflsunriz/FutatsumeWatch/issues"
@@ -63,6 +63,7 @@
     "dev:stop": "bun scripts/dev-browser.ts stop",
     "dev:install": "bun scripts/dev-install.ts",
     "dev:verify": "bun scripts/dev-verify.ts",
+    "dev:verify:ui": "bun scripts/dev-verify-shell.ts",
     "dev": "bun run build && bun scripts/dev-browser.ts start && bun scripts/dev-install.ts && bun scripts/dev-verify-entry.ts && bun scripts/dev-verify.ts",
     "dev:verify:entry": "bun scripts/dev-verify-entry.ts",
     "dev:verify:addons": "bun scripts/dev-verify-addons.ts"

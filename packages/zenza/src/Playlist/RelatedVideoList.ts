@@ -18,7 +18,7 @@ interface RecommendVideoInfo {
 interface RecommendContent {
   title: unknown;
   duration: unknown;
-  count: { comment: unknown; mylist: unknown; view: unknown };
+  count: { comment: unknown; mylist: unknown; view: unknown; like?: number };
   thumbnail: { url: unknown };
   registeredAt: unknown;
 }
@@ -75,6 +75,7 @@ class RelatedVideoList extends VideoList {
         num_res: content.count.comment,
         mylist_counter: content.count.mylist,
         view_counter: content.count.view,
+        like: content.count.like,
         thumbnail_url: content.thumbnail.url,
         first_retrieve: content.registeredAt,
         has_data: true,

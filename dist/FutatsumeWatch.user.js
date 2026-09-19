@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.4
+// @version      0.0.5
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。再生・コメント・プレイリストを操作できます。コメント描画をcomment-overlayへ移行し、NG・シーク・保存に対応。
+// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。ブラウザ内いっぱいに動画とコメントを表示。中央で再生、左上で設定、右上で詳細を開きます。操作UIの3秒非表示、背景ぼかし付きパネル、ABリピートを追加。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -100,7 +100,7 @@ var AntiPrototypeJs = exports("A",function() {
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
-var VERSION = exports("V","0.0.4");
+var VERSION = exports("V","0.0.5");
 function watchIdFromUrl(value, base = location.href) {
 	try {
 		const url = new URL(value, base);
@@ -315,11 +315,11 @@ async function start() {
 	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-2Yovoq-i-Bet3RYnm.js');
+	if (window === window.top) await module.import('./_uquery-BlwOG5qc-CoeO_vmm.js');
 	const { Config } = await module.import('./Config-CesmpQk0-pkxmxyww.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-DNI9OVOx-BMmRIGMS.js');
+		await module.import('./_captube-CQG3EMWb-CBbghyF9.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
@@ -331,27 +331,27 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-DTKR6T1--DHkJp4ii.js');
+		await module.import('./_shape-6c0Wasvy-Ckr5TRfl.js');
 		return;
 	}
-	const { startPlayer, openVideo } = await module.import('./runtime-Dqb0nJOk-BFUqCsEp.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-sunEQkpP-DfVOJpKJ.js');
 	await startPlayer();
 	entry?.ready(openVideo);
 	if (window === window.top) {
 		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-ByBNGgi5-BrQvFfLx.js');
-		await module.import('./_pocket-CKfKlwet-6pDlhjev.js');
+		await module.import('./_pocket-4tcrfnGI-DePTGuDn.js');
 		await module.import('./_gamepad-0FnwQg0v-DTUB_UMB.js');
 		await module.import('./_heatsync-D2ynjdKd-DhV5xEs9.js');
-		await module.import('./_shape-DTKR6T1--DHkJp4ii.js');
-		await module.import('./_setting-BoiiwbQo-4z3IlVaO.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-mI92wI_O-C5Pdom2S.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-CKfKlwet-6pDlhjev.js');
+		await module.import('./_shape-6c0Wasvy-Ckr5TRfl.js');
+		await module.import('./_setting-lV9cx-AR-CAdQ0sPq.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-CsDMg228-BsSuhHVa.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-4tcrfnGI-DePTGuDn.js');
 }
 start().catch((error) => {
 	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-2Yovoq-i-Bet3RYnm.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
+System.register("./_uquery-BlwOG5qc-CoeO_vmm.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -383,7 +383,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.4";
+	uQuery.fn.uQuery = "0.0.5";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -624,7 +624,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.4
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.5
   `, `
     font-size: 8px;
     font-family:
@@ -634,7 +634,7 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-DNI9OVOx-BMmRIGMS.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_captube-CQG3EMWb-CBbghyF9.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1121,7 +1121,7 @@ SOFTWARE.
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-DTKR6T1--DHkJp4ii.js", ['./css-C47lAM86-CdKClobQ.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_shape-6c0Wasvy-Ckr5TRfl.js", ['./css-DLex8qfq-CdKClobQ.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1805,14 +1805,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.4`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.5`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-Dqb0nJOk-BFUqCsEp.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-BQxYKV91-CvKzGcyC.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
+System.register("./runtime-sunEQkpP-DfVOJpKJ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-B8MlgXN6-D-1Tej7v.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -1846,7 +1846,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-_css("body:is(.zenzaScreenMode_normal,.zenzaScreenMode_big,.zenzaScreenMode_wide,.zenzaScreenMode_3D) #zenzaVideoPlayerDialog,#zenzaVideoPlayerDialog .zenzaPlayerContainer{background:#000}#zenzaVideoPlayerDialog [data-command=toggleAdvancedSettings]{white-space:nowrap;width:64px;font-size:14px}@media (max-width:700px){#zenzaVideoPlayerDialog{--zenza-control-bar-height:92px}#zenzaVideoPlayerDialog .videoControlBar{height:92px}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:100vw}#zenzaVideoPlayerDialog .zenzaPlayerContainer{width:100%;height:min(56.25vw,100dvh - 100px)}#zenzaVideoPlayerDialog .controlItemContainer.center{width:100%;top:10px;left:0;overflow:auto hidden;transform:none}#zenzaVideoPlayerDialog .controlItemContainer.center .scalingUI{transform:none}#zenzaVideoPlayerDialog .controlItemContainer.center .scalingUI>div{justify-content:center;width:max-content;min-width:100%}#zenzaVideoPlayerDialog .controlItemContainer.left{top:50px;right:120px;overflow:auto hidden}#zenzaVideoPlayerDialog .controlItemContainer.right{max-width:120px;top:50px}#zenzaVideoPlayerDialog .zenzaWatchVideoHeaderPanel{max-width:100vw;left:0;right:0}#zenzaVideoPlayerDialog .videoTitleContainer{white-space:normal;overflow-wrap:anywhere;max-height:3em;overflow:auto}}");
+_css("#zenzaVideoPlayerDialog{--fw-panel-width:min(390px, 88vw);--fw-ink:#f1f4f9;--fw-muted:#aab4c6;--fw-accent:#8ddbc7;color:var(--fw-ink);background:#000;font-family:system-ui,sans-serif}#zenzaVideoPlayerDialog.is-open{inset:0}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:none;height:100%;box-shadow:none;position:absolute;inset:0;transform:none}#zenzaVideoPlayerDialog .fw-player{--padding-bottom:0px;--zenza-control-bar-height:24px;isolation:isolate;position:absolute;inset:0;width:100%!important;height:100%!important}#zenzaVideoPlayerDialog .fw-player .videoPlayer,#zenzaVideoPlayerDialog .fw-player .commentLayerFrame,#zenzaVideoPlayerDialog .fw-player .resizeObserver{width:100%;height:100%;top:0;left:0}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoHeaderPanel,#zenzaVideoPlayerDialog .fw-player .videoControlBar>.controlItemContainer,#zenzaVideoPlayerDialog .fw-player .menuItemContainer{display:none}#zenzaVideoPlayerDialog .fw-controls{z-index:400;pointer-events:none;background:linear-gradient(#0009,#0000 24% 73%,#000b);transition:opacity .16s,visibility .16s;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-controls input,#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings{pointer-events:auto}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-settings button{min-width:44px;min-height:44px;color:var(--fw-ink);font:inherit;cursor:pointer;background:0 0;border:1px solid #0000;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;padding:9px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls button:hover,#zenzaVideoPlayerDialog .fw-settings button:hover,#zenzaVideoPlayerDialog .fw-settings a:hover{background:#ffffff18}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) :focus-visible{outline:2px solid var(--fw-accent);outline-offset:-2px}#zenzaVideoPlayerDialog [data-shell-action][aria-pressed=true]{color:var(--fw-accent);background:#8ddbc71c}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) svg{flex-shrink:0;width:24px;height:24px}#zenzaVideoPlayerDialog .fw-header{align-items:flex-start;gap:clamp(8px,1.5vw,28px);padding:clamp(12px,2.5vw,36px);display:flex}#zenzaVideoPlayerDialog .fw-heading{flex:1;min-width:0}#zenzaVideoPlayerDialog .fw-title{overflow-wrap:anywhere;text-shadow:0 2px 8px #000;max-height:2.8em;font-size:clamp(18px,2vw,30px);font-weight:600;line-height:1.4;overflow:hidden}#zenzaVideoPlayerDialog .fw-stats{color:#d0d7e2;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:clamp(11px,1.2vw,14px);display:flex}#zenzaVideoPlayerDialog .fw-stats span{align-items:center;gap:6px;display:inline-flex}#zenzaVideoPlayerDialog .fw-stats svg{width:16px;height:16px}#zenzaVideoPlayerDialog .fw-transport{align-items:center;gap:clamp(24px,7vw,100px);display:flex;position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%)}#zenzaVideoPlayerDialog .fw-transport button{background:#10151da6;border-radius:50%;width:clamp(56px,7vw,88px);height:clamp(56px,7vw,88px);box-shadow:0 2px 16px #0004}#zenzaVideoPlayerDialog .fw-transport svg{filter:drop-shadow(0 1px 4px #000);width:65%;height:65%}#zenzaVideoPlayerDialog .fw-bottom{flex-wrap:wrap;align-items:center;gap:8px;display:flex;position:absolute;bottom:30px;left:clamp(8px,2vw,28px);right:clamp(8px,2vw,28px)}#zenzaVideoPlayerDialog .fw-speed{align-items:center;gap:4px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings select{font:inherit;color:var(--fw-ink);background:#19202ce6;border:1px solid #ffffff30;border-radius:6px;min-height:40px;padding:8px 4px}#zenzaVideoPlayerDialog [data-shell-volume]{width:clamp(64px,10vw,150px);accent-color:var(--fw-accent)}#zenzaVideoPlayerDialog .fw-time{color:#d0d7e2;font-variant-numeric:tabular-nums;margin-inline-start:auto}#zenzaVideoPlayerDialog .fw-announcement{clip-path:inset(50%);width:1px;height:1px;position:absolute;overflow:hidden}#zenzaVideoPlayerDialog .fw-player .videoControlBar{z-index:410;opacity:1;background:0 0;width:100%;height:24px;margin:0;position:absolute;inset:auto 0 0;transform:none}#zenzaVideoPlayerDialog .fw-player .seekBarContainer{width:100%;height:24px;top:auto;bottom:0}#zenzaVideoPlayerDialog .fw-player .seekBar{height:24px;margin:0}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .fw-controls,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoControlBar,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .commentInputPanel{opacity:0;visibility:hidden;pointer-events:none}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoPlayer>*{cursor:none}#zenzaVideoPlayerDialog .fw-backdrop{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:500;cursor:pointer;background:#060a1266;border:0;width:100%;height:100%;display:none;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-backdrop,#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-backdrop{display:block}#zenzaVideoPlayerDialog .fw-settings{overscroll-behavior:contain;z-index:510;background:#131923f5;border-right:1px solid #ffffff20;width:min(280px,88vw);padding:20px 14px;font-size:15px;display:none;position:absolute;inset:0 auto 0 0;overflow-y:auto;box-shadow:12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-settings{display:block}#zenzaVideoPlayerDialog .fw-menu-heading{justify-content:space-between;align-items:center;margin:0 0 24px 8px;display:flex}#zenzaVideoPlayerDialog .fw-menu-heading small{color:var(--fw-muted);margin-top:4px;display:block}#zenzaVideoPlayerDialog .fw-settings>button,#zenzaVideoPlayerDialog .fw-settings details button,#zenzaVideoPlayerDialog .fw-settings>a,#zenzaVideoPlayerDialog .fw-quality{width:100%;min-height:44px;color:var(--fw-ink);border-radius:8px;justify-content:space-between;align-items:center;padding:10px 12px;text-decoration:none;display:flex}#zenzaVideoPlayerDialog .fw-settings details{border-top:1px solid #ffffff20;margin-top:16px;padding-top:16px}#zenzaVideoPlayerDialog .fw-settings summary{cursor:pointer;color:var(--fw-muted);padding:10px}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanel{width:var(--fw-panel-width);opacity:1;height:100%;max-height:none;color:var(--fw-ink);z-index:510;background:#131923f7;border:0;border-left:1px solid #ffffff20;margin:0;padding:0;transition:none;display:none;position:absolute;inset:0 0 0 auto;overflow:hidden;transform:none;box-shadow:-12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel{display:block}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .tabSelectContainer{background:#131923;border-bottom:1px solid #ffffff20;width:100%;height:60px;padding:4px 8px;display:flex;position:absolute;inset:0 0 auto}#zenzaVideoPlayerDialog .fw-player .tabSelect{width:auto;height:52px;color:var(--fw-muted);background:0 0;border:0;border-radius:0;flex:1;justify-content:center;align-items:center;margin:0;padding:8px;display:flex}#zenzaVideoPlayerDialog .fw-player .tabSelect.activeTab{color:var(--fw-accent);box-shadow:inset 0 -2px var(--fw-accent)}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 60px);margin-top:60px;overflow:auto}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelInner,#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelContent{color:var(--fw-ink);background:0 0}#zenzaVideoPlayerDialog .fw-player .videoDescription{color:#d0d7e2;padding:16px;line-height:1.8}#zenzaVideoPlayerDialog .fw-player .videoDescription a{color:#8ddbc7}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer{align-items:center;gap:16px;padding:20px 16px;display:flex}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner{align-items:center;gap:10px;min-width:0;display:flex}#zenzaVideoPlayerDialog .fw-player .ownerIcon{border-radius:12px;width:64px;height:64px}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-header,.playlist-header){color:#d0d7e2;background:#19212e;border-bottom:1px solid #ffffff20}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-menu-button,.playlist-menu-button){color:#d0d7e2;background:#253141;border:0;border-radius:5px;font-size:13px}#zenzaVideoPlayerDialog .fw-player .autoScroll .autoScroll,#zenzaVideoPlayerDialog .fw-player .is-enable .toggleEnable{color:var(--fw-accent);text-shadow:none}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelFoot{background:0 0}#zenzaVideoPlayerDialog .fw-tags{scrollbar-width:thin;scrollbar-color:#526173 #131923}#zenzaVideoPlayerDialog .fw-settings button:disabled{opacity:.4;cursor:wait}#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel{color:var(--fw-ink);background:#131923;border:1px solid #ffffff30;border-radius:12px;width:min(900px,100vw - 32px);height:calc(100dvh - 32px)}#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel .settingPanelInner{border:0}#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel .caption{background:#253141;border-radius:6px}#zenzaVideoPlayerDialog .zenzaAdvancedSetting-close{background:#253141;border:0;border-radius:8px;font-size:16px}#zenzaVideoPlayerDialog .fw-player .seriesList{margin:12px}#zenzaVideoPlayerDialog .fw-tags{inset:0 var(--fw-panel-width) auto 0;z-index:510;background:#131923cc;border-bottom:1px solid #ffffff20;max-height:35%;padding:16px 24px;display:none;position:absolute;overflow:auto}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{display:block}#zenzaVideoPlayerDialog .fw-tags .videoTagsContainer{width:100%;color:var(--fw-ink);background:0 0;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel{z-index:420;width:min(720px,100% - 32px);height:auto;position:absolute;top:auto;bottom:132px;left:50%;transform:translate(-50%)}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{box-shadow:none;opacity:1;background:#131923e6;border-radius:8px;gap:8px;padding:6px;display:flex}#zenzaVideoPlayerDialog .fw-player .commentInputPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .commentInput{opacity:.85;min-width:0;color:var(--fw-ink);text-align:left;box-shadow:none;background:0 0;flex:1;font-size:14px}#zenzaVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput,.commentSubmit){display:none}#zenzaVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput,.commentSubmit){opacity:1;z-index:1;color:var(--fw-ink);box-shadow:none;background:#253141;font-size:13px;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel{color:var(--fw-ink);background:#253141;top:calc(100% + 6px)}@media (max-width:600px){#zenzaVideoPlayerDialog .fw-player .commentInputPanel{bottom:164px}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{grid-template-columns:1fr 100px;display:grid}#zenzaVideoPlayerDialog .fw-player .commentInput{grid-area:1/1/auto/-1}#zenzaVideoPlayerDialog .fw-header{gap:4px;padding:10px 6px}#zenzaVideoPlayerDialog .fw-header button{min-width:36px;padding:6px}#zenzaVideoPlayerDialog .fw-stats{gap:5px 10px}#zenzaVideoPlayerDialog .fw-bottom{gap:3px}#zenzaVideoPlayerDialog .fw-speed svg{display:none}#zenzaVideoPlayerDialog .fw-time{font-size:11px}#zenzaVideoPlayerDialog [data-shell-volume]{width:64px}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{width:var(--fw-panel-width);max-height:100px;padding:8px;inset:60px 0 auto auto}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 160px);margin-top:160px}}@media (max-height:480px){#zenzaVideoPlayerDialog .fw-header{padding:8px}#zenzaVideoPlayerDialog .fw-title{max-height:1.4em;font-size:18px}#zenzaVideoPlayerDialog .fw-transport button{width:48px;height:48px}#zenzaVideoPlayerDialog .fw-settings{padding-top:8px}#zenzaVideoPlayerDialog .fw-menu-heading{margin-bottom:6px}}@media (prefers-reduced-motion:reduce){#zenzaVideoPlayerDialog .fw-controls{transition:none}}");
 var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 var browser = {
 	window};
@@ -10955,7 +10955,8 @@ var VideoInfoModel = class extends JSONable {
 		return {
 			comment: vd.commentCount,
 			mylist: vd.mylistCount,
-			view: vd.viewCount
+			view: vd.viewCount,
+			like: vd.likeCount
 		};
 	}
 	get isChannel() {
@@ -11871,8 +11872,8 @@ CommentListView.__tpl__ = `
     overflow-x: hidden;
     overscroll-behavior: none;
     will-change: transform;
-    scrollbar-width: 16px;
-    scrollbar-color: #039393;
+    scrollbar-width: thin;
+    scrollbar-color: #526173 #131923;
   }
   .is-firefox #listContainer {
     will-change: auto;
@@ -12173,7 +12174,7 @@ var CommentListItemView = (() => {
         white-space: nowrap;
         margin: 0;
         padding: 0;
-        background: #222;
+        background: #131923;
         z-index: 50;
         contain: strict;
       }
@@ -12192,7 +12193,7 @@ var CommentListItemView = (() => {
       }
 
       .commentListItem.odd {
-        background: #333;
+        background: #19212e;
       }
       .commentListItem[data-nicoru] {
         background: #332;
@@ -12245,7 +12246,7 @@ var CommentListItemView = (() => {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-        color: #888;
+        color: #aab4c6;
         margin: 0;
         padding: 0 8px 0;
       }
@@ -18797,6 +18798,7 @@ var VideoListItem = class VideoListItem {
 		const count = info.count;
 		return new VideoListItem({
 			_format: "videoInfo",
+			like: count.like,
 			id: info.watchId,
 			uniq_id: info.contextWatchId,
 			title: info.title,
@@ -18875,7 +18877,8 @@ var VideoListItem = class VideoListItem {
 		return {
 			comment: parseInt(String(this._rawData.num_res), 10),
 			mylist: parseInt(String(this._rawData.mylist_counter), 10),
-			view: parseInt(String(this._rawData.view_counter), 10)
+			view: parseInt(String(this._rawData.view_counter), 10),
+			like: typeof this._rawData.like === "number" ? this._rawData.like : void 0
 		};
 	}
 	get thumbnail() {
@@ -18992,6 +18995,7 @@ var VideoListItem = class VideoListItem {
 			num_res: this._rawData.num_res,
 			mylist_counter: this._rawData.mylist_counter,
 			view_counter: this._rawData.view_counter,
+			like: this._rawData.like,
 			thumbnail_url: this._rawData.thumbnail_url,
 			first_retrieve: this._rawData.first_retrieve
 		};
@@ -19004,6 +19008,7 @@ var VideoListItem = class VideoListItem {
 		rawData.num_res = count.comment;
 		rawData.mylist_counter = count.mylist;
 		rawData.view_counter = count.view;
+		rawData.like = count.like;
 		rawData.thumbnail_url = videoInfo.thumbnail;
 		if (JSON.stringify(this.serialize()) !== before) this.notifyUpdate();
 	}
@@ -19205,7 +19210,7 @@ var VideoListItemView = class {
     overflow: hidden;
     grid-template-columns: ${this.THUMBNAIL_WIDTH}px 1fr;
     grid-template-rows: ${this.THUMBNAIL_HEIGHT}px 1fr;
-    padding: 2px;
+    padding: 4px;
     transition:
       box-shadow 0.4s ease;
     contain: layout size paint;
@@ -19411,7 +19416,7 @@ var VideoListItemView = class {
 
   .postedAt {
     font-size: 12px;
-    color: #ccc;
+    color: #aab4c6;
   }
   .is-played .postedAt::after {
     content: ' ●';
@@ -19432,11 +19437,13 @@ var VideoListItemView = class {
 
   .videoLink {
     font-size: 14px;
-    color: #ff9;
+    color: #edf2f9;
+    text-decoration: none;
+    line-height: 1.5;
     transition: background 0.4s ease, color 0.4s ease;
   }
   .videoLink:visited {
-    color: #ffd;
+    color: #bac8da;
   }
   .videoLink:active {
     color: #fff;
@@ -19449,8 +19456,8 @@ var VideoListItemView = class {
     display: none;
   }
   .counter {
-    font-size: 12px;
-    color: #ccc;
+    font-size: 11px;
+    color: #aab4c6;
   }
   .counter .value {
     font-weight: bolder;
@@ -19464,7 +19471,7 @@ var VideoListItemView = class {
 
   .videoItem.is-active {
     border: none !important;
-    background: #776;
+    background: #233b3c;
   }
 
   @media screen and (min-width: 600px)
@@ -19563,9 +19570,10 @@ var VideoListItemView = class {
                 </div>
               </div>
               <div class="counter">
-                <span class="count">再生: <span class="value viewCount">${addComma(count.view)}</span></span>
-                <span class="count">コメ: <span class="value commentCount">${addComma(count.comment)}</span></span>
-                <span class="count">マイ: <span class="value mylistCount">${addComma(count.mylist)}</span></span>
+                <span class="count" title="再生数">▷ <span class="value viewCount">${addComma(count.view)}</span></span>
+                <span class="count" title="コメント数">▤ <span class="value commentCount">${addComma(count.comment)}</span></span>
+                <span class="count" title="マイリスト数">♧ <span class="value mylistCount">${addComma(count.mylist)}</span></span>
+                <span class="count" title="いいね数">♡ <span class="value likeCount">${count.like === void 0 ? "—" : addComma(count.like)}</span></span>
               </div>
             `}
     </div>`;
@@ -19961,7 +19969,10 @@ VideoListView.__tpl__ = `
 
   body {
     user-select: none;
-    background: #333;
+    background: #131923;
+    color: #f1f4f9;
+    font-family: system-ui, sans-serif;
+    scrollbar-color: #526173 #131923;
     overflow: hidden;
   }
 
@@ -19977,6 +19988,8 @@ VideoListView.__tpl__ = `
   }
 
   #listContainer {
+    scrollbar-color: #526173 #131923;
+    scrollbar-width: thin;
     position: absolute;
     top: 0;
     left:0;
@@ -20135,6 +20148,7 @@ var RelatedVideoList = class extends VideoList {
 				num_res: content.count.comment,
 				mylist_counter: content.count.mylist,
 				view_counter: content.count.view,
+				like: content.count.like,
 				thumbnail_url: content.thumbnail.url,
 				first_retrieve: content.registeredAt,
 				has_data: true,
@@ -23814,6 +23828,529 @@ VideoMetaInfo._shadow_ = `
       </span>
     </div>
   `;
+var ja = {
+	settings: "設定",
+	details: "動画の詳細",
+	close: "閉じる",
+	general: "一般設定",
+	advanced: "詳細設定",
+	quality: "画質",
+	previous: "前の動画",
+	play: "再生",
+	pause: "一時停止",
+	next: "次の動画",
+	repeat: "リピート",
+	ab: "ABリピート",
+	setA: "開始位置Aを設定",
+	setB: "終了位置Bを設定",
+	clearAB: "ABリピートを解除",
+	invalidB: "終了位置Bは開始位置Aより後に設定してください",
+	speed: "再生速度",
+	volume: "音量",
+	mute: "ミュート",
+	fullscreen: "全画面",
+	comments: "コメント表示",
+	info: "動画情報",
+	related: "関連動画",
+	comment: "コメント",
+	playlist: "プレイリスト",
+	date: "投稿日",
+	views: "再生数",
+	commentCount: "コメント数",
+	mylists: "マイリスト数",
+	likes: "いいね数",
+	auto: "自動",
+	more: "その他の操作",
+	reload: "再読み込み",
+	capture: "コメント付き画像を保存",
+	original: "公式視聴ページ",
+	helpAB: "1回目でA、2回目でB、3回目で解除",
+	tags: "タグ"
+};
+var en = {
+	settings: "Settings",
+	details: "Video details",
+	close: "Close",
+	general: "General",
+	advanced: "Advanced",
+	quality: "Video quality",
+	previous: "Previous video",
+	play: "Play",
+	pause: "Pause",
+	next: "Next video",
+	repeat: "Repeat",
+	ab: "A–B repeat",
+	setA: "Set start A",
+	setB: "Set end B",
+	clearAB: "Clear A–B repeat",
+	invalidB: "Set B after A",
+	speed: "Playback speed",
+	volume: "Volume",
+	mute: "Mute",
+	fullscreen: "Fullscreen",
+	comments: "Show comments",
+	info: "Video info",
+	related: "Related videos",
+	comment: "Comments",
+	playlist: "Playlist",
+	date: "Posted",
+	views: "Views",
+	commentCount: "Comments",
+	mylists: "Mylists",
+	likes: "Likes",
+	auto: "Auto",
+	more: "More controls",
+	reload: "Reload",
+	capture: "Save image with comments",
+	original: "Official watch page",
+	helpAB: "First click: A. Second: B. Third: clear.",
+	tags: "Tags"
+};
+var shellText = (language) => language.startsWith("ja") ? ja : en;
+var paths = {
+	menu: "<path d=\"M4 6h16M4 12h16M4 18h16\"/>",
+	details: "<path d=\"M6 3h8l4 4v14H6zM14 3v5h4M12 12v5\"/><circle cx=\"12\" cy=\"10\" r=\".5\"/>",
+	close: "<path d=\"m6 6 12 12M6 18 18 6\"/>",
+	previous: "<path d=\"m11 5-7 7 7 7M4 12h16\"/>",
+	next: "<path d=\"m13 5 7 7-7 7M4 12h16\"/>",
+	play: "<path d=\"m8 4 12 8-12 8z\"/>",
+	pause: "<path d=\"M8 4v16M16 4v16\"/>",
+	repeat: "<path d=\"M19 8a8 8 0 1 0 1 8M19 3v5h-5\"/>",
+	speed: "<path d=\"M4 19a9 9 0 1 1 16 0M12 14l5-6M7 19h10\"/>",
+	volume: "<path d=\"m11 4-6 5H2v6h3l6 5zM15 8a6 6 0 0 1 0 8M18 4a11 11 0 0 1 0 16\"/>",
+	mute: "<path d=\"m11 4-6 5H2v6h3l6 5zM16 9l6 6M16 15l6-6\"/>",
+	fullscreen: "<path d=\"M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5\"/>",
+	comment: "<path d=\"M3 4h18v13H9l-6 4zM7 8h10M7 12h7\"/>",
+	playlist: "<path d=\"M3 5h18M3 11h10M3 17h10m3-5 6 5-6 5z\"/>",
+	related: "<rect x=\"2\" y=\"3\" width=\"8\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"8\" height=\"7\" rx=\"1\"/><path d=\"M14 6h6v5M10 18H4v-5\"/>",
+	date: "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 6v6h5\"/>",
+	mylists: "<path d=\"M6 3h12v18l-6-4-6 4z\"/>",
+	likes: "<path d=\"M7 10h-4v11h4zm0 10h11l3-10h-7V3h-3l-4 8\"/>"
+};
+function shellIcon(name) {
+	return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[name]}</svg>`;
+}
+function shellButton(action, label, icon, extra = "") {
+	return `<button type="button" data-shell-action="${action}" title="${label}" aria-label="${label}" ${extra}>${shellIcon(icon)}</button>`;
+}
+var ABRepeat = class {
+	constructor() {
+		this.start = null;
+		this.end = null;
+	}
+	advance(time) {
+		if (!Number.isFinite(time) || time < 0) return false;
+		if (this.end !== null) this.clear();
+		else if (this.start === null) this.start = time;
+		else if (time > this.start + .1) this.end = time;
+		else return false;
+		return true;
+	}
+	clear() {
+		this.start = this.end = null;
+	}
+	seekTarget(time) {
+		return this.start !== null && this.end !== null && time >= this.end ? this.start : null;
+	}
+};
+var PlayerShell = class {
+	constructor(container, config, state, player, command, generalSettings) {
+		this.container = container;
+		this.config = config;
+		this.state = state;
+		this.player = player;
+		this.command = command;
+		this.generalSettings = generalSettings;
+		this.text = shellText(navigator.language);
+		this.ab = new ABRepeat();
+		this.panel = null;
+		this.focusReturn = null;
+		this.keyboardFocus = false;
+		this.pointerDown = false;
+		container.classList.add("fw-player");
+		this.info = this.require(".zenzaWatchVideoInfoPanel");
+		this.info.id = "fw-details";
+		this.info.setAttribute("aria-label", this.text.details);
+		this.info.setAttribute("role", "region");
+		this.info.inert = true;
+		this.controls = document.createElement("div");
+		this.controls.className = "fw-controls";
+		const t = this.text;
+		this.controls.innerHTML = `
+      <header class="fw-header">
+        ${shellButton("settings", t.settings, "menu", "aria-expanded=\"false\" aria-controls=\"fw-settings\"")}
+        <div class="fw-heading"><div class="fw-title"></div><div class="fw-stats"></div></div>
+        ${shellButton("details", t.details, "details", "aria-expanded=\"false\" aria-controls=\"fw-details\"")}
+        ${shellButton("close", t.close, "close")}
+      </header>
+      <div class="fw-transport">
+        ${shellButton("playPreviousVideo", t.previous, "previous")}
+        ${shellButton("togglePlay", t.play, "play")}
+        ${shellButton("playNextVideo", t.next, "next")}
+      </div>
+      <div class="fw-bottom">
+        ${shellButton("toggle-loop", t.repeat, "repeat", "aria-pressed=\"false\"")}
+        <button type="button" data-shell-action="ab" aria-label="${t.setA}" title="${t.helpAB}">A↔B</button>
+        <label class="fw-speed" title="${t.speed}">${shellIcon("speed")}<select aria-label="${t.speed}" data-shell-speed>
+          ${[
+			.1,
+			.25,
+			.5,
+			.75,
+			1,
+			1.25,
+			1.5,
+			1.75,
+			2,
+			3,
+			4,
+			5,
+			10
+		].map((v) => `<option value="${v}">${v}×</option>`).join("")}
+        </select></label>
+        ${shellButton("toggle-mute", t.mute, "volume", "aria-pressed=\"false\"")}
+        <input data-shell-volume type="range" min="0" max="1" step="0.01" aria-label="${t.volume}">
+        <span class="fw-time"></span>
+        ${shellButton("toggle-showComment", t.comments, "comment", "aria-pressed=\"true\"")}
+        ${shellButton("fullscreen", t.fullscreen, "fullscreen")}
+      </div>
+      <span class="fw-announcement" role="status" aria-live="polite"></span>`;
+		this.menu = document.createElement("nav");
+		this.menu.id = "fw-settings";
+		this.menu.className = "fw-settings";
+		this.menu.setAttribute("aria-label", t.settings);
+		this.menu.innerHTML = `<div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton("dismiss", t.close, "close")}</div>
+      <button type="button" data-shell-action="general">${t.general}</button>
+      <button type="button" data-shell-action="advanced">${t.advanced}</button>
+      <label class="fw-quality">${t.quality}<select data-shell-quality aria-label="${t.quality}">
+        ${[
+			"auto",
+			"1080p",
+			"720p",
+			"480p",
+			"360p",
+			"144p"
+		].map((v) => `<option value="${v}">${v === "auto" ? t.auto : v}</option>`).join("")}
+      </select></label>
+      <button type="button" data-shell-action="toggleHLSDebug">HLS</button>
+      <button type="button" data-shell-action="masked">MaskedWatch</button>
+      <button type="button" data-shell-action="toggleZenzaGamePadConfig">GamePad</button>
+      <button type="button" data-shell-action="toggleHeatSyncDialog">HeatSync</button>
+      <a href="https://github.com/roflsunriz/FutatsumeWatch" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      <details><summary>${t.more}</summary>
+        <button type="button" data-shell-action="reload">${t.reload}</button>
+        <button type="button" data-shell-action="screenShotWithComment">${t.capture}</button>
+        <button type="button" data-shell-action="openGinza">${t.original}</button>
+      </details>`;
+		this.menu.inert = true;
+		this.backdrop = document.createElement("button");
+		this.backdrop.type = "button";
+		this.backdrop.className = "fw-backdrop";
+		this.backdrop.setAttribute("aria-label", t.close);
+		this.backdrop.tabIndex = -1;
+		this.backdrop.addEventListener("click", (e) => {
+			e.stopPropagation();
+			this.setPanel(null);
+		});
+		this.tagStrip = document.createElement("section");
+		this.tagStrip.className = "fw-tags";
+		this.tagStrip.setAttribute("aria-label", t.tags);
+		const tags = container.querySelector(".zenzaWatchVideoHeaderPanel .videoTagsContainer");
+		if (tags) this.tagStrip.append(tags);
+		this.tagStrip.inert = true;
+		container.append(this.controls, this.backdrop, this.tagStrip, this.menu);
+		this.playButton = this.require("[data-shell-action=\"togglePlay\"]");
+		this.abButton = this.require("[data-shell-action=\"ab\"]");
+		this.volume = this.require("[data-shell-volume]");
+		this.speed = this.require("[data-shell-speed]");
+		this.timeLabel = this.require(".fw-time");
+		for (const root of [this.controls, this.menu]) {
+			root.addEventListener("click", (e) => this.onClick(e));
+			root.addEventListener("keydown", (e) => e.stopPropagation());
+		}
+		this.menu.addEventListener("click", (e) => e.stopPropagation());
+		this.speed.addEventListener("change", () => this.command("playbackRate", Number(this.speed.value)));
+		this.volume.addEventListener("input", () => this.command("volume", Number(this.volume.value)));
+		this.require("[data-shell-quality]").addEventListener("change", (e) => {
+			this.command("update-domandVideoQuality", e.target.value);
+		});
+		container.addEventListener("pointermove", () => this.reveal(), { passive: true });
+		container.addEventListener("pointerdown", () => {
+			this.keyboardFocus = false;
+			this.pointerDown = true;
+			this.reveal();
+		}, true);
+		container.ownerDocument.addEventListener("pointerup", () => {
+			this.pointerDown = false;
+			if (this.state.isOpen) this.reveal();
+		});
+		container.addEventListener("pointercancel", () => {
+			this.pointerDown = false;
+			this.reveal();
+		});
+		window.addEventListener("blur", () => {
+			this.pointerDown = false;
+		});
+		container.addEventListener("keydown", (e) => {
+			this.keyboardFocus = true;
+			if (e.key === "Escape" && this.panel) {
+				e.preventDefault();
+				e.stopPropagation();
+				this.setPanel(null);
+			}
+			this.reveal();
+		}, true);
+		container.addEventListener("focusin", () => this.reveal());
+		container.addEventListener("focusout", () => {
+			this.keyboardFocus = false;
+			this.reveal();
+		});
+		const sync = () => this.sync();
+		for (const key of [
+			"isPlaying",
+			"isMute",
+			"isLoop",
+			"isShowComment",
+			"playbackRate",
+			"currentTab"
+		]) state.onkey(key, sync);
+		for (const key of ["volume", "domandVideoQuality"]) config.onkey(key, sync);
+		state.onkey("isOpen", () => state.isOpen ? this.open() : this.close());
+		this.decorateTabs();
+		new MutationObserver(() => this.decorateTabs()).observe(this.require(".tabSelectContainer"), { childList: true });
+		const syncAddons = () => {
+			this.require("[data-shell-action=\"advanced\"]").disabled = !container.querySelector("[data-command=\"toggleAdvancedSettings\"]");
+			this.require("[data-shell-action=\"masked\"]").disabled = !container.querySelector("maskedwatch-toggle-button");
+		};
+		new MutationObserver(syncAddons).observe(container, {
+			childList: true,
+			subtree: true
+		});
+		syncAddons();
+		this.sync();
+	}
+	require(selector) {
+		const element = this.container.querySelector(selector);
+		if (!element) throw new Error(`Player UI missing: ${selector}`);
+		return element;
+	}
+	onClick(event) {
+		event.stopPropagation();
+		const target = event.target instanceof Element ? event.target.closest("[data-shell-action]") : null;
+		if (!target) return;
+		const action = target.dataset.shellAction;
+		switch (action) {
+			case "settings":
+			case "details":
+				this.setPanel(this.panel === action ? null : action);
+				break;
+			case "dismiss":
+				this.setPanel(null);
+				break;
+			case "general":
+				this.setPanel(null);
+				this.generalSettings();
+				break;
+			case "advanced":
+				this.setPanel(null);
+				this.container.querySelector("[data-command=\"toggleAdvancedSettings\"]")?.click();
+				break;
+			case "masked":
+				this.setPanel(null);
+				this.container.querySelector("maskedwatch-toggle-button")?.shadowRoot?.querySelector("[data-command],button,.root")?.click();
+				break;
+			case "ab": {
+				const accepted = this.ab.advance(this.player.currentTime);
+				if (accepted && this.ab.start !== null && this.state.isLoop) this.command("toggle-loop");
+				this.updateAB();
+				this.require(".fw-announcement").textContent = accepted ? this.abButton.title : this.text.invalidB;
+				break;
+			}
+			case "toggle-loop":
+				this.ab.clear();
+				this.updateAB();
+				this.command(action);
+				break;
+			default:
+				if (this.panel) this.setPanel(null);
+				this.command(action);
+		}
+		this.reveal();
+	}
+	decorateTabs() {
+		const t = this.text;
+		const tabs = {
+			videoInfoTab: ["info", "details"],
+			relatedVideoTab: ["related", "related"],
+			comment: ["comment", "comment"],
+			playlist: ["playlist", "playlist"]
+		};
+		this.require(".tabSelectContainer").setAttribute("role", "tablist");
+		for (const tab of this.info.querySelectorAll(".tabSelect")) {
+			const name = tab.dataset.param;
+			const def = tabs[name];
+			if (!def) continue;
+			if (!tab.dataset.shellTab) {
+				tab.dataset.shellTab = name;
+				tab.innerHTML = shellIcon(def[1]);
+				tab.title = t[def[0]];
+				tab.setAttribute("aria-label", t[def[0]]);
+				tab.setAttribute("role", "tab");
+				tab.addEventListener("keydown", (event) => {
+					if (event.key === "Enter" || event.key === " ") {
+						event.preventDefault();
+						tab.click();
+					}
+					if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+						event.preventDefault();
+						const siblings = Array.from(this.info.querySelectorAll("[data-shell-tab]"));
+						const next = siblings[(siblings.indexOf(tab) + (event.key === "ArrowRight" ? 1 : -1) + siblings.length) % siblings.length];
+						next?.click();
+						next?.focus();
+					}
+					event.stopPropagation();
+				});
+			}
+			const selected = this.state.currentTab === name;
+			tab.setAttribute("aria-selected", String(selected));
+			tab.tabIndex = selected ? 0 : -1;
+			const panel = this.info.querySelector(`.tabs.${name}`);
+			if (panel) {
+				panel.id = `fw-tab-${name}`;
+				panel.setAttribute("role", "tabpanel");
+				tab.setAttribute("aria-controls", panel.id);
+			}
+		}
+	}
+	setPanel(panel) {
+		if (!this.panel && panel) this.focusReturn = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		this.panel = panel;
+		this.container.dataset.panel = panel ?? "";
+		this.menu.inert = panel !== "settings";
+		this.info.inert = panel !== "details";
+		this.tagStrip.inert = panel !== "details";
+		this.controls.inert = panel !== null;
+		this.container.querySelectorAll(".videoControlBar,.commentInputPanel").forEach((element) => {
+			element.inert = panel !== null;
+		});
+		for (const name of ["settings", "details"]) this.require(`[data-shell-action="${name}"]`).setAttribute("aria-expanded", String(panel === name));
+		if (panel) (panel === "settings" ? this.menu.querySelector("button") : this.info.querySelector(".tabSelect.activeTab"))?.focus();
+		else {
+			this.focusReturn?.focus();
+			this.focusReturn = null;
+		}
+		this.reveal();
+	}
+	reveal() {
+		this.container.dataset.controls = "visible";
+		clearTimeout(this.hideTimer);
+		this.hideTimer = setTimeout(() => {
+			const active = document.activeElement;
+			const editing = active instanceof HTMLElement && this.container.contains(active) && (active.matches("input,select,textarea,[contenteditable=\"true\"]") || this.keyboardFocus);
+			if (this.panel || this.pointerDown || editing) return;
+			this.container.dataset.controls = "hidden";
+		}, 3e3);
+	}
+	open() {
+		this.reveal();
+		clearInterval(this.clockTimer);
+		this.clockTimer = setInterval(() => this.tick(), 80);
+	}
+	close() {
+		this.setPanel(null);
+		clearTimeout(this.hideTimer);
+		clearInterval(this.clockTimer);
+		this.ab.clear();
+		this.updateAB();
+	}
+	reset() {
+		this.ab.clear();
+		this.updateAB();
+		this.reveal();
+	}
+	repeatOnEnded() {
+		if (this.ab.start === null || this.ab.end === null) return false;
+		this.command("seek", this.ab.start);
+		this.command("play");
+		return true;
+	}
+	updateVideo(video) {
+		this.require(".fw-title").textContent = video.title;
+		this.require(".fw-title").title = video.title;
+		const stats = this.require(".fw-stats");
+		stats.replaceChildren();
+		const date = new Date(video.postedAt);
+		const entries = [
+			[
+				"date",
+				this.text.date,
+				Number.isNaN(date.valueOf()) ? "—" : date.toLocaleDateString()
+			],
+			[
+				"play",
+				this.text.views,
+				video.count.view.toLocaleString()
+			],
+			[
+				"comment",
+				this.text.commentCount,
+				video.count.comment.toLocaleString()
+			],
+			[
+				"mylists",
+				this.text.mylists,
+				video.count.mylist.toLocaleString()
+			],
+			[
+				"likes",
+				this.text.likes,
+				video.count.like?.toLocaleString() ?? "—"
+			]
+		];
+		for (const [icon, label, value] of entries) {
+			const item = document.createElement("span");
+			item.title = label;
+			item.setAttribute("aria-label", `${label}: ${value}`);
+			item.innerHTML = shellIcon(icon);
+			item.append(document.createTextNode(value));
+			stats.append(item);
+		}
+	}
+	sync() {
+		const playing = this.state.isPlaying;
+		this.playButton.innerHTML = shellIcon(playing ? "pause" : "play");
+		this.playButton.title = playing ? this.text.pause : this.text.play;
+		this.playButton.setAttribute("aria-label", this.playButton.title);
+		for (const [action, pressed] of [
+			["toggle-loop", this.state.isLoop],
+			["toggle-mute", this.state.isMute],
+			["toggle-showComment", this.state.isShowComment]
+		]) this.require(`[data-shell-action="${action}"]`).setAttribute("aria-pressed", String(pressed));
+		this.require("[data-shell-action=\"toggle-mute\"]").innerHTML = shellIcon(this.state.isMute ? "mute" : "volume");
+		this.volume.value = String(this.config.props.volume);
+		this.speed.value = String(this.state.playbackRate);
+		this.require("[data-shell-quality]").value = this.config.props.domandVideoQuality;
+		this.decorateTabs();
+	}
+	updateAB() {
+		const { start, end } = this.ab;
+		this.abButton.textContent = start === null ? "A↔B" : end === null ? `A ${this.time(start)} → B` : `${this.time(start)} ↔ ${this.time(end)}`;
+		this.abButton.title = start === null ? this.text.setA : end === null ? this.text.setB : this.text.clearAB;
+		this.abButton.setAttribute("aria-label", this.abButton.title);
+		this.abButton.setAttribute("aria-pressed", String(end !== null));
+		this.abButton.dataset.repeat = end !== null ? "active" : start !== null ? "start" : "off";
+	}
+	time(value) {
+		const seconds = Math.max(0, Math.floor(Number.isFinite(value) ? value : 0));
+		return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+	}
+	tick() {
+		const current = this.player.currentTime;
+		const target = this.ab.seekTarget(current);
+		if (this.state.isPlaying && target !== null) this.command("seek", target);
+		this.timeLabel.textContent = `${this.time(current)} / ${this.time(this.player.duration)}`;
+	}
+};
 var PlayListModel = class extends VideoListModel {
 	initialize(params) {
 		super.initialize(params);
@@ -25312,6 +25849,7 @@ var NicoVideoPlayerDialogView = class NicoVideoPlayerDialogView extends Emitter 
 		this._$errorMessageContainer = $container.find(".errorMessageContainer");
 		await sleep.idle();
 		this._initializeVideoInfoPanel();
+		this.shell = new PlayerShell(container, config, state, this._dialog, (name, param) => this._onCommand(name, param), () => this.toggleSettingPanel());
 		this._initializeResponsive();
 		this.selectTab(this._state.currentTab);
 		document.documentElement.addEventListener("paste", (e) => {
@@ -25433,10 +25971,12 @@ var NicoVideoPlayerDialogView = class NicoVideoPlayerDialogView extends Emitter 
 		this.emit("error", e);
 	}
 	_onBeforeVideoOpen() {
+		this.shell?.reset();
 		this._setThumbnail();
 	}
 	_onVideoInfoLoad(videoInfo) {
 		this.videoInfoPanel.update(videoInfo);
+		this.shell?.updateVideo(videoInfo);
 	}
 	_onVideoInfoFail(videoInfo) {
 		if (videoInfo) this.videoInfoPanel.update(videoInfo);
@@ -25445,6 +25985,9 @@ var NicoVideoPlayerDialogView = class NicoVideoPlayerDialogView extends Emitter 
 		this.emit("videoServerType", type, sessionInfo);
 	}
 	_onVideoPlay() {}
+	repeatOnEnded() {
+		return this.shell?.repeatOnEnded() ?? false;
+	}
 	_onVideoPlaying() {}
 	_onVideoPause() {}
 	_onVideoStalled() {}
@@ -25581,6 +26124,7 @@ var NicoVideoPlayerDialogView = class NicoVideoPlayerDialogView extends Emitter 
 		this._updateScreenModeStyle();
 	}
 	hide() {
+		this.shell?.close();
 		ClassList(this._$dialog[0]).remove("is-open");
 		if (this.settingPanel) this.settingPanel.close();
 		this._$body.raf.removeClass("showNicoVideoPlayerDialog");
@@ -27146,6 +27690,7 @@ var NicoVideoPlayerDialog = class extends Emitter {
 		this.emit("aspectRatioFix", ratio);
 	}
 	_onVideoEnded() {
+		if (this._view.repeatOnEnded()) return;
 		this.emitAsync("ended");
 		this._state.setVideoEnded();
 		this._savePlaybackPosition(this._videoInfo.contextWatchId, 0);
@@ -30235,7 +30780,7 @@ var { DialogElement} = (() => {
           }
         </style>
         <div class="dialog-background" data-command="nop">
-          <div class="dialog-inner">${this.getContentsTemplate(html, state, props, events)}</div>
+          <div class="dialog-inner">${state.isOpen ? await this.getContentsTemplate(html, state, props, events) : null}</div>
         </div>
       `;
 			return html`
@@ -30915,6 +31460,66 @@ var { SettingPanelElement } = (() => {
 			const conf = props.config.props;
 			return Promise.resolve(html`
         <style>
+          .dialog {
+            width: min(760px, calc(100vw - 32px));
+            height: min(800px, calc(100dvh - 32px));
+            border-radius: 12px;
+            animation: none;
+            font:
+              14px/1.6 system-ui,
+              sans-serif;
+          }
+          .dialog.is-open .dialog-background {
+            animation: none;
+          }
+          .dialog-background {
+            border: 1px solid #ffffff30;
+            box-shadow: 0 24px 80px #0009;
+            border-radius: 12px;
+          }
+          .dialog-inner {
+            inset: 0;
+            padding: 20px;
+            border: 0;
+            background: #131923;
+            color: #f1f4f9;
+            border-radius: 12px;
+          }
+          summary {
+            background: #253141;
+            color: #f1f4f9;
+            text-shadow: none;
+            font-size: 16px;
+            padding: 12px;
+            margin: 0 0 12px;
+          }
+          details {
+            margin-bottom: 12px;
+          }
+          input,
+          select,
+          textarea {
+            accent-color: #8ddbc7;
+          }
+          :focus-visible {
+            outline: 2px solid #8ddbc7;
+            outline-offset: 2px;
+          }
+          .setting-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          }
+          .setting-close {
+            width: 44px;
+            height: 44px;
+            border: 0;
+            border-radius: 8px;
+            background: #253141;
+            color: #fff;
+            font-size: 24px;
+          }
           label {
             display: block;
             margin: 8px;
@@ -30989,6 +31594,17 @@ var { SettingPanelElement } = (() => {
           }
         </style>
         <div data-revision="${state.revision}">
+          <div class="setting-heading">
+            <strong>FutatsumeWatch</strong
+            ><button
+              type="button"
+              class="setting-close"
+              aria-label=${navigator.language.startsWith("ja") ? "閉じる" : "Close"}
+              @click=${events.onSettingClose}
+            >
+              ×
+            </button>
+          </div>
           ${this.getPlayerSettingMenu(html, conf)} ${this.getCommentSettingMenu(html, conf)}
           ${this.getFilterSettingMenu(html, conf)}
 
@@ -31012,6 +31628,11 @@ var { SettingPanelElement } = (() => {
 		constructor() {
 			super();
 			Object.assign(this.events, {
+				onSettingClose: (event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					this.close();
+				},
 				onChange: this.onChange.bind(this),
 				onImportFileSelect: this.onImportFileSelect.bind(this)
 			});
@@ -31029,6 +31650,15 @@ var { SettingPanelElement } = (() => {
 				return;
 			}
 			super.onUIEvent(e);
+		}
+		onKey(e) {
+			if (e.key === "Escape") {
+				e.preventDefault();
+				e.stopPropagation();
+				this.close();
+				return;
+			}
+			super.onKey(e);
 		}
 		onChange(e) {
 			const path = e.path;
@@ -65775,7 +66405,7 @@ SOFTWARE.
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-CKfKlwet-6pDlhjev.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-BQxYKV91-CvKzGcyC.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
+System.register("./_pocket-4tcrfnGI-DePTGuDn.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-B8MlgXN6-D-1Tej7v.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -69195,7 +69825,7 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-BQxYKV91-CvKzGcyC.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
+System.register("./MylistApiLoader-B8MlgXN6-D-1Tej7v.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -73836,7 +74466,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-BoiiwbQo-4z3IlVaO.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
+System.register("./_setting-lV9cx-AR-CAdQ0sPq.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -74386,6 +75016,9 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 			const openPanel = () => {
 				initializePanel();
 				panel.toggle();
+				const host = document.querySelector("#zenzaVideoPlayerDialog.is-open .zenzaPlayerContainer") ?? document.body;
+				const view = document.querySelector(".zenzaAdvancedSettingPanel");
+				if (view) host.append(view);
 			};
 			FutatsumeWatch.emitter.promise("videoControBar.addonMenuReady").then((value) => {
 				const { container } = value;
@@ -74403,8 +75036,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 			cssUtil.addStyle(__css__);
 			document.querySelector("#js-initial-userpage-data") ? $(".Dropdown-button").before($button) : $(".accountEdit").after($button);
 			$button.on("click", () => {
-				initializePanel();
-				panel.toggle();
+				openPanel();
 			});
 		};
 		initialize();
@@ -89685,7 +90317,7 @@ var require_lodash = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-mI92wI_O-C5Pdom2S.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-C47lAM86-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
+System.register("./_my4-CsDMg228-BsSuhHVa.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-DLex8qfq-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -94579,7 +95211,7 @@ var require_jquery = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-C47lAM86-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
+System.register("./css-DLex8qfq-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors

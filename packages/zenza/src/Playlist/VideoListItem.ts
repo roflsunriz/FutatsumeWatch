@@ -77,6 +77,7 @@ interface VideoCountLike {
   comment: unknown;
   mylist: unknown;
   view: unknown;
+  like?: number;
 }
 
 interface VideoInfoModelLike {
@@ -232,6 +233,7 @@ class VideoListItem {
     const count = info.count;
     return new VideoListItem({
       _format: 'videoInfo',
+      like: count.like,
       id: info.watchId,
       uniq_id: info.contextWatchId,
       title: info.title,
@@ -327,11 +329,12 @@ class VideoListItem {
     return parseInt(this._getData('length_seconds', '0'), 10);
   }
 
-  get count(): { comment: number; mylist: number; view: number } {
+  get count(): { comment: number; mylist: number; view: number; like?: number } {
     return {
       comment: parseInt(String(this._rawData.num_res), 10),
       mylist: parseInt(String(this._rawData.mylist_counter), 10),
       view: parseInt(String(this._rawData.view_counter), 10),
+      like: typeof this._rawData.like === 'number' ? this._rawData.like : undefined,
     };
   }
 
@@ -473,6 +476,7 @@ class VideoListItem {
       num_res: this._rawData.num_res,
       mylist_counter: this._rawData.mylist_counter,
       view_counter: this._rawData.view_counter,
+      like: this._rawData.like,
       thumbnail_url: this._rawData.thumbnail_url,
       first_retrieve: this._rawData.first_retrieve,
     };
@@ -486,6 +490,7 @@ class VideoListItem {
     rawData.num_res = count.comment;
     rawData.mylist_counter = count.mylist;
     rawData.view_counter = count.view;
+    rawData.like = count.like;
 
     rawData.thumbnail_url = videoInfo.thumbnail;
 
