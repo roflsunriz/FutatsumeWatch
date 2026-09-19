@@ -6,7 +6,7 @@ ZenzaWatch（segabito氏・kphrx氏）の流れを引き継ぐ後継です。
 
 ## インストール
 
-対応マネージャ（Tampermonkey / Violentmonkey / Greasemonkey）で下のリンクを開くとインストールできます（バージョン 2.6.3-fix-playlist.53、プッシュの度に更新）。
+対応マネージャ（Tampermonkey / Violentmonkey / Greasemonkey）で下のリンクを開くとインストールできます（バージョン 0.0.1、プッシュの度に更新）。
 
 - 安定版: [`FutatsumeWatch.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)
 - 開発先行版: [`FutatsumeWatch-dev.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch-dev.user.js)

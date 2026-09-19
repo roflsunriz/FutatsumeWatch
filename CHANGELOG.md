@@ -32,6 +32,8 @@
 
 ### Fixed
 
+- FutatsumeWatch 本体の `@author` を現管理者に、`@version` を `0.0.1` に改め、READMEの併記バージョンも合わせた（旧上流の表記のままだった）
+
 - ユーザースクリプトの `description` に機能説明・使い方・変更要点を明記し、ローカル `AGENTS.md` の方針に沿わせた（安定版・DEV版とも。READMEの購読リンクもバージョン併記に更新）
 
 - 生成物に混入していた静的 `export` 宣言3件を除去し、classic script として起動できるようにした（安定版・DEV版とも起動しない実害があった。原因は `requireFile` の `skipExports=false` 固定で、`node --check` はモジュール検出で通過するため検出できなかった。`scripts/build.ts` に AST 直接検出を追加し再発を防止する）

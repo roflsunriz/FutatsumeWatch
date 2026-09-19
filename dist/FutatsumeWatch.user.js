@@ -31,8 +31,8 @@
 // @exclude        *://ext.nicovideo.jp/thumb/*
 // @exclude        *://ext.nicovideo.jp/thumb_channel/*
 // @grant          none
-// @author         segabito
-// @version        2.6.3-fix-playlist.53
+// @author         roflsunriz
+// @version        0.0.1
 // @run-at         document-body
 // @require        https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js
 // @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js
@@ -108,7 +108,7 @@ AntiPrototypeJs();
         const util = {};
         const { dimport, workerUtil, IndexedDbStorage, Handler, PromiseHandler, Emitter, parseThumbInfo, WatchInfoCacheDb, StoryboardCacheDb, VideoSessionWorker, } = templateWindow.ZenzaLib;
         void decodeURIComponent(START_PAGE_QUERY);
-        var VER = '2.6.3-fix-playlist.53';
+        var VER = '0.0.1';
         const ENV = 'STABLE';
 
         console.log(`%c${PRODUCT}@${ENV} v${VER}%c  (ﾟ∀ﾟ) ｾﾞﾝｻﾞ!  %cNicorü? %c田%c \n\nplatform: ${navigator.platform}\nua: ${navigator.userAgent}`, 'font-family: Chalkduster; font-size: 200%; background: #039393; color: #ffc; padding: 8px; text-shadow: 2px 2px #888;', '', 'font-family: "Chalkboard SE", Chalkduster,HeadLineA; font-size: 24px;', 'display: inline-block; font-size: 24px; color: transparent; background-repeat: no-repeat; background-position: center; background-size: contain;' +
