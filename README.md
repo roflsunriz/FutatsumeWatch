@@ -6,11 +6,11 @@ ZenzaWatch（segabito氏・kphrx氏）の流れを引き継ぐ後継です。
 
 ## インストール
 
-[dist](/dist) から `FutatsumeWatch.user.js` を開き raw ボタンを押すことでインストールできます
+対応マネージャ（Tampermonkey / Violentmonkey / Greasemonkey）で下のリンクを開くとインストールできます（バージョン 2.6.3-fix-playlist.53、プッシュの度に更新）。
 
-- 安定版: `dist/FutatsumeWatch.user.js`
-- 開発先行版: `dist/FutatsumeWatch-dev.user.js`
-- 関連: `dist/FutatsumeHLS.user.js`、`dist/FutatsumeGamePad.user.js`、`dist/FutatsumeBlogPartsButton.user.js`、`dist/FutatsumeAdvancedSettings.user.js`
+- 安定版: [`FutatsumeWatch.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)
+- 開発先行版: [`FutatsumeWatch-dev.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch-dev.user.js)
+- 関連: [`FutatsumeHLS.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeHLS.user.js)、[`FutatsumeGamePad.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeGamePad.user.js)、[`FutatsumeBlogPartsButton.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeBlogPartsButton.user.js)、[`FutatsumeAdvancedSettings.user.js`](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeAdvancedSettings.user.js)
 
 ## フィードバック
 

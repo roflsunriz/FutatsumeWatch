@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           FutatsumeWatch
 // @namespace      https://github.com/roflsunriz/FutatsumeWatch/
-// @description    ニコニコ動画の速くて軽い動画プレイヤー
+// @description    ニコニコ動画の速くて軽い動画プレイヤー（ZenzaWatch後継）。対応マネージャで導入後に動画ページを開くと外付け再生。直近: 改名と起動不能級の連結不具合を修正。
 // @match          *://www.nicovideo.jp/*
 // @match          *://ext.nicovideo.jp/
 // @match          *://ext.nicovideo.jp/#*

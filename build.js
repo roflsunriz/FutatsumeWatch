@@ -29,7 +29,7 @@ const DEV_HEADER = {
   '_template.js': {
     //name: '// @name           FutatsumeWatch DEV版',
     name: '// @name           FutatsumeWatch DEV版 fix playlist',
-    description: '// @description    FutatsumeWatchの開発 先行バージョン'
+    description: '// @description    FutatsumeWatchの開発先行バージョン（安定版と同機能。導入後に動画ページを開くと外付け再生。直近: 改名と起動不能級の連結不具合を修正）'
   },
   '_uquery.js': {},
   '_pocket.js': {},

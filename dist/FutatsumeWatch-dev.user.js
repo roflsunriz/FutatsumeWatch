@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           FutatsumeWatch DEV版 fix playlist
 // @namespace      https://github.com/roflsunriz/FutatsumeWatch/
-// @description    FutatsumeWatchの開発 先行バージョン
+// @description    FutatsumeWatchの開発先行バージョン（安定版と同機能。導入後に動画ページを開くと外付け再生。直近: 改名と起動不能級の連結不具合を修正）
 // @match          *://www.nicovideo.jp/*
 // @match          *://ext.nicovideo.jp/
 // @match          *://ext.nicovideo.jp/#*
