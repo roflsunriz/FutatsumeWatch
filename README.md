@@ -1,6 +1,6 @@
 # FutatsumeWatch
 
-Ginzaから独立して単体で動くHTML5版ニコニコ動画プレイヤーです。
+ニコニコ(to i)から独立して単体で動くHTML5版ニコニコ動画プレイヤーです。
 Greasemonkeyスクリプトとして動作します。
 ZenzaWatch（segabito氏・kphrx氏）の流れを引き継ぐ後継です。
 
@@ -14,11 +14,11 @@ ZenzaWatch（segabito氏・kphrx氏）の流れを引き継ぐ後継です。
 
 ## フィードバック
 
-雑にDiscussionsでコメントしたり、バグの原因がわかってたらIssue開いたり
+Discussion または Issue でバグレポート、機能提案。PullRequestでコード提案。
 
 ## ライセンス
 
-`LICENSE` は未整備（`package.json` は MIT、`README.md` の旧記載は CC0/WTFPL で矛盾）。利用者の判断が必要なため独断で作成しない（`AGENTS.md` 移行バックログ参照）。
+MIT LICENSEとする。
 
 ## 開発者向け
 
