@@ -50,7 +50,7 @@
     "lodash": "^4.17.5",
     "mocha": "^3.5.3",
     "mock-local-storage": "^1.0.5",
-    "node-notifier": "^5.4.0",
+    "node-notifier": "^10.0.1",
     "power-assert": "^1.4.4",
     "prettier": "^3.9.8",
     "sinon": "^1.17.7",
@@ -59,7 +59,7 @@
     "uglify-save-license": "^0.4.1",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10"
+    "webpack-dev-server": "^6.0.0"
   },
   "directories": {
     "test": "test/"
