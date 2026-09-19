@@ -562,13 +562,6 @@ interface SettingScriptCssUtil {
             </label>
           </div>
 
-          <div class="enableSlotLayoutEmulation control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="commentLayer.enableSlotLayoutEmulation">
-              Flash版のコメントスロット処理をエミュレーションする
-            </label>
-          </div>
-
           <div class="touch-tap2command control toggle">
             <label>
               2本指タッチ

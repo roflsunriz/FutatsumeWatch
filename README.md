@@ -4,7 +4,7 @@
 
 ## インストールと使い方
 
-配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（バージョン **0.0.3**）。
+配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（バージョン **0.0.4**）。
 
 Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。今回の実動作確認はTampermonkeyで実施しています。Violentmonkey・Greasemonkeyは未検証です。
 
@@ -25,6 +25,8 @@ Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録�
 - ブログパーツの起動ボタン
 - YouTubeでの画像保存（CapTube：Sで保存、Dを押している間は低速再生）
 - 開発者向けのuQuery
+
+コメント描画には[comment-overlay](https://github.com/roflsunriz/comment-overlay)を同梱しています。NG、フォント・速度・透明度の設定、投稿者コメントの秒数指定、コメント付き画像保存を引き継ぎます。コメントのHTML保存は、保存後も通信なしで再生・停止・シークできます。配置は新エンジンの規則に統一し、旧Flashスロットの切替は廃止しました。影の種類はCanvasで表現するため、旧版と外観が異なります。
 
 ログインが必要な操作、接続したゲームパッドでの入力、ブラウザの顔・文字検出機能への依存は、環境によって確認が必要です。マイリスト絞り込みは旧ページ構造への依存が残っています。機能ごとの確認範囲は[検証記録](verification.md)を参照してください。全機能の動作確認が完了したリリースとはしていません。
 

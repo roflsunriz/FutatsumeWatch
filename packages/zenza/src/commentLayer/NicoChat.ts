@@ -230,15 +230,8 @@ function NicoChatInitFunc() {
         NicoChat.parseCmd(cmd, (props.fork as number) > 0, props);
       }
 
-      // durationを超える位置にあるコメントを詰める vposはセンチ秒なので気をつけ
-      const vpos = props.vpos as number;
-      const videoDuration = opts.videoDuration;
-      const duration = props.duration as number;
-      const maxv = props.isNicoScript
-        ? Math.min(vpos, videoDuration * 100)
-        : Math.min(vpos, (1 + videoDuration - duration) * 100 + Math.random() * 40 - 20);
-      const minv = Math.max(maxv, 0);
-      props.vpos = minv;
+      // 終端の丸めは comment-overlay に任せ、取得した時刻を保持する。
+      props.vpos = Math.max(0, Number(props.vpos) || 0);
     }
 
     reset() {

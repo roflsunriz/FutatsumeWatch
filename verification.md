@@ -1,5 +1,42 @@
 # 検証記録
 
+## 2026-09-20：コメントエンジン移行（0.0.4）
+
+npmの`comment-overlay@4.1.6`を配布物へ同梱し、旧CSS描画・計測iframe・配置Workerを除去した。NicoCommentの解析、NG、置換、投稿者命令、一覧は保持する。追加した依存は1件で実行時の推移依存はない。旧エンジン継続では新パッケージへ描画を移す目的を満たせないため、旧計測・配置の再利用ではなく公開APIへ接続した。
+
+採用調査（2026-09-20）：[公式リポジトリ](https://github.com/roflsunriz/comment-overlay)と[npmメタデータ](https://registry.npmjs.org/comment-overlay)で配布元を照合。4.1.6は2026-08-20公開、リポジトリの最終更新も同日、open issue/PRは0件、starは0、直近月のnpmダウンロードは298件。利用実績は小さいが、利用者の指定、直近の更新、MITライセンス、TypeScript型の提供を確認して採用した。公開d.tsの未解決aliasはパッケージ内の実ファイルへ解決し、型の代用はしていない。GitHub既定ブランチの説明だけでnpm実装を推測しない。
+
+### 自動・実ブラウザ検証
+
+- lint：error 0（既存の未使用宣言等202警告）。format・type-check・build成功。単体131件成功、依存監査で脆弱性0件。
+- Chrome for Testingの別プロファイル`dev-assets/comment-overlay-profile`、headless、ポート9334で、生成した配布物を文書生成時に注入して実動画を再生した。操作中の9333のChromeと実利用Firefoxは変更していない。
+- `scripts/dev-verify.ts --bundle`でsm9とsm2057168を確認。新エンジンの画素、動画より前面の表示、NG追加・解除、投稿プレビューと取り消し、停止・再表示、再生速度、透明度、フォント倍率、シーク、投稿者の`@15`、全画面、PNG生成、閉じた後の解放を検証する。
+- 640×480・390×844・1920×1080でコメントCanvasが動画の実際の比率と表示幅に一致することを測定し、画像を目視確認した。画像は`dev-assets/verification/comments-*.png`。
+- 保存HTMLはHTTP/HTTPSを遮断した別タブで描画・再生・停止・シークを実行した。PNGのダウンロードクリックは捕捉し、利用者のダウンロード先へ書き込まない。プレビュー追加はローカルのデータモデルだけで、公開サーバーへコメントを投稿していない。
+- 最終の機能検証は55項目。レポートは`dev-assets/verification/report.json`、保存HTMLは`comment-export.html`。URL変更時は同じファイルを更新する。
+
+再実行（初回はChrome for Testingを`bun run dev:setup`で準備）：
+
+```powershell
+$profile = Join-Path $PWD 'dev-assets/comment-overlay-profile'
+Start-Process -FilePath (Join-Path $PWD 'dev-assets/chrome-win64/chrome.exe') -WindowStyle Hidden -ArgumentList @('--headless=new', '--disable-gpu', '--remote-debugging-port=9334', "--user-data-dir=$profile", '--no-first-run', '--no-default-browser-check', '--mute-audio', 'about:blank')
+$env:FUTATSUME_DEV_PORT = '9334'
+bun run dev:verify --bundle
+bun run dev:verify --bundle --url https://www.nicovideo.jp/watch/sm2057168
+Remove-Item Env:FUTATSUME_DEV_PORT
+```
+
+### 調査で修正した点・制約
+
+- VideoPlayerの比率通知はheight/widthであり、width/heightと取り違えるとコメントが画面中央の細い領域へ切り取られる。既存の重なり順・親の全画面サイズと分離した内側の描画面で修正した。
+- `_live`とレイヤー透明度の二重適用を防ぎ、フォント・影・逆方向・投稿者秒数の表示補助を保存HTMLと共有した。通常配置・文字計測・衝突判定はnpmへ委譲する。
+- 空のフィルター結果が元配列と同じ実体になり、投稿プレビューを2回追加していた。コピーを保持し、不在コメントの削除で末尾を消さないよう修正した。
+- `NicoVideoPlayer.setPlaybackRate`が存在しないコメントプレイヤーのメソッドを呼んでいたため、プロパティと時計イベントへ接続した。
+- 閉じた後の遅延NG通知でCanvasが再生成されないようにした。検証スクリプト自身もWorker購読要求の完了を待って接続を閉じる。
+- 今回の実動画検証は配布物注入であり、0.0.4のTampermonkey再登録・マネージャ権限確認は実施していない。以前のマネージャ実測記録は以下に残す。Firefox/Violentmonkey/Greasemonkey、YouTube連携の実動画、ログインした公開コメント投稿は未検証。
+- 新エンジンの配置規則と影の見え方は旧CSSエンジンと異なる。Flashスロット切替は廃止したが、保存済みキーは削除しない。公開npm版の横流れコメントは表示基準より2秒前から進入を準備し、終端3秒前への丸めとは区別してテストしている。
+- README、AGENTS、更新手順、変更履歴、貢献・サポート・セキュリティ・行動規範を照合した。ビルドは`bun run build`で配布物とMIT表示を再生成する。プッシュ・タグ・リリース公開は未実施。
+
 ## 2026-09-20：0.0.3のアイコン配置
 
 利用者の指定に従い、視聴ページの起動ボタンをタイトル・いいね・投稿者・タグに囲まれる情報行へ移した。検索結果も二つの四角形のアイコンのみとし、右下のポップアップを削除した。非表示の版・状態マーカーとアクセシブルなボタン説明は保持する。

@@ -165,6 +165,7 @@ class NicoVideoPlayer extends Emitter {
     this._videoPlayer.on('command', onCommand);
 
     this._commentPlayer = new NicoCommentPlayer({
+      media: this._videoPlayer,
       // offScreenLayer: params.offScreenLayer,
       filter: {
         enableFilter: conf.props.enableFilter,
@@ -230,6 +231,19 @@ class NicoVideoPlayer extends Emitter {
     this._videoWatchTimer = null;
   }
   _initializeEvents(): void {
+    for (const [source, target] of [
+      ['play', 'play'],
+      ['playing', 'playing'],
+      ['pause', 'pause'],
+      ['ended', 'pause'],
+      ['seeking', 'seeking'],
+      ['seeked', 'seeked'],
+      ['waiting', 'waiting'],
+      ['canPlay', 'canplay'],
+      ['loadedMetaData', 'loadedmetadata'],
+      ['durationChange', 'durationchange'],
+    ])
+      this._videoPlayer.on(source!, () => this._commentPlayer.mediaEvent(target!));
     const eventBridge = function (this: NicoVideoPlayer, name: string, ...args: Array<unknown>): void {
       this.emit(name, ...args);
     };
@@ -278,6 +292,7 @@ class NicoVideoPlayer extends Emitter {
       case 'playbackRate':
         this._videoPlayer.playbackRate = value as number;
         this._commentPlayer.playbackRate = value as number;
+        this._commentPlayer.mediaEvent('ratechange');
         break;
       case 'isAutoPlay':
         this._videoPlayer.isAutoPlay = value as boolean;
@@ -422,7 +437,8 @@ class NicoVideoPlayer extends Emitter {
   setPlaybackRate(playbackRate: number): void {
     playbackRate = Math.max(0, Math.min(playbackRate, 10));
     this._videoPlayer.playbackRate = playbackRate;
-    (this._commentPlayer as unknown as { setPlaybackRate(rate: number): void }).setPlaybackRate(playbackRate);
+    this._commentPlayer.playbackRate = playbackRate;
+    this._commentPlayer.mediaEvent('ratechange');
   }
   fastSeek(t: number): void {
     this._videoPlayer.fastSeek(Math.max(0, t));
@@ -532,9 +548,9 @@ class NicoVideoPlayer extends Emitter {
 
     const fileName = this._getSaveFileName({ suffix: 'C' });
     const video = this._videoPlayer.videoElement;
-    const html = this._commentPlayer.getCurrentScreenHtml() as string;
-
-    return VideoCaptureUtil.nicoVideoToCanvas({ video, html }).then(({ canvas }: { canvas: HTMLCanvasElement }) => {
+    const overlay = this._commentPlayer.canvas;
+    return VideoCaptureUtil.videoToCanvas(video).then(({ canvas }: { canvas: HTMLCanvasElement }) => {
+      if (overlay) canvas.getContext('2d')?.drawImage(overlay, 0, 0, canvas.width, canvas.height);
       VideoCaptureUtil.saveToFile(canvas, fileName);
       window.console.timeEnd('screenShotWithComment');
     });

@@ -1,6 +1,6 @@
 // dev系スクリプト共通の raw CDP ヘルパー。
 
-export const DEV_PORT = 9333;
+export const DEV_PORT = Number(process.env.FUTATSUME_DEV_PORT ?? 9333);
 
 export interface CdpTarget {
   type: string;

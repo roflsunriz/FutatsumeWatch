@@ -2,24 +2,18 @@ import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import { NicoChatFilter } from './NicoChatFilter';
 import type { NicoChatFilterParams } from './NicoChatFilter';
-import { SlotLayoutWorker } from './SlotLayoutWorker';
-import { NicoChatGroupViewModel } from './NicoChatGroupViewModel';
 import { NicoChat } from './NicoChat';
 import type { NicoChatType, NicoChatData, NicoChatOptions } from './NicoChat';
 import { NicoChatGroup } from './NicoChatGroup';
 import { NicoScripter } from './NicoScripter';
-import { global } from '../../../../src/FutatsumeWatchIndex';
-import { sleep } from '../../../lib/src/infra/sleep';
 import { textUtil } from '../../../lib/src/text/textUtil';
-import { CommentLayer } from './CommentLayer';
 
 interface NicoCommentParams {
   filter?: unknown;
-  offScreen?: unknown;
   nicoChatFilter?: NicoChatFilter;
 }
 
-interface SetChatsOptions {
+export interface SetChatsOptions {
   append?: unknown;
   duration?: unknown;
   mainThreadId?: unknown;
@@ -48,23 +42,15 @@ interface BulkChatData {
   chat?: { content?: unknown; mail?: unknown } | null;
 }
 
-interface GlobalEmitterLike {
-  emitter: { on(name: string, handler: (...args: unknown[]) => void): void };
-}
-
 interface TextUtilLike {
   escapeRegs(value: string): string;
 }
 
 type ChatFactory = (data: NicoChatData, options: NicoChatOptions) => NicoChatType;
 //===BEGIN===
-const { MAX_COMMENT } = CommentLayer;
+const MAX_COMMENT = 10000;
 
 class NicoComment extends Emitter {
-  declare static offscreenLayer: {
-    get(config?: unknown): Promise<{ optionCss: string }>;
-    optionCss: string;
-  };
   declare _currentTime: number;
   declare _nicoChatFilter: NicoChatFilter;
   declare topGroup: NicoChatGroup;
@@ -95,26 +81,20 @@ class NicoComment extends Emitter {
     params.nicoChatFilter = this._nicoChatFilter = new NicoChatFilter((params.filter as NicoChatFilterParams) || {});
     this._nicoChatFilter.on('change', this._onFilterChange.bind(this));
 
-    const globalLike = global as unknown as GlobalEmitterLike;
-    void NicoComment.offscreenLayer.get().then(async (offscreen) => {
-      params.offScreen = offscreen;
-      const groupParams = { ...params, nicoChatFilter: this._nicoChatFilter };
-      this.topGroup = new NicoChatGroup(NicoChat.TYPE.TOP, groupParams);
-      this.nakaGroup = new NicoChatGroup(NicoChat.TYPE.NAKA, groupParams);
-      this.bottomGroup = new NicoChatGroup(NicoChat.TYPE.BOTTOM, groupParams);
+    const groupParams = { ...params, nicoChatFilter: this._nicoChatFilter };
+    this.topGroup = new NicoChatGroup(NicoChat.TYPE.TOP, groupParams);
+    this.nakaGroup = new NicoChatGroup(NicoChat.TYPE.NAKA, groupParams);
+    this.bottomGroup = new NicoChatGroup(NicoChat.TYPE.BOTTOM, groupParams);
 
-      this.nicoScripter = new NicoScripter();
-      this.nicoScripter.on('command', (command: unknown, param: unknown) => this.emit('command', command, param));
+    this.nicoScripter = new NicoScripter();
+    this.nicoScripter.on('command', (command: unknown, param: unknown) => this.emit('command', command, param));
 
-      const onChange = _.debounce(this._onChange.bind(this), 100);
-      this.topGroup.on('change', onChange);
-      this.nakaGroup.on('change', onChange);
-      this.bottomGroup.on('change', onChange);
-      globalLike.emitter.on('updateOptionCss', onChange);
+    const onChange = _.debounce(this._onChange.bind(this), 100);
+    this.topGroup.on('change', onChange);
+    this.nakaGroup.on('change', onChange);
+    this.bottomGroup.on('change', onChange);
 
-      await sleep.idle();
-      void this.emitResolve('GetReady!');
-    });
+    void this.emitResolve('GetReady!');
   }
 
   setXml(xml: Document, options: SetChatsOptions): Promise<void> {
@@ -146,8 +126,6 @@ class NicoComment extends Emitter {
     return this.setChats(chatsData, options);
   }
   async setData(data: BulkChatData[], options: SetChatsOptions): Promise<void> {
-    await this.promise('GetReady!');
-
     const chatsData = data
       .filter((d) => d.chat)
       .map((d) => {

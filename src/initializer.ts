@@ -1,7 +1,6 @@
 import { ZenzaWatch, global } from './FutatsumeWatchIndex';
 import { Config, PlayerSession, util, WatchPageHistory } from './util';
 import type { ConfigStore } from './Config';
-import { NicoComment } from './CommentPlayer';
 import { NicoVideoPlayerDialog, PlayerConfig, PlayerState } from './NicoVideoPlayerDialog';
 import { initializeGinzaSlayer } from './GinzaSlayer';
 import type { GinzaSlayerQuery } from './GinzaSlayer';
@@ -17,7 +16,6 @@ import { ThumbInfoLoader } from '../packages/lib/src/nico/ThumbInfoLoader';
 import { StoryboardWorker } from '../packages/zenza/src/storyboard/StoryboardWorker';
 import { VideoSessionWorker } from '../packages/lib/src/nico/VideoSessionWorker';
 import { StoryboardCacheDb } from '../packages/lib/src/nico/StoryboardCacheDb';
-import { CommentLayoutWorker } from '../packages/zenza/src/commentLayer/CommentLayoutWorker';
 import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
 import { domEvent } from '../packages/lib/src/dom/domEvent';
 import { uq } from '../packages/lib/src/uQuery';
@@ -200,7 +198,6 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
     if (!location.host.endsWith('.nicovideo.jp')) {
       return;
     }
-    (CommentLayoutWorker as unknown as { getInstance(): unknown }).getInstance();
     (ThumbInfoLoader as unknown as { load(id: string): unknown }).load('sm9');
     console.time('init Workers');
     return Promise.all([
@@ -252,15 +249,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
       HoverMenu as unknown as new (params: { playerConfig: ConfigStore }) => { setPlayer(player: unknown): void }
     )({ playerConfig: Config }));
 
-    await Promise.all([
-      (
-        NicoComment as unknown as {
-          offscreenLayer: { get(config: ConfigStore): Promise<unknown> };
-        }
-      ).offscreenLayer.get(Config),
-      global.emitter.promise('lit-html'),
-      initWorker(),
-    ]);
+    await Promise.all([global.emitter.promise('lit-html'), initWorker()]);
     document.body.classList.toggle('is-watch', isWatch);
     const dialog = initializeDialogPlayer(Config);
     hoverMenu.setPlayer(dialog);

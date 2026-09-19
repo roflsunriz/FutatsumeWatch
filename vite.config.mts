@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import monkey from 'vite-plugin-monkey';
 import { VERSION } from './src/version.ts';
+import { readFileSync } from 'node:fs';
 
 export default defineConfig({
   define: { VER: JSON.stringify(VERSION), ENV: JSON.stringify('STABLE') },
@@ -8,6 +9,11 @@ export default defineConfig({
     target: 'es2022',
     minify: false,
     outDir: 'dist',
+    rolldownOptions: {
+      output: {
+        banner: `/*!\n${readFileSync(new URL('./node_modules/comment-overlay/LICENSE', import.meta.url), 'utf8')}\n*/`,
+      },
+    },
   },
   plugins: [
     monkey({
@@ -18,7 +24,7 @@ export default defineConfig({
         version: VERSION,
         author: 'roflsunriz',
         description:
-          'ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。再生・コメント・プレイリストを操作できます。起動ボタンをアイコンに統一しポップアップを削除。',
+          'ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。再生・コメント・プレイリストを操作できます。コメント描画をcomment-overlayへ移行し、NG・シーク・保存に対応。',
         match: [
           ...[
             'www',

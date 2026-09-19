@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.3
+// @version      0.0.4
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。再生・コメント・プレイリストを操作できます。起動ボタンをアイコンに統一しポップアップを削除。
+// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。再生・コメント・プレイリストを操作できます。コメント描画をcomment-overlayへ移行し、NG・シーク・保存に対応。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -48,7 +48,31 @@
 !function(){function e(e,t){return(t||"")+" (SystemJS Error#"+e+" https://github.com/systemjs/systemjs/blob/main/docs/errors.md#"+e+")"}function t(e,t){if(-1!==e.indexOf("\\")&&(e=e.replace(j,"/")),"/"===e[0]&&"/"===e[1])return t.slice(0,t.indexOf(":")+1)+e;if("."===e[0]&&("/"===e[1]||"."===e[1]&&("/"===e[2]||2===e.length&&(e+="/"))||1===e.length&&(e+="/"))||"/"===e[0]){var n,r=t.slice(0,t.indexOf(":")+1);if(n="/"===t[r.length+1]?"file:"!==r?(n=t.slice(r.length+2)).slice(n.indexOf("/")+1):t.slice(8):t.slice(r.length+("/"===t[r.length])),"/"===e[0])return t.slice(0,t.length-n.length-1)+e;for(var i=n.slice(0,n.lastIndexOf("/")+1)+e,o=[],s=-1,u=0;u<i.length;u++)-1!==s?"/"===i[u]&&(o.push(i.slice(s,u+1)),s=-1):"."===i[u]?"."!==i[u+1]||"/"!==i[u+2]&&u+2!==i.length?"/"===i[u+1]||u+1===i.length?u+=1:s=u:(o.pop(),u+=2):s=u;return-1!==s&&o.push(i.slice(s)),t.slice(0,t.length-n.length)+o.join("")}}function n(e,n){return t(e,n)||(-1!==e.indexOf(":")?e:t("./"+e,n))}function r(e,n,r,i,o){for(var s in e){var a=t(s,r)||s,f=e[s];if("string"==typeof f){var l=c(i,t(f,r)||f,o);l?n[a]=l:u("W1",s,f,"bare specifier did not resolve")}}}function i(e,t,i){var o;for(o in e.imports&&r(e.imports,i.imports,t,i,null),e.scopes||{}){var s=n(o,t);r(e.scopes[o],i.scopes[s]||(i.scopes[s]={}),t,i,s)}for(o in e.depcache||{})i.depcache[n(o,t)]=e.depcache[o];for(o in e.integrity||{})i.integrity[n(o,t)]=e.integrity[o]}function o(e,t){if(t[e])return e;var n=e.length;do{var r=e.slice(0,n+1);if(r in t)return r}while(-1!==(n=e.lastIndexOf("/",n-1)))}function s(e,t){var n=o(e,t);if(n){var r=t[n];if(null===r)return;if(!(e.length>n.length&&"/"!==r[r.length-1]))return r+e.slice(n.length);u("W2",n,r,"should have a trailing '/'")}}function u(t,n,r,i){console.warn(e(t,"Package target "+i+", resolving target '"+r+"' for "+n))}function c(e,t,n){for(var r=e.scopes,i=n&&o(n,r);i;){var u=s(t,r[i]);if(u)return u;i=o(i.slice(0,i.lastIndexOf("/")),r)}return s(t,e.imports)||-1!==t.indexOf(":")&&t}function a(){this[M]={}}function f(e){return e.id}function l(e,t,n,r){if(e.onload(n,t.id,t.d&&t.d.map(f),!!r),n)throw n}function d(t,n,r,i){var o=t[M][n];if(o)return o;var s=[],u=Object.create(null);P&&Object.defineProperty(u,P,{value:"Module"});var c=Promise.resolve().then((function(){return t.instantiate(n,r,i)})).then((function(r){if(!r)throw Error(e(2,"Module "+n+" did not instantiate"));var i=r[1]((function(e,t){o.h=!0;var n=!1;if("string"==typeof e)e in u&&u[e]===t||(u[e]=t,n=!0);else{for(var r in e)t=e[r],r in u&&u[r]===t||(u[r]=t,n=!0);e&&e.__esModule&&(u.__esModule=e.__esModule)}if(n)for(var i=0;i<s.length;i++){var c=s[i];c&&c(u)}return t}),2===r[1].length?{import:function(e,r){return t.import(e,n,r)},meta:t.createContext(n)}:void 0);return o.e=i.execute||function(){},[r[0],i.setters||[],r[2]||[]]}),(function(e){throw o.e=null,o.er=e,l(t,o,e,!0),e})),a=c.then((function(e){return Promise.all(e[0].map((function(r,i){var o=e[1][i],s=e[2][i];return Promise.resolve(t.resolve(r,n)).then((function(e){var r=d(t,e,n,s);return Promise.resolve(r.I).then((function(){return o&&(r.i.push(o),!r.h&&r.I||o(r.n)),r}))}))}))).then((function(e){o.d=e}))}));return o=t[M][n]={id:n,i:s,n:u,m:i,I:c,L:a,h:!1,d:void 0,e:void 0,er:void 0,E:void 0,C:void 0,p:void 0}}function h(e,t,n,r){if(!r[t.id])return r[t.id]=!0,Promise.resolve(t.L).then((function(){return t.p&&null!==t.p.e||(t.p=n),Promise.all(t.d.map((function(t){return h(e,t,n,r)})))})).catch((function(n){if(t.er)throw n;throw t.e=null,l(e,t,n,!1),n}))}function p(e,t){return t.C=h(e,t,t,{}).then((function(){return v(e,t,{})})).then((function(){return t.n}))}function v(e,t,n){function r(){try{var n=o.call(L);if(n)return n=n.then((function(){t.C=t.n,t.E=null,l(e,t,null,!0)}),(function(n){throw t.er=n,t.E=null,l(e,t,n,!0),n})),t.E=n;t.C=t.n,t.L=t.I=void 0}catch(r){throw t.er=r,r}finally{l(e,t,t.er,!0)}}if(!n[t.id]){if(n[t.id]=!0,!t.e){if(t.er)throw t.er;return t.E?t.E:void 0}var i,o=t.e;return t.e=null,t.d.forEach((function(r){try{var o=v(e,r,n);o&&(i=i||[]).push(o)}catch(s){throw t.er=s,l(e,t,s,!1),s}})),i?Promise.all(i).then(r):r()}}function m(){[].forEach.call(document.querySelectorAll("script"),(function(t){if(!t.sp)if("systemjs-module"===t.type){if(t.sp=!0,!t.src)return;System.import("import:"===t.src.slice(0,7)?t.src.slice(7):n(t.src,g)).catch((function(e){if(e.message.indexOf("https://github.com/systemjs/systemjs/blob/main/docs/errors.md#3")>-1){var n=document.createEvent("Event");n.initEvent("error",!1,!1),t.dispatchEvent(n)}return Promise.reject(e)}))}else if("systemjs-importmap"===t.type){t.sp=!0;var r=t.src?(System.fetch||fetch)(t.src,{integrity:t.integrity,priority:t.fetchPriority,passThrough:!0}).then((function(e){if(!e.ok)throw Error("Invalid status code: "+e.status);return e.text()})).catch((function(n){return n.message=e("W4","Error fetching systemjs-import map "+t.src)+"\n"+n.message,console.warn(n),"function"==typeof t.onerror&&t.onerror(),"{}"})):t.innerHTML;W=W.then((function(){return r})).then((function(n){!function(t,n,r){var o={};try{o=JSON.parse(n)}catch(s){console.warn(Error(e("W5","systemjs-importmap contains invalid JSON")+"\n\n"+n+"\n"))}i(o,r,t)}(N,n,t.src||g)}))}}))}var g,y="undefined"!=typeof Symbol,b="undefined"!=typeof self,S="undefined"!=typeof document,w=b?self:global;if(S){var O=document.querySelector("base[href]");O&&(g=O.href)}if(!g&&"undefined"!=typeof location){var E=(g=location.href.split("#")[0].split("?")[0]).lastIndexOf("/");-1!==E&&(g=g.slice(0,E+1))}var x,j=/\\/g,P=y&&Symbol.toStringTag,M=y?Symbol():"@",I=a.prototype;I.import=function(e,t,n){var r=this;return t&&"object"==typeof t&&(n=t,t=void 0),Promise.resolve(r.prepareImport()).then((function(){return r.resolve(e,t,n)})).then((function(e){var t=d(r,e,void 0,n);return t.C||p(r,t)}))},I.createContext=function(e){var t=this;return{url:e,resolve:function(n,r){return Promise.resolve(t.resolve(n,r||e))}}},I.onload=function(){},I.register=function(e,t,n){x=[e,t,n]},I.getRegister=function(){var e=x;return x=void 0,e};var L=Object.freeze(Object.create(null));w.System=new a;var C,R,W=Promise.resolve(),N={imports:{},scopes:{},depcache:{},integrity:{}},T=S;if(I.prepareImport=function(e){return(T||e)&&(m(),T=!1),W},I.getImportMap=function(){return JSON.parse(JSON.stringify(N))},S&&(m(),window.addEventListener("DOMContentLoaded",m)),I.addImportMap=function(e,t){i(e,t||g,N)},S){window.addEventListener("error",(function(e){J=e.filename,_=e.error}));var A=location.origin}I.createScript=function(e){var t=document.createElement("script");t.async=!0,e.indexOf(A+"/")&&(t.crossOrigin="anonymous");var n=N.integrity[e];return n&&(t.integrity=n),t.src=e,t};var J,_,k={},U=I.register;I.register=function(e,t){if(S&&"loading"===document.readyState&&"string"!=typeof e){var n=document.querySelectorAll("script[src]"),r=n[n.length-1];if(r){C=e;var i=this;R=setTimeout((function(){k[r.src]=[e,t],i.import(r.src)}))}}else C=void 0;return U.call(this,e,t)},I.instantiate=function(t,n){var r=k[t];if(r)return delete k[t],r;var i=this;return Promise.resolve(I.createScript(t)).then((function(r){return new Promise((function(o,s){r.addEventListener("error",(function(){s(Error(e(3,"Error loading "+t+(n?" from "+n:""))))})),r.addEventListener("load",(function(){if(document.head.removeChild(r),J===t)s(_);else{var e=i.getRegister(t);e&&e[0]===C&&clearTimeout(R),o(e)}})),document.head.appendChild(r)}))}))},I.shouldFetch=function(){return!1},"undefined"!=typeof fetch&&(I.fetch=fetch);var $=I.instantiate,B=/^(text|application)\/(x-)?javascript(;|$)/;I.instantiate=function(t,n,r){var i=this;return this.shouldFetch(t,n,r)?this.fetch(t,{credentials:"same-origin",integrity:N.integrity[t],meta:r}).then((function(r){if(!r.ok)throw Error(e(7,r.status+" "+r.statusText+", loading "+t+(n?" from "+n:"")));var o=r.headers.get("content-type");if(!o||!B.test(o))throw Error(e(4,'Unknown Content-Type "'+o+'", loading '+t+(n?" from "+n:"")));return r.text().then((function(e){return e.indexOf("//# sourceURL=")<0&&(e+="\n//# sourceURL="+t),(0,eval)(e),i.getRegister(t)}))})):$.apply(this,arguments)},I.resolve=function(n,r){return c(N,t(n,r=r||g)||n,r)||function(t,n){throw Error(e(8,"Unable to resolve bare specifier '"+t+(n?"' from "+n:"'")))}(n,r)};var F=I.instantiate;I.instantiate=function(e,t,n){var r=N.depcache[e];if(r)for(var i=0;i<r.length;i++)d(this,this.resolve(r[i],e),e);return F.call(this,e,t,n)},b&&"function"==typeof importScripts&&(I.instantiate=function(e){var t=this;return Promise.resolve().then((function(){return importScripts(e),t.getRegister(e)}))}),function(e){function t(t){return!e.hasOwnProperty(t)||!isNaN(t)&&t<e.length||a&&e[t]&&"undefined"!=typeof window&&e[t].parent===window}var n,r,i,o=e.System.constructor.prototype,s=o.import;o.import=function(o,u,c){return function(){for(var o in n=r=void 0,e)t(o)||(n?r||(r=o):n=o,i=o)}(),s.call(this,o,u,c)};var u=[[],function(){return{}}],c=o.getRegister;o.getRegister=function(){var o=c.call(this);if(o)return o;var s,a=function(o){var s,u,c=0;for(var a in e)if(!t(a)){if(0===c&&a!==n||1===c&&a!==r)return a;s?(i=a,u=o&&u||a):s=a===i,c++}return u}(this.firstGlobalProp);if(!a)return u;try{s=e[a]}catch(f){return u}return[[],function(e){return{execute:function(){e(s),e({default:s,__useDefault:!0})}}}]};var a="undefined"!=typeof navigator&&-1!==navigator.userAgent.indexOf("Trident")}("undefined"!=typeof self?self:global),function(e){var t=e.System.constructor.prototype,r=/^[^#?]+\.(css|html|json|wasm)([?#].*)?$/,i=t.shouldFetch.bind(t);t.shouldFetch=function(e){return i(e)||r.test(e)};var o=/^application\/json(;|$)/,s=/^text\/css(;|$)/,u=/^application\/wasm(;|$)/,c=t.fetch;t.fetch=function(t,r){return c(t,r).then((function(i){if(r.passThrough)return i;if(!i.ok)return i;var c=i.headers.get("content-type");return o.test(c)?i.json().then((function(e){return new Response(new Blob(['System.register([],function(e){return{execute:function(){e("default",'+JSON.stringify(e)+")}}})"],{type:"application/javascript"}))})):s.test(c)?i.text().then((function(e){return e=e.replace(/url\(\s*(?:(["'])((?:\\.|[^\n\\"'])+)\1|((?:\\.|[^\s,"'()\\])+))\s*\)/g,(function(e,r,i,o){return["url(",r,n(i||o,t),r,")"].join("")})),new Response(new Blob(["System.register([],function(e){return{execute:function(){var s=new CSSStyleSheet();s.replaceSync("+JSON.stringify(e)+');e("default",s)}}})'],{type:"application/javascript"}))})):u.test(c)?(WebAssembly.compileStreaming?WebAssembly.compileStreaming(i):i.arrayBuffer().then(WebAssembly.compile)).then((function(n){e.System.wasmModules||(e.System.wasmModules=Object.create(null)),e.System.wasmModules[t]=n;var r=[],i=[];return WebAssembly.Module.imports&&WebAssembly.Module.imports(n).forEach((function(e){var t=JSON.stringify(e.module);-1===r.indexOf(t)&&(r.push(t),i.push("function(m){i["+t+"]=m}"))})),new Response(new Blob(["System.register(["+r.join(",")+"],function(e){var i={};return{setters:["+i.join(",")+"],execute:function(){return WebAssembly.instantiate(System.wasmModules["+JSON.stringify(t)+"],i).then(function(m){e(m.exports)})}}})"],{type:"application/javascript"}))})):i}))}}("undefined"!=typeof self?self:global);var q="undefined"!=typeof Symbol&&Symbol.toStringTag;I.get=function(e){var t=this[M][e];if(t&&null===t.e&&!t.E)return t.er?null:t.n},I.set=function(t,n){try{new URL(t)}catch(s){console.warn(Error(e("W3",'"'+t+'" is not a valid URL to set in the module registry')))}var r;q&&"Module"===n[q]?r=n:(r=Object.assign(Object.create(null),n),q&&Object.defineProperty(r,q,{value:"Module"}));var i=Promise.resolve(r),o=this[M][t]||(this[M][t]={id:t,i:[],h:!1,d:[],e:null,er:void 0,E:void 0});return!o.e&&!o.E&&(Object.assign(o,{n:r,I:void 0,L:void 0,C:i}),r)},I.has=function(e){return!!this[M][e]},I.delete=function(e){var t=this[M],n=t[e];if(!n||n.p&&null!==n.p.e||n.E)return!1;var r=n.i;return n.d&&n.d.forEach((function(e){var t=e.i.indexOf(n);-1!==t&&e.i.splice(t,1)})),delete t[e],function(){var n=t[e];if(!n||!r||null!==n.e||n.E)return!1;r.forEach((function(e){n.i.push(e),e(n.n)})),r=null}};var D="undefined"!=typeof Symbol&&Symbol.iterator;I.entries=function(){var e,t,n=this,r=Object.keys(n[M]),i=0,o={next:function(){for(;void 0!==(t=r[i++])&&void 0===(e=n.get(t)););return{done:void 0===t,value:void 0!==t&&[t,e]}}};return o[D]=function(){return this},o}}();
 !function(t){function e(t){t.registerRegistry=Object.create(null),t.namedRegisterAliases=Object.create(null)}var r=t.System;e(r);var i,s,n=r.constructor.prototype,l=r.constructor,a=function(){l.call(this),e(this)};a.prototype=n,r.constructor=a;var o=n.register;n.register=function(t,e,r,n){if("string"!=typeof t)return o.apply(this,arguments);var l=[e,r,n];return this.registerRegistry[t]=l,i||(i=l,s=t),Promise.resolve().then((function(){i=null,s=null})),o.apply(this,[e,r,n])};var u=n.resolve;n.resolve=function(t,e){try{return u.call(this,t,e)}catch(r){if(t in this.registerRegistry)return this.namedRegisterAliases[t]||t;throw r}};var c=n.instantiate;n.instantiate=function(t,e,r){var i=this.registerRegistry[t];return i?(this.registerRegistry[t]=null,i):c.call(this,t,e,r)};var g=n.getRegister;n.getRegister=function(t){var e=g.call(this,t);s&&t&&(this.namedRegisterAliases[s]=t);var r=i||e;return i=null,s=null,r}}("undefined"!=typeof self?self:global);
 ;(typeof System!='undefined')&&(System=new System.constructor());
-System.register("./___monkey.entry.js", [],(function(exports,module){'use strict';return{execute:(function(){var AntiPrototypeJs = exports("A",function() {
+System.register("./___monkey.entry.js", [],(function(exports,module){'use strict';return{execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var AntiPrototypeJs = exports("A",function() {
 	if (this.promise !== null || !window.Prototype || window.PureArray) return this.promise ?? Promise.resolve(window.PureArray ?? Array);
 	if (document.getElementsByClassName.toString().indexOf("B,A") >= 0) Reflect.deleteProperty(document, "getElementsByClassName");
 	const waitForDom = new Promise((resolve) => {
@@ -76,7 +100,7 @@ System.register("./___monkey.entry.js", [],(function(exports,module){'use strict
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
-var VERSION = exports("V","0.0.3");
+var VERSION = exports("V","0.0.4");
 function watchIdFromUrl(value, base = location.href) {
 	try {
 		const url = new URL(value, base);
@@ -291,15 +315,15 @@ async function start() {
 	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-0797-8a2-DKVi14VM.js');
-	const { Config } = await module.import('./Config-BA-Z-GaL-CZCLPk6c.js').then((n) => n.n);
+	if (window === window.top) await module.import('./_uquery-2Yovoq-i-Bet3RYnm.js');
+	const { Config } = await module.import('./Config-CesmpQk0-pkxmxyww.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-BFpOu75--wP98jkin.js');
+		await module.import('./_captube-DNI9OVOx-BMmRIGMS.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
-		await module.import('./_blog-CWTfF_hF-BtS6yyug.js');
+		await module.import('./_blog-Bc1YmVxs-By09k-x0.js');
 		return;
 	}
 	if ([
@@ -307,27 +331,51 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-BMb5yCkW-DsNF9vVG.js');
+		await module.import('./_shape-DTKR6T1--DHkJp4ii.js');
 		return;
 	}
-	const { startPlayer, openVideo } = await module.import('./runtime-EAM27IuQ-DgeAvtBA.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-Dqb0nJOk-BFUqCsEp.js');
 	await startPlayer();
 	entry?.ready(openVideo);
 	if (window === window.top) {
-		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-zB7j3Iot-Bfuq3pOf.js');
-		await module.import('./_pocket-ATawe6TV-Dpjl_kkZ.js');
-		await module.import('./_gamepad-CFTL9_xv-BV6P7JJt.js');
-		await module.import('./_heatsync-DgM7kU8Q-Dypiasdv.js');
-		await module.import('./_shape-BMb5yCkW-DsNF9vVG.js');
-		await module.import('./_setting-C4ImGhZJ-DHhnoLTk.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-LAbuWGDX-BJt1zEM0.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-ATawe6TV-Dpjl_kkZ.js');
+		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-ByBNGgi5-BrQvFfLx.js');
+		await module.import('./_pocket-CKfKlwet-6pDlhjev.js');
+		await module.import('./_gamepad-0FnwQg0v-DTUB_UMB.js');
+		await module.import('./_heatsync-D2ynjdKd-DhV5xEs9.js');
+		await module.import('./_shape-DTKR6T1--DHkJp4ii.js');
+		await module.import('./_setting-BoiiwbQo-4z3IlVaO.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-mI92wI_O-C5Pdom2S.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-CKfKlwet-6pDlhjev.js');
 }
 start().catch((error) => {
 	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-0797-8a2-DKVi14VM.js", ['./___monkey.entry.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){var uQuery = uQuery$1;
+System.register("./_uquery-2Yovoq-i-Bet3RYnm.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var uQuery = uQuery$1;
 AntiPrototypeJs().then(() => {
 	const PRODUCT = "uQuery";
 	const util = {};
@@ -335,7 +383,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.3";
+	uQuery.fn.uQuery = "0.0.4";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -576,7 +624,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.3
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.4
   `, `
     font-size: 8px;
     font-family:
@@ -586,7 +634,31 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-BFpOu75--wP98jkin.js", ['./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){(() => {
+System.register("./_captube-DNI9OVOx-BMmRIGMS.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+(() => {
 	const PRODUCT = "CapTube";
 	let previewContainer = null, meterContainer = null;
 	const DataUrlConv = (() => {
@@ -953,7 +1025,31 @@ System.register("./_captube-BFpOu75--wP98jkin.js", ['./workerUtil-DSB24T8w-CeW7B
 	if (window.top !== window && location.pathname.indexOf("/embed/") === 0) initializeEmbed();
 	else initialize();
 })();})}}));
-System.register("./_blog-CWTfF_hF-BtS6yyug.js", [],(function(){'use strict';return{execute:(function(){((window) => {
+System.register("./_blog-Bc1YmVxs-By09k-x0.js", [],(function(){'use strict';return{execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+((window) => {
 	const addStyle = (styles, id) => {
 		const elm = document.createElement("style");
 		elm.type = "text/css";
@@ -1025,7 +1121,31 @@ System.register("./_blog-CWTfF_hF-BtS6yyug.js", [],(function(){'use strict';retu
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-BMb5yCkW-DsNF9vVG.js", ['./css-QMOlyvk3-BAtHmOgL.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/**
+System.register("./_shape-DTKR6T1--DHkJp4ii.js", ['./css-C47lAM86-CdKClobQ.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+/**
 * @typedf BoundingBox
 * @property {number} x
 * @property {number} y
@@ -1685,14 +1805,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.3`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.4`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-EAM27IuQ-DgeAvtBA.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js','./MylistApiLoader-viYWpMNq-CQnJlTC1.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
+System.register("./runtime-Dqb0nJOk-BFUqCsEp.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-BQxYKV91-CvKzGcyC.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -1702,7 +1822,31 @@ const _css = async (t) => {
   else
     (document.head || document.documentElement).appendChild(document.createElement("style")).append(c);
 })(t);
-};_css("body:is(.zenzaScreenMode_normal,.zenzaScreenMode_big,.zenzaScreenMode_wide,.zenzaScreenMode_3D) #zenzaVideoPlayerDialog,#zenzaVideoPlayerDialog .zenzaPlayerContainer{background:#000}#zenzaVideoPlayerDialog [data-command=toggleAdvancedSettings]{white-space:nowrap;width:64px;font-size:14px}@media (max-width:700px){#zenzaVideoPlayerDialog{--zenza-control-bar-height:92px}#zenzaVideoPlayerDialog .videoControlBar{height:92px}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:100vw}#zenzaVideoPlayerDialog .zenzaPlayerContainer{width:100%;height:min(56.25vw,100dvh - 100px)}#zenzaVideoPlayerDialog .controlItemContainer.center{width:100%;top:10px;left:0;overflow:auto hidden;transform:none}#zenzaVideoPlayerDialog .controlItemContainer.center .scalingUI{transform:none}#zenzaVideoPlayerDialog .controlItemContainer.center .scalingUI>div{justify-content:center;width:max-content;min-width:100%}#zenzaVideoPlayerDialog .controlItemContainer.left{top:50px;right:120px;overflow:auto hidden}#zenzaVideoPlayerDialog .controlItemContainer.right{max-width:120px;top:50px}#zenzaVideoPlayerDialog .zenzaWatchVideoHeaderPanel{max-width:100vw;left:0;right:0}#zenzaVideoPlayerDialog .videoTitleContainer{white-space:normal;overflow-wrap:anywhere;max-height:3em;overflow:auto}}");
+};/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+_css("body:is(.zenzaScreenMode_normal,.zenzaScreenMode_big,.zenzaScreenMode_wide,.zenzaScreenMode_3D) #zenzaVideoPlayerDialog,#zenzaVideoPlayerDialog .zenzaPlayerContainer{background:#000}#zenzaVideoPlayerDialog [data-command=toggleAdvancedSettings]{white-space:nowrap;width:64px;font-size:14px}@media (max-width:700px){#zenzaVideoPlayerDialog{--zenza-control-bar-height:92px}#zenzaVideoPlayerDialog .videoControlBar{height:92px}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:100vw}#zenzaVideoPlayerDialog .zenzaPlayerContainer{width:100%;height:min(56.25vw,100dvh - 100px)}#zenzaVideoPlayerDialog .controlItemContainer.center{width:100%;top:10px;left:0;overflow:auto hidden;transform:none}#zenzaVideoPlayerDialog .controlItemContainer.center .scalingUI{transform:none}#zenzaVideoPlayerDialog .controlItemContainer.center .scalingUI>div{justify-content:center;width:max-content;min-width:100%}#zenzaVideoPlayerDialog .controlItemContainer.left{top:50px;right:120px;overflow:auto hidden}#zenzaVideoPlayerDialog .controlItemContainer.right{max-width:120px;top:50px}#zenzaVideoPlayerDialog .zenzaWatchVideoHeaderPanel{max-width:100vw;left:0;right:0}#zenzaVideoPlayerDialog .videoTitleContainer{white-space:normal;overflow-wrap:anywhere;max-height:3em;overflow:auto}}");
 var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 var browser = {
 	window};
@@ -1812,7 +1956,7 @@ var ThumbInfoLoader = (() => {
 		load
 	};
 })();
-var _$23 = { throttle: () => {} };
+var _$22 = { throttle: () => {} };
 var VideoItemObserver$1 = (() => {
 	let intersectionObserver;
 	const mutationMap = /* @__PURE__ */ new WeakMap();
@@ -1852,7 +1996,7 @@ var VideoItemObserver$1 = (() => {
 				intersectionObserver.observe(item);
 			}
 		};
-		const onUpdate = _$23.throttle(update, 1e3);
+		const onUpdate = _$22.throttle(update, 1e3);
 		const observer = new MutationObserver((mutations) => {
 			if (mutations.find((mutation) => mutation.addedNodes && mutation.addedNodes.length > 0)) onUpdate();
 		});
@@ -4986,11 +5130,7 @@ function NicoChatInitFunc() {
 			if (props.deleted) return;
 			const cmd = props.cmd;
 			if (cmd.length > 0 && cmd.trim() !== "184") NicoChat.parseCmd(cmd, props.fork > 0, props);
-			const vpos = props.vpos;
-			const videoDuration = opts.videoDuration;
-			const duration = props.duration;
-			const maxv = props.isNicoScript ? Math.min(vpos, videoDuration * 100) : Math.min(vpos, (1 + videoDuration - duration) * 100 + Math.random() * 40 - 20);
-			props.vpos = Math.max(maxv, 0);
+			props.vpos = Math.max(0, Number(props.vpos) || 0);
 		}
 		reset() {
 			Object.assign(this.props, {
@@ -5261,1080 +5401,6 @@ function NicoChatInitFunc() {
 	return NicoChat;
 }
 var NicoChat = NicoChatInitFunc();
-/**
-
-参考: http://www37.atwiki.jp/commentart/pages/44.html
-https://www.w3.org/TR/css3-fonts/#font-kerning-prop
-
-MINCHO
-
-\u02C9\u2105\u2109\u2196-\u2199\u220F\u2215\u2248\u2264\u2265\u2299\u2474-\u2482\u250D\u250E\u2511\u2512\u2515\u2516\u2519\u251A\u251E\u251F\u2521\u2522\u2526\u2527\u2529\u252A\u252D\u252E\u2531\u2532\u2535\u2536\u2539\u253A\u253D\u253E\u2540\u2541\u2543-\u254A\u2550-\u256C\u2584\u2588\u258C\u2593
-
-GULIM
-\u0126\u0127\u0132\u0133\u0138\u013F\u0140\u0149-\u014B\u0166\u0167\u02D0\u02DA\u2074\u207F\u2081-\u2084\u2113\u2153\u2154\u215C-\u215E\u2194-\u2195\u223C\u249C-\u24B5\u24D0-\u24E9\u2592\u25A3-\u25A9\u25B6\u25B7\u25C0\u25C1\u25C8\u25D0\u25D1\u260E\u260F\u261C\u261E\u2660\u2661\u2663-\u2665\u2667-\u2669\u266C\u3131-\u318E\u3200-\u321C\u3260-\u327B\u3380-\u3384\u3388-\u338D\u3390-\u339B\u339F\u33A0\u33A2-\u33CA\u33CF\u33D0\u33D3\u33D6\u33D8\u33DB-\u33DD\uF900-\uF928\uF92A-\uF994\uF996-\uFA0B\uFFE6
-
-STRONG MINCHO
-\u01CE\u0D00\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u0251\u0261\u02CA\u02CB\u2016\u2035\u216A\u216B\u2223\u2236\u2237\u224C\u226E\u226F\u2295\u2483-\u249B\u2504-\u250B\u256D-\u2573\u2581-\u2583\u2585-\u2586\u2589-\u258B\u258D-\u258F\u2594\u2595\u25E2-\u25E5\u2609\u3016\u3017\u301E\u3021-\u3029\u3105-\u3129\u3220-\u3229\u32A3\u33CE\u33D1\u33D2\u33D5\uE758-\uE864\uFA0C\uFA0D\uFE30\uFE31\uFE33-\uFE44\uFE49-\uFE52\uFE54-\uFE57\uFE59-\uFE66\uFE68-\uFE6B\uFA0C\uFA0D\uFE30\uFE31\uFE33-\uFE44\uFE49-\uFE52\uFE54-\uFE57\uFE59-\uFE66\uFE68-\uFE6B
-
-
-MINCHO: /([ˊˋ⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇⒈⒉⒊⒋⒌⒍⒎⒏⒐⒑⒒⒓⒔⒕⒖⒗⒘⒙⒚⒛▁▂▃▄▅▆▇█▉▊▋▌▍▎▏◢◣◤◥〡〢〣〤〥〦〧〨〩ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ︰︱︳︴︵︶︷︸︹︺︻︼︽︾︿﹀﹁﹂﹃﹄﹉﹊﹋﹌﹍﹎﹏﹐﹑﹒﹔﹕﹖﹗﹙﹚﹛﹜﹝﹞﹟﹠﹡﹢﹣﹤﹥﹦﹨﹩﹪﹫▓])/g,
-MINCHO: /([\u02CA-\u02CB\u2474-\u2487\u2488-\u249B\u2581-\u258F\u25E2-\u25E5\u2593-\u2595\u3021-\u3029\u3105-\u3129\uFE30-\uFE31\uFE33-\uFE44\uFE49-\uFE52\uFE54-\uFE57\uFE59-\uFE66\uFE68-\uFE6B])/g,
-GULIM: /([㈀㈁㈂㈃㈄㈅㈆㈇㈈㈉㈊㈋㈌㈍㈎㈏㈐㈑㈒㈓㈔㈕㈖㈗㈘㈙㈚㈛㈜㉠㉡㉢㉣㉤㉥㉦㉧㉨㉩㉪㉫㉬㉭㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷㉸㉹㉺㉻㉿ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ⒜⒝⒞⒟⒠⒡⒢⒣⒤⒥⒦⒧⒨⒩⒪⒫⒬⒭⒮⒯⒰⒱⒲⒳⒴⒵￦⊙ㅂㅑㅜㆁ▒ㅅㅒㅡㆍㄱㅇㅓㅣㆎㄴㅏㅕㅤ♡ㅁㅐㅗㅿ♥])/g,
-GULIM: /([\u2299\u2592\u3131\u3134\u3141\u3142\u3145\u3147\u314F\u3150\u3151\u3152\u3153\u3155\u3157\u315C\u3161\u3163\u3164\u317F\u3181\u318D\u318E\u2661\u2688\u2665\u3200-\u321C\u3260-\u327B\u24D0-\u24E9\u249C-\u24B5\uFFE6])/g,
-MING_LIU: /([])/g,
-
-*/
-function NicoTextParserInitFunc() {
-	class NicoTextParser {}
-	NicoTextParser._FONT_REG = {
-		GOTHIC: /[\uFF67-\uFF9D\uFF9E\uFF65\uFF9F]/,
-		MINCHO: /([\u02C9\u2105\u2109\u2196-\u2199\u220F\u2215\u2248\u2264\u2265\u2299\u2474-\u2482\u250D\u250E\u2511\u2512\u2515\u2516\u2519\u251A\u251E\u251F\u2521\u2522\u2526\u2527\u2529\u252A\u252D\u252E\u2531\u2532\u2535\u2536\u2539\u253A\u253D\u253E\u2540\u2541\u2543-\u254A\u2550-\u256C\u2584\u2588\u258C\u2593\u01CE\u0D00\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u0251\u0261\u02CA\u02CB\u2016\u2035\u216A\u216B\u2223\u2236\u2237\u224C\u226E\u226F\u2295\u2483-\u249B\u2504-\u250B\u256D-\u2573\u2581-\u2583\u2585-\u2586\u2589-\u258B\u258D-\u258F\u2594\u2595\u25E2-\u25E5\u2609\u3016\u3017\u301E\u3021-\u3029\u3105-\u3129\u3220-\u3229\u32A3\u33CE\u33D1\u33D2\u33D5\uE758-\uE864\uFA0C\uFA0D\uFE30\uFE31\uFE33-\uFE44\uFE49-\uFE52\uFE54-\uFE57\uFE59-\uFE66\uFE68-\uFE6B])/,
-		GULIM: /([\u0126\u0127\u0132\u0133\u0138\u013F\u0140\u0149-\u014B\u0166\u0167\u02D0\u02DA\u2074\u207F\u2081-\u2084\u2113\u2153\u2154\u215C-\u215E\u2194-\u2195\u223C\u249C-\u24B5\u24D0-\u24E9\u2592\u25A3-\u25A9\u25B6\u25B7\u25C0\u25C1\u25C8\u25D0\u25D1\u260E\u260F\u261C\u261E\u2660\u2661\u2663-\u2665\u2667-\u2669\u266C\u3131-\u318E\u3200-\u321C\u3260-\u327B\u3380-\u3384\u3388-\u338D\u3390-\u339B\u339F\u33A0\u33A2-\u33CA\u33CF\u33D0\u33D3\u33D6\u33D8\u33DB-\u33DD\uF900-\uF928\uF92A-\uF994\uF996-\uFA0B\uFFE6])/,
-		MING_LIU: /([\uEF00-\uEF1F])/,
-		GR: /<group>([^\x01-\x7E^\xA0]*?([\uFF67-\uFF9D\uFF9E\uFF65\uFF9F\u02C9\u2105\u2109\u2196-\u2199\u220F\u2215\u2248\u2264\u2265\u2299\u2474-\u2482\u250D\u250E\u2511\u2512\u2515\u2516\u2519\u251A\u251E\u251F\u2521\u2522\u2526\u2527\u2529\u252A\u252D\u252E\u2531\u2532\u2535\u2536\u2539\u253A\u253D\u253E\u2540\u2541\u2543-\u254A\u2550-\u256C\u2584\u2588\u258C\u2593\u0126\u0127\u0132\u0133\u0138\u013F\u0140\u0149-\u014B\u0166\u0167\u02D0\u02DA\u2074\u207F\u2081-\u2084\u2113\u2153\u2154\u215C-\u215E\u2194-\u2195\u223C\u249C-\u24B5\u24D0-\u24E9\u2592\u25A3-\u25A9\u25B6\u25B7\u25C0\u25C1\u25C8\u25D0\u25D1\u260E\u260F\u261C\u261E\u2660\u2661\u2663-\u2665\u2667-\u2669\u266C\u3131-\u318E\u3200-\u321C\u3260-\u327B\u3380-\u3384\u3388-\u338D\u3390-\u339B\u339F\u33A0\u33A2-\u33CA\u33CF\u33D0\u33D3\u33D6\u33D8\u33DB-\u33DD\uF900-\uF928\uF92A-\uF994\uF996-\uFA0B\uFFE6\uEF00-\uEF1F\u01CE\u0D00\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u0251\u0261\u02CA\u02CB\u2016\u2035\u216A\u216B\u2223\u2236\u2237\u224C\u226E\u226F\u2295\u2483-\u249B\u2504-\u250B\u256D-\u2573\u2581-\u2583\u2585-\u2586\u2589-\u258B\u258D-\u258F\u2594\u2595\u25E2-\u25E5\u2609\u3016\u3017\u301E\u3021-\u3029\u3105-\u3129\u3220-\u3229\u32A3\u33CE\u33D1\u33D2\u33D5\uE758-\uE864\uFA0C\uFA0D\uFE30\uFE31\uFE33-\uFE44\uFE49-\uFE52\uFE54-\uFE57\uFE59-\uFE66\uFE68-\uFE6B])[^\x01-\x7E^\xA0]*?)<\/group>/g,
-		STRONG_MINCHO: /([\u01CE\u0D00\u01D2\u01D4\u01D6\u01D8\u01DA\u01DC\u0251\u0261\u02CA\u02CB\u2016\u2035\u216A\u216B\u2223\u2236\u2237\u224C\u226E\u226F\u2295\u2483-\u249B\u2504-\u250B\u256D-\u2573\u2581-\u2583\u2585-\u2586\u2589-\u258B\u258D-\u258F\u2594\u2595\u25E2-\u25E5\u2609\u3016\u3017\u301E\u3021-\u3029\u3105-\u3129\u3220-\u3229\u32A3\u33CE\u33D1\u33D2\u33D5\uE758-\uE864\uFA0C\uFA0D\uFE30\uFE31\uFE33-\uFE44\uFE49-\uFE52\uFE54-\uFE57\uFE59-\uFE66\uFE68-\uFE6B\u2588])/,
-		BLOCK: /([\u2581-\u258F\u25E2-\u25E5■]+)/g
-	};
-	NicoTextParser.__css__ = `
-body {
-  marign: 0;
-  padding: 0;
-  overflow: hidden;
-  pointer-events: none;
-  user-select: none;
-}
-
-.default {}
-.gothic  {font-family: 'ＭＳ Ｐゴシック', 'IPAMonaPGothic', sans-serif, Arial, 'Menlo'; }
-.mincho  {font-family: Simsun,            "Osaka−等幅", 'ＭＳ 明朝', 'ＭＳ ゴシック', 'モトヤLシーダ3等幅', 'Hiragino Mincho ProN'; }
-.gulim   {font-family: Gulim,             Osaka-mono, "Osaka−等幅",              'ＭＳ ゴシック', 'モトヤLシーダ3等幅'; }
-.mingLiu {font-family: PmingLiu, mingLiu, MingLiU, Osaka-mono, "Osaka−等幅", 'ＭＳ 明朝', 'ＭＳ ゴシック', 'モトヤLシーダ3等幅'; }
-han_group { font-family: 'Arial'; }
-
-
-/* 参考: https://www65.atwiki.jp/commentart2/pages/16.html */
-.cmd-gothic {
-  font-weight: 400;
-  font-family: "游ゴシック", "Yu Gothic", 'YuGothic', Simsun, "ＭＳ ゴシック", "IPAMonaPGothic", sans-serif, Arial, Menlo;}
-.cmd-mincho {
-  font-weight: 400;
-  font-family: "游明朝体", "Yu Mincho", 'YuMincho', Simsun, "Osaka−等幅", "ＭＳ 明朝", "ＭＳ ゴシック", "モトヤLシーダ3等幅", 'Hiragino Mincho ProN', monospace;
-}
-.cmd-defont {
-  font-family: arial, "ＭＳ Ｐゴシック", "MS PGothic", "MSPGothic", "ヒラギノ角ゴ", "ヒラギノ角ゴシック", "Hiragino Sans", "IPAMonaPGothic", sans-serif, monospace, Menlo;
-}
-
-.nicoChat {
-  position: absolute;
-
-  letter-spacing: 1px;
-  padding: 2px 0 2px;
-  margin: 0;
-  white-space: nowrap;
-  /*font-weight: 600;
-  -webkit-font-smoothing: none;
-  font-smooth: never;*/
-  /* text-rendering: optimizeSpeed; */
-  /*font-kerning: none;*/
-}
-
-  .nicoChat.big {
-    line-height: 45px;
-  }
-    .nicoChat.big.html5 {
-      line-height: 46.5px;
-    }
-    .nicoChat.big.is-lineResized {
-      line-height: 48px;
-    }
-
-  .nicoChat.medium {
-    line-height: 29px;
-  }
-    .nicoChat.medium.html5 {
-      line-height: ${380 / 13}px;
-    }
-    .nicoChat.medium.is-lineResized {
-      line-height: ${760 / 25 - .4}px;
-    }
-
-  .nicoChat.small {
-    line-height: 18px;
-  }
-    .nicoChat.small.html5 {
-      line-height: ${380 / 21}px;
-    }
-    .nicoChat.small.is-lineResized {
-      line-height: 20px;
-    }
-
-  .arial.type2001 {
-    font-family: Arial;
-  }
-  /* フォント変化のあったグループの下にいるということは、
-      半角文字に挟まれていないはずである。
-    */
-    .gothic > .type2001 {
-      font-family: 'ＭＳ Ｐゴシック', 'IPAMonaPGothic', sans-serif, Arial, 'Menlo';
-    }
-    .mincho > .type2001 {
-      font-family: Simsun,            Osaka-mono, 'ＭＳ 明朝', 'ＭＳ ゴシック', 'モトヤLシーダ3等幅', monospace
-    }
-    .gulim > .type2001 {
-      font-family: Gulim,             Osaka-mono,              'ＭＳ ゴシック', 'モトヤLシーダ3等幅', monospace;
-    }
-    .mingLiu > .type2001 {
-      font-family: PmingLiu, mingLiu, Osaka-mono, 'ＭＳ 明朝', 'ＭＳ ゴシック', 'モトヤLシーダ3等幅', monospace;
-    }
-
-/*
-.tab_space { opacity: 0; }
-.big    .tab_space > spacer { width:  86.55875px;  }
-.medium .tab_space > spacer { width:  53.4px;  }
-.small  .tab_space > spacer { width:  32.0625px;  }
-*/
-
-.tab_space { font-family: 'Courier New', Osaka-mono, 'ＭＳ ゴシック', monospace; opacity: 0 !important; }
-.big    .tab_space { letter-spacing: 1.6241em; }
-.medium .tab_space { letter-spacing: 1.6252em; }
-.small  .tab_space { letter-spacing: 1.5375em; }
-
-
-.big    .type0020 > spacer { width: 11.8359375px; }
-.medium .type0020 > spacer { width: 7.668px; }
-.small  .type0020 > spacer { width: 5px; }
-/*
-.big    .type3000 > spacer { width: 40px; }
-.medium .type3000 > spacer { width: 25px; }
-.small  .type3000 > spacer { width: 17px; }
-*/
-/*
-.type3000 > spacer::after { content: ' '; }
-.mincho > .type3000 > spacer::after, .gulim > .type3000 > spacer::after, .mincho > .type3000 > spacer::after {
-  content: '全';
-}
-*/
-
-.big    .gothic > .type3000 > spacer { width: 26.8984375px; }
-.medium .gothic > .type3000 > spacer { width: 16.9375px; }
-.small  .gothic > .type3000 > spacer { width: 10.9609375px; }
-
-.big    .type00A0 > spacer { width: 11.8359375px; }
-.medium .type00A0 > spacer { width: 7.668px; }
-.small  .type00A0 > spacer { width: 5px; }
-
-spacer { display: inline-block; overflow: hidden; margin: 0; padding: 0; height: 8px; vertical-align: middle;}
-
-.mesh_space {
-  display: inline-block; overflow: hidden; margin: 0; padding: 0; letter-spacing: 0;
-  vertical-align: middle; font-weight: normal;
-  white-space: nowrap;
-}
-.big    .mesh_space { width: 40px; }
-.medium .mesh_space { width: 26px; }
-.small  .mesh_space { width: 18px; }
-
-/*
-.fill_space {
-  display: inline-block; overflow: hidden; margin: 0; padding: 0; letter-spacing: 0;
-            vertical-align: bottom; font-weight: normal;
-  white-space: nowrap;
-}
-.big    .fill_space { width: 40px; height: 40px; }
-.medium .fill_space { width: 25px; height: 25px; }
-.small  .fill_space { width: 16px; height: 16px; }
-*/
-
-.backslash {
-  font-family: Arial;
-}
-
-/* Mac Chrome バグ対策？ 空白文字がなぜか詰まる これでダメならspacer作戦 */
-.invisible_code {
-  font-family: gulim;
-}
-
-.block_space {
-  font-family: Simsun, 'IPAMonaGothic', Gulim, PmingLiu;
-}
-
-.html5_tab_space, .html5_space, .html5_zen_space { opacity: 0; }
-
-/*
-.nicoChat.small .html5_zen_space > spacer { width: 25.6px; }
-                .html5_zen_space > spacer { width: 25.6px; margin: 0; }
-.nicoChat.big   .html5_zen_space > spacer { width: 25.6px; }
-*/
-.html5_zero_width { display: none; }
-
-.no-height {
-  line-height: 0 !important;
-  opacity: 0;
-  display: block;
-  visibility: hidden;
-  }
-
-/* .line53 {
-    display: inline-block;
-    line-height: 32px;
-  }
-  .line100 {
-    display: inline-block;
-    line-height: 23.5px;
-  }*/
-  /*.line70 {
-    display: inline-block;
-    line-height: 27px;
-  }*/
-
-  `.trim();
-	/**
-	*  たぶんこんな感じ
-	*  1. 全角文字(半角スペース含まない)でグループ化
-	*  2. グループ内でフォント変化文字が1つある場合はグループ全体がそのフォント
-	*  3. 二つ以上ある場合は、一番目がグループ内のベースフォント、
-	*     二番目以降はそのフォントにチェンジ
-	*  4. 最初のグループにフォントチェンジがあった場合は、
-	*     グループ全体のベースフォントがグループ1の奴になる
-	*
-	*  Vista以降だともうちょっと複雑らしい
-	*
-	*
-	*  もし新規でニコニコ動画のようなシステムを作るのであれば、こんな複雑怪奇な物を実装する必要はない。
-	*  ならどうしてやっているのかといえば、過去のコメントアートを再現したいからである。
-	*/
-	NicoTextParser.likeXP = (text) => {
-		const textUtil = util;
-		const S = "<spacer> </spacer>";
-		const ZS = "<spacer>全</spacer>";
-		let htmlText = textUtil.escapeHtml(text).replace(/([\x01-\x09\x0B-\x7E\xA0]+)/g, "<han_group>$1</han_group>").replace(/([^\x01-\x7E^\xA0]+)/g, "<group>$1</group>").replace(/([\u0020]+)/g, (g) => `<span class="han_space type0020">${S.repeat(g.length)}</span>`).replace(/([\u00A0]+)/g, (g) => `<span class="han_space type00A0">${S.repeat(g.length)}</span>`).replace(/(\t+)/g, "<span class=\"tab_space\">$1</span>").replace(/[\t]/g, "^");
-		let strongFont = "gothic";
-		htmlText = htmlText.replace(NicoTextParser._FONT_REG.GR, (all, group, firstChar) => {
-			let baseFont;
-			if (firstChar.match(NicoTextParser._FONT_REG.GOTHIC)) baseFont = "gothic";
-			else if (firstChar.match(NicoTextParser._FONT_REG.MINCHO)) {
-				baseFont = "mincho";
-				if (firstChar.match(NicoTextParser._FONT_REG.STRONG_MINCHO)) strongFont = "mincho";
-			} else if (firstChar.match(NicoTextParser._FONT_REG.GULIM)) strongFont = baseFont = "gulim";
-			else strongFont = baseFont = "mingLiu";
-			const tmp = [];
-			const closer = [];
-			let currentFont = baseFont;
-			for (let i = 0, len = group.length; i < len; i++) {
-				const c = group.charAt(i);
-				if (currentFont !== "gothic" && c.match(NicoTextParser._FONT_REG.GOTHIC)) {
-					tmp.push("<span class=\"gothic\">");
-					closer.push("</span>");
-					currentFont = "gothic";
-				} else if (currentFont !== "mincho" && c.match(NicoTextParser._FONT_REG.MINCHO)) {
-					tmp.push("<span class=\"mincho\">");
-					closer.push("</span>");
-					currentFont = "mincho";
-					if (c.match(NicoTextParser._FONT_REG.STRONG_MINCHO)) strongFont = baseFont = "mincho";
-				} else if (currentFont !== "gulim" && c.match(NicoTextParser._FONT_REG.GULIM)) {
-					tmp.push("<span class=\"gulim\">");
-					closer.push("</span>");
-					currentFont = strongFont = baseFont = "gulim";
-				} else if (currentFont !== "mingLiu" && c.match(NicoTextParser._FONT_REG.MING_LIU)) {
-					tmp.push("<span class=\"mingLiu\">");
-					closer.push("</span>");
-					currentFont = strongFont = baseFont = "mingLiu";
-				}
-				tmp.push(c);
-			}
-			return [
-				"<group class=\"",
-				baseFont,
-				" fontChanged\">",
-				tmp.join(""),
-				closer.join(""),
-				"</group>"
-			].join("");
-		});
-		htmlText = htmlText.replace(NicoTextParser._FONT_REG.BLOCK, "<span class=\"block_space\">$1</span>").replace(/([\u2588]+)/g, (g) => `<span class="fill_space">${"田".repeat(g.length)}</span>`).replace(/([\u2592])/g, "<span class=\"mesh_space\">$1$1</span>").replace(/([\uE800\u2002-\u200A\u007F\u05C1\u0E3A\u3164]+)/g, (g) => `<span class="invisible_code" data-code="${escape(g)}">${g}</span>`).replace(/(.)[\u0655]/g, "$1<span class=\"type0655\">$1</span>").replace(/([\u115a]+)/g, "<span class=\"zen_space type115A\">$1</span>").replace(/([\u3000]+)/g, (g) => `<span class="zen_space type3000">${ZS.repeat(g.length)}</span>`).replace(/\\/g, "<span lang=\"en\" class=\"backslash\">&#x5c;</span>").replace(/([\u0323\u2029\u202a\u200b\u200c]+)/g, "<span class=\"zero_space\">$1</span>").replace(/([\u2003]+)/g, "<span class=\"em_space\">$1</span>").replace(/\r\n/g, "\n").replace(/([^\n])[\n]$/, "$1").replace(/[\n]/g, "<br>");
-		htmlText = htmlText.replace(/(.)<group>([\u2001]+)<\/group>(.)/, "$1<group class=\"zen_space arial type2001\">$2</group>$3");
-		htmlText = htmlText.replace(/<group>/g, `<group class="${strongFont}">`);
-		return htmlText;
-	};
-	NicoTextParser.likeHTML5 = (text) => {
-		let htmlText = util.escapeHtml(text).replace(/([\x20\xA0]+)/g, (g) => {
-			return `<span class="html5_space" data-text="${encodeURIComponent(g)}">${"&nbsp;".repeat(g.length)}</span>`;
-		}).replace(/([\u2000\u2002]+)/g, (g) => {
-			return `<span class="html5_space half" data-text="${encodeURIComponent(g)}">${g}</span>`;
-		}).replace(/([\u3000\u2001\u2003]+)/g, (g) => {
-			return `<span class="html5_zen_space" data-text="${encodeURIComponent(g)}">${"全".repeat(g.length)}</span>`;
-		}).replace(/[\u200B-\u200F]+/g, (g) => {
-			return `<span class="html5_zero_width" data-text="${encodeURIComponent(g)}">${g}</span>`;
-		}).replace(/([\t]+)/g, (g) => {
-			return "<span class=\"html5_tab_space\">" + "丁".repeat(g.length * 2) + "</span>";
-		}).replace(NicoTextParser._FONT_REG.BLOCK, "<span class=\"html5_block_space\">$1</span>").replace(/([\u2588]+)/g, (g) => {
-			return "<span class=\"html5_fill_space u2588\">" + "田".repeat(g.length) + "</span>";
-		}).replace(/[\n]/g, "<br>");
-		const sp = htmlText.split("<br>");
-		if (sp.length >= 101) htmlText = `<span class="line101">${sp.slice(0, 101).join("<br>")}</span><span class="no-height">${sp.slice(101).join("<br>")}</span>`;
-		else if (sp.length >= 70) htmlText = `<span class="line70">${sp.slice(0, 70).join("<br>")}</span><span class="no-height">${sp.slice(70).join("<br>")}</span>`;
-		else if (sp.length >= 53) htmlText = `<span class="line53">${sp.slice(0, 53).join("<br>")}</span><span class="no-height">${sp.slice(53).join("<br>")}</span>`;
-		return htmlText;
-	};
-	return NicoTextParser;
-}
-var NicoTextParser = NicoTextParserInitFunc();
-ZenzaWatch.NicoTextParser = NicoTextParser;
-var CommentLayer = class {};
-CommentLayer.SCREEN = {
-	WIDTH_INNER: 512,
-	WIDTH_FULL_INNER: 640,
-	WIDTH_FULL_INNER_HTML5: 684,
-	WIDTH: 544,
-	WIDTH_FULL: 672,
-	OUTER_WIDTH_FULL: 739.2,
-	HEIGHT: 384
-};
-CommentLayer.MAX_COMMENT = 1e4;
-/**
-* 個別のコメントの表示位置・タイミング計算
-* コメントアート互換は大体こいつにかかっている
-*
-* コメントのサイズ計算まわりが意味不明なコードだらけだが、
-* 仕様書にもない本家のバグを再現しようとするとこうなるので仕方ない。
-* (しかも、これでも全然足りない)
-* 互換性にこだわらないのであれば7割くらいが不要。
-*/
-var NicoChatViewModel = class NicoChatViewModel {
-	static create(nicoChat, offScreen) {
-		if (nicoChat.commentVer === "html5") return new HTML5NicoChatViewModel(nicoChat, offScreen);
-		return new FlashNicoChatViewModel(nicoChat, offScreen);
-	}
-	constructor(nicoChat, offScreen) {
-		this._speedRate = NicoChatViewModel.SPEED_RATE;
-		this.initialize(nicoChat, offScreen);
-		if (this._height >= CommentLayer.SCREEN.HEIGHT - this._fontSizePixel / 2) this._isOverflow = true;
-		const cssLineHeight = this._cssLineHeight;
-		this._cssScaleY = cssLineHeight / Math.floor(cssLineHeight);
-		this._cssLineHeight = Math.floor(cssLineHeight);
-		if (this._isOverflow || nicoChat.isInvisible) this.checkCollision = () => {
-			return false;
-		};
-	}
-	initialize(nicoChat, offScreen) {
-		this._nicoChat = nicoChat;
-		this._offScreen = offScreen;
-		this._isOverflow = false;
-		this._duration = nicoChat.duration;
-		this._isFixed = false;
-		this._scale = NicoChatViewModel.BASE_SCALE;
-		this._cssLineHeight = 29;
-		this._cssScaleY = 1;
-		this._y = 0;
-		this._slot = -1;
-		this.setType(nicoChat.type);
-		this.setVpos(nicoChat.vpos);
-		this.setSize(nicoChat.size, nicoChat.commentVer);
-		this._isLayouted = false;
-		this.setText(nicoChat.text, nicoChat.htmlText);
-		if (this._isFixed) this._setupFixedMode();
-		else this._setupMarqueeMode();
-	}
-	setType(type) {
-		this._type = type;
-		switch (type) {
-			case NicoChat.TYPE.TOP:
-				this._isFixed = true;
-				break;
-			case NicoChat.TYPE.BOTTOM: this._isFixed = true;
-		}
-	}
-	setVpos(vpos) {
-		switch (this._type) {
-			case NicoChat.TYPE.TOP:
-				this._beginLeftTiming = vpos / 100;
-				break;
-			case NicoChat.TYPE.BOTTOM:
-				this._beginLeftTiming = vpos / 100;
-				break;
-			default: this._beginLeftTiming = vpos / 100 - 1;
-		}
-		this._endRightTiming = this._beginLeftTiming + this._duration;
-	}
-	setSize(size, _commentVer) {
-		this._size = size;
-		const SIZE_PIXEL = this._nicoChat.commentVer === "html5" ? NicoChatViewModel.FONT_SIZE_PIXEL_VER_HTML5 : NicoChatViewModel.FONT_SIZE_PIXEL;
-		switch (size) {
-			case NicoChat.SIZE.BIG:
-				this._fontSizePixel = SIZE_PIXEL.BIG;
-				break;
-			case NicoChat.SIZE.SMALL:
-				this._fontSizePixel = SIZE_PIXEL.SMALL;
-				break;
-			default: this._fontSizePixel = SIZE_PIXEL.MEDIUM;
-		}
-	}
-	setText(text, parsedHtmlText = "") {
-		const fontCommand = this.fontCommand;
-		const commentVer = this.commentVer;
-		const textParser = NicoTextParser;
-		const htmlText = parsedHtmlText || (commentVer === "html5" ? textParser.likeHTML5(text) : textParser.likeXP(text));
-		this._htmlText = htmlText;
-		this._text = text;
-		const field = this._offScreen.getTextField();
-		field.setText(htmlText);
-		field.setFontSizePixel(this._fontSizePixel);
-		field.setType(this._type, this._size, fontCommand, this.commentVer);
-		this._originalWidth = field.getOriginalWidth();
-		this._width = this._originalWidth * this._scale;
-		this._originalHeight = field.getOriginalHeight();
-		this._height = this._calculateHeight({});
-		const w = this._width;
-		const duration = this._duration / this._speedRate;
-		if (!this._isFixed) {
-			const spw = w / (this._speed = (w + CommentLayer.SCREEN.WIDTH) / duration);
-			this._endLeftTiming = this._endRightTiming - spw;
-			this._beginRightTiming = this._beginLeftTiming + spw;
-		} else {
-			this._speed = 0;
-			this._endLeftTiming = this._endRightTiming;
-			this._beginRightTiming = this._beginLeftTiming;
-		}
-	}
-	recalcBeginEndTiming(speedRate = 1) {
-		const width = this._width;
-		const duration = this._duration / speedRate;
-		this._endRightTiming = this._beginLeftTiming + duration;
-		this._speedRate = speedRate;
-		if (isNaN(width)) return;
-		if (!this._isFixed) {
-			const spw = width / (this._speed = (width + CommentLayer.SCREEN.WIDTH) / duration);
-			this._endLeftTiming = this._endRightTiming - spw;
-			this._beginRightTiming = this._beginLeftTiming + spw;
-		} else {
-			this._speed = 0;
-			this._endLeftTiming = this._endRightTiming;
-			this._beginRightTiming = this._beginLeftTiming;
-		}
-	}
-	_calcLineHeight({ size, scale = 1 }) {
-		const SIZE = NicoChat.SIZE;
-		const MARGIN = 5;
-		let lineHeight;
-		if (scale >= .75) switch (size) {
-			case SIZE.BIG:
-				lineHeight = (50 - MARGIN * scale) * NicoChatViewModel.BASE_SCALE;
-				break;
-			case SIZE.SMALL:
-				lineHeight = (23 - MARGIN * scale) * NicoChatViewModel.BASE_SCALE;
-				break;
-			default: lineHeight = (34 - MARGIN * scale) * NicoChatViewModel.BASE_SCALE;
-		}
-		else switch (size) {
-			case SIZE.BIG:
-				lineHeight = (387 - MARGIN * scale * .5) / 16 * NicoChatViewModel.BASE_SCALE;
-				break;
-			case SIZE.SMALL:
-				lineHeight = (383 - MARGIN * scale * .5) / 38 * NicoChatViewModel.BASE_SCALE;
-				break;
-			default: lineHeight = (378 - MARGIN * scale * .5) / 25 * NicoChatViewModel.BASE_SCALE;
-		}
-		return lineHeight;
-	}
-	_calcDoubleResizedLineHeight({ lc = 1, cssScale, size = NicoChat.SIZE.BIG }) {
-		const MARGIN = 5;
-		if (size !== NicoChat.SIZE.BIG) return (size === NicoChat.SIZE.MEDIUM ? 24 : 13) + MARGIN;
-		const scaleValue = typeof cssScale === "number" ? cssScale : this.cssScale;
-		let lineHeight;
-		if (lc <= 9) lineHeight = (392 / scaleValue - MARGIN) / lc - 1;
-		else if (lc <= 10) lineHeight = (384 / scaleValue - MARGIN) / lc - 1;
-		else if (lc <= 11) lineHeight = (389 / scaleValue - MARGIN) / lc - 1;
-		else if (lc <= 12) lineHeight = (388 / scaleValue - MARGIN) / lc - 1;
-		else if (lc <= 13) lineHeight = (381 / scaleValue - MARGIN) / lc - 1;
-		else lineHeight = (381 / scaleValue - MARGIN) / 14;
-		return lineHeight;
-	}
-	/**
-	* 高さ計算。
-	* 改行リサイズなどが起こる場合はそれを反映した結果の高さを返す
-	* Flashのほうはだんだん計算を諦めていく
-	*/
-	_calculateHeight({ scale = 1, lc = 0, size, isEnder, isDoubleResized }) {
-		lc = lc || this.lineCount;
-		isEnder = typeof isEnder === "boolean" ? isEnder : this._nicoChat.isEnder;
-		isDoubleResized = typeof isDoubleResized === "boolean" ? isDoubleResized : this.isDoubleResized;
-		size = size || this._size;
-		const MARGIN = 5;
-		const TABLE_HEIGHT = 385;
-		let lineHeight;
-		if (isDoubleResized) {
-			this._cssLineHeight = this._calcDoubleResizedLineHeight({
-				lc,
-				size
-			});
-			return ((this._cssLineHeight - MARGIN) * lc * scale * .5 + MARGIN - 1) * NicoChatViewModel.BASE_SCALE;
-		}
-		lineHeight = this._calcLineHeight({
-			lc,
-			size,
-			scale
-		});
-		this._cssLineHeight = lineHeight;
-		const height = (lineHeight * lc + MARGIN) * scale;
-		if (lc === 1) {
-			this._isLineResized = false;
-			return height - 1;
-		}
-		if (isEnder || height < TABLE_HEIGHT / 3) {
-			this._isLineResized = false;
-			return height - 1;
-		}
-		this._isLineResized = true;
-		lineHeight = this._calcLineHeight({
-			lc,
-			size,
-			scale: scale * .5
-		});
-		this._cssLineHeight = lineHeight * 2 - 1;
-		return (lineHeight * lc + MARGIN) * scale - 1;
-	}
-	_setupFixedMode() {
-		const nicoChat = this._nicoChat;
-		const SCREEN = CommentLayer.SCREEN;
-		const ver = nicoChat.commentVer;
-		const fullWidth = ver === "html5" ? SCREEN.WIDTH_FULL_INNER_HTML5 : SCREEN.WIDTH_FULL_INNER;
-		let screenWidth = nicoChat.isFull ? fullWidth : SCREEN.WIDTH_INNER;
-		const screenHeight = CommentLayer.SCREEN.HEIGHT;
-		let width = this._width;
-		if (this._isLineResized) width = ver === "html5" ? Math.floor(width * .5 - 8) : width * .5 + 2;
-		if (width > screenWidth) {
-			if (this._isLineResized) {
-				screenWidth *= 2;
-				this._isDoubleResized = true;
-			}
-			this._setScale(screenWidth / width);
-		} else this._setScale(1);
-		if (this._type === NicoChat.TYPE.BOTTOM) this._y = screenHeight - this._height;
-	}
-	/**
-	*  流れる文字のモード
-	*/
-	_setupMarqueeMode() {
-		if (this._isLineResized) {
-			const duration = this._duration / this._speedRate;
-			this._setScale(this._scale);
-			const speed = this._speed = (this._width + CommentLayer.SCREEN.WIDTH) / duration;
-			this._endLeftTiming = this._endRightTiming - this._width / speed;
-			this._beginRightTiming = this._beginLeftTiming + this._width / speed;
-		}
-	}
-	_setScale(scale) {
-		this._scale = scale;
-		const lsscale = scale * (this._isLineResized ? .5 : 1);
-		this._height = this._calculateHeight({ isDoubleResized: this.isDoubleResized }) * scale;
-		this._width = this._originalWidth * lsscale;
-	}
-	get bulkLayoutData() {
-		return {
-			id: this.id,
-			fork: this.fork,
-			type: this.type,
-			isOverflow: this._isOverflow,
-			isInvisible: this.isInvisible,
-			isFixed: this.isFixed,
-			ypos: this.ypos,
-			slot: this.slot,
-			height: this.height,
-			beginLeft: this.beginLeftTiming,
-			beginRight: this.beginRightTiming,
-			endLeft: this.endLeftTiming,
-			endRight: this.endRightTiming,
-			layerId: this.layerId
-		};
-	}
-	set bulkLayoutData(data) {
-		this.isOverflow = data.isOverflow;
-		this._y = data.ypos;
-		this._isLayouted = true;
-	}
-	reset() {}
-	get lineCount() {
-		return (this._htmlText || "").split("<br>").length;
-	}
-	get id() {
-		return this._nicoChat.id;
-	}
-	get text() {
-		return this._text;
-	}
-	get htmlText() {
-		return this._htmlText;
-	}
-	set isLayouted(v) {
-		this._isLayouted = v;
-	}
-	get isInView() {
-		return this.isInViewBySecond(this.currentTime);
-	}
-	isInViewBySecond(sec) {
-		if (!this._isLayouted || sec + 1 < this._beginLeftTiming) return false;
-		if (sec > this._endRightTiming) return false;
-		if (this.isInvisible) return false;
-		return true;
-	}
-	get isOverflow() {
-		return this._isOverflow;
-	}
-	set isOverflow(v) {
-		this._isOverflow = v;
-	}
-	get isInvisible() {
-		return this._nicoChat.isInvisible;
-	}
-	get width() {
-		return this._width;
-	}
-	get height() {
-		return this._height;
-	}
-	get duration() {
-		return this._duration / this._speedRate;
-	}
-	get speed() {
-		return this._speed;
-	}
-	get inviewTiming() {
-		return this._beginLeftTiming;
-	}
-	get beginLeftTiming() {
-		return this._beginLeftTiming;
-	}
-	get beginRightTiming() {
-		return this._beginRightTiming;
-	}
-	get endLeftTiming() {
-		return this._endLeftTiming;
-	}
-	get endRightTiming() {
-		return this._endRightTiming;
-	}
-	get vpos() {
-		return this._nicoChat.vpos;
-	}
-	get xpos() {
-		return this.getXposBySecond(this.currentTime);
-	}
-	get ypos() {
-		return this._y;
-	}
-	set ypos(v) {
-		this._y = v;
-	}
-	get slot() {
-		return this._slot;
-	}
-	set slot(v) {
-		this._slot = v;
-	}
-	get color() {
-		return this._nicoChat.color;
-	}
-	get size() {
-		return this._nicoChat.size;
-	}
-	get type() {
-		return this._nicoChat.type;
-	}
-	get cssScale() {
-		return this._scale * (this._isLineResized ? .5 : 1);
-	}
-	get fontSizePixel() {
-		return this._fontSizePixel;
-	}
-	get lineHeight() {
-		return this._cssLineHeight;
-	}
-	get isLineResized() {
-		return this._isLineResized;
-	}
-	get isDoubleResized() {
-		return this._isDoubleResized;
-	}
-	get no() {
-		return this._nicoChat.no;
-	}
-	get uniqNo() {
-		return this._nicoChat.uniqNo;
-	}
-	get layerId() {
-		return this._nicoChat.layerId;
-	}
-	get fork() {
-		return this._nicoChat.fork;
-	}
-	get nicoru() {
-		return this._nicoChat.nicoru;
-	}
-	get nicotta() {
-		return this._nicoChat.nicotta;
-	}
-	/**
-	* second時の左端座標を返す
-	*/
-	getXposBySecond(sec) {
-		if (this._isFixed) return (CommentLayer.SCREEN.WIDTH - this._width) / 2;
-		else {
-			const diff = sec - this._beginLeftTiming;
-			return CommentLayer.SCREEN.WIDTH + diff * this._speed;
-		}
-	}
-	getXposByVpos(vpos) {
-		return this.getXposBySecond(vpos / 100);
-	}
-	get currentTime() {
-		return this._nicoChat.currentTime;
-	}
-	get isFull() {
-		return this._nicoChat.isFull;
-	}
-	get isFixed() {
-		return this._isFixed;
-	}
-	get isNicoScript() {
-		return this._nicoChat.isNicoScript;
-	}
-	get isMine() {
-		return this._nicoChat.isMine;
-	}
-	get isUpdating() {
-		return this._nicoChat.isUpdating;
-	}
-	get isPostFail() {
-		return this._nicoChat.isPostFail;
-	}
-	get isReverse() {
-		return this._nicoChat.isReverse;
-	}
-	get isSubThread() {
-		return this._nicoChat.isSubThread;
-	}
-	get fontCommand() {
-		return this._nicoChat.fontCommand;
-	}
-	get commentVer() {
-		return this._nicoChat.commentVer;
-	}
-	get cssScaleY() {
-		return this.cssScale * this._cssScaleY;
-	}
-	get meta() {
-		return JSON.stringify({
-			width: this.width,
-			height: this.height,
-			scale: this.cssScale,
-			cmd: this._nicoChat.cmd,
-			fontSize: this.fontSizePixel,
-			vpos: this.vpos,
-			xpos: this.xpos,
-			ypos: this.ypos,
-			slot: this.slot,
-			type: this.type,
-			begin: this.beginLeftTiming,
-			end: this.endRightTiming,
-			speed: this.speed,
-			color: this.color,
-			size: this.size,
-			duration: this.duration,
-			opacity: this.opacity,
-			ender: this._nicoChat.isEnder,
-			full: this._nicoChat.isFull,
-			no: this._nicoChat.no,
-			uniqNo: this._nicoChat.uniqNo,
-			score: this._nicoChat.score,
-			userId: this._nicoChat.userId,
-			date: this._nicoChat.date,
-			fork: this._nicoChat.fork,
-			layerId: this._nicoChat.layerId,
-			ver: this._nicoChat.commentVer,
-			lc: this.lineCount,
-			ls: this.isLineResized,
-			thread: this._nicoChat.threadId,
-			isSub: this._nicoChat.isSubThread,
-			text: this.text
-		});
-	}
-	/**
-	* コメント同士の衝突を判定
-	*
-	* @param {NicoChatViewModel} target
-	* @return boolean
-	*/
-	checkCollision(target) {
-		if (this.isOverflow || target.isOverflow || target.isInvisible) return false;
-		if (this.layerId !== target.layerId) return false;
-		const targetY = target.ypos;
-		const selfY = this.ypos;
-		if (targetY + target.height < selfY || targetY > selfY + this.height) return false;
-		const leftFirst = this.beginLeftTiming <= target.beginLeftTiming;
-		const lt = leftFirst ? this : target;
-		const rt = leftFirst ? target : this;
-		if (this.isFixed) {
-			if (lt.endRightTiming > rt.beginLeftTiming) return true;
-		} else {
-			if (lt.beginRightTiming >= rt.beginLeftTiming) return true;
-			if (lt.endRightTiming >= rt.endLeftTiming) return true;
-		}
-		return false;
-	}
-	/**
-	* (衝突判定に引っかかったので)自分自身を一段ずらす.
-	*
-	* @param {NicoChatViewModel} others 示談相手
-	*/
-	moveToNextLine(others) {
-		const othersHeight = others.height + 1;
-		const overflowMargin = 10;
-		const rnd = Math.max(0, CommentLayer.SCREEN.HEIGHT - this.height);
-		const yMax = CommentLayer.SCREEN.HEIGHT - this.height + overflowMargin;
-		const yMin = -10;
-		const type = this.type;
-		let ypos = this.ypos;
-		if (type !== NicoChat.TYPE.BOTTOM) {
-			ypos += othersHeight;
-			if (ypos > yMax) this.isOverflow = true;
-		} else {
-			ypos -= othersHeight;
-			if (ypos < yMin) this.isOverflow = true;
-		}
-		this.ypos = this.isOverflow ? Math.floor(Math.random() * rnd) : ypos;
-	}
-	get time3d() {
-		return this._nicoChat.time3d;
-	}
-	get time3dp() {
-		return this._nicoChat.time3dp;
-	}
-	get opacity() {
-		return this._nicoChat.opacity;
-	}
-};
-NicoChatViewModel.emitter = new Emitter();
-NicoChatViewModel.FONT = "'ＭＳ Ｐゴシック'";
-NicoChatViewModel.FONT_SIZE_PIXEL = {
-	BIG: 39,
-	MEDIUM: 24,
-	SMALL: 16
-};
-NicoChatViewModel.FONT_SIZE_PIXEL_VER_HTML5 = {
-	BIG: 39,
-	MEDIUM: 26,
-	SMALL: 17.4
-};
-NicoChatViewModel.LINE_HEIGHT = {
-	BIG: 45,
-	MEDIUM: 29,
-	SMALL: 18
-};
-NicoChatViewModel.CHAT_MARGIN = 5;
-NicoChatViewModel.BASE_SCALE = parseFloat(Config.props.baseChatScale);
-Config.onkey("baseChatScale", (scale) => {
-	if (isNaN(scale)) return;
-	const parsed = parseFloat(scale);
-	NicoChatViewModel.BASE_SCALE = parsed;
-	NicoChatViewModel.emitter.emit("updateBaseChatScale", parsed);
-});
-NicoChatViewModel.SPEED_RATE = 1;
-var FlashNicoChatViewModel = class extends NicoChatViewModel {};
-var HTML5NicoChatViewModel = class extends NicoChatViewModel {
-	_calculateHeight({ scale = 1, lc = 0, size, isEnder }) {
-		lc = lc || this.lineCount;
-		isEnder = typeof isEnder === "boolean" ? isEnder : this._nicoChat.isEnder;
-		size = size || this._size;
-		const SIZE = NicoChat.SIZE;
-		const MARGIN = 4;
-		const INNER_HEIGHT = CommentLayer.SCREEN.HEIGHT - MARGIN;
-		const TABLE_HEIGHT = 356;
-		const RATIO = INNER_HEIGHT / TABLE_HEIGHT;
-		scale *= RATIO;
-		this._isLineResized = false;
-		let lineHeight;
-		switch (size) {
-			case SIZE.BIG:
-				lineHeight = 47;
-				break;
-			case SIZE.SMALL:
-				lineHeight = 22;
-				break;
-			default: lineHeight = 32;
-		}
-		this._cssLineHeight = lineHeight;
-		if (lc === 1) return (lineHeight * scale - 1) * NicoChatViewModel.BASE_SCALE;
-		switch (size) {
-			case SIZE.BIG:
-				lineHeight = TABLE_HEIGHT / (8 * (TABLE_HEIGHT / 340));
-				break;
-			case SIZE.SMALL:
-				lineHeight = TABLE_HEIGHT / (21 * (TABLE_HEIGHT / 354));
-				break;
-			default: lineHeight = TABLE_HEIGHT / (13 * (TABLE_HEIGHT / 357));
-		}
-		const height = (lineHeight * lc + MARGIN) * scale * NicoChatViewModel.BASE_SCALE;
-		if (isEnder || height < TABLE_HEIGHT / 3) {
-			this._cssLineHeight = lineHeight;
-			return height - 1;
-		}
-		this._isLineResized = true;
-		switch (size) {
-			case SIZE.BIG:
-				lineHeight = TABLE_HEIGHT / 16;
-				break;
-			case SIZE.SMALL:
-				lineHeight = TABLE_HEIGHT / 38;
-				break;
-			default: lineHeight = TABLE_HEIGHT / (25 * (TABLE_HEIGHT / 351));
-		}
-		this._cssLineHeight = lineHeight * 2;
-		return ((lineHeight * lc + MARGIN) * scale - 1) * NicoChatViewModel.BASE_SCALE;
-	}
-	_setScale_(scale) {
-		this._scale = scale;
-		this._height = this._calculateHeight({}) * scale;
-		this._width = this._originalWidth * scale * (this._isLineResized ? .5 : 1);
-	}
-	getCssScaleY() {
-		return this.cssScale;
-	}
-};
-var OffscreenLayer = (config) => {
-	const __offscreen_tpl__ = `
-    <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-    <meta charset="utf-8">
-    <title>CommentLayer</title>
-    <style type="text/css" id="layoutCss">%LAYOUT_CSS%</style>
-    <style type="text/css" id="optionCss">%OPTION_CSS%</style>
-    <style type="text/css">
-      .nicoChat { visibility: hidden; }
-    </style>
-    <body>
-    <div id="offScreenLayer"
-      style="
-        width: 4096px;
-        height: 384px;
-        overflow: visible;
-        background: #fff;
-
-        white-space: pre;
-        pointer-events: none;
-        user-select: none;
-        contain: strict;
-    "></div>
-    </body></html>
-      `.trim();
-	const emt = new Emitter();
-	let offScreenFrame;
-	let offScreenLayer;
-	let textField;
-	let optionStyle;
-	const initializeOptionCss = (style) => {
-		const update = () => {
-			const tmp = [];
-			let baseFont = config.props.baseFontFamily;
-			const inner = style.innerHTML;
-			if (baseFont) {
-				baseFont = baseFont.replace(/[;{}*/]/g, "");
-				tmp.push([".gothic    {font-family: %BASEFONT%; }\n", "han_group {font-family: %BASEFONT%, Arial; }"].join("").replace(/%BASEFONT%/g, baseFont));
-			}
-			tmp.push(`.nicoChat { font-weight: ${config.props.baseFontBolder ? config.props.cssFontWeight : "normal"} !important; }`);
-			const newCss = tmp.join("\n");
-			if (inner !== newCss) {
-				style.innerHTML = newCss;
-				global.emitter.emit("updateOptionCss", newCss);
-			}
-		};
-		update();
-		config.onkey("baseFontFamily", update);
-		config.onkey("baseFontBolder", update);
-	};
-	const initialize = () => {
-		if (offScreenFrame) return;
-		window.console.time("createOffscreenLayer");
-		const frame = document.createElement("iframe");
-		offScreenFrame = frame;
-		frame.loading = "eager";
-		frame.className = "offScreenLayer";
-		frame.setAttribute("sandbox", "allow-same-origin");
-		frame.style.position = "fixed";
-		frame.style.top = "200vw";
-		frame.style.left = "200vh";
-		(document.body || document.documentElement).append(frame);
-		let layer;
-		const onload = () => {
-			frame.onload = null;
-			console.log("%conOffScreenLayerLoad", "background: lightgreen;");
-			createTextField();
-			const doc = offScreenFrame.contentWindow;
-			layer = doc.document.getElementById("offScreenLayer");
-			optionStyle = doc.document.getElementById("optionCss");
-			initializeOptionCss(optionStyle);
-			offScreenLayer = {
-				getTextField: () => textField,
-				appendChild: (elm) => {
-					layer.append(elm);
-				},
-				removeChild: (elm) => {
-					layer.removeChild(elm);
-				},
-				get optionCss() {
-					return optionStyle.innerHTML;
-				}
-			};
-			window.console.timeEnd("createOffscreenLayer");
-			emt.emitResolve("GetReady!", offScreenLayer);
-		};
-		const html = __offscreen_tpl__.replace("%LAYOUT_CSS%", String(NicoTextParser.__css__)).replace("%OPTION_CSS%", "");
-		if (typeof frame.srcdoc === "string") {
-			frame.onload = onload;
-			frame.srcdoc = html;
-		} else {
-			const fcd = frame.contentWindow.document;
-			fcd.open();
-			fcd.write(html);
-			fcd.close();
-			window.setTimeout(onload, 0);
-		}
-	};
-	const getLayer = (_config) => {
-		config = _config || config;
-		initialize();
-		return emt.promise("GetReady!");
-	};
-	const createTextField = () => {
-		const layer = offScreenFrame.contentWindow.document.getElementById("offScreenLayer");
-		const span = document.createElement("span");
-		span.className = "nicoChat";
-		let scale = config.props.baseChatScale;
-		config.onkey("baseChatScale", (v) => scale = v);
-		textField = {
-			setText: (text) => {
-				span.innerHTML = text;
-			},
-			setType: (type, size, fontCommand, ver) => {
-				const fontClass = fontCommand ? `cmd-${fontCommand}` : "";
-				span.className = `nicoChat ${type} ${size} ${fontClass} ${ver}`;
-			},
-			setFontSizePixel: span.attributeStyleMap ? (pixel) => span.attributeStyleMap.set("font-size", CSS.px(pixel)) : (pixel) => span.style.fontSize = `${pixel}px`,
-			getOriginalWidth: () => span.offsetWidth,
-			getWidth: () => span.offsetWidth * scale,
-			getOriginalHeight: () => span.offsetHeight,
-			getHeight: () => span.offsetHeight * scale
-		};
-		layer.append(span);
-		return span;
-	};
-	return {
-		get: getLayer,
-		get optionCss() {
-			return optionStyle.innerHTML;
-		}
-	};
-};
 var NicoChatGroup = class extends Emitter {
 	constructor(...args) {
 		super();
@@ -6367,29 +5433,26 @@ var NicoChatGroup = class extends Emitter {
 	addChat(nicoChat) {
 		this._members.push(nicoChat);
 		nicoChat.group = this;
-		if (this._nicoChatFilter.isSafe(nicoChat)) {
-			this._filteredMembers.push(nicoChat);
-			this.emit("addChat", nicoChat);
-		}
+		this._filteredMembers = this._nicoChatFilter.applyFilter(this._members).slice();
+		if (this._filteredMembers.includes(nicoChat)) this.emit("addChat", nicoChat);
 	}
 	_getChat(nicoChat) {
 		return (chat) => chat.threadId === nicoChat.threadId && chat.fork === nicoChat.fork && chat.no === nicoChat.no;
 	}
 	removeChat(nicoChat) {
 		const getChat = this._getChat(nicoChat);
-		this._members.splice(this._members.findIndex(getChat), 1);
+		const index = this._members.indexOf(nicoChat) >= 0 ? this._members.indexOf(nicoChat) : this._members.findIndex(getChat);
+		if (index < 0) return;
+		this._members.splice(index, 1);
 		nicoChat.group = this;
-		if (this._nicoChatFilter.isSafe(nicoChat)) {
-			this._filteredMembers.splice(this._filteredMembers.findIndex(getChat), 1);
-			this.onChange(null);
-		}
+		this.onChange(null);
 	}
 	get type() {
 		return this._type;
 	}
 	get members() {
 		if (this._filteredMembers.length > 0) return this._filteredMembers;
-		return this._filteredMembers = this._nicoChatFilter.applyFilter(this._members);
+		return this._filteredMembers = this._nicoChatFilter.applyFilter(this._members).slice();
 	}
 	get nonFilteredMembers() {
 		return this._members;
@@ -6421,336 +5484,6 @@ var NicoChatGroup = class extends Emitter {
 	includes(nicoChat) {
 		const uno = nicoChat.uniqNo;
 		return this._members.find((m) => m.uniqNo === uno);
-	}
-};
-var CommentLayoutWorker = ((config) => {
-	const func = function(self) {
-		const TYPE = {
-			BOTTOM: "shita"
-		};
-		const SCREEN = {
-			HEIGHT: 384
-		};
-		const isConflict = (target, others) => {
-			if (target.isOverflow || others.isOverflow || others.isInvisible) return false;
-			if (target.layerId !== others.layerId) return false;
-			const othersY = others.ypos;
-			const targetY = target.ypos;
-			if (othersY + others.height < targetY || othersY > targetY + target.height) return false;
-			let rt, lt;
-			if (target.beginLeft <= others.beginLeft) {
-				lt = target;
-				rt = others;
-			} else {
-				lt = others;
-				rt = target;
-			}
-			if (target.isFixed) {
-				if (lt.endRight > rt.beginLeft) return true;
-			} else {
-				if (lt.beginRight >= rt.beginLeft) return true;
-				if (lt.endRight >= rt.endLeft) return true;
-			}
-			return false;
-		};
-		const moveToNextLine = (self, others) => {
-			const othersHeight = others.height + 1;
-			const overflowMargin = 10;
-			const rnd = Math.max(0, SCREEN.HEIGHT - self.height);
-			const yMax = SCREEN.HEIGHT - self.height + overflowMargin;
-			const yMin = -10;
-			const type = self.type;
-			let ypos = self.ypos;
-			if (type !== TYPE.BOTTOM) {
-				ypos += othersHeight;
-				if (ypos > yMax) self.isOverflow = true;
-			} else {
-				ypos -= othersHeight;
-				if (ypos < yMin) self.isOverflow = true;
-			}
-			self.ypos = self.isOverflow ? Math.floor(Math.random() * rnd) : ypos;
-			return self;
-		};
-		/**
-		* 最初に衝突が起こりうるindexを返す。
-		* 処理効率化のための物
-		*/
-		const findCollisionStartIndex = (target, members) => {
-			const tl = target.beginLeft;
-			const tr = target.endRight;
-			const layerId = target.layerId;
-			for (let i = 0, len = members.length; i < len; i++) {
-				const o = members[i];
-				const ol = o.beginLeft;
-				const or = o.endRight;
-				if (o.id === target.id) return -1;
-				if (layerId !== o.layerId || o.invisible || o.isOverflow) continue;
-				if (tl <= or && tr >= ol) return i;
-			}
-			return -1;
-		};
-		const _checkCollision = (target, members, collisionStartIndex) => {
-			const beginLeft = target.beginLeft;
-			for (let i = collisionStartIndex, len = members.length; i < len; i++) {
-				const o = members[i];
-				if (o.id === target.id) return target;
-				if (beginLeft > o.endRight) continue;
-				if (isConflict(target, o)) {
-					target = moveToNextLine(target, o);
-					if (!target.isOverflow) return _checkCollision(target, members, collisionStartIndex);
-				}
-			}
-			return target;
-		};
-		const checkCollision = (target, members) => {
-			if (target.isInvisible) return target;
-			const collisionStartIndex = findCollisionStartIndex(target, members);
-			if (collisionStartIndex < 0) return target;
-			return _checkCollision(target, members, collisionStartIndex);
-		};
-		const groupCollision = (members) => {
-			for (let i = 0, len = members.length; i < len; i++) checkCollision(members[i], members);
-			return members;
-		};
-		self.onmessage = ({ command, params }) => {
-			const { type, members, lastUpdate } = params;
-			console.time("CommentLayoutWorker: " + String(type));
-			if (members) groupCollision(members);
-			console.timeEnd("CommentLayoutWorker: " + String(type));
-			return {
-				type,
-				members,
-				lastUpdate
-			};
-		};
-	};
-	let instance = null;
-	return {
-		_func: func,
-		create: () => {
-			return workerUtil.createCrossMessageWorker(func, { name: "CommentLayoutWorker" });
-		},
-		getInstance() {
-			if (!instance) instance = this.create();
-			return instance;
-		}
-	};
-})(ZenzaWatch.config);
-var NicoChatGroupViewModel = class {
-	constructor(...args) {
-		this.initialize(...args);
-	}
-	initialize(nicoChatGroup, offScreen) {
-		this._nicoChatGroup = nicoChatGroup;
-		this._offScreen = offScreen;
-		this._members = [];
-		this._lastUpdate = 0;
-		this._vSortedMembers = [];
-		this._initWorker();
-		const viewModelFactory = NicoChatViewModel;
-		nicoChatGroup.on("addChat", (nicoChat) => this._onAddChat(nicoChat));
-		nicoChatGroup.on("addChatArray", (nicoChatArray) => this._onAddChatArray(nicoChatArray));
-		nicoChatGroup.on("reset", () => this._onReset());
-		nicoChatGroup.on("change", (e) => this._onChange(e));
-		viewModelFactory.emitter.on("updateBaseChatScale", (e) => this._onChange(e));
-		viewModelFactory.emitter.on("updateCommentSpeedRate", () => this._onCommentSpeedRateUpdate());
-		this.addChatArray(nicoChatGroup.members);
-	}
-	_initWorker() {
-		const worker = CommentLayoutWorker;
-		this._layoutWorker = worker.getInstance();
-	}
-	_onAddChatArray(nicoChatArray) {
-		this.addChatArray(nicoChatArray);
-	}
-	_onAddChat(nicoChat) {
-		this.addChat(nicoChat);
-	}
-	_onReset() {
-		this.reset();
-	}
-	_onChange(e) {
-		console.log("NicoChatGroupViewModel.onChange: ", e);
-		window.console.time("_onChange");
-		this.reset();
-		this.addChatArray(this._nicoChatGroup.members);
-		window.console.timeEnd("_onChange");
-	}
-	async _execCommentLayoutWorker() {
-		if (this._members.length < 1) return;
-		const type = this._members[0].type;
-		const result = await this._layoutWorker.post({
-			command: "layout",
-			params: {
-				type,
-				members: this.bulkLayoutData,
-				lastUpdate: this._lastUpdate
-			}
-		});
-		if (result.lastUpdate !== this._lastUpdate) {
-			console.warn("group changed", this._lastUpdate, result.lastUpdate);
-			return;
-		}
-		this.bulkLayoutData = result.members;
-	}
-	async addChatArray(nicoChatArray) {
-		const viewModelFactory = NicoChatViewModel;
-		for (let i = 0, len = nicoChatArray.length; i < len; i++) {
-			const nicoChat = nicoChatArray[i];
-			const nc = viewModelFactory.create(nicoChat, this._offScreen);
-			this._members.push(nc);
-			if (i % 100 === 99) await new Promise((r) => setTimeout(r, 10));
-		}
-		if (this._members.length < 1) return;
-		this._lastUpdate = Date.now();
-		this._execCommentLayoutWorker();
-	}
-	_onCommentSpeedRateUpdate() {
-		const viewModelFactory = NicoChatViewModel;
-		this.changeSpeed(viewModelFactory.SPEED_RATE);
-	}
-	changeSpeed(speedRate = 1) {
-		for (const member of this._members) member.recalcBeginEndTiming(speedRate);
-		this._execCommentLayoutWorker();
-	}
-	_groupCollision() {
-		this._createVSortedMembers();
-		const members = this._vSortedMembers;
-		for (let i = 0, len = members.length; i < len; i++) {
-			const o = members[i];
-			this.checkCollision(o);
-			o.isLayouted = true;
-		}
-	}
-	addChat(nicoChat) {
-		const timeKey = "addChat:" + nicoChat.text;
-		window.console.time(timeKey);
-		const nc = NicoChatViewModel.create(nicoChat, this._offScreen);
-		this._lastUpdate = Date.now();
-		this.checkCollision(nc);
-		nc.isLayouted = true;
-		this._members.push(nc);
-		this._execCommentLayoutWorker();
-		window.console.timeEnd(timeKey);
-	}
-	reset() {
-		const m = this._members;
-		for (let i = 0, len = m.length; i < len; i++) m[i].reset();
-		this._members = [];
-		this._vSortedMembers = [];
-		this._lastUpdate = Date.now();
-	}
-	get currentTime() {
-		return this._nicoChatGroup.currentTime;
-	}
-	get type() {
-		return this._nicoChatGroup.type;
-	}
-	checkCollision(target) {
-		if (target.isInvisible) return;
-		const m = this._vSortedMembers;
-		const beginLeft = target.beginLeftTiming;
-		for (let i = 0, len = m.length; i < len; i++) {
-			const o = m[i];
-			if (o === target) return;
-			if (beginLeft > o.endRightTiming) continue;
-			if (o.checkCollision(target)) {
-				target.moveToNextLine(o);
-				if (!target.isOverflow) {
-					this.checkCollision(target);
-					return;
-				}
-			}
-		}
-	}
-	get bulkLayoutData() {
-		this._createVSortedMembers();
-		const m = this._vSortedMembers;
-		const result = [];
-		for (let i = 0, len = m.length; i < len; i++) result.push(m[i].bulkLayoutData);
-		return result;
-	}
-	set bulkLayoutData(data) {
-		const m = this._vSortedMembers;
-		for (let i = 0, len = m.length; i < len; i++) m[i].bulkLayoutData = data[i];
-	}
-	get bulkSlotData() {
-		this._createVSortedMembers();
-		const m = this._vSortedMembers;
-		const result = [];
-		for (let i = 0, len = m.length; i < len; i++) {
-			const o = m[i];
-			result.push({
-				id: o.id,
-				slot: o.slot,
-				fork: o.fork,
-				no: o.no,
-				vpos: o.vpos,
-				begin: o.inviewTiming,
-				end: o.endRightTiming,
-				invisible: o.isInvisible
-			});
-		}
-		return result;
-	}
-	set bulkSlotData(data) {
-		const m = this._vSortedMembers;
-		for (let i = 0, len = m.length; i < len; i++) m[i].slot = data[i].slot;
-	}
-	/**
-	* vposでソートされたメンバーを生成. 計算効率改善用
-	*/
-	_createVSortedMembers() {
-		this._vSortedMembers = this._members.concat().sort((a, b) => NicoChat.SORT_FUNCTION(a, b));
-		return this._vSortedMembers;
-	}
-	get members() {
-		return this._members;
-	}
-	/**
-	* 現時点で表示状態のメンバーのみを返す
-	*/
-	get inViewMembers() {
-		return this.getInViewMembersBySecond(this.currentTime);
-	}
-	/**
-	* secの時点で表示状態のメンバーのみを返す
-	*/
-	getInViewMembersBySecond(sec) {
-		const result = [];
-		const m = this._vSortedMembers, len = m.length;
-		for (let i = 0; i < len; i++) {
-			const chat = m[i];
-			if (chat.isInViewBySecond(sec)) result.push(chat);
-		}
-		return result;
-	}
-	getInViewMembersByVpos(vpos) {
-		if (!this._hasLayout) this._layout();
-		return this.getInViewMembersBySecond(vpos / 100);
-	}
-	export() {
-		const result = [];
-		const m = this._members, len = m.length;
-		result.push([
-			"	<group ",
-			"type=\"",
-			this._nicoChatGroup.type,
-			"\" ",
-			"length=\"",
-			m.length,
-			"\" ",
-			">"
-		].join(""));
-		for (let i = 0; i < len; i++) result.push(m[i].export());
-		result.push("	</group>");
-		return result.join("\n");
-	}
-	getCurrentTime() {
-		return this.currentTime;
-	}
-	getType() {
-		return this.type;
 	}
 };
 var NicoScriptParser = class NicoScriptParser {
@@ -7203,7 +5936,7 @@ var NicoScripter = class extends Emitter {
 		});
 	}
 };
-var { MAX_COMMENT } = CommentLayer;
+var MAX_COMMENT = 1e4;
 var NicoComment = class NicoComment extends Emitter {
 	static getMaxCommentsByDuration(duration = 216e5) {
 		if (duration < 64) return 100;
@@ -7216,26 +5949,20 @@ var NicoComment = class NicoComment extends Emitter {
 		this._currentTime = 0;
 		params.nicoChatFilter = this._nicoChatFilter = new NicoChatFilter(params.filter || {});
 		this._nicoChatFilter.on("change", this._onFilterChange.bind(this));
-		const globalLike = global;
-		NicoComment.offscreenLayer.get().then(async (offscreen) => {
-			params.offScreen = offscreen;
-			const groupParams = {
-				...params,
-				nicoChatFilter: this._nicoChatFilter
-			};
-			this.topGroup = new NicoChatGroup(NicoChat.TYPE.TOP, groupParams);
-			this.nakaGroup = new NicoChatGroup(NicoChat.TYPE.NAKA, groupParams);
-			this.bottomGroup = new NicoChatGroup(NicoChat.TYPE.BOTTOM, groupParams);
-			this.nicoScripter = new NicoScripter();
-			this.nicoScripter.on("command", (command, param) => this.emit("command", command, param));
-			const onChange = import_lodash.default.debounce(this._onChange.bind(this), 100);
-			this.topGroup.on("change", onChange);
-			this.nakaGroup.on("change", onChange);
-			this.bottomGroup.on("change", onChange);
-			globalLike.emitter.on("updateOptionCss", onChange);
-			await sleep.idle();
-			this.emitResolve("GetReady!");
-		});
+		const groupParams = {
+			...params,
+			nicoChatFilter: this._nicoChatFilter
+		};
+		this.topGroup = new NicoChatGroup(NicoChat.TYPE.TOP, groupParams);
+		this.nakaGroup = new NicoChatGroup(NicoChat.TYPE.NAKA, groupParams);
+		this.bottomGroup = new NicoChatGroup(NicoChat.TYPE.BOTTOM, groupParams);
+		this.nicoScripter = new NicoScripter();
+		this.nicoScripter.on("command", (command, param) => this.emit("command", command, param));
+		const onChange = import_lodash.default.debounce(this._onChange.bind(this), 100);
+		this.topGroup.on("change", onChange);
+		this.nakaGroup.on("change", onChange);
+		this.bottomGroup.on("change", onChange);
+		this.emitResolve("GetReady!");
 	}
 	setXml(xml, options) {
 		const chatsData = Array.from(xml.getElementsByTagName("chat")).filter((chat) => chat.firstChild);
@@ -7263,7 +5990,6 @@ var NicoComment = class NicoComment extends Emitter {
 		return this.setChats(chatsData, options);
 	}
 	async setData(data, options) {
-		await this.promise("GetReady!");
 		const chatsData = data.filter((d) => d.chat).map((d) => {
 			const chat = d.chat;
 			return Object.assign({
@@ -7490,1300 +6216,2499 @@ var NicoComment = class NicoComment extends Emitter {
 		return this._nicoChatFilter;
 	}
 };
-var SlotLayoutWorker = (() => {
-	const func = function(self) {
-		const SLOT_COUNT = 40;
-		/**
-		* スロット≒Z座標をよしなに割り当てる。
-		* デザパタ的にいうならFlyweightパターンの亜種。
-		* ゲームプログラミングではよくあるやつ。
-		*/
-		class SlotEntry {
-			constructor(slotCount) {
-				this.slotCount = slotCount || SLOT_COUNT;
-				this.slot = [];
-				this.itemTable = {};
-				this.p = 1;
-			}
-			findIdle(sec) {
-				const { count, slot, table } = this;
-				for (let i = 0; i < count; i++) {
-					if (!slot[i]) {
-						slot[i] = this.p++;
-						return i;
-					}
-					const item = table[i];
-					if (item === void 0) continue;
-					if (sec < item.begin || sec > item.end) {
-						slot[i] = this.p++;
-						return i;
-					}
-				}
-				return -1;
-			}
-			get mostOld() {
-				let idx = 0;
-				const slot = this.slot;
-				let min = slot[0];
-				for (let i = 1, len = this.slot.length; i < len; i++) {
-					const value = slot[i];
-					if (value !== void 0 && (min === void 0 || value < min)) {
-						min = value;
-						idx = i;
-					}
-				}
-				return idx;
-			}
-			find(item, sec) {
-				let slot = this.findIdle(sec);
-				if (slot < 0) slot = this.mostOld;
-				this.itemTable[slot] = item;
-				return slot;
+var Ee = {
+	small: .6666666666666666,
+	medium: 1,
+	big: 1.4444444444444444
+};
+var Te = {
+	defont: "Arial,\"ＭＳ Ｐゴシック\",\"MS PGothic\",MSPGothic,MS-PGothic",
+	gothic: "\"游ゴシック体\",\"游ゴシック\",\"Yu Gothic\",YuGothic,yugothic,YuGo-Medium,\"宋体\",SimSun,Arial,\"ＭＳ Ｐゴシック\",\"MS PGothic\",MSPGothic,MS-PGothic",
+	mincho: "\"游明朝体\",\"游明朝\",\"Yu Mincho\",YuMincho,yumincho,YuMin-Medium,\"宋体\",SimSun,Arial,\"ＭＳ Ｐゴシック\",\"MS PGothic\",MSPGothic,MS-PGothic"
+};
+var we = {
+	defont: "600",
+	gothic: "",
+	mincho: ""
+};
+var ae = {
+	white: "#FFFFFF",
+	red: "#FF0000",
+	pink: "#FFA5CC",
+	orange: "#FFBA66",
+	yellow: "#FFFFAA",
+	green: "#00FF00",
+	cyan: "#88FFFF",
+	blue: "#8899FF",
+	purple: "#D9A5FF",
+	black: "#000000",
+	white2: "#CC9",
+	red2: "#C03",
+	pink2: "#F3C",
+	orange2: "#F60",
+	yellow2: "#990",
+	green2: "#0C6",
+	cyan2: "#0CC",
+	blue2: "#39F",
+	purple2: "#63C",
+	black2: "#666"
+};
+var G = /^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+var xe = /^[,.:;]+/;
+var Ie = /[,.:;]+$/;
+var Le = (e) => {
+	const t = e.trim();
+	return t ? G.test(t) ? t : t.replace(xe, "").replace(Ie, "") : "";
+};
+var Fe = (e) => G.test(e) ? e.toUpperCase() : null;
+var re = (e) => {
+	const t = e.trim();
+	if (!t) return null;
+	const i = t.toLowerCase().endsWith("px") ? t.slice(0, -2) : t, s = Number.parseFloat(i);
+	return Number.isFinite(s) ? s : null;
+};
+var Re = (e) => {
+	const t = e.trim();
+	if (!t) return null;
+	if (t.endsWith("%")) {
+		const i = Number.parseFloat(t.slice(0, -1));
+		return Number.isFinite(i) ? i / 100 : null;
+	}
+	return re(t);
+};
+var Ae = (e) => Number.isFinite(e) ? Math.min(100, Math.max(-100, e)) : 0;
+var Pe = (e) => !Number.isFinite(e) || e === 0 ? 1 : Math.min(5, Math.max(.25, e));
+var De = (e) => e === "naka" || e === "ue" || e === "shita";
+var _e = (e) => e === "small" || e === "medium" || e === "big";
+var Ve = (e) => e === "defont" || e === "gothic" || e === "mincho";
+var Oe = (e) => e in ae;
+var He = (e, t) => {
+	let i = "naka", s = "medium", n = "defont", a = null, o = 1, l = null, u = false, h = false, r = false, f = 0, d = 1;
+	for (const S of e) {
+		const y = Le(typeof S == "string" ? S : "");
+		if (!y) continue;
+		if (G.test(y)) {
+			const b = Fe(y);
+			if (b) {
+				a = b;
+				continue;
 			}
 		}
-		const sortByBeginTime = (data) => {
-			data = data.concat().sort((a, b) => {
-				const av = a.begin, bv = b.begin;
-				if (av !== bv) return av - bv;
-				else return a.no < b.no ? -1 : 1;
-			});
-			return data;
-		};
-		const execute = ({ top, naka, bottom }) => {
-			const data = sortByBeginTime([
-				top,
-				naka,
-				bottom
-			].flat());
-			const slotEntries = [
-				new SlotEntry(),
-				new SlotEntry(),
-				new SlotEntry()
-			];
-			for (let i = 0, len = data.length; i < len; i++) {
-				const o = data[i];
-				if (o === void 0 || o.invisible) continue;
-				const sec = o.begin;
-				o.slot = slotEntries[o.fork % 3].find(o, sec);
+		const m = y.toLowerCase();
+		if (De(m)) {
+			i = m;
+			continue;
+		}
+		if (_e(m)) {
+			s = m;
+			continue;
+		}
+		if (Ve(m)) {
+			n = m;
+			continue;
+		}
+		if (Oe(m)) {
+			a = ae[m].toUpperCase();
+			continue;
+		}
+		if (m === "_live") {
+			l = .5;
+			continue;
+		}
+		if (m === "invisible") {
+			o = 0, u = true;
+			continue;
+		}
+		if (m === "full") {
+			h = true;
+			continue;
+		}
+		if (m === "ender") {
+			r = true;
+			continue;
+		}
+		if (m.startsWith("ls:") || m.startsWith("letterspacing:")) {
+			const b = y.indexOf(":");
+			if (b >= 0) {
+				const x = re(y.slice(b + 1));
+				x !== null && (f = Ae(x));
 			}
-			return data;
-		};
-		self.onmessage = ({ command, params }) => {
-			console.time("SlotLayoutWorker");
-			const result = execute(params);
-			console.timeEnd("SlotLayoutWorker");
-			result.lastUpdate = params.lastUpdate;
-			return result;
-		};
+			continue;
+		}
+		if (m.startsWith("lh:") || m.startsWith("lineheight:")) {
+			const b = y.indexOf(":");
+			if (b >= 0) {
+				const x = Re(y.slice(b + 1));
+				x !== null && (d = Pe(x));
+			}
+			continue;
+		}
+	}
+	const c = Math.max(0, Math.min(1, o)), p = (a ?? t.defaultColor).toUpperCase(), g = typeof l == "number" ? Math.max(0, Math.min(1, l)) : null;
+	return {
+		layout: i,
+		size: s,
+		sizeScale: Ee[s],
+		font: n,
+		fontFamily: Te[n],
+		fontWeight: we[n],
+		resolvedColor: p,
+		colorOverride: a,
+		opacityMultiplier: c,
+		opacityOverride: g,
+		isInvisible: u,
+		isFull: h,
+		isEnder: r,
+		letterSpacing: f,
+		lineHeight: d
+	};
+};
+var Ne = /^#([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
+var V = (e) => e.length === 1 ? e.repeat(2) : e;
+var L = (e) => Number.parseInt(e, 16);
+var P = (e) => !Number.isFinite(e) || e <= 0 ? 0 : e >= 1 ? 1 : e;
+var oe = (e, t) => {
+	const i = Ne.exec(e);
+	if (!i) return e;
+	const s = i[1];
+	let n, a, o, l = 1;
+	s.length === 3 || s.length === 4 ? (n = L(V(s[0])), a = L(V(s[1])), o = L(V(s[2])), s.length === 4 && (l = L(V(s[3])) / 255)) : (n = L(s.slice(0, 2)), a = L(s.slice(2, 4)), o = L(s.slice(4, 6)), s.length === 8 && (l = L(s.slice(6, 8)) / 255));
+	const u = P(l * P(t));
+	return `rgba(${n}, ${a}, ${o}, ${u})`;
+};
+var ke = () => ({ now: () => typeof performance < "u" && typeof performance.now == "function" ? performance.now() : Date.now() });
+var le = () => ke();
+var T = (e) => e * 1e3;
+var ze = (e) => !Number.isFinite(e) || e < 0 ? null : Math.round(e);
+var U = 6e3;
+var We = 2700;
+var $e = 3;
+var Xe = .35;
+var Be = 48;
+var Ge = 48;
+var N = 0;
+var w = 3e3;
+var F = 9e3;
+var Ue = 240;
+var K = 1;
+var ce = 12;
+var E = .001;
+var A = 50;
+var j = {
+	debug: 0,
+	info: 1,
+	warn: 2,
+	error: 3
+};
+var Ye = (e, t, i) => {
+	const n = [`[${t}]`, ...i];
+	switch (e) {
+		case "debug":
+			console.debug(...n);
+			break;
+		case "info":
+			console.info(...n);
+			break;
+		case "warn":
+			console.warn(...n);
+			break;
+		case "error":
+			console.error(...n);
+			break;
+		default: console.log(...n);
+	}
+};
+var he = (e, t = {}) => {
+	const { level: i = "info", emitter: s = Ye } = t, n = j[i], a = (o, l) => {
+		j[o] < n || s(o, e, l);
 	};
 	return {
-		_func: func,
-		create: function() {
-			const util = workerUtil;
-			if (!util.isAvailable) return null;
-			return util.createCrossMessageWorker(func, { name: "SlotLayoutWorker" });
-		}
+		debug: (...o) => a("debug", o),
+		info: (...o) => a("info", o),
+		warn: (...o) => a("warn", o),
+		error: (...o) => a("error", o)
 	};
-})();
-var NicoCommentViewModel = class extends Emitter {
-	constructor(...args) {
-		super();
-		this.initialize(...args);
-	}
-	async initialize(nicoComment) {
-		const offScreen = this._offScreen = await NicoComment.offscreenLayer.get();
-		this._currentTime = 0;
-		this._lastUpdate = 0;
-		this._topGroup = new NicoChatGroupViewModel(nicoComment.getGroup(NicoChat.TYPE.TOP), offScreen);
-		this._nakaGroup = new NicoChatGroupViewModel(nicoComment.getGroup(NicoChat.TYPE.NAKA), offScreen);
-		this._bottomGroup = new NicoChatGroupViewModel(nicoComment.getGroup(NicoChat.TYPE.BOTTOM), offScreen);
-		if (Config.namespace("commentLayer").props.enableSlotLayoutEmulation) {
-			this._slotLayoutWorker = SlotLayoutWorker.create();
-			this._updateSlotLayout = import_lodash.default.debounce(this._updateSlotLayout.bind(this), 100);
+};
+var Y = he("CommentEngine:Comment");
+var J = /* @__PURE__ */ new WeakMap();
+var qe = (e) => {
+	let t = J.get(e);
+	return t || (t = /* @__PURE__ */ new Map(), J.set(e, t)), t;
+};
+var q = (e, t) => {
+	if (!e) return 0;
+	const s = `${e.font ?? ""}::${t}`, n = qe(e), a = n.get(s);
+	if (a !== void 0) return a;
+	const o = e.measureText(t).width;
+	return n.set(s, o), o;
+};
+var ue = 768;
+var Ke = .1;
+var z = (e) => Ke * (Math.max(1, e) / ue);
+var je = {
+	small: {
+		resizeAtLineCount: 7,
+		normal: {
+			fontSize: 36,
+			blockHeight: 46.4650603532791,
+			lineAdvance: 36.0867458283901
+		},
+		resized: {
+			fontSize: 20,
+			blockHeight: 25.9252893924713,
+			lineAdvance: 20.065746307373
 		}
-		nicoComment.on("setData", this._onSetData.bind(this));
-		nicoComment.on("clear", this._onClear.bind(this));
-		nicoComment.on("change", this._onChange.bind(this));
-		nicoComment.on("parsed", this._onCommentParsed.bind(this));
-		nicoComment.on("currentTime", (sec) => this._onCurrentTime(sec));
+	},
+	medium: {
+		resizeAtLineCount: 5,
+		normal: {
+			fontSize: 54,
+			blockHeight: 68.1645984649658,
+			lineAdvance: 57.8541674613953
+		},
+		resized: {
+			fontSize: 28,
+			blockHeight: 35.4883227944374,
+			lineAdvance: 30.0388290286064
+		}
+	},
+	big: {
+		resizeAtLineCount: 3,
+		normal: {
+			fontSize: 78,
+			blockHeight: 98.6615376472473,
+			lineAdvance: 90.4781694412232
+		},
+		resized: {
+			fontSize: 40,
+			blockHeight: 52.1674284785986,
+			lineAdvance: 47.7538447529078
+		}
 	}
-	_onSetData() {
-		this.emit("setData");
+};
+var Z = ({ canvasHeight: e, size: t, lineCount: i, isEnder: s, lineHeightMultiplier: n }) => {
+	const a = Math.max(1, e), o = Math.max(1, Math.floor(i)), l = je[t], u = !s && o >= l.resizeAtLineCount, h = u ? l.resized : l.normal, r = a / ue, f = Math.max(1, h.fontSize * r), d = Math.abs(n - 1) > Number.EPSILON, c = d ? Math.max(1, f * n) : Math.max(1, h.lineAdvance * r), p = f + (o - 1) * c, g = (h.blockHeight + (o - 1) * h.lineAdvance) * r;
+	return {
+		fontSize: f,
+		lineAdvance: c,
+		textHeight: p,
+		slotHeight: d ? p : Math.max(1, g - z(a)),
+		wasResizedForLineCount: u
+	};
+};
+var Je = 1364;
+var Ze = 1024;
+var de = 4e3;
+var fe = 2e3;
+var Qe = 1e3;
+var $ = (e) => Math.max(0, e) / 2 + 3;
+var et = ({ visibleWidth: e, inkWidth: t, texturePaddingX: i, direction: s, traversalDurationMs: n = de }) => {
+	const a = Math.max(1, e), o = Math.max(0, t), l = Math.max(0, i), u = Math.max(1, n), h = a * (Ze / Je), r = (a - h) / 2, f = (h + o) / u, d = f * Qe, c = s === "rtl" ? r + h + l + d : r - o - l - d, p = s === "rtl" ? -o - l : a + l, g = Math.abs(p - c) / Math.max(f, Number.EPSILON);
+	return {
+		renderLeft: r,
+		renderWidth: h,
+		pixelsPerMs: f,
+		startX: c,
+		exitX: p,
+		collisionDurationMs: o / Math.max(f, Number.EPSILON),
+		totalDurationMs: g
+	};
+};
+var tt = 768;
+var it = .75;
+var Q = 2;
+var nt = (e, t) => Math.floor((e + Number.EPSILON) / t) * t;
+var at = ({ visibleWidth: e, canvasHeight: t, isFull: i, isEnder: s, lineCount: n, verticalFontSize: a, verticalTextWidth: o, originalFontSize: l, originalTextWidth: u }) => {
+	const h = Math.max(.01, t / tt), r = Q * h, f = 20 * h, d = Math.max(1, e * (i ? 1 : it)), c = !s && n > 1 && o > d, p = c ? l : a, g = c ? u : o, S = c ? d * 2 : d;
+	let y = p;
+	g > S && (y = nt(p * (S / g), r)), c && !i && (y -= r), y = Math.max(f, Math.min(p, y));
+	const m = p > 0 ? g * (y / p) : 0;
+	let b = 1;
+	return m > S && y <= f + Number.EPSILON && (b = Math.max(.1, Math.floor(S / m * 10) / 10)), {
+		fontSize: y,
+		drawScale: b,
+		useOriginalMetrics: c,
+		targetWidth: S
+	};
+};
+var k = (e) => `${e.fontWeight ? `${e.fontWeight} ` : ""}${e.fontSize}px ${e.fontFamily}`;
+var rt = "  ";
+var ot = (e) => e.replaceAll("	", rt);
+var lt = (e) => {
+	const t = ot(e);
+	if (t.includes(`
+`)) {
+		const i = t.split(/\r?\n/);
+		return i.length > 0 ? i : [""];
 	}
-	_onClear() {
-		this._topGroup.reset();
-		this._nakaGroup.reset();
-		this._bottomGroup.reset();
-		this._lastUpdate = Date.now();
-		this.emit("clear");
+	return [t];
+};
+var ee = (e, t, i = Math.max(1, e.fontSize * e.lineHeightMultiplier)) => {
+	let s = 0;
+	const n = e.letterSpacing;
+	for (const o of e.lines) {
+		const l = q(t, o), u = o.length > 1 ? n * (o.length - 1) : 0, h = Math.max(0, l + u);
+		h > s && (s = h);
 	}
-	_onCurrentTime(sec) {
-		this._currentTime = sec;
-		this.emit("currentTime", this._currentTime);
-	}
-	_onChange(e) {
-		this._lastUpdate = Date.now();
-		this._updateSlotLayout();
-		console.log("NicoCommentViewModel.onChange: ", e);
-	}
-	_onCommentParsed() {
-		this._lastUpdate = Date.now();
-		this._updateSlotLayout();
-	}
-	async _updateSlotLayout() {
-		if (!this._slotLayoutWorker) return;
-		window.console.time("SlotLayoutWorker call");
-		const result = await this._slotLayoutWorker.post({
-			command: "layout",
-			params: {
-				lastUpdate: this._lastUpdate,
-				top: this._topGroup.bulkSlotData,
-				naka: this._nakaGroup.bulkSlotData,
-				bottom: this._bottomGroup.bulkSlotData
-			}
+	e.width = s, e.lineHeightPx = Math.max(1, i);
+	const a = e.lines.length > 1 ? (e.lines.length - 1) * e.lineHeightPx : 0;
+	e.height = e.fontSize + a;
+};
+var ct = (e, t, i) => (t.font = `${e.fontWeight ? `${e.fontWeight} ` : ""}${i}px ${e.fontFamily}`, Math.max(0, ...e.lines.map((s) => {
+	const n = s.length > 1 ? e.letterSpacing * (s.length - 1) : 0;
+	return Math.max(0, q(t, s) + n);
+})));
+var ht = (e, t, i, s, n) => {
+	try {
+		if (!t) throw new Error("Canvas context is required");
+		if (!Number.isFinite(i) || !Number.isFinite(s)) throw new Error("Canvas dimensions must be numbers");
+		if (!n) throw new Error("Prepare options are required");
+		const a = Math.max(i, 1);
+		e.lines = lt(e.text);
+		const o = Z({
+			canvasHeight: s,
+			size: e.size,
+			lineCount: e.lines.length,
+			isEnder: e.isEnder,
+			lineHeightMultiplier: e.lineHeightMultiplier
 		});
-		if (result.lastUpdate !== this._lastUpdate) {
-			console.warn("slotLayoutWorker changed", this._lastUpdate, result.lastUpdate);
+		if (e.fontSize = o.fontSize, e.slotHeight = o.slotHeight, e.staticWidthScale = 1, t.font = k(e), ee(e, t, o.lineAdvance), !e.isScrolling) {
+			const d = e.width, c = Z({
+				canvasHeight: s,
+				size: e.size,
+				lineCount: e.lines.length,
+				isEnder: !0,
+				lineHeightMultiplier: e.lineHeightMultiplier
+			}), p = ct(e, t, c.fontSize), g = at({
+				visibleWidth: a,
+				canvasHeight: s,
+				isFull: e.isFull,
+				isEnder: e.isEnder,
+				lineCount: e.lines.length,
+				verticalFontSize: o.fontSize,
+				verticalTextWidth: d,
+				originalFontSize: c.fontSize,
+				originalTextWidth: p
+			}), S = g.useOriginalMetrics ? c : o, y = g.fontSize / Math.max(1, S.fontSize);
+			e.fontSize = g.fontSize, e.staticWidthScale = g.drawScale, t.font = k(e), ee(e, t, S.lineAdvance * y), e.slotHeight = Math.max(1, S.slotHeight * y * g.drawScale);
+		}
+		if (!e.isScrolling) {
+			e.bufferWidth = 0;
+			const d = (a - e.width) / 2;
+			e.virtualStartX = d, e.x = d, e.baseSpeed = 0, e.speed = 0, e.speedPixelsPerMs = 0, e.visibleDurationMs = w, e.preCollisionDurationMs = w, e.totalDurationMs = w, e.reservationWidth = e.width * e.staticWidthScale, e.staticExpiryTimeMs = e.vposMs + w, e.lastUpdateTime = e.getTimeSource().now(), e.isPaused = !1;
 			return;
 		}
-		this._topGroup.bulkSlotData = result.top;
-		this._nakaGroup.bulkSlotData = result.naka;
-		this._bottomGroup.bulkSlotData = result.bottom;
-		window.console.timeEnd("SlotLayoutWorker call");
-	}
-	get currentTime() {
-		return this._currentTime;
-	}
-	export() {
-		const result = [];
-		result.push(["<comment ", ">"].join(""));
-		result.push(this._nakaGroup.export());
-		result.push(this._topGroup.export());
-		result.push(this._bottomGroup.export());
-		result.push("</comment>");
-		return result.join("\n");
-	}
-	getGroup(type) {
-		switch (type) {
-			case NicoChat.TYPE.TOP: return this._topGroup;
-			case NicoChat.TYPE.BOTTOM: return this._bottomGroup;
-			default: return this._nakaGroup;
-		}
-	}
-	get bulkLayoutData() {
-		return {
-			top: this._topGroup.bulkLayoutData,
-			naka: this._nakaGroup.bulkLayoutData,
-			bottom: this._bottomGroup.bulkLayoutData
-		};
-	}
-	set bulkLayoutData(data) {
-		this._topGroup.bulkLayoutData = data.top;
-		this._nakaGroup.bulkLayoutData = data.naka;
-		this._bottomGroup.bulkLayoutData = data.bottom;
+		e.staticExpiryTimeMs = null;
+		const u = n.maxVisibleDurationMs === n.minVisibleDurationMs ? n.maxVisibleDurationMs : de, h = $(e.fontSize), r = et({
+			visibleWidth: a,
+			inkWidth: e.width,
+			texturePaddingX: h,
+			direction: e.scrollDirection,
+			traversalDurationMs: u
+		});
+		e.bufferWidth = 0, e.virtualStartX = r.startX, e.x = r.startX, e.exitThreshold = r.exitX;
+		e.baseSpeed = r.pixelsPerMs * 1e3 / 60, e.speed = e.baseSpeed, e.speedPixelsPerMs = r.pixelsPerMs, e.visibleDurationMs = u, e.preCollisionDurationMs = Math.ceil(r.collisionDurationMs), e.totalDurationMs = Math.ceil(r.totalDurationMs), e.reservationWidth = e.width, e.lastUpdateTime = e.getTimeSource().now(), e.isPaused = !1;
+	} catch (a) {
+		throw Y.error("Comment.prepare", a, {
+			text: e.text,
+			visibleWidth: i,
+			canvasHeight: s,
+			hasContext: !!t
+		}), a;
 	}
 };
-var NicoChatCss3View = class NicoChatCss3View {
-	/**
-	*
-	* @param {NicoChatViewModel}chat
-	* @param {string} type
-	* @param {string} size
-	* @param {{inline: string, keyframes: string}} cssText
-	* @return {HTMLElement}
-	*/
-	static buildChatDom(chat, type, size, cssText, document = window.document) {
-		const span = document.createElement("span");
-		const ver = chat.commentVer;
-		const className = [
-			"nicoChat",
-			"hidden",
-			type,
-			size
-		];
-		if (ver === "html5") className.push(ver);
-		if (chat.color === "#000000") className.push("black");
-		if (chat.isDoubleResized) className.push("is-doubleResized");
-		else if (chat.isLineResized) className.push("is-lineResized");
-		if (chat.isOverflow) className.push("overflow");
-		if (chat.isMine) className.push("mine");
-		if (chat.isUpdating) className.push("updating");
-		if (chat.nicotta) className.push("nicotta");
-		const fork = chat.fork;
-		className.push(`fork${fork}`);
-		if (chat.isPostFail) className.push("fail");
-		const fontCommand = chat.fontCommand;
-		if (fontCommand) className.push(`cmd-${fontCommand}`);
-		span.className = className.join(" ");
-		span.id = chat.id;
-		span.dataset.meta = chat.meta;
-		if (!chat.isInvisible) {
-			const { inline, keyframes } = cssText || {};
-			if (inline) span.style.cssText = inline;
-			span.innerHTML = chat.htmlText;
-			if (keyframes) {
-				const style = document.createElement("style");
-				style.append(keyframes);
-				span.append(style);
-			}
-		}
-		return span;
-	}
-	static buildStyleElement(cssText, document = window.document) {
-		const elm = document.createElement("style");
-		elm.type = "text/css";
-		elm.append(cssText);
-		return elm;
-	}
-	static buildChatHtml(chat, type, cssText, document = window.document) {
-		const result = NicoChatCss3View.buildChatDom(chat, type, chat.size, cssText, document);
-		result.removeAttribute("data-meta");
-		return result.outerHTML;
-	}
-	static buildChatCss(chat, type, currentTime = 0, playbackRate = 1) {
-		return type === NicoChat.TYPE.NAKA ? NicoChatCss3View._buildNakaCss(chat, type, currentTime, playbackRate) : NicoChatCss3View._buildFixedCss(chat, type, currentTime, playbackRate);
-	}
-	static _buildNakaCss(chat, type, currentTime, playbackRate) {
-		chat.id;
-		const commentVer = chat.commentVer;
-		let duration = chat.duration / playbackRate;
-		const scale = chat.cssScale;
-		const scaleY = chat.cssScaleY;
-		const beginL = chat.beginLeftTiming;
-		const screenWidth = CommentLayer.SCREEN.WIDTH;
-		const screenHeight = CommentLayer.SCREEN.HEIGHT;
-		const height = chat.height;
-		const ypos = chat.ypos;
-		const isSub = chat.isSubThread;
-		const color = chat.color;
-		const colorCss = color ? `color: ${color};` : "";
-		const fontSizePx = chat.fontSizePixel;
-		let lineHeightCss = "";
-		if (commentVer !== "html5") lineHeightCss = `line-height: ${Math.floor(chat.lineHeight)}px;`;
-		const speed = chat.speed;
-		let delay = (beginL - currentTime) / playbackRate;
-		const slot = chat.slot;
-		let zIndex = slot >= 0 ? slot * 1e3 + chat.fork * 1e6 + 1 : 1e3 + beginL * 1e3 + chat.fork * 1e6;
-		zIndex = isSub ? zIndex : zIndex * 2;
-		const opacity = chat.opacity !== 1 ? `opacity: ${chat.opacity};` : "";
-		const outerScreenWidth = CommentLayer.SCREEN.OUTER_WIDTH_FULL;
-		const screenDiff = outerScreenWidth - screenWidth;
-		const leftPos = screenWidth + screenDiff / 2;
-		const durationDiff = screenDiff / speed / playbackRate;
-		duration += durationDiff;
-		delay -= durationDiff * .5;
-		const reverse = chat.isReverse ? "animation-direction: reverse;" : "";
-		let isAlignMiddle = false;
-		if (commentVer === "html5" && (height >= screenHeight - fontSizePx / 2 || chat.isOverflow) || commentVer !== "html5" && height >= screenHeight - fontSizePx / 2 && height < screenHeight + fontSizePx) isAlignMiddle = true;
-		const top = isAlignMiddle ? "50%" : `${ypos}px`;
-		const isScaled = scale !== 1 || scaleY !== 1;
+var X = 5;
+var I = {
+	enabled: false,
+	maxLogsPerCategory: X
+};
+var D = /* @__PURE__ */ new Map();
+var ut = (e) => {
+	if (e === void 0 || !Number.isFinite(e)) return X;
+	return Math.min(1e4, Math.max(1, Math.floor(e)));
+};
+var dt = (e) => {
+	I.enabled = !!e.enabled, I.maxLogsPerCategory = ut(e.maxLogsPerCategory), I.enabled || D.clear();
+};
+var R = () => I.enabled;
+var ft = (e) => {
+	const t = D.get(e) ?? 0;
+	return t >= I.maxLogsPerCategory ? (t === I.maxLogsPerCategory && (console.debug(`[CommentOverlay][${e}]`, "Further logs suppressed."), D.set(e, t + 1)), false) : (D.set(e, t + 1), true);
+};
+var C = (e, ...t) => {
+	I.enabled && ft(e) && console.debug(`[CommentOverlay][${e}]`, ...t);
+};
+var _$16 = (e, t = 32) => e.length <= t ? e : `${e.slice(0, t)}…`;
+var pt = (e, t) => {
+	I.enabled && (console.group(`[CommentOverlay][state-dump] ${e}`), console.table({
+		"Current Time": `${t.currentTime.toFixed(2)}ms`,
+		Duration: `${t.duration.toFixed(2)}ms`,
+		"Is Playing": t.isPlaying,
+		"Epoch ID": t.epochId,
+		"Total Comments": t.totalComments,
+		"Active Comments": t.activeComments,
+		"Reserved Lanes": t.reservedLanes,
+		"Final Phase": t.finalPhaseActive,
+		"Playback Begun": t.playbackHasBegun,
+		"Is Stalled": t.isStalled
+	}), console.groupEnd());
+};
+var gt = (e, t, i) => {
+	I.enabled && C("epoch-change", `Epoch changed: ${e} → ${t} (reason: ${i})`);
+};
+var te = (e) => {
+	if (typeof e == "string") return e;
+	if (e != null) return String(e);
+};
+var pe = () => typeof performance < "u" && typeof performance.now == "function" ? performance.now() : Date.now();
+var vt = (e) => {
+	if (typeof e.getTransform != "function") return;
+	const t = e.getTransform();
+	return [
+		t.a,
+		t.b,
+		t.c,
+		t.d,
+		t.e,
+		t.f
+	];
+};
+var St = (e) => {
+	const t = e.canvas;
+	return t ? {
+		canvasWidth: t.width,
+		canvasHeight: t.height
+	} : {};
+};
+var mt = (e) => e ? {
+	...e.no !== void 0 ? { no: e.no } : {},
+	...e.fork !== void 0 ? { fork: e.fork } : {},
+	...e.source !== void 0 ? { source: e.source } : {},
+	...e.threadId !== void 0 ? { threadId: e.threadId } : {},
+	...e.date !== void 0 ? { date: e.date } : {},
+	...e.userIdHash !== void 0 ? { userIdHash: e.userIdHash } : {}
+} : {};
+var ge = (e) => ({
+	text: e.text,
+	vposMs: e.vposMs,
+	...mt(e.meta),
+	layout: e.layout,
+	lane: e.lane,
+	fontSize: e.fontSize,
+	width: e.width,
+	height: e.height,
+	lineHeightPx: e.lineHeightPx,
+	slotHeight: e.slotHeight,
+	color: e.color,
+	opacity: e.opacity,
+	creationIndex: e.creationIndex
+});
+var B = (e, t, i, s) => {
+	const n = globalThis.__COMMENT_OVERLAY_TRACE__;
+	globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__ !== true || typeof n != "function" || n({
+		source: "comment-overlay",
+		op: e,
+		timestampMs: pe(),
+		font: t.font,
+		fillStyle: te(t.fillStyle),
+		strokeStyle: te(t.strokeStyle),
+		lineWidth: t.lineWidth,
+		lineJoin: t.lineJoin,
+		globalAlpha: t.globalAlpha,
+		shadowColor: t.shadowColor,
+		shadowBlur: t.shadowBlur,
+		shadowOffsetX: t.shadowOffsetX,
+		shadowOffsetY: t.shadowOffsetY,
+		transform: vt(t),
+		...St(t),
+		comment: ge(i),
+		...s
+	});
+};
+var yt = (e, t, i) => {
+	const s = globalThis.__COMMENT_OVERLAY_TRACE__;
+	globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__ !== true || typeof s != "function" || s({
+		source: "comment-overlay",
+		op: e,
+		timestampMs: pe(),
+		comment: ge(t),
+		...i
+	});
+};
+var v = {
+	hits: 0,
+	misses: 0,
+	creates: 0,
+	fallbacks: 0,
+	outlineCallsInCache: 0,
+	fillCallsInCache: 0,
+	outlineCallsInFallback: 0,
+	fillCallsInFallback: 0,
+	letterSpacingComments: 0,
+	normalComments: 0,
+	multiLineComments: 0,
+	totalCharactersDrawn: 0,
+	lastReported: 0
+};
+var ie = () => {
+	if (!R()) return;
+	const e = performance.now();
+	if (e - v.lastReported <= 5e3) return;
+	const t = v.hits + v.misses, i = t > 0 ? v.hits / t * 100 : 0, s = v.creates > 0 ? (v.totalCharactersDrawn / v.creates).toFixed(1) : "0", n = v.outlineCallsInCache + v.outlineCallsInFallback, a = v.fillCallsInCache + v.fillCallsInFallback;
+	console.log("[TextureCache Stats]", `
+  Cache: Hits=${v.hits}, Misses=${v.misses}, Hit Rate=${i.toFixed(1)}%`, `
+  Creates: ${v.creates}, Fallbacks: ${v.fallbacks}`, `
+  Comments: Normal=${v.normalComments}, LetterSpacing=${v.letterSpacingComments}, MultiLine=${v.multiLineComments}`, `
+  Draw Calls: Outline=${n}, Fill=${a}`, `
+  Avg Characters/Comment: ${s}`), v.lastReported = e;
+};
+var Ct = () => typeof OffscreenCanvas < "u";
+var ve = (e, t, i) => {
+	if (e === "none") return {
+		blur: 0,
+		alpha: 0
+	};
+	const s = {
+		light: .06,
+		medium: .1,
+		strong: .15
+	}[e], n = {
+		light: .6,
+		medium: .8,
+		strong: .95
+	}[e];
+	return {
+		blur: Math.max(2, t * s),
+		alpha: P(i * n)
+	};
+};
+var Se = () => 2.8;
+var Mt = .5;
+var bt = (e) => {
+	const t = e.trim().toLowerCase();
+	if (t === "black") return true;
+	const i = t.match(/^#([0-9a-f]{3,8})$/i);
+	if (!i) return false;
+	const s = i[1], n = s.length === 3 || s.length === 4, a = (h) => h.length === 1 ? `${h}${h}` : h, o = Number.parseInt(a(n ? s[0] : s.slice(0, 2)), 16), l = Number.parseInt(a(n ? s[1] : s.slice(2, 4)), 16), u = Number.parseInt(a(n ? s[2] : s.slice(4, 6)), 16);
+	return o === 0 && l === 0 && u === 0;
+};
+var me = (e) => bt(e.color) ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.4)";
+var Et = (e, t) => {
+	if (!e.isScrolling) return t + e.fontSize;
+	const i = e.fontSize <= 18 ? e.fontSize * .08 : 0;
+	return e.fontSize * 1.5 + i;
+};
+var ye = (e) => {
+	if (e.isScrolling && e.lines.length > 1) {
+		const o = $(e.fontSize);
 		return {
-			inline: `
-      --chat-trans-x: -${outerScreenWidth + chat.width * scale}px;
-      ${isAlignMiddle ? "--chat-trans-y: -50%" : ""};
-      ${isScaled ? `--chat-scale-x: ${scale};--chat-scale-y: ${scaleY};` : ""}
-      display: inline-block;
-      position: absolute;
-      will-change: transform;
-      contain: layout style paint;
-      visibility: hidden;
-      line-height: 1.235;
-      z-index: ${zIndex};
-      top: ${top};
-      left: ${leftPos}px;
-      ${colorCss}
-      ${lineHeightCss}
-      ${opacity}
-      font-size: ${fontSizePx}px;
-      animation-name: idou-props${isScaled || isAlignMiddle ? "-scaled" : ""}${isAlignMiddle ? "-middle" : ""};
-      animation-duration: ${duration}s;
-      animation-delay: ${delay}s;
-      ${reverse}
-      transform:
-        translateX(0)
-        ;
-      content-visibility: hidden;
-    `,
-			keyframes: ""
+			paddingX: o,
+			paddingY: e.fontSize * .5,
+			textureWidth: Math.ceil(e.width + o * 2),
+			textureHeight: Math.ceil(e.height + e.fontSize * 1.25)
 		};
 	}
-	/**
-	* @param {NicoChatViewModel} chat
-	*/
-	static _buildFixedCss(chat, type, currentTime, playbackRate) {
-		const commentVer = chat.commentVer;
-		const duration = chat.duration / playbackRate;
-		const scale = chat.cssScale;
-		const scaleY = chat.cssScaleY;
-		const beginL = chat.beginLeftTiming;
-		const screenHeight = CommentLayer.SCREEN.HEIGHT;
-		const height = chat.height;
-		const ypos = chat.ypos;
-		const isSub = chat.isSubThread;
-		const color = chat.color;
-		const colorCss = color ? `color: ${color};` : "";
-		const fontSizePx = chat.fontSizePixel;
-		let lineHeightCss = "";
-		if (commentVer !== "html5") lineHeightCss = `line-height: ${Math.floor(chat.lineHeight)}px;`;
-		const delay = (beginL - currentTime) / playbackRate;
-		const slot = chat.slot;
-		let zIndex = slot >= 0 ? slot * 1e3 + chat.fork * 1e6 + 1 : 1e3 + beginL * 1e3 + chat.fork * 1e6;
-		zIndex = isSub ? zIndex : zIndex * 2;
-		const time3d = "0";
-		const opacity = chat.opacity !== 1 ? `opacity: ${chat.opacity};` : "";
-		let top;
-		let transY;
-		if (commentVer === "html5" && height >= screenHeight - fontSizePx / 2 || commentVer !== "html5" && height >= screenHeight * .7) {
-			top = `${type === NicoChat.TYPE.BOTTOM ? 100 : 0}%`;
-			transY = `${type === NicoChat.TYPE.BOTTOM ? -100 : 0}%`;
-		} else {
-			top = ypos + "px";
-			transY = "0";
-		}
-		const scaleCss = scale === 1 ? `transform: scale3d(1, ${scaleY}, 1) translate3d(-50%, ${transY}, ${time3d});` : `transform: scale3d(${scale}, ${scaleY}, 1) translate3d(-50%, ${transY}, ${time3d});`;
-		return { inline: `
-      z-index: ${zIndex};
-      top: ${top};
-      left: 50%;
-      ${colorCss}
-      ${lineHeightCss}
-      ${opacity}
-      font-size: ${fontSizePx}px;
-      ${scaleCss}
-      animation-duration: ${duration / .95}s;
-      animation-delay: ${delay}s;
-      --dokaben-scale: ${scale};
-      content-visibility: hidden;
-    `.trim() };
+	if (!e.isScrolling) {
+		const l = Math.ceil(e.lines.length > 1 ? e.height : e.height + e.fontSize / 3);
+		return {
+			paddingX: 0,
+			paddingY: Math.max(0, (l - e.height) / 2),
+			textureWidth: Math.ceil(e.width + 0),
+			textureHeight: l
+		};
 	}
+	const t = e.isScrolling ? $(e.fontSize) : Math.max(10, e.fontSize * .5), i = e.fontSize, s = e.isScrolling ? Math.round(i * (20 / 9)) : e.height + e.fontSize / 3, n = Math.ceil(Math.max(e.height + Math.max(10, e.fontSize), s));
+	return {
+		paddingX: t,
+		paddingY: e.isScrolling ? e.fontSize * .5 : Math.max(0, (n - e.height) / 2),
+		textureWidth: Math.ceil(e.width + t * 2),
+		textureHeight: n
+	};
 };
-/**
-* ニコニコ動画のコメントをCSS3アニメーションだけで再現出来るよ
-* という一発ネタのつもりだったのだが意外とポテンシャルが高かった。
-*
-* DOM的に隔離されたiframeの領域内で描画する
-*/
-var NicoCommentCss3PlayerView = class NicoCommentCss3PlayerView extends Emitter {
-	constructor(params) {
-		super();
-		this._viewModel = params.viewModel;
-		this._viewModel.on("setData", this._onSetData.bind(this));
-		this._viewModel.on("currentTime", (sec) => this._onCurrentTime(sec));
-		this._lastCurrentTime = 0;
-		this._isShow = true;
-		this._aspectRatio = 9 / 16;
-		this._inViewTable = /* @__PURE__ */ new Set();
-		this._inSlotTable = /* @__PURE__ */ new Set();
-		this._domTable = /* @__PURE__ */ new Map();
-		this._playbackRate = params.playbackRate || 1;
-		this._isPaused = void 0;
-		this._retryGetIframeCount = 0;
-		console.log("NicoCommentCss3PlayerView playbackRate", this._playbackRate);
-		this._initializeView(params, 0);
-		const config = Config;
-		this._config = config.namespace("commentLayer");
-		const throttleLike = throttle;
-		this._updateDom = throttleLike.raf(this._updateDom.bind(this));
-		document.addEventListener("visibilitychange", () => {
-			if (document.visibilityState === "visible") {
-				this.refresh();
-				this.onResize();
+var Tt = (e) => e.isScrolling ? 1 : e.staticWidthScale;
+var wt = (e, t) => e.isScrolling ? 1 : t;
+var xt = (e, t, i, s, n) => {
+	const a = wt(e, n), o = !e.isScrolling && a !== 1 ? t.width * (1 - a) * Mt : 0;
+	return {
+		x: i - s + o,
+		scaleX: a,
+		scaleY: n
+	};
+};
+var Ce = (e, t, i, s, n) => (a, o, l, u = 0) => {
+	if (a.length === 0) return;
+	const h = n + u, r = () => {
+		s === "cache" ? l === "outline" ? v.outlineCallsInCache++ : v.fillCallsInCache++ : l === "outline" ? v.outlineCallsInFallback++ : v.fillCallsInFallback++;
+	}, f = (c, p, g) => {
+		if (r(), l === "outline") {
+			t.strokeText(c, p, o), B("strokeText", t, e, {
+				text: c,
+				x: p,
+				y: o,
+				meta: {
+					statsTarget: s,
+					mode: l,
+					...g
+				}
+			});
+			return;
+		}
+		t.fillText(c, p, o), B("fillText", t, e, {
+			text: c,
+			x: p,
+			y: o,
+			meta: {
+				statsTarget: s,
+				mode: l,
+				...g
 			}
 		});
-		global.debug.css3Player = this;
+	};
+	if (Math.abs(e.letterSpacing) < Number.EPSILON) {
+		f(a, h);
+		return;
 	}
-	_initializeView(params, retryCount) {
-		const css = cssUtil;
-		const classListFactory = ClassList;
-		const config = Config;
-		const globalLike = global;
-		const popup = PopupMessage;
-		const watchResizeFn = watchResize;
-		const nicoruConsole = console;
-		if (retryCount === 0) self.console.time("initialize NicoCommentCss3PlayerView");
-		this._style = null;
-		this.commentLayer = null;
-		this._view = null;
-		const iframe = this._getIframe();
-		iframe.loading = "eager";
-		iframe.setAttribute("sandbox", "allow-same-origin");
-		iframe.className = "commentLayerFrame";
-		const html = NicoCommentCss3PlayerView.__TPL__.replace("%CSS%", "").replace("%MSG%", "").replace("%LAYOUT_CSS%", NicoTextParser.__css__).replace("%OPTION_CSS%", "");
-		const onload = () => {
-			let win, doc;
-			iframe.onload = null;
-			try {
-				win = iframe.contentWindow;
-				doc = iframe.contentWindow.document;
-			} catch (e) {
-				self.console.error(e);
-				self.console.log("変な広告に乗っ取られました");
-				iframe.remove();
-				this._view = null;
-				globalLike.debug.commentLayer = null;
-				if (retryCount < 3) this._initializeView(params, retryCount + 1);
-				else popup.alert("コメントレイヤーの生成に失敗");
+	let d = h;
+	for (let c = 0; c < a.length; c += 1) {
+		const p = a[c];
+		f(p, d, { characterIndex: c });
+		const g = q(i, p);
+		d += g, c < a.length - 1 && (d += e.letterSpacing);
+	}
+};
+var It = (e) => `v9::${e.text}::${e.fontSize}::${e.fontFamily}::${e.fontWeight}::${e.color}::${e.opacity}::${e.renderStyle}::${e.letterSpacing}::${e.lineHeightPx}::${e.width}::${e.height}::${e.staticWidthScale}::${e.lines.length}`;
+var Lt = (e, t) => {
+	if (!Ct()) return null;
+	const i = Math.abs(e.letterSpacing) >= Number.EPSILON, s = e.lines.length > 1;
+	i && v.letterSpacingComments++, s && v.multiLineComments++, !i && !s && v.normalComments++, v.totalCharactersDrawn += e.text.length;
+	const { paddingX: n, paddingY: a, textureWidth: o, textureHeight: l } = ye(e), u = new OffscreenCanvas(o, l), h = u.getContext("2d");
+	if (!h) return null;
+	h.save(), h.font = k(e);
+	const r = P(e.opacity), f = n, d = e.lines.length > 0 ? e.lines : [e.text], c = e.lines.length > 1 && e.lineHeightPx > 0 ? e.lineHeightPx : e.fontSize, p = Et(e, a), g = Ce(e, h, t, "cache", f), S = oe(e.color, r), y = e.renderStyle === "outline-only", m = y ? {
+		blur: 0,
+		alpha: 0
+	} : ve(e.shadowIntensity, e.fontSize, r);
+	return R() && console.log("[Shadow Debug - Cache]", `
+  Text: "${e.text}"`, `
+  FontSize: ${e.fontSize}`, `
+  Shadow intensity: ${e.shadowIntensity}`, `
+  Shadow blur: ${m.blur}px`, `
+  Shadow alpha: ${m.alpha}`, `
+  Fill style: ${S}`), h.save(), h.shadowColor = `rgba(0, 0, 0, ${m.alpha})`, h.shadowBlur = m.blur, h.shadowOffsetX = 0, h.shadowOffsetY = 0, h.lineJoin = "round", h.lineWidth = Se(), h.strokeStyle = me(e), h.fillStyle = S, y && d.forEach((b, x) => {
+		const W = p + x * c;
+		g(b, W, "outline");
+	}), d.forEach((b, x) => {
+		const W = p + x * c;
+		g(b, W, "fill");
+	}), h.restore(), h.restore(), u;
+};
+var Ft = (e, t, i) => {
+	v.fallbacks++, t.save(), t.font = k(e);
+	const s = P(e.opacity);
+	let n = i ?? e.x;
+	const a = e.lines.length > 0 ? e.lines : [e.text], o = e.lines.length > 1 && e.lineHeightPx > 0 ? e.lineHeightPx : e.fontSize;
+	let l = e.y + e.fontSize;
+	if (!e.isScrolling && e.staticWidthScale !== 1) {
+		const d = n + e.width / 2;
+		t.translate(d, e.y), t.scale(e.staticWidthScale, e.staticWidthScale), n = -e.width / 2, l = e.fontSize;
+	}
+	const u = Ce(e, t, t, "fallback", n), h = oe(e.color, s), r = e.renderStyle === "outline-only", f = r ? {
+		blur: 0,
+		alpha: 0
+	} : ve(e.shadowIntensity, e.fontSize, s);
+	R() && console.log("[Shadow Debug - Fallback]", `
+  Text: "${e.text}"`, `
+  FontSize: ${e.fontSize}`, `
+  Shadow intensity: ${e.shadowIntensity}`, `
+  Shadow blur: ${f.blur}px`, `
+  Shadow alpha: ${f.alpha}`, `
+  Fill style: ${h}`), t.save(), t.shadowColor = `rgba(0, 0, 0, ${f.alpha})`, t.shadowBlur = f.blur, t.shadowOffsetX = 0, t.shadowOffsetY = 0, t.lineJoin = "round", t.lineWidth = Se(), t.strokeStyle = me(e), t.fillStyle = h, r && a.forEach((d, c) => {
+		const p = l + c * o;
+		u(d, p, "outline");
+	}), a.forEach((d, c) => {
+		const p = l + c * o;
+		u(d, p, "fill");
+	}), t.restore(), t.restore();
+};
+var Rt = (e, t, i) => {
+	try {
+		if (!e.isActive || !t) return;
+		const s = It(e), n = e.getCachedTexture();
+		if (e.getTextureCacheKey() !== s || !n) {
+			v.misses++, v.creates++;
+			const o = Lt(e, t);
+			e.setCachedTexture(o), e.setTextureCacheKey(s);
+		} else v.hits++;
+		const a = e.getCachedTexture();
+		if (a) {
+			const o = i ?? e.x, { paddingX: l, paddingY: u } = ye(e), h = Tt(e), r = xt(e, a, o, l, h), f = r.x, d = e.y - u;
+			r.scaleX === 1 && r.scaleY === 1 ? t.drawImage(a, f, d) : t.drawImage(a, f, d, a.width * r.scaleX, a.height * r.scaleY), B("drawImage", t, e, {
+				x: f,
+				y: d,
+				width: a.width * r.scaleX,
+				height: a.height * r.scaleY,
+				sourceWidth: a.width,
+				sourceHeight: a.height,
+				meta: {
+					statsTarget: "cache",
+					paddingX: l,
+					paddingY: u,
+					drawScale: h,
+					drawScaleX: r.scaleX,
+					drawScaleY: r.scaleY
+				}
+			}), ie();
+			return;
+		}
+		Ft(e, t, i), ie();
+	} catch (s) {
+		Y.error("Comment.draw", s, {
+			text: e.text,
+			isActive: e.isActive,
+			hasContext: !!t,
+			interpolatedX: i
+		});
+	}
+};
+var At = (e) => e === "ltr" ? "ltr" : "rtl";
+var Pt = (e) => e === "ltr" ? 1 : -1;
+var Dt = class {
+	text;
+	vposMs;
+	commands;
+	layout;
+	isScrolling;
+	size;
+	sizeScale;
+	opacityMultiplier;
+	opacityOverride;
+	colorOverride;
+	isInvisible;
+	isFull;
+	isEnder;
+	meta;
+	x = 0;
+	y = 0;
+	width = 0;
+	height = 0;
+	baseSpeed = 0;
+	speed = 0;
+	lane = -1;
+	color;
+	fontSize = 0;
+	fontFamily;
+	fontWeight;
+	opacity;
+	activationTimeMs = null;
+	staticExpiryTimeMs = null;
+	isActive = false;
+	hasShown = false;
+	isPaused = false;
+	lastUpdateTime = 0;
+	reservationWidth = 0;
+	bufferWidth = 0;
+	visibleDurationMs = 0;
+	totalDurationMs = 0;
+	preCollisionDurationMs = 0;
+	speedPixelsPerMs = 0;
+	virtualStartX = 0;
+	exitThreshold = 0;
+	scrollDirection = "rtl";
+	renderStyle = "outline-only";
+	shadowIntensity = "medium";
+	creationIndex = 0;
+	letterSpacing = 0;
+	lineHeightMultiplier = 1;
+	lineHeightPx = 0;
+	slotHeight = 0;
+	staticWidthScale = 1;
+	lines = [];
+	epochId = 0;
+	directionSign = -1;
+	timeSource;
+	lastSyncedSettingsVersion = -1;
+	cachedTexture = null;
+	textureCacheKey = "";
+	constructor(t, i, s, n, a = {}, o = null) {
+		if (typeof t != "string") throw new Error("Comment text must be a string");
+		if (!Number.isFinite(i) || i < 0) throw new Error("Comment vposMs must be a non-negative number");
+		this.text = t, this.vposMs = i, this.commands = Array.isArray(s) ? [...s] : [], this.meta = o ? { ...o } : null;
+		const l = He(this.commands, { defaultColor: n.commentColor });
+		this.layout = l.layout, this.isScrolling = this.layout === "naka", this.size = l.size, this.sizeScale = l.sizeScale, this.opacityMultiplier = l.opacityMultiplier, this.opacityOverride = l.opacityOverride, this.colorOverride = l.colorOverride, this.isInvisible = l.isInvisible, this.isFull = l.isFull, this.isEnder = l.isEnder, this.fontFamily = l.fontFamily, this.fontWeight = l.fontWeight, this.color = l.resolvedColor, this.opacity = this.getEffectiveOpacity(n.commentOpacity), this.renderStyle = n.renderStyle, this.shadowIntensity = n.shadowIntensity, this.letterSpacing = l.letterSpacing, this.lineHeightMultiplier = l.lineHeight, this.timeSource = a.timeSource ?? le(), this.applyScrollDirection(n.scrollDirection), this.syncWithSettings(n, a.settingsVersion);
+	}
+	prepare(t, i, s, n) {
+		ht(this, t, i, s, n);
+	}
+	draw(t, i = null) {
+		Rt(this, t, i);
+	}
+	update(t = 1, i = false) {
+		try {
+			if (!this.isActive) {
+				this.isPaused = i;
 				return;
 			}
-			this.window = win;
-			this.document = doc;
-			this.fragment = doc.createDocumentFragment();
-			this.subFragment = doc.createDocumentFragment();
-			this.removingElements = win.Array();
-			this._optionStyle = doc.getElementById("optionCss");
-			this._style = doc.getElementById("nicoChatAnimationDefinition");
-			const commentLayer = this.commentLayer = doc.getElementById("commentLayer");
-			const commentLayerOuter = doc.getElementById("commentLayerOuter");
-			const subLayer = this.subLayer = doc.createElement("div");
-			subLayer.className = "subLayer";
-			commentLayer.append(subLayer);
-			classListFactory(doc.body).toggle("debug", config.props.debug);
-			config.onkey("debug", (v) => classListFactory(doc.body).toggle("debug", v));
-			NicoComment.offscreenLayer.get().then((layer) => {
-				const style = this._optionStyle;
-				style.innerHTML = layer.optionCss;
-			});
-			globalLike.emitter.on("updateOptionCss", (newCss) => {
-				this._optionStyle.innerHTML = newCss;
-			});
-			globalLike.debug.getInViewElements = () => doc.getElementsByClassName("nicoChat");
-			const onResize = () => {
-				const w = win.innerWidth, h = win.innerHeight;
-				if (!w || !h) return;
-				const aspectRatio = Math.max(this._aspectRatio, 9 / 16);
-				const scale = Math.min(h, w * aspectRatio) / 384;
-				css.setProps([
-					commentLayerOuter,
-					"--layer-scale",
-					css.number(scale)
-				]);
-			};
-			const chkSizeInit = () => {
-				if (!win.innerHeight) window.setTimeout(chkSizeInit, 500);
-				else {
-					watchResizeFn(iframe, import_lodash.default.throttle(onResize, 100));
-					this.onResize = onResize;
-					onResize();
-				}
-			};
-			globalLike.emitter.on("fullscreenStatusChange", import_lodash.default.debounce(onResize, 2e3));
-			window.setTimeout(chkSizeInit, 100);
-			if (this._isPaused) this.pause();
-			const updateTextShadow = (type) => {
-				const types = [
-					"shadow-type2",
-					"shadow-type3",
-					"shadow-stroke",
-					"shadow-dokaben"
-				];
-				const cl = classListFactory(doc.body);
-				types.forEach((t) => cl.toggle(t, t === type));
-			};
-			updateTextShadow(this._config.props.textShadowType);
-			this._config.onkey("textShadowType", import_lodash.default.debounce(updateTextShadow, 100));
-			this._config.onkey("easyCommentOpacity", import_lodash.default.debounce((v) => {
-				nicoruConsole.nicoru("update easyCommentOpacity", v, this._config.easyCommentOpacity, commentLayerOuter);
-				css.setProps([
-					commentLayerOuter,
-					"--easy-comment-opacity",
-					css.number(v * 1)
-				]);
-			}, 100));
-			this._config.onkey("aiCommentOpacity", import_lodash.default.debounce((v) => {
-				nicoruConsole.nicoru("update aiCommentOpacity", v, this._config.aiCommentOpacity, commentLayerOuter);
-				css.setProps([
-					commentLayerOuter,
-					"--ai-comment-opacity",
-					css.number(v * 1)
-				]);
-			}, 100));
-			self.console.timeEnd("initialize NicoCommentCss3PlayerView");
-		};
-		this._view = iframe;
-		if (this._node) this._node.append(iframe);
-		if (iframe.srcdocType === "string") {
-			iframe.onload = onload;
-			iframe.srcdoc = html;
-		} else {
-			if (!this._node) {
-				this._msEdge = true;
-				document.querySelector(".zenzaPlayerContainer").append(iframe);
+			const s = this.timeSource.now();
+			if (!this.isScrolling) {
+				this.isPaused = i, this.lastUpdateTime = s;
+				return;
 			}
-			const icd = iframe.contentWindow.document;
-			icd.open();
-			icd.write(html);
-			icd.close();
-			window.setTimeout(onload, 0);
-		}
-		globalLike.debug.commentLayer = iframe;
-		if (!params.show) this.hide();
-	}
-	_getIframe() {
-		const iframe = document.createElement("iframe");
-		const frame = iframe;
-		frame.srcdocType = frame.srcdocType || typeof iframe.srcdoc;
-		iframe.srcdoc = "<html></html>";
-		return iframe;
-	}
-	_onCommand(command, param) {
-		this.emit("command", command, param);
-	}
-	_adjust() {
-		if (!this._view) return;
-		if (typeof this.onResize === "function") return this.onResize();
-	}
-	getView() {
-		return this._view;
-	}
-	set playbackRate(playbackRate) {
-		this._playbackRate = Math.min(Math.max(playbackRate, .01), 10);
-		if (!Config.props.autoCommentSpeedRate || this._playbackRate <= 1) this.refresh();
-	}
-	get playbackRate() {
-		return this._playbackRate;
-	}
-	setAspectRatio(ratio) {
-		this._aspectRatio = ratio;
-		this._adjust();
-	}
-	_onSetData() {
-		this.clear();
-	}
-	_onCurrentTime(sec) {
-		const REFRESH_THRESHOLD = 1;
-		this._lastCurrentTime = this._currentTime;
-		this._currentTime = sec;
-		if (this._lastCurrentTime === this._currentTime) {
-			if (!this._isPaused) this._setStall(true);
-		} else if (this._currentTime < this._lastCurrentTime || Math.abs(this._currentTime - this._lastCurrentTime) > REFRESH_THRESHOLD) this.refresh();
-		else {
-			this._setStall(false);
-			this._updateInviewElements();
+			if (i) {
+				this.isPaused = !0, this.lastUpdateTime = s;
+				return;
+			}
+			const n = (s - this.lastUpdateTime) / (1e3 / 60);
+			this.speed = this.baseSpeed * t, this.x += this.speed * n * this.directionSign, (this.scrollDirection === "rtl" && this.x <= this.exitThreshold || this.scrollDirection === "ltr" && this.x >= this.exitThreshold) && (this.isActive = !1), this.lastUpdateTime = s, this.isPaused = !1;
+		} catch (s) {
+			Y.error("Comment.update", s, {
+				text: this.text,
+				playbackRate: t,
+				isPaused: i,
+				isActive: this.isActive
+			});
 		}
 	}
-	_addClass(name) {
-		const layer = this.commentLayer;
-		if (!layer) return;
-		ClassList(layer).add(name);
+	syncWithSettings(t, i) {
+		typeof i == "number" && i === this.lastSyncedSettingsVersion || (this.color = this.getEffectiveColor(t.commentColor), this.opacity = this.getEffectiveOpacity(t.commentOpacity), this.applyScrollDirection(t.scrollDirection), this.renderStyle = t.renderStyle, this.shadowIntensity = t.shadowIntensity, typeof i == "number" && (this.lastSyncedSettingsVersion = i));
 	}
-	_removeClass(name) {
-		const layer = this.commentLayer;
-		if (!layer) return;
-		ClassList(layer).remove(name);
+	getEffectiveColor(t) {
+		const i = this.colorOverride ?? t;
+		return typeof i != "string" || i.length === 0 ? t : i.toUpperCase();
 	}
-	_setStall(v) {
-		this.isStalled = !!v;
-		if (v) this._addClass("is-stalled");
-		else this._removeClass("is-stalled");
+	getEffectiveOpacity(t) {
+		if (typeof this.opacityOverride == "number") return P(this.opacityOverride);
+		const i = t * this.opacityMultiplier;
+		return Number.isFinite(i) ? P(i) : 0;
 	}
-	pause() {
-		if (this.commentLayer) this._addClass("paused");
-		this._isPaused = true;
+	markActivated(t) {
+		this.activationTimeMs = t;
 	}
-	play() {
-		if (this.commentLayer) this._removeClass("paused");
-		this._isPaused = false;
+	clearActivation() {
+		this.activationTimeMs = null, this.isScrolling || (this.staticExpiryTimeMs = null), this.resetTextureCache();
 	}
-	clear() {
-		const layer = this.commentLayer;
-		if (layer) {
-			layer.textContent = "";
-			const sub = this.subLayer;
-			sub.textContent = "";
-			layer.append(sub);
-			this.fragment.textContent = "";
-			this.subFragment.textContent = "";
-		}
-		if (this._style) this._style.textContent = "";
-		this._inViewTable.clear();
-		this._inSlotTable.clear();
-		this._domTable.clear();
-		this.isUpdating = false;
-		return this;
+	hasStaticExpired(t) {
+		return this.isScrolling || this.staticExpiryTimeMs === null ? false : t >= this.staticExpiryTimeMs;
 	}
-	refresh() {
-		this.clear();
-		this._updateInviewElements();
+	getDirectionSign() {
+		return this.directionSign;
 	}
-	_updateInviewElements() {
-		if (this.isUpdating || !this.commentLayer || !this._style || !this._isShow || document.hidden) return;
-		const vm = this._viewModel;
-		const inView = [
-			vm.getGroup(NicoChat.TYPE.NAKA).inViewMembers,
-			vm.getGroup(NicoChat.TYPE.BOTTOM).inViewMembers,
-			vm.getGroup(NicoChat.TYPE.TOP).inViewMembers
-		].flat();
-		const dom = [], subDom = [], newView = [];
-		const inSlotTable = this._inSlotTable, inViewTable = this._inViewTable;
-		const ct = this._currentTime;
-		for (let i = 0, len = inView.length; i < len; i++) {
-			const nicoChat = inView[i];
-			if (inViewTable.has(nicoChat)) continue;
-			inViewTable.add(nicoChat);
-			inSlotTable.add(nicoChat);
-			newView.push(nicoChat);
-		}
-		if (newView.length > 1) newView.sort((a, b) => NicoChat.SORT_FUNCTION(a, b));
-		const doc = this.document, playbackRate = this._playbackRate;
-		const domTable = this._domTable;
-		for (let i = 0, len = newView.length; i < len; i++) {
-			const nicoChat = newView[i];
-			const type = nicoChat.type;
-			const size = nicoChat.size;
-			const cssText = NicoChatCss3View.buildChatCss(nicoChat, type, ct, playbackRate);
-			const element = NicoChatCss3View.buildChatDom(nicoChat, type, size, cssText, doc);
-			domTable.set(nicoChat, element);
-			(nicoChat.isSubThread ? subDom : dom).push(element);
-		}
-		if (!newView.length) return;
-		this.isUpdating = true;
-		if (dom.length) this.fragment.append(...dom);
-		if (subDom.length) this.subFragment.append(...subDom);
-		const currentTime = this._currentTime;
-		const margin = 2 * NicoChatViewModel.SPEED_RATE;
-		for (const nicoChat of inSlotTable) {
-			if (currentTime - margin < nicoChat.endRightTiming) continue;
-			const elm = domTable.get(nicoChat);
-			if (elm) this.removingElements.push(elm);
-			inSlotTable.delete(nicoChat);
-		}
-		this._updateDom();
+	getTimeSource() {
+		return this.timeSource;
 	}
-	_updateDom() {
-		const layer = this.commentLayer;
-		const sub = this.subLayer;
-		if (this.fragment.firstElementChild) layer.append(this.fragment);
-		if (this.subFragment.firstElementChild) sub.append(this.subFragment);
-		this._gcInviewElements();
-		if (this.removingElements.length) {
-			for (const e of this.removingElements) e.remove();
-			this.removingElements.length = 0;
-		}
-		for (const e of layer.querySelectorAll(".hidden")) {
-			e.classList.remove("hidden");
-			e.style.contentVisibility = "visible";
-		}
-		this.isUpdating = false;
+	getTextureCacheKey() {
+		return this.textureCacheKey;
 	}
-	_gcInviewElements() {
-		if (!this.commentLayer || !this._style) return;
-		const max = NicoCommentCss3PlayerView.MAX_DISPLAY_COMMENT;
-		const commentLayer = this.commentLayer;
-		const elements = this.removingElements;
-		const win = this.window;
-		const af = win.Array.from.bind(win.Array);
-		const inViewElements = af(commentLayer.querySelectorAll(".nicoChat.fork3")).concat(af(commentLayer.querySelectorAll(".nicoChat.fork2"))).concat(af(commentLayer.querySelectorAll(".nicoChat.fork0")));
-		for (let i = inViewElements.length - max - 1; i >= 0; i--) elements.push(inViewElements[i]);
+	setTextureCacheKey(t) {
+		this.textureCacheKey = t;
 	}
-	buildHtml(currentTime) {
-		self.console.time("buildHtml");
-		const vm = this._viewModel;
-		const baseTime = currentTime || vm.currentTime;
-		const members = [
-			vm.getGroup(NicoChat.TYPE.NAKA).members,
-			vm.getGroup(NicoChat.TYPE.BOTTOM).members,
-			vm.getGroup(NicoChat.TYPE.TOP).members
-		].flat();
-		members.sort((a, b) => NicoChat.SORT_FUNCTION(a, b));
-		const html = [];
-		html.push(this._buildGroupHtml(members, baseTime));
-		const tpl = NicoCommentCss3PlayerView.__TPL__.replace("%LAYOUT_CSS%", NicoTextParser.__css__).replace("%OPTION_CSS%", NicoComment.offscreenLayer.optionCss).replace("%CSS%", "").replace("%MSG%", html.join(""));
-		self.console.timeEnd("buildHtml");
-		return tpl;
+	getCachedTexture() {
+		return this.cachedTexture;
 	}
-	_buildGroupHtml(m, currentTime = 0) {
-		const result = [];
-		for (let i = 0, len = m.length; i < len; i++) {
-			const chat = m[i];
-			const type = chat.type;
-			const cssText = NicoChatCss3View.buildChatCss(chat, type, currentTime);
-			const element = NicoChatCss3View.buildChatHtml(chat, type, cssText, this.document);
-			result.push(element);
-		}
-		return result.join("\n");
+	setCachedTexture(t) {
+		this.cachedTexture = t;
 	}
-	_buildGroupCss(m, currentTime) {
-		const result = [];
-		for (let i = 0, len = m.length; i < len; i++) {
-			const chat = m[i];
-			const type = chat.type;
-			result.push(NicoChatCss3View.buildChatCss(chat, type, currentTime));
-		}
-		return result.join("\n");
+	resetTextureCache() {
+		this.cachedTexture = null, this.textureCacheKey = "";
 	}
-	show() {
-		if (!this._isShow) {
-			this._isShow = true;
-			this.refresh();
-		}
-	}
-	hide() {
-		this.clear();
-		this._isShow = false;
-	}
-	appendTo(node) {
-		if (this._msEdge) return;
-		this._node = node;
-		node.append(this._view);
-	}
-	/**
-	* exportで、コメントを静的なCSS3アニメーションHTMLとして出力する。
-	* 生成されたHTMLを開くだけで、スクリプトもなにもないのに
-	* ニコニコ動画のプレイヤーのようにコメントが流れる。 ふしぎ！
-	*/
-	export() {
-		return this.buildHtml(0).replace("<html", "<html class=\"saved\"");
-	}
-	getCurrentScreenHtml() {
-		const win = this.window;
-		if (!win) return null;
-		this.refresh();
-		const body = win.document.body;
-		body.classList.add("in-capture");
-		const html = win.document.documentElement.outerHTML;
-		body.classList.remove("in-capture");
-		return html.replace("<html ", "<html xmlns=\"http://www.w3.org/1999/xhtml\" ").replace(/<meta.*?>/g, "").replace(/data-meta=".*?"/g, "").replace(/<br>/g, "<br/>");
-	}
-	getCurrentScreenSvg() {
-		const win = this.window;
-		if (!win) return null;
-		this.refresh();
-		win.document.body.classList.add("in-capture");
-		const style = win.document.querySelector("style").innerHTML;
-		const w = 682, h = 382;
-		const head = `<svg
-  xmlns="http://www.w3.org/2000/svg"
-  version="1.1">
-`;
-		const defs = `
-<defs>
-  <style type="text/css" id="layoutCss"><![CDATA[
-    ${style}
-
-    .nicoChat {
-      animation-play-state: paused !important;
-    }
-  ]]>
-  </style>
-</defs>
-`.trim();
-		const textList = [];
-		Array.from(win.document.querySelectorAll(".nicoChat")).forEach((chat) => {
-			const j = JSON.parse(chat.getAttribute("data-meta"));
-			chat.removeAttribute("data-meta");
-			chat.setAttribute("y", String(j.ypos));
-			let c = chat.outerHTML;
-			c = c.replace(/<span/g, "<text");
-			c = c.replace(/<\/span>$/g, "</text>");
-			c = c.replace(/<(\/?)(span|group|han_group|zen_group|spacer)/g, "<$1tspan");
-			c = c.replace(/<br>/g, "<br/>");
-			textList.push(c);
-		});
-		return `${head}${defs}${`
-<g fill="#00ff00">
-  ${textList.join("\n	")}
-</g>
-
-`}${`
-<g style="background-color: #333; overflow: hidden; width: ${w}; height: ${h}; padding: 0 69px;" class="shadow-dokaben in-capture paused">
-  <g id="commentLayerOuter" class="commentLayerOuter" width="682" height="384">
-    <g class="commentLayer is-stalled" id="commentLayer" width="544" height="384">
-    </g>
-  </g>
-</g>
-</svg> `.trim()}`;
+	applyScrollDirection(t) {
+		const i = At(t);
+		this.scrollDirection = i, this.directionSign = Pt(i);
 	}
 };
-NicoCommentCss3PlayerView.MAX_DISPLAY_COMMENT = 40;
-NicoCommentCss3PlayerView.__TPL__ = ((config) => {
-	let ownerShadowColor = config.props["commentLayer.ownerCommentShadowColor"];
-	ownerShadowColor = ownerShadowColor.replace(/([^a-z^0-9^#])/gi, "");
-	const easyCommentOpacity = config.props["commentLayer.easyCommentOpacity"];
-	const aiCommentOpacity = config.props["commentLayer.aiCommentOpacity"];
-	const textShadowColor = "#000";
-	const textShadowGray = "#888";
-	return `
-<!DOCTYPE html>
-<html lang="ja"
- style="background-color: unset !important; background: none !important;"
->
-<head>
-<meta charset="utf-8">
-<title>CommentLayer</title>
-<style type="text/css" id="layoutCss">%LAYOUT_CSS%</style>
-<style type="text/css" id="optionCss">%OPTION_CSS%</style>
-<style type="text/css">
-body {
-  pointer-events: none;
-  user-select: none;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  border: 0;
+var H = {
+	commentColor: "#FFFFFF",
+	commentOpacity: 1,
+	isCommentVisible: true,
+	useContainerResizeObserver: true,
+	ngWords: [],
+	ngRegexps: [],
+	scrollDirection: "rtl",
+	renderStyle: "outline-only",
+	syncMode: "raf",
+	scrollVisibleDurationMs: null,
+	useFixedLaneCount: false,
+	fixedLaneCount: 12,
+	useDprScaling: true,
+	shadowIntensity: "medium"
+};
+var _t = () => ({
+	...H,
+	ngWords: [...H.ngWords],
+	ngRegexps: [...H.ngRegexps]
+});
+var Vt = (e) => Number.isFinite(e) ? e <= 0 ? 0 : e >= 1 ? 1 : e : 1;
+var O = (e) => {
+	const t = e.scrollVisibleDurationMs, i = t == null ? null : Number.isFinite(t) ? Math.max(1, Math.floor(t)) : null;
+	return {
+		...e,
+		scrollDirection: e.scrollDirection === "ltr" ? "ltr" : "rtl",
+		commentOpacity: Vt(e.commentOpacity),
+		renderStyle: e.renderStyle === "classic" ? "classic" : "outline-only",
+		scrollVisibleDurationMs: i,
+		syncMode: e.syncMode === "video-frame" ? "video-frame" : "raf",
+		useDprScaling: !!e.useDprScaling
+	};
+};
+var Ot = (e) => typeof window < "u" && typeof window.requestAnimationFrame == "function" && typeof window.cancelAnimationFrame == "function" ? {
+	request: (t) => window.requestAnimationFrame(t),
+	cancel: (t) => window.cancelAnimationFrame(Number(t))
+} : {
+	request: (t) => globalThis.setTimeout(() => {
+		t(e.now());
+	}, 16),
+	cancel: (t) => {
+		globalThis.clearTimeout(t);
+	}
+};
+var Ht = () => typeof document > "u" ? () => {
+	throw new Error("Document is not available. Provide a custom createCanvasElement implementation.");
+} : () => document.createElement("canvas");
+var Nt = (e) => {
+	if (!e || typeof e != "object") return false;
+	const t = e;
+	return typeof t.commentColor == "string" && typeof t.commentOpacity == "number" && typeof t.isCommentVisible == "boolean";
+};
+var se = (e) => {
+	const t = e.meta?.no;
+	return typeof t == "number" && Number.isFinite(t) ? t : null;
+};
+var kt = function(e) {
+	if (!Array.isArray(e) || e.length === 0) return [];
+	const t = [];
+	this.commentDependencies.settingsVersion = this.settingsVersion;
+	for (const i of e) {
+		const { text: s, vposMs: n, commands: a = [], meta: o = null } = i, l = _$16(s);
+		if (this.isNGComment(s)) {
+			C("comment-skip-ng", {
+				preview: l,
+				vposMs: n
+			});
+			continue;
+		}
+		const u = ze(n);
+		if (u === null) {
+			this.log.warn("CommentRenderer.addComment.invalidVpos", {
+				text: s,
+				vposMs: n
+			}), C("comment-skip-invalid-vpos", {
+				preview: l,
+				vposMs: n
+			});
+			continue;
+		}
+		const h = o?.no !== void 0 ? `no:${o.source ?? ""}:${o.fork ?? ""}:${o.threadId ?? ""}:${o.no}` : `fallback:${s}\0${u}`, r = (c) => c.meta?.no !== void 0 ? `no:${c.meta.source ?? ""}:${c.meta.fork ?? ""}:${c.meta.threadId ?? ""}:${c.meta.no}` : `fallback:${c.text}\0${c.vposMs}`;
+		if (this.comments.some((c) => r(c) === h) || t.some((c) => r(c) === h)) {
+			C("comment-skip-duplicate", {
+				preview: l,
+				vposMs: u
+			});
+			continue;
+		}
+		const d = new Dt(s, u, a, this._settings, this.commentDependencies, o);
+		d.creationIndex = this.commentSequence++, d.epochId = this.epochId, t.push(d), C("comment-added", {
+			preview: l,
+			vposMs: u,
+			commands: d.commands.length,
+			layout: d.layout,
+			isScrolling: d.isScrolling,
+			invisible: d.isInvisible
+		});
+	}
+	return t.length === 0 ? [] : (this.comments.push(...t), this.comments.sort((i, s) => {
+		const n = i.vposMs - s.vposMs;
+		if (Math.abs(n) > E) return n;
+		const a = se(i), o = se(s);
+		return a !== null && o !== null && Math.abs(a - o) > E ? a - o : i.creationIndex - s.creationIndex;
+	}), t);
+};
+var zt = function(e, t, i = [], s = null) {
+	const [n] = this.addComments([{
+		text: e,
+		vposMs: t,
+		commands: i,
+		meta: s
+	}]);
+	return n ?? null;
+};
+var Wt = function() {
+	if (this.comments.length = 0, this.activeComments.clear(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.commentSequence = 0, this.ctx && this.canvas) {
+		const e = this.canvasDpr > 0 ? this.canvasDpr : 1, t = this.displayWidth > 0 ? this.displayWidth : this.canvas.width / e, i = this.displayHeight > 0 ? this.displayHeight : this.canvas.height / e;
+		this.ctx.clearRect(0, 0, t, i);
+	}
+};
+var $t = function() {
+	this.clearComments(), this.currentTime = 0, this.resetFinalPhaseState(), this.playbackHasBegun = false, this.skipDrawingForCurrentFrame = false, this.isStalled = false, this.pendingInitialSync = false;
+};
+var Me = function() {
+	const e = this._settings, t = Array.isArray(e.ngWords) ? e.ngWords : [];
+	this.normalizedNgWords = t.filter((s) => typeof s == "string");
+	const i = Array.isArray(e.ngRegexps) ? e.ngRegexps : [];
+	this.compiledNgRegexps = i.map((s) => {
+		if (typeof s != "string") return null;
+		try {
+			return new RegExp(s, "i");
+		} catch (n) {
+			return this.log.warn("CommentRenderer.invalidNgRegexp", n, { entry: s }), null;
+		}
+	}).filter((s) => !!s);
+};
+var Xt = function(e) {
+	return typeof e != "string" || e.length === 0 ? false : this.normalizedNgWords.some((t) => t.length > 0 && e.includes(t)) ? true : this.compiledNgRegexps.some((t) => t.test(e));
+};
+var Bt = (e) => {
+	e.prototype.addComments = kt, e.prototype.addComment = zt, e.prototype.clearComments = Wt, e.prototype.resetState = $t, e.prototype.rebuildNgMatchers = Me, e.prototype.isNGComment = Xt;
+};
+var Gt = ({ vposMs: e, durationMs: t, isScrolling: i }) => {
+	const s = Number.isFinite(t) && t > 0 ? Math.max(0, t - w) : e, n = Math.min(e, s);
+	return {
+		displayVposMs: n,
+		activationVposMs: i ? Math.max(0, n - fe) : n
+	};
+};
+var Ut = function() {
+	this.finalPhaseActive = false, this.finalPhaseStartTime = null, this.finalPhaseScheduleDirty = false, this.finalPhaseVposOverrides.clear();
+};
+var Yt = function(e) {
+	const t = this.epochId;
+	if (this.epochId += 1, gt(t, this.epochId, e), this.eventHooks.onEpochChange) {
+		const i = {
+			previousEpochId: t,
+			newEpochId: this.epochId,
+			reason: e,
+			timestamp: this.timeSource.now()
+		};
+		try {
+			this.eventHooks.onEpochChange(i);
+		} catch (s) {
+			this.log.error("CommentRenderer.incrementEpoch.callback", s, { info: i });
+		}
+	}
+	this.comments.forEach((i) => {
+		i.epochId = this.epochId;
+	});
+};
+var qt = function(e) {
+	const t = this.timeSource.now();
+	if (t - this.lastSnapshotEmitTime < this.snapshotEmitThrottleMs) return;
+	const i = {
+		currentTime: this.currentTime,
+		duration: this.duration,
+		isPlaying: this.isPlaying,
+		epochId: this.epochId,
+		totalComments: this.comments.length,
+		activeComments: this.activeComments.size,
+		reservedLanes: this.reservedLanes.size,
+		finalPhaseActive: this.finalPhaseActive,
+		playbackHasBegun: this.playbackHasBegun,
+		isStalled: this.isStalled
+	};
+	if (pt(e, i), this.eventHooks.onStateSnapshot) try {
+		this.eventHooks.onStateSnapshot(i);
+	} catch (s) {
+		this.log.error("CommentRenderer.emitStateSnapshot.callback", s);
+	}
+	this.lastSnapshotEmitTime = t;
+};
+var Kt = function(e) {
+	return Gt({
+		vposMs: e.vposMs,
+		durationMs: this.duration,
+		isScrolling: e.isScrolling
+	}).activationVposMs;
+};
+var jt = function(e) {
+	if (!e.isScrolling) return w;
+	const t = [];
+	return Number.isFinite(e.visibleDurationMs) && e.visibleDurationMs > 0 && t.push(e.visibleDurationMs), Number.isFinite(e.totalDurationMs) && e.totalDurationMs > 0 && t.push(e.totalDurationMs), t.length > 0 ? Math.max(...t) : U;
+};
+var Jt = function(e) {
+	return this.getEffectiveCommentVpos(e);
+};
+var Zt = function() {
+	this.finalPhaseVposOverrides.clear(), this.finalPhaseScheduleDirty = false;
+};
+var Qt = (e) => {
+	e.prototype.resetFinalPhaseState = Ut, e.prototype.incrementEpoch = Yt, e.prototype.emitStateSnapshot = qt, e.prototype.getEffectiveCommentVpos = Kt, e.prototype.getFinalPhaseDisplayDuration = jt, e.prototype.resolveFinalPhaseVpos = Jt, e.prototype.recomputeFinalPhaseTimeline = Zt;
+};
+var ei = function() {
+	return !this.playbackHasBegun && !this.isPlaying && this.currentTime <= A;
+};
+var ti = function() {
+	this.playbackHasBegun || (this.isPlaying || this.currentTime > A) && (this.playbackHasBegun = true);
+};
+var ii = (e) => {
+	e.prototype.shouldSuppressRendering = ei, e.prototype.updatePlaybackProgressState = ti;
+};
+var si = function(e) {
+	const t = this.videoElement, i = this.canvas, s = this.ctx;
+	if (!t || !i || !s) return;
+	const n = typeof e == "number" ? e : T(t.currentTime);
+	if (this.currentTime = n, this.playbackRate = t.playbackRate, this.isPlaying = !t.paused, this.updatePlaybackProgressState(), this.skipDrawingForCurrentFrame = this.shouldSuppressRendering(), this.skipDrawingForCurrentFrame) return;
+	const a = this.canvasDpr > 0 ? this.canvasDpr : 1, o = this.displayWidth > 0 ? this.displayWidth : i.width / a, l = this.displayHeight > 0 ? this.displayHeight : i.height / a, u = this.buildPrepareOptions(o);
+	this.pruneStaticLaneReservations(this.currentTime);
+	for (const r of Array.from(this.activeComments)) {
+		const f = this.getEffectiveCommentVpos(r), d = f < this.currentTime - F, c = f > this.currentTime + F;
+		if (d || c) {
+			r.isActive = false, this.activeComments.delete(r), r.clearActivation(), r.lane >= 0 && (r.layout === "ue" ? this.releaseStaticLane("ue", r.lane) : r.layout === "shita" && this.releaseStaticLane("shita", r.lane));
+			continue;
+		}
+		r.isScrolling && r.hasShown && (r.scrollDirection === "rtl" && r.x <= r.exitThreshold || r.scrollDirection === "ltr" && r.x >= r.exitThreshold) && (r.isActive = false, this.activeComments.delete(r), r.clearActivation());
+	}
+	const h = this.getCommentsInTimeWindow(this.currentTime, F);
+	for (const r of h) {
+		const f = R(), d = f ? _$16(r.text) : "";
+		if (f && C("comment-evaluate", {
+			stage: "update",
+			preview: d,
+			vposMs: r.vposMs,
+			effectiveVposMs: this.getEffectiveCommentVpos(r),
+			currentTime: this.currentTime,
+			isActive: r.isActive,
+			hasShown: r.hasShown
+		}), this.isNGComment(r.text)) {
+			f && C("comment-eval-skip", {
+				preview: d,
+				vposMs: r.vposMs,
+				effectiveVposMs: this.getEffectiveCommentVpos(r),
+				reason: "ng-runtime"
+			});
+			continue;
+		}
+		if (r.isInvisible) {
+			f && C("comment-eval-skip", {
+				preview: d,
+				vposMs: r.vposMs,
+				effectiveVposMs: this.getEffectiveCommentVpos(r),
+				reason: "invisible"
+			}), r.isActive = false, this.activeComments.delete(r), r.hasShown = true, r.clearActivation();
+			continue;
+		}
+		if (r.syncWithSettings(this._settings, this.settingsVersion), this.shouldActivateCommentAtTime(r, this.currentTime, d) && this.activateComment(r, s, o, l, u, this.currentTime), r.isActive) {
+			if (r.layout !== "naka" && r.hasStaticExpired(this.currentTime)) {
+				const c = r.layout === "ue" ? "ue" : "shita";
+				this.releaseStaticLane(c, r.lane), r.isActive = false, this.activeComments.delete(r), r.clearActivation();
+				continue;
+			}
+			if (r.layout === "naka" && this.getEffectiveCommentVpos(r) > this.currentTime + A) {
+				r.x = r.virtualStartX, r.lastUpdateTime = this.timeSource.now();
+				continue;
+			}
+			if (r.hasShown = true, r.update(this.playbackRate, !this.isPlaying), !r.isScrolling && r.hasStaticExpired(this.currentTime)) {
+				const c = r.layout === "ue" ? "ue" : "shita";
+				this.releaseStaticLane(c, r.lane), r.isActive = false, this.activeComments.delete(r), r.clearActivation();
+			}
+		}
+	}
+};
+var ni = function(e) {
+	const t = this._settings.scrollVisibleDurationMs;
+	let i = U, s = We;
+	return t !== null && (i = t, s = t), {
+		visibleWidth: e,
+		virtualExtension: Ue,
+		maxVisibleDurationMs: i,
+		minVisibleDurationMs: s,
+		maxWidthRatio: $e,
+		bufferRatio: Xe,
+		baseBufferPx: Be,
+		entryBufferPx: Ge
+	};
+};
+var ai = function(e) {
+	const t = this.currentTime;
+	this.pruneLaneReservations(t), this.pruneStaticLaneReservations(t);
+	const i = this.createLaneReservation(e, t), s = [...this.reservedLanes.values()].flat().filter((d) => this.areReservationsConflicting(d, i)).sort((d, c) => d.verticalStart - c.verticalStart), n = Math.max(1, e.slotHeight || e.height), a = Math.max(1, this.displayHeight || this.canvas?.height || n), o = this._settings.useFixedLaneCount ? Math.min(a, Math.max(n, this.laneCount * this.laneHeight)) : a, l = z(a), u = [], h = [];
+	let r = 0, f = false;
+	for (;;) {
+		u.push(r);
+		const d = r + n, c = s.find((p) => !(p.verticalEnd < r || d < p.verticalStart));
+		if (!c) break;
+		if (h.push(`${c.comment.creationIndex}@${c.comment.vposMs}:${c.verticalStart.toFixed(3)}-${c.verticalEnd.toFixed(3)}`), r = c.verticalEnd + l, r + n >= o) {
+			f = true, r = Math.random() * (o - n);
+			break;
+		}
+	}
+	return i.verticalStart = r, i.verticalEnd = r + n, this.storeLaneReservation(r, i), yt("laneDecision", e, { meta: {
+		currentTimeMs: t,
+		selectedLane: r,
+		selectedTop: r,
+		selectedBottom: r + n,
+		slotHeight: n,
+		usedFallback: f,
+		candidateLanes: u.map((d) => d.toFixed(3)).join(","),
+		availableLanes: r.toFixed(3),
+		nextAvailableTimes: "",
+		blockedBy: h.join(","),
+		reservationStartTimeMs: Math.round(i.startTime),
+		reservationEndTimeMs: Math.round(i.endTime),
+		reservationTotalEndTimeMs: Math.round(i.totalEndTime),
+		reservationWidth: Math.round(i.width)
+	} }), r;
+};
+var ri = (e) => {
+	e.prototype.updateComments = si, e.prototype.buildPrepareOptions = ni, e.prototype.findAvailableLane = ai;
+};
+var oi = function(e, t) {
+	let i = 0, s = e.length;
+	for (; i < s;) {
+		const n = Math.floor((i + s) / 2), a = e[n];
+		a !== void 0 && a.totalEndTime + N <= t ? i = n + 1 : s = n;
+	}
+	return i;
+};
+var li = function(e) {
+	for (const [t, i] of this.reservedLanes.entries()) {
+		const s = this.findFirstValidReservationIndex(i, e);
+		s >= i.length ? this.reservedLanes.delete(t) : s > 0 && this.reservedLanes.set(t, i.slice(s));
+	}
+};
+var ci = function(e) {
+	const t = (n) => n.filter((a) => a.releaseTime > e), i = t(this.topStaticLaneReservations), s = t(this.bottomStaticLaneReservations);
+	this.topStaticLaneReservations.length = 0, this.topStaticLaneReservations.push(...i), this.bottomStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.push(...s);
+};
+var hi = (e) => {
+	e.prototype.findFirstValidReservationIndex = oi, e.prototype.pruneLaneReservations = li, e.prototype.pruneStaticLaneReservations = ci;
+};
+var ui = function(e) {
+	let t = 0, i = this.comments.length;
+	for (; t < i;) {
+		const s = Math.floor((t + i) / 2), n = this.comments[s];
+		n !== void 0 && n.vposMs < e ? t = s + 1 : i = s;
+	}
+	return t;
+};
+var di = function(e, t) {
+	if (this.comments.length === 0) return [];
+	const i = e - t, s = e + t, n = Math.max(0, this.duration - w - fe), a = this.duration > 0 && s >= n, o = this.findCommentIndexAtOrAfter(i), l = [];
+	for (let u = o; u < this.comments.length; u++) {
+		const h = this.comments[u];
+		if (!h) continue;
+		if (!a && h.vposMs > s) break;
+		const r = this.getEffectiveCommentVpos(h);
+		r >= i && r <= s && l.push(h);
+	}
+	return l;
+};
+var fi = function(e) {
+	return e === "ue" ? this.topStaticLaneReservations : this.bottomStaticLaneReservations;
+};
+var pi = function(e) {
+	return e === "ue" ? this.topStaticLaneReservations.length : this.bottomStaticLaneReservations.length;
+};
+var gi = function(e) {
+	const t = e === "ue" ? "shita" : "ue", i = this.getStaticLaneDepth(t), s = this.laneCount - i;
+	return s <= 0 ? -1 : s - 1;
+};
+var vi = function(e) {
+	return Math.max(0, this.laneCount - 1 - e);
+};
+var Si = function(e, t, i, s) {
+	const n = this.pendingStaticPlacementOffsets.get(s);
+	if (n !== void 0) return this.pendingStaticPlacementOffsets.delete(s), n;
+	const a = Math.max(1, i), o = Math.max(1, s.slotHeight || s.height), l = z(a);
+	if (e === "ue") {
+		let d = 0;
+		const p = this.getStaticReservations(e).filter((g) => g.lane < t).sort((g, S) => g.lane - S.lane);
+		for (const g of p) {
+			const S = g.yEnd - g.yStart;
+			d += S + l;
+		}
+		return d;
+	}
+	let u = a;
+	const r = this.getStaticReservations(e).filter((d) => d.lane < t).sort((d, c) => d.lane - c.lane);
+	for (const d of r) {
+		const c = d.yEnd - d.yStart;
+		u -= c + l;
+	}
+	const f = u - o;
+	return Math.max(0, f);
+};
+var mi = function() {
+	const e = /* @__PURE__ */ new Set();
+	for (const t of this.topStaticLaneReservations) e.add(t.lane);
+	for (const t of this.bottomStaticLaneReservations) e.add(this.getGlobalLaneIndexForBottom(t.lane));
+	return e;
+};
+var yi = (e) => {
+	e.prototype.findCommentIndexAtOrAfter = ui, e.prototype.getCommentsInTimeWindow = di, e.prototype.getStaticReservations = fi, e.prototype.getStaticLaneDepth = pi, e.prototype.getStaticLaneLimit = gi, e.prototype.getGlobalLaneIndexForBottom = vi, e.prototype.resolveStaticCommentOffset = Si, e.prototype.getStaticReservedLaneSet = mi;
+};
+var be = (e) => Math.max(1, e.slotHeight || e.height);
+var Ci = ({ position: e, reservationHeight: t, displayHeight: i, reservations: s, currentTime: n, random: a = Math.random }) => {
+	const o = Math.max(1, i), l = Math.max(1, t), u = z(o), h = s.filter((f) => f.releaseTime > n), r = e === "ue" ? [0, ...h.sort((f, d) => f.yEnd - d.yEnd).map((f) => f.yEnd + u)] : [o - l, ...h.sort((f, d) => d.yStart - f.yStart).map((f) => f.yStart - u - l)];
+	if (l < o) {
+		for (const f of r) {
+			if (f < 0 || f + l > o) continue;
+			if (!h.some((c) => !(f + l <= c.yStart || f >= c.yEnd))) return {
+				y: f,
+				usedFallback: false
+			};
+		}
+		return {
+			y: a() * (o - l),
+			usedFallback: true
+		};
+	}
+	return {
+		y: e === "ue" ? 0 : o - l,
+		usedFallback: h.length > 0
+	};
+};
+var Mi = function(e, t, i = "") {
+	const s = i.length > 0 && R(), n = this.resolveFinalPhaseVpos(e);
+	return e.isInvisible ? (s && C("comment-eval-skip", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		reason: "invisible"
+	}), false) : e.isActive ? (s && C("comment-eval-skip", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		reason: "already-active"
+	}), false) : e.hasShown && n <= t ? (s && C("comment-eval-skip", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		reason: "already-shown",
+		currentTime: t
+	}), false) : n > t + A ? (s && C("comment-eval-pending", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		reason: "future",
+		currentTime: t
+	}), false) : n < t - F ? (s && C("comment-eval-skip", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		reason: "expired-window",
+		currentTime: t
+	}), false) : !e.isScrolling && n + w <= t ? (s && C("comment-eval-skip", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		reason: "static-expired",
+		currentTime: t
+	}), false) : (s && C("comment-eval-ready", {
+		preview: i,
+		vposMs: e.vposMs,
+		effectiveVposMs: n,
+		currentTime: t
+	}), true);
+};
+var bi = function(e, t, i, s, n, a) {
+	e.prepare(t, i, s, n);
+	const o = this.resolveFinalPhaseVpos(e);
+	if (R() && C("comment-prepared", {
+		preview: _$16(e.text),
+		layout: e.layout,
+		isScrolling: e.isScrolling,
+		width: e.width,
+		height: e.height,
+		bufferWidth: e.bufferWidth,
+		visibleDurationMs: e.visibleDurationMs,
+		effectiveVposMs: o
+	}), e.layout === "naka") {
+		const l = Math.max(0, a - o), u = e.speedPixelsPerMs * l;
+		e.x = e.scrollDirection === "rtl" ? e.virtualStartX - u : e.virtualStartX + u;
+		const h = this.findAvailableLane(e), r = Math.max(1, this.laneHeight);
+		e.lane = Math.max(0, Math.round(h / r));
+		const f = Math.max(0, s - e.height);
+		e.y = Math.max(0, Math.min(h, f));
+	} else {
+		const l = e.layout === "ue" ? "ue" : "shita", u = this.assignStaticLane(l, e, s, a), h = this.resolveStaticCommentOffset(l, u, s, e);
+		e.x = e.virtualStartX, e.y = h, e.lane = l === "ue" ? u : this.getGlobalLaneIndexForBottom(u), e.speed = 0, e.baseSpeed = 0, e.speedPixelsPerMs = 0;
+		const r = o + w;
+		e.visibleDurationMs = Math.max(0, r - a), this.activeComments.add(e), e.isActive = true, e.hasShown = true, e.isPaused = !this.isPlaying, e.markActivated(a), e.lastUpdateTime = this.timeSource.now(), e.staticExpiryTimeMs = r, this.reserveStaticLane(l, e, u, r), R() && C("comment-activate-static", {
+			preview: _$16(e.text),
+			lane: e.lane,
+			position: l,
+			displayEnd: r,
+			effectiveVposMs: o
+		});
+		return;
+	}
+	this.activeComments.add(e), e.isActive = true, e.hasShown = true, e.isPaused = !this.isPlaying, e.markActivated(a), e.lastUpdateTime = this.timeSource.now();
+};
+var Ei = function(e, t, i, s) {
+	const n = this.getStaticReservations(e), o = Ci({
+		position: e,
+		reservationHeight: be(t),
+		displayHeight: i,
+		reservations: n,
+		currentTime: s
+	});
+	this.pendingStaticPlacementOffsets.set(t, o.y);
+	const l = new Set(n.map((h) => h.lane));
+	let u = 0;
+	for (; l.has(u);) u++;
+	return u;
+};
+var Ti = function(e, t, i, s) {
+	const n = this.getStaticReservations(e), a = t.y, o = t.y + be(t);
+	n.push({
+		comment: t,
+		releaseTime: s,
+		yStart: a,
+		yEnd: o,
+		lane: i
+	});
+};
+var wi = function(e, t) {
+	if (t < 0) return;
+	const i = this.getStaticReservations(e), s = i.findIndex((n) => e === "shita" ? this.getGlobalLaneIndexForBottom(n.lane) === t : n.lane === t);
+	s >= 0 && i.splice(s, 1);
+};
+var xi = (e) => {
+	e.prototype.shouldActivateCommentAtTime = Mi, e.prototype.activateComment = bi, e.prototype.assignStaticLane = Ei, e.prototype.reserveStaticLane = Ti, e.prototype.releaseStaticLane = wi;
+};
+var Ii = .001;
+var Li = function() {
+	return Array.from({ length: this.laneCount }, (e, t) => t);
+};
+var Fi = function(e, t) {
+	const i = this.reservedLanes.get(e);
+	if (!i || i.length === 0) return t;
+	const n = i[this.findFirstValidReservationIndex(i, t)];
+	return n ? Math.max(t, n.endTime + N) : t;
+};
+var Ri = function(e, t) {
+	const i = Math.max(e.speedPixelsPerMs, E), s = this.getEffectiveCommentVpos(e), a = Math.max(0, Number.isFinite(s) ? s : t), o = Number.isFinite(e.width) && e.width > 0 ? e.width : e.reservationWidth, u = a + (i > 0 ? Math.max(o, 0) / i : e.preCollisionDurationMs) + N, h = a + e.totalDurationMs + N;
+	return {
+		comment: e,
+		startTime: a,
+		endTime: Math.max(a, u),
+		totalEndTime: Math.max(a, h),
+		startLeft: e.virtualStartX,
+		width: o,
+		speed: i,
+		buffer: 0,
+		directionSign: e.getDirectionSign(),
+		verticalStart: 0,
+		verticalEnd: Math.max(1, e.slotHeight || e.height)
+	};
+};
+var Ai = function(e, t, i) {
+	const s = Math.max(1, t.verticalEnd - t.verticalStart);
+	return t.verticalStart = e, t.verticalEnd = e + s, [...this.reservedLanes.values()].flat().every((n) => n.totalEndTime <= i ? true : n.verticalEnd < t.verticalStart || t.verticalEnd < n.verticalStart || !this.areReservationsConflicting(n, t));
+};
+var Pi = function(e, t) {
+	const s = [...this.reservedLanes.get(e) ?? [], t].sort((n, a) => n.totalEndTime - a.totalEndTime);
+	this.reservedLanes.set(e, s);
+};
+var Di = function(e, t) {
+	if (e.directionSign === t.directionSign) {
+		const l = e.speed > 0 ? Math.max(e.width, 0) / e.speed : 0, u = t.speed > 0 ? Math.max(t.width, 0) / t.speed : 0, h = Math.max(l, u);
+		return Math.abs(t.startTime - e.startTime) + Ii < h;
+	}
+	const i = Math.max(e.startTime, t.startTime), s = Math.min(e.endTime, t.endTime);
+	if (i >= s) return false;
+	const n = /* @__PURE__ */ new Set([
+		i,
+		s,
+		i + (s - i) / 2
+	]), a = this.solveLeftRightEqualityTime(e, t);
+	a !== null && a >= i - E && a <= s + E && n.add(a);
+	const o = this.solveLeftRightEqualityTime(t, e);
+	o !== null && o >= i - E && o <= s + E && n.add(o);
+	for (const l of n) {
+		if (l < i - E || l > s + E) continue;
+		const u = this.computeForwardGap(e, t, l), h = this.computeForwardGap(t, e, l);
+		if (u <= -24 && h <= -24) return true;
+	}
+	return false;
+};
+var _i = function(e, t, i) {
+	const s = this.getBufferedEdges(e, i), n = this.getBufferedEdges(t, i);
+	return s.left - n.right;
+};
+var Vi = function(e, t) {
+	const i = Math.max(0, t - e.startTime), s = e.speed * i, n = e.startLeft + e.directionSign * s;
+	return {
+		left: n - e.buffer,
+		right: n + e.width + e.buffer
+	};
+};
+var Oi = function(e, t) {
+	const i = e.directionSign, s = t.directionSign, n = s * t.speed - i * e.speed;
+	if (Math.abs(n) < E) return null;
+	const o = (t.startLeft + s * t.speed * t.startTime + t.width + t.buffer - e.startLeft - i * e.speed * e.startTime + e.buffer) / n;
+	return Number.isFinite(o) ? o : null;
+};
+var Hi = (e) => {
+	e.prototype.getLanePriorityOrder = Li, e.prototype.getLaneNextAvailableTime = Fi, e.prototype.createLaneReservation = Ri, e.prototype.isLaneAvailable = Ai, e.prototype.storeLaneReservation = Pi, e.prototype.areReservationsConflicting = Di, e.prototype.computeForwardGap = _i, e.prototype.getBufferedEdges = Vi, e.prototype.solveLeftRightEqualityTime = Oi;
+};
+var Ni = function() {
+	const e = this.canvas, t = this.ctx;
+	if (!e || !t) return;
+	const i = this.canvasDpr > 0 ? this.canvasDpr : 1, s = this.displayWidth > 0 ? this.displayWidth : e.width / i, n = this.displayHeight > 0 ? this.displayHeight : e.height / i, a = this.timeSource.now();
+	if (this.skipDrawingForCurrentFrame || this.shouldSuppressRendering() || this.isStalled) {
+		t.clearRect(0, 0, s, n), this.lastDrawTime = a;
+		return;
+	}
+	t.clearRect(0, 0, s, n);
+	const o = Array.from(this.activeComments);
+	if (this._settings.isCommentVisible) {
+		const l = (a - this.lastDrawTime) / 16.666666666666668;
+		o.sort((u, h) => {
+			const d = this.getEffectiveCommentVpos(u) - this.getEffectiveCommentVpos(h);
+			return Math.abs(d) > E ? d : u.isScrolling !== h.isScrolling ? u.isScrolling ? 1 : -1 : u.creationIndex - h.creationIndex;
+		}), o.forEach((u) => {
+			const r = this.isPlaying && !u.isPaused ? u.x + u.getDirectionSign() * u.speed * l : u.x;
+			u.draw(t, r);
+		});
+	}
+	this.lastDrawTime = a;
+};
+var ki = function(e) {
+	const t = this.videoElement, i = this.canvas, s = this.ctx;
+	if (!t || !i || !s) return;
+	const n = typeof e == "number" ? e : T(t.currentTime);
+	this.currentTime = n, this.lastDrawTime = this.timeSource.now();
+	const a = this.canvasDpr > 0 ? this.canvasDpr : 1, o = this.displayWidth > 0 ? this.displayWidth : i.width / a, l = this.displayHeight > 0 ? this.displayHeight : i.height / a, u = this.buildPrepareOptions(o);
+	this.activeComments.forEach((r) => {
+		r.isActive = false, r.clearActivation();
+	}), this.activeComments.clear(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.getCommentsInTimeWindow(this.currentTime, F).forEach((r) => {
+		if (this.isNGComment(r.text) || r.isInvisible) {
+			r.isActive = false, this.activeComments.delete(r), r.clearActivation();
+			return;
+		}
+		if (r.syncWithSettings(this._settings, this.settingsVersion), r.isActive = false, this.activeComments.delete(r), r.lane = -1, r.hasShown = false, r.clearActivation(), this.shouldActivateCommentAtTime(r, this.currentTime)) {
+			this.activateComment(r, s, o, l, u, this.currentTime);
+			return;
+		}
+		this.getEffectiveCommentVpos(r) < this.currentTime - F ? r.hasShown = true : r.hasShown = false;
+	});
+};
+var zi = (e) => {
+	e.prototype.draw = Ni, e.prototype.performInitialSync = ki;
+};
+var Wi = function(e) {
+	this.videoElement && this._settings.isCommentVisible && (this.pendingInitialSync && (this.performInitialSync(e), this.pendingInitialSync = false), this.updateComments(e), this.draw());
+};
+var $i = function() {
+	const e = this.frameId;
+	this.frameId = null, e !== null && this.animationFrameProvider.cancel(e), this.processFrame(), this.scheduleNextFrame();
+};
+var Xi = function(e, t) {
+	this.videoFrameHandle = null;
+	const i = typeof t?.mediaTime == "number" ? t.mediaTime * 1e3 : void 0;
+	this.processFrame(typeof i == "number" ? i : void 0), this.scheduleNextFrame();
+};
+var Bi = function() {
+	if (this._settings.syncMode !== "video-frame") return false;
+	const e = this.videoElement;
+	return !!e && typeof e.requestVideoFrameCallback == "function" && typeof e.cancelVideoFrameCallback == "function";
+};
+var Gi = function() {
+	const e = this.videoElement;
+	if (e) {
+		if (this.shouldUseVideoFrameCallback()) {
+			this.cancelAnimationFrameRequest(), this.cancelVideoFrameCallback();
+			const t = e.requestVideoFrameCallback;
+			typeof t == "function" && (this.videoFrameHandle = t.call(e, this.handleVideoFrame));
+			return;
+		}
+		this.cancelVideoFrameCallback(), this.frameId = this.animationFrameProvider.request(this.handleAnimationFrame);
+	}
+};
+var Ui = function() {
+	this.frameId !== null && (this.animationFrameProvider.cancel(this.frameId), this.frameId = null);
+};
+var Yi = function() {
+	if (this.videoFrameHandle === null) return;
+	const e = this.videoElement;
+	e && typeof e.cancelVideoFrameCallback == "function" && e.cancelVideoFrameCallback(this.videoFrameHandle), this.videoFrameHandle = null;
+};
+var qi = function() {
+	this.stopAnimation(), this.scheduleNextFrame();
+};
+var Ki = function() {
+	this.cancelAnimationFrameRequest(), this.cancelVideoFrameCallback();
+};
+var ji = function() {
+	const e = this.canvas, t = this.ctx, i = this.videoElement;
+	if (!e || !t || !i) return;
+	const s = T(i.currentTime), n = Math.abs(s - this.currentTime), a = this.timeSource.now();
+	if (a - this.lastPlayResumeTime < this.playResumeSeekIgnoreDurationMs) {
+		this.currentTime = s, this._settings.isCommentVisible && (this.lastDrawTime = a, this.draw());
+		return;
+	}
+	const l = n > A;
+	if (this.currentTime = s, this.resetFinalPhaseState(), this.updatePlaybackProgressState(), !l) {
+		this._settings.isCommentVisible && (this.lastDrawTime = this.timeSource.now(), this.draw());
+		return;
+	}
+	this.activeComments.clear(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0;
+	const u = this.canvasDpr > 0 ? this.canvasDpr : 1, h = this.displayWidth > 0 ? this.displayWidth : e.width / u, r = this.displayHeight > 0 ? this.displayHeight : e.height / u, f = this.buildPrepareOptions(h);
+	this.getCommentsInTimeWindow(this.currentTime, F).forEach((c) => {
+		const p = R(), g = p ? _$16(c.text) : "";
+		if (p && C("comment-evaluate", {
+			stage: "seek",
+			preview: g,
+			vposMs: c.vposMs,
+			effectiveVposMs: this.getEffectiveCommentVpos(c),
+			currentTime: this.currentTime,
+			isActive: c.isActive,
+			hasShown: c.hasShown
+		}), this.isNGComment(c.text)) {
+			p && C("comment-eval-skip", {
+				preview: g,
+				vposMs: c.vposMs,
+				effectiveVposMs: this.getEffectiveCommentVpos(c),
+				reason: "ng-runtime"
+			}), c.isActive = false, this.activeComments.delete(c), c.clearActivation();
+			return;
+		}
+		if (c.isInvisible) {
+			p && C("comment-eval-skip", {
+				preview: g,
+				vposMs: c.vposMs,
+				effectiveVposMs: this.getEffectiveCommentVpos(c),
+				reason: "invisible"
+			}), c.isActive = false, this.activeComments.delete(c), c.hasShown = true, c.clearActivation();
+			return;
+		}
+		if (c.syncWithSettings(this._settings, this.settingsVersion), c.isActive = false, this.activeComments.delete(c), c.lane = -1, c.hasShown = false, c.clearActivation(), this.shouldActivateCommentAtTime(c, this.currentTime, g)) {
+			this.activateComment(c, t, h, r, f, this.currentTime);
+			return;
+		}
+		this.getEffectiveCommentVpos(c) < this.currentTime - F ? c.hasShown = true : c.hasShown = false;
+	}), this._settings.isCommentVisible && (this.lastDrawTime = this.timeSource.now(), this.draw());
+};
+var Ji = (e) => {
+	e.prototype.processFrame = Wi, e.prototype.handleAnimationFrame = $i, e.prototype.handleVideoFrame = Xi, e.prototype.shouldUseVideoFrameCallback = Bi, e.prototype.scheduleNextFrame = Gi, e.prototype.cancelAnimationFrameRequest = Ui, e.prototype.cancelVideoFrameCallback = Yi, e.prototype.startAnimation = qi, e.prototype.stopAnimation = Ki, e.prototype.onSeek = ji;
+};
+var Zi = function(e, t) {
+	if (e) return e;
+	if (t.parentElement) return t.parentElement;
+	if (typeof document < "u" && document.body) return document.body;
+	throw new Error("Cannot resolve container element. Provide container explicitly when DOM is unavailable.");
+};
+var Qi = function(e) {
+	if (typeof getComputedStyle == "function") {
+		getComputedStyle(e).position === "static" && (e.style.position = "relative");
+		return;
+	}
+	e.style.position || (e.style.position = "relative");
+};
+var es = function(e) {
+	try {
+		this.destroyCanvasOnly();
+		const t = e instanceof HTMLVideoElement ? e : e.video, i = e instanceof HTMLVideoElement ? e.parentElement : e.container ?? e.video.parentElement, s = this.resolveContainer(i ?? null, t);
+		this.videoElement = t, this.containerElement = s, this.lastVideoSource = this.getCurrentVideoSource(), this.duration = Number.isFinite(t.duration) ? T(t.duration) : 0, this.currentTime = T(t.currentTime), this.playbackRate = t.playbackRate, this.isPlaying = !t.paused, this.isStalled = !1, this.lastDrawTime = this.timeSource.now(), this.playbackHasBegun = this.isPlaying || this.currentTime > A, this.skipDrawingForCurrentFrame = this.shouldSuppressRendering();
+		const n = this.createCanvasElement(), a = n.getContext("2d");
+		if (!a) throw new Error("Failed to acquire 2D canvas context");
+		n.style.position = "absolute", n.style.top = "0", n.style.left = "0", n.style.right = "0", n.style.bottom = "0", n.style.display = "block", n.style.pointerEvents = "none", n.style.zIndex = "2147483647";
+		const o = this.containerElement;
+		o instanceof HTMLElement && (this.ensureContainerPositioning(o), o.appendChild(n)), this.canvas = n, this.ctx = a, this.resize(), this.calculateLaneMetrics(), this.setupVideoEventListeners(t), this.setupResizeHandling(t), this.setupFullscreenHandling(), this.setupVideoChangeDetection(t, s), this.startAnimation(), this.setupVisibilityHandling();
+	} catch (t) {
+		throw this.log.error("CommentRenderer.initialize", t), t;
+	}
+};
+var ts = function() {
+	this.stopAnimation(), this.cleanupResizeHandling(), this.runCleanupTasks(), this.canvas && this.canvas.remove(), this.canvas = null, this.ctx = null, this.videoElement = null, this.containerElement = null, this.comments.length = 0, this.activeComments.clear(), this.reservedLanes.clear(), this.resetFinalPhaseState(), this.displayWidth = 0, this.displayHeight = 0, this.canvasDpr = 1, this.commentSequence = 0, this.playbackHasBegun = false, this.skipDrawingForCurrentFrame = false, this.isStalled = false, this.pendingInitialSync = false;
+};
+var is = function() {
+	this.stopAnimation(), this.canvas && this.canvas.remove(), this.canvas = null, this.ctx = null, this.displayWidth = 0, this.displayHeight = 0, this.canvasDpr = 1, this.fullscreenActive = false;
+};
+var ss = (e) => {
+	e.prototype.resolveContainer = Zi, e.prototype.ensureContainerPositioning = Qi, e.prototype.initialize = es, e.prototype.destroy = ts, e.prototype.destroyCanvasOnly = is;
+};
+var ns = function(e) {
+	try {
+		const t = () => {
+			this.isPlaying = !0, this.playbackHasBegun = !0;
+			const d = this.timeSource.now();
+			this.lastDrawTime = d, this.lastPlayResumeTime = d, this.comments.forEach((c) => {
+				c.lastUpdateTime = d, c.isPaused = !1;
+			});
+		}, i = () => {
+			this.isPlaying = !1;
+			const d = this.timeSource.now();
+			this.comments.forEach((c) => {
+				c.lastUpdateTime = d, c.isPaused = !0;
+			});
+		}, s = () => {
+			this.onSeek();
+		}, n = () => {
+			this.onSeek();
+		}, a = () => {
+			this.playbackRate = e.playbackRate;
+			const d = this.timeSource.now();
+			this.comments.forEach((c) => {
+				c.lastUpdateTime = d;
+			});
+		}, o = () => {
+			this.handleVideoMetadataLoaded(e);
+		}, l = () => {
+			this.duration = Number.isFinite(e.duration) ? T(e.duration) : 0;
+		}, u = () => {
+			this.handleVideoSourceChange();
+		}, h = () => {
+			this.handleVideoStalled();
+		}, r = () => {
+			this.handleVideoCanPlay();
+		}, f = () => {
+			this.handleVideoCanPlay();
+		};
+		e.addEventListener("play", t), e.addEventListener("pause", i), e.addEventListener("seeking", s), e.addEventListener("seeked", n), e.addEventListener("ratechange", a), e.addEventListener("loadedmetadata", o), e.addEventListener("durationchange", l), e.addEventListener("emptied", u), e.addEventListener("waiting", h), e.addEventListener("canplay", r), e.addEventListener("playing", f), this.addCleanup(() => e.removeEventListener("play", t)), this.addCleanup(() => e.removeEventListener("pause", i)), this.addCleanup(() => e.removeEventListener("seeking", s)), this.addCleanup(() => e.removeEventListener("seeked", n)), this.addCleanup(() => e.removeEventListener("ratechange", a)), this.addCleanup(() => e.removeEventListener("loadedmetadata", o)), this.addCleanup(() => e.removeEventListener("durationchange", l)), this.addCleanup(() => e.removeEventListener("emptied", u)), this.addCleanup(() => e.removeEventListener("waiting", h)), this.addCleanup(() => e.removeEventListener("canplay", r)), this.addCleanup(() => e.removeEventListener("playing", f));
+	} catch (t) {
+		throw this.log.error("CommentRenderer.setupVideoEventListeners", t), t;
+	}
+};
+var as = function(e) {
+	this.lastVideoSource = this.getCurrentVideoSource(), this.incrementEpoch("metadata-loaded"), this.handleVideoSourceChange(e), this.resize(), this.calculateLaneMetrics(), this.onSeek(), this.emitStateSnapshot("metadata-loaded");
+};
+var rs = function() {
+	const e = this.canvas, t = this.ctx;
+	if (!e || !t) return;
+	this.isStalled = true;
+	const i = this.canvasDpr > 0 ? this.canvasDpr : 1, s = this.displayWidth > 0 ? this.displayWidth : e.width / i, n = this.displayHeight > 0 ? this.displayHeight : e.height / i;
+	t.clearRect(0, 0, s, n), this.comments.forEach((a) => {
+		a.isActive && (a.lastUpdateTime = this.timeSource.now());
+	});
+};
+var os = function() {
+	this.isStalled && (this.isStalled = false, this.videoElement && (this.currentTime = T(this.videoElement.currentTime), this.isPlaying = !this.videoElement.paused), this.lastDrawTime = this.timeSource.now());
+};
+var ls = function(e) {
+	const t = e ?? this.videoElement;
+	if (!t) {
+		this.lastVideoSource = null, this.isPlaying = false, this.resetFinalPhaseState(), this.resetCommentActivity();
+		return;
+	}
+	const i = this.getCurrentVideoSource();
+	i !== this.lastVideoSource && (this.lastVideoSource = i, this.incrementEpoch("source-change"), this.syncVideoState(t), this.resetFinalPhaseState(), this.resetCommentActivity(), this.emitStateSnapshot("source-change"));
+};
+var cs = function(e) {
+	this.duration = Number.isFinite(e.duration) ? T(e.duration) : 0, this.currentTime = T(e.currentTime), this.playbackRate = e.playbackRate, this.isPlaying = !e.paused, this.isStalled = false, this.playbackHasBegun = this.isPlaying || this.currentTime > A, this.lastDrawTime = this.timeSource.now();
+};
+var hs = function() {
+	const e = this.timeSource.now(), t = this.canvas, i = this.ctx;
+	if (this.resetFinalPhaseState(), this.skipDrawingForCurrentFrame = false, this.isStalled = false, this.pendingInitialSync = false, this.playbackHasBegun = this.isPlaying || this.currentTime > A, t && i) {
+		const s = this.canvasDpr > 0 ? this.canvasDpr : 1, n = this.displayWidth > 0 ? this.displayWidth : t.width / s, a = this.displayHeight > 0 ? this.displayHeight : t.height / s;
+		i.clearRect(0, 0, n, a);
+	}
+	this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.comments.forEach((s) => {
+		s.isActive = false, s.isPaused = !this.isPlaying, s.hasShown = false, s.lane = -1, s.x = s.virtualStartX, s.speed = s.baseSpeed, s.lastUpdateTime = e, s.clearActivation();
+	}), this.activeComments.clear();
+};
+var us = function(e, t) {
+	if (typeof MutationObserver > "u") {
+		this.log.debug("MutationObserver is not available in this environment. Video change detection is disabled.");
+		return;
+	}
+	const i = new MutationObserver((n) => {
+		for (const a of n) {
+			if (a.type === "attributes" && a.attributeName === "src") {
+				const o = a.target;
+				let l = null, u = null;
+				if ((o instanceof HTMLVideoElement || o instanceof HTMLSourceElement) && (l = typeof a.oldValue == "string" ? a.oldValue : null, u = o.getAttribute("src")), l === u) continue;
+				this.handleVideoSourceChange(e);
+				return;
+			}
+			if (a.type === "childList") {
+				for (const o of a.addedNodes) if (o instanceof HTMLSourceElement) {
+					this.handleVideoSourceChange(e);
+					return;
+				}
+				for (const o of a.removedNodes) if (o instanceof HTMLSourceElement) {
+					this.handleVideoSourceChange(e);
+					return;
+				}
+			}
+		}
+	});
+	i.observe(e, {
+		attributes: true,
+		attributeFilter: ["src"],
+		attributeOldValue: true,
+		childList: true,
+		subtree: true
+	}), this.addCleanup(() => i.disconnect());
+	const s = new MutationObserver((n) => {
+		for (const a of n) if (a.type === "childList") {
+			for (const o of a.addedNodes) {
+				const l = this.extractVideoElement(o);
+				if (l && l !== this.videoElement) {
+					this.initialize(l);
+					return;
+				}
+			}
+			for (const o of a.removedNodes) {
+				if (o === this.videoElement) {
+					this.videoElement = null, this.handleVideoSourceChange(null);
+					return;
+				}
+				if (o instanceof Element) {
+					const l = o.querySelector("video");
+					if (l && l === this.videoElement) {
+						this.videoElement = null, this.handleVideoSourceChange(null);
+						return;
+					}
+				}
+			}
+		}
+	});
+	s.observe(t, {
+		childList: true,
+		subtree: true
+	}), this.addCleanup(() => s.disconnect());
+};
+var ds = function(e) {
+	if (e instanceof HTMLVideoElement) return e;
+	if (e instanceof Element) {
+		const t = e.querySelector("video");
+		if (t instanceof HTMLVideoElement) return t;
+	}
+	return null;
+};
+var fs = (e) => {
+	e.prototype.setupVideoEventListeners = ns, e.prototype.handleVideoMetadataLoaded = as, e.prototype.handleVideoStalled = rs, e.prototype.handleVideoCanPlay = os, e.prototype.handleVideoSourceChange = ls, e.prototype.syncVideoState = cs, e.prototype.resetCommentActivity = hs, e.prototype.setupVideoChangeDetection = us, e.prototype.extractVideoElement = ds;
+};
+var ps = function() {
+	if (typeof document > "u" || typeof document.addEventListener != "function" || typeof document.removeEventListener != "function") return;
+	const e = () => {
+		if (document.visibilityState !== "visible") {
+			this.stopAnimation();
+			return;
+		}
+		this._settings.isCommentVisible && (this.handleVisibilityRestore(), this.startAnimation());
+	};
+	document.addEventListener("visibilitychange", e), this.addCleanup(() => document.removeEventListener("visibilitychange", e)), document.visibilityState !== "visible" && this.stopAnimation();
+};
+var gs = function() {
+	const e = this.canvas, t = this.ctx, i = this.videoElement;
+	!e || !t || !i || (this.currentTime = T(i.currentTime), this.lastDrawTime = this.timeSource.now(), this.isPlaying = !i.paused, this.isStalled = false, this.pendingInitialSync = true, this.resetFinalPhaseState(), this.updatePlaybackProgressState(), this.draw());
+};
+var vs = function(e) {
+	const t = this._settings.isCommentVisible;
+	if (this._settings.isCommentVisible = e, t === e) return;
+	this.settingsVersion += 1, this.commentDependencies.settingsVersion = this.settingsVersion;
+	const i = this.canvas, s = this.ctx;
+	if (!(!i || !s)) if (e) this.lastDrawTime = this.timeSource.now(), this.pendingInitialSync = true, this.scheduleNextFrame();
+	else {
+		const n = this.canvasDpr > 0 ? this.canvasDpr : 1, a = this.displayWidth > 0 ? this.displayWidth : i.width / n, o = this.displayHeight > 0 ? this.displayHeight : i.height / n;
+		s.clearRect(0, 0, a, o);
+	}
+};
+var Ss = (e) => {
+	e.prototype.setupVisibilityHandling = ps, e.prototype.handleVisibilityRestore = gs, e.prototype.setCommentVisibility = vs;
+};
+var ms = 768;
+var ys = 68.1645984649658;
+var Cs = function(e, t) {
+	const i = this.videoElement, s = this.canvas, n = this.ctx;
+	if (!i || !s) return;
+	const o = (this.fullscreenActive && s.parentElement instanceof HTMLElement ? s.parentElement.getBoundingClientRect() : null) ?? i.getBoundingClientRect(), l = this.canvasDpr > 0 ? this.canvasDpr : 1, u = this.displayWidth > 0 ? this.displayWidth : s.width / l, h = this.displayHeight > 0 ? this.displayHeight : s.height / l, r = e ?? o.width ?? u, f = t ?? o.height ?? h;
+	if (!Number.isFinite(r) || !Number.isFinite(f) || r <= 0 || f <= 0) return;
+	const d = Math.max(1, Math.floor(r)), c = Math.max(1, Math.floor(f)), p = this._settings.useDprScaling ? this.resolveDevicePixelRatio() : 1, g = Math.max(1, Math.round(d * p)), S = Math.max(1, Math.round(c * p));
+	(this.displayWidth !== d || this.displayHeight !== c || Math.abs(this.canvasDpr - p) > Number.EPSILON || s.width !== g || s.height !== S) && (this.displayWidth = d, this.displayHeight = c, this.canvasDpr = p, s.width = g, s.height = S, s.style.width = `${d}px`, s.style.height = `${c}px`, n && (n.setTransform(1, 0, 0, 1, 0, 0), this._settings.useDprScaling && n.scale(p, p)), this.calculateLaneMetrics(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.performInitialSync(T(i.currentTime)), this.draw());
+};
+var Ms = function() {
+	if (typeof window > "u") return 1;
+	const e = Number(window.devicePixelRatio);
+	return !Number.isFinite(e) || e <= 0 ? 1 : e;
+};
+var bs = function() {
+	const e = this.canvas;
+	if (!e) return;
+	const t = this.displayHeight > 0 ? this.displayHeight : e.height / Math.max(this.canvasDpr, 1);
+	this.laneHeight = t * (ys / ms);
+	const i = Math.max(this.laneHeight, 1), n = Math.floor(Math.max(0, t - i) / i);
+	if (this._settings.useFixedLaneCount) {
+		const a = Number.isFinite(this._settings.fixedLaneCount) ? Math.floor(this._settings.fixedLaneCount) : ce, o = Math.max(K, Math.min(n, a));
+		this.laneCount = o;
+	} else this.laneCount = Math.max(K, n);
+	this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0;
+};
+var Es = function(e) {
+	this.cleanupResizeHandling();
+	let t = false;
+	const i = () => {
+		if (t) return;
+		t = true;
+		const n = () => {
+			t = false, this.resize();
+		};
+		if (typeof requestAnimationFrame == "function") {
+			requestAnimationFrame(n);
+			return;
+		}
+		n();
+	};
+	if (this._settings.useContainerResizeObserver && this.isResizeObserverAvailable) {
+		const n = this.resolveResizeObserverTarget(e), a = new ResizeObserver((o) => {
+			for (const l of o) {
+				const { width: u, height: h } = l.contentRect;
+				u > 0 && h > 0 ? this.resize(u, h) : this.resize();
+			}
+		});
+		a.observe(n), this.resizeObserver = a, this.resizeObserverTarget = n;
+	} else this.log.debug("Resize handling is disabled because neither ResizeObserver nor window APIs are available.");
+	typeof window < "u" && typeof window.addEventListener == "function" && (window.addEventListener("resize", i), this.addCleanup(() => window.removeEventListener("resize", i)));
+	const s = typeof window < "u" ? window.visualViewport : void 0;
+	s && typeof s.addEventListener == "function" && (s.addEventListener("resize", i), s.addEventListener("scroll", i), this.addCleanup(() => {
+		s.removeEventListener("resize", i), s.removeEventListener("scroll", i);
+	}));
+};
+var Ts = function() {
+	this.resizeObserver && this.resizeObserverTarget && this.resizeObserver.unobserve(this.resizeObserverTarget), this.resizeObserver?.disconnect(), this.resizeObserver = null, this.resizeObserverTarget = null;
+};
+var ws = (e) => {
+	e.prototype.resize = Cs, e.prototype.resolveDevicePixelRatio = Ms, e.prototype.calculateLaneMetrics = bs, e.prototype.setupResizeHandling = Es, e.prototype.cleanupResizeHandling = Ts;
+};
+var xs = function() {
+	if (typeof document > "u" || typeof document.addEventListener != "function" || typeof document.removeEventListener != "function") return;
+	const e = () => {
+		this.handleFullscreenChange();
+	};
+	[
+		"fullscreenchange",
+		"webkitfullscreenchange",
+		"mozfullscreenchange",
+		"MSFullscreenChange"
+	].forEach((i) => {
+		document.addEventListener(i, e), this.addCleanup(() => document.removeEventListener(i, e));
+	}), this.handleFullscreenChange();
+};
+var ne = (e) => {
+	const t = () => {
+		const i = e.getFullscreenElement();
+		if (i instanceof HTMLElement) {
+			const s = i.getBoundingClientRect();
+			e.resize(s.width, s.height);
+			return;
+		}
+		e.resize();
+	};
+	typeof requestAnimationFrame == "function" && requestAnimationFrame(t), typeof setTimeout == "function" && setTimeout(t, 80);
+};
+var Is = function(e) {
+	return this.resolveFullscreenContainer(e) || (e.parentElement ?? e);
+};
+var Ls = async function() {
+	const e = this.canvas, t = this.videoElement;
+	if (!e || !t) return;
+	const i = this.containerElement ?? t.parentElement ?? null, s = this.getFullscreenElement(), n = this.resolveActiveOverlayContainer(t, i, s);
+	if (!(n instanceof HTMLElement)) return;
+	e.parentElement !== n ? (this.ensureContainerPositioning(n), n.appendChild(e)) : this.ensureContainerPositioning(n);
+	const a = s instanceof HTMLElement && s.contains(t) ? s : null, o = a !== null;
+	if (this.fullscreenActive !== o && (this.fullscreenActive = o, this.setupResizeHandling(t)), e.style.position = "absolute", e.style.top = "0", e.style.left = "0", e.style.right = "0", e.style.bottom = "0", e.style.display = "block", e.style.pointerEvents = "none", e.style.zIndex = "2147483647", a) {
+		const l = a.getBoundingClientRect();
+		this.resize(l.width, l.height), ne(this);
+		return;
+	}
+	this.resize(), ne(this);
+};
+var Fs = function(e) {
+	const t = this.getFullscreenElement();
+	return t instanceof HTMLElement && (t === e || t.contains(e)) ? t : null;
+};
+var Rs = function(e, t, i) {
+	return i instanceof HTMLElement && i.contains(e) ? i instanceof HTMLVideoElement && t instanceof HTMLElement ? t : i : t ?? null;
+};
+var As = function() {
+	if (typeof document > "u") return null;
+	const e = document;
+	return document.fullscreenElement ?? e.webkitFullscreenElement ?? e.mozFullScreenElement ?? e.msFullscreenElement ?? null;
+};
+var Ps = (e) => {
+	e.prototype.setupFullscreenHandling = xs, e.prototype.resolveResizeObserverTarget = Is, e.prototype.handleFullscreenChange = Ls, e.prototype.resolveFullscreenContainer = Fs, e.prototype.resolveActiveOverlayContainer = Rs, e.prototype.getFullscreenElement = As;
+};
+var Ds = function(e) {
+	this.cleanupTasks.push(e);
+};
+var _s = function() {
+	for (; this.cleanupTasks.length > 0;) {
+		const e = this.cleanupTasks.pop();
+		try {
+			e?.();
+		} catch (t) {
+			this.log.error("CommentRenderer.cleanupTask", t);
+		}
+	}
+};
+var Vs = (e) => {
+	e.prototype.addCleanup = Ds, e.prototype.runCleanupTasks = _s;
+};
+var M = class {
+	_settings;
+	comments = [];
+	activeComments = /* @__PURE__ */ new Set();
+	reservedLanes = /* @__PURE__ */ new Map();
+	topStaticLaneReservations = [];
+	bottomStaticLaneReservations = [];
+	pendingStaticPlacementOffsets = /* @__PURE__ */ new WeakMap();
+	log;
+	timeSource;
+	animationFrameProvider;
+	createCanvasElement;
+	commentDependencies;
+	settingsVersion = 0;
+	normalizedNgWords = [];
+	compiledNgRegexps = [];
+	canvas = null;
+	ctx = null;
+	videoElement = null;
+	containerElement = null;
+	fullscreenActive = false;
+	laneCount = ce;
+	laneHeight = 0;
+	displayWidth = 0;
+	displayHeight = 0;
+	canvasDpr = 1;
+	currentTime = 0;
+	duration = 0;
+	playbackRate = 1;
+	isPlaying = true;
+	isStalled = false;
+	lastDrawTime = 0;
+	/** @deprecated Retained for API compatibility; official timing has no phase state. */
+	finalPhaseActive = false;
+	/** @deprecated Retained for API compatibility; always null. */
+	finalPhaseStartTime = null;
+	/** @deprecated Retained for API compatibility; always false. */
+	finalPhaseScheduleDirty = false;
+	playbackHasBegun = false;
+	skipDrawingForCurrentFrame = false;
+	pendingInitialSync = false;
+	/** @deprecated Retained for API compatibility; official timing uses no override map. */
+	finalPhaseVposOverrides = /* @__PURE__ */ new Map();
+	frameId = null;
+	videoFrameHandle = null;
+	resizeObserver = null;
+	resizeObserverTarget = null;
+	isResizeObserverAvailable = typeof ResizeObserver < "u";
+	cleanupTasks = [];
+	commentSequence = 0;
+	epochId = 0;
+	eventHooks;
+	lastSnapshotEmitTime = 0;
+	snapshotEmitThrottleMs = 1e3;
+	lastPlayResumeTime = 0;
+	playResumeSeekIgnoreDurationMs = 500;
+	lastVideoSource = null;
+	rebuildNgMatchers() {
+		Me.call(this);
+	}
+	constructor(t = null, i = void 0) {
+		let s, n;
+		if (Nt(t)) s = O({ ...t }), n = i ?? {};
+		else {
+			const a = t ?? i ?? {};
+			n = typeof a == "object" ? a : {}, s = O(_t());
+		}
+		this._settings = O(s), this.timeSource = n.timeSource ?? le(), this.animationFrameProvider = n.animationFrameProvider ?? Ot(this.timeSource), this.createCanvasElement = n.createCanvasElement ?? Ht(), this.commentDependencies = {
+			timeSource: this.timeSource,
+			settingsVersion: this.settingsVersion
+		}, this.log = he(n.loggerNamespace ?? "CommentRenderer"), this.eventHooks = n.eventHooks ?? {}, this.handleAnimationFrame = this.handleAnimationFrame.bind(this), this.handleVideoFrame = this.handleVideoFrame.bind(this), this.rebuildNgMatchers(), n.debug && dt(n.debug);
+	}
+	get settings() {
+		return this._settings;
+	}
+	set settings(t) {
+		this._settings = O(t), this.settingsVersion += 1, this.commentDependencies.settingsVersion = this.settingsVersion, this.rebuildNgMatchers();
+	}
+	getVideoElement() {
+		return this.videoElement;
+	}
+	getCurrentVideoSource() {
+		const t = this.videoElement;
+		if (!t) return null;
+		if (typeof t.currentSrc == "string" && t.currentSrc.length > 0) return t.currentSrc;
+		const i = t.getAttribute("src");
+		if (i && i.length > 0) return i;
+		const s = t.querySelector("source[src]");
+		return s && typeof s.src == "string" ? s.src : null;
+	}
+	getCommentsSnapshot() {
+		return [...this.comments];
+	}
+};
+Bt(M);
+Qt(M);
+ii(M);
+ri(M);
+hi(M);
+yi(M);
+xi(M);
+Hi(M);
+zi(M);
+Ji(M);
+ss(M);
+fs(M);
+Ss(M);
+ws(M);
+Ps(M);
+Vs(M);
+function installCommentDurations(renderer) {
+	const durations = /* @__PURE__ */ new Map();
+	const candidates = renderer.getCommentsInTimeWindow.bind(renderer);
+	const shouldActivate = renderer.shouldActivateCommentAtTime.bind(renderer);
+	const activate = renderer.activateComment.bind(renderer);
+	const reserve = renderer.reserveStaticLane.bind(renderer);
+	const update = renderer.updateComments.bind(renderer);
+	renderer.getCommentsInTimeWindow = (time, window) => {
+		const result = new Set(candidates(time, window));
+		for (const [comment, duration] of durations) {
+			const begin = renderer.getEffectiveCommentVpos(comment);
+			if (!comment.isScrolling && begin <= time + window && begin + duration > time - window) result.add(comment);
+		}
+		return [...result];
+	};
+	renderer.shouldActivateCommentAtTime = (comment, time, preview) => {
+		const duration = durations.get(comment);
+		if (duration === void 0 || comment.isScrolling) return shouldActivate(comment, time, preview);
+		const begin = renderer.getEffectiveCommentVpos(comment);
+		return !comment.isInvisible && !comment.isActive && !comment.hasShown && begin <= time + 50 && time < begin + duration;
+	};
+	renderer.reserveStaticLane = (position, comment, lane, release) => {
+		const duration = durations.get(comment);
+		reserve(position, comment, lane, duration === void 0 ? release : renderer.getEffectiveCommentVpos(comment) + duration);
+	};
+	renderer.activateComment = (comment, context, width, height, options, time) => {
+		activate(comment, context, width, height, options, time);
+		const duration = durations.get(comment);
+		if (duration !== void 0 && !comment.isScrolling) {
+			comment.staticExpiryTimeMs = renderer.getEffectiveCommentVpos(comment) + duration;
+			comment.visibleDurationMs = Math.max(0, comment.staticExpiryTimeMs - time);
+		}
+	};
+	renderer.updateComments = (time) => {
+		const extended = [...renderer.activeComments].filter((comment) => !comment.isScrolling && durations.has(comment));
+		for (const comment of extended) renderer.activeComments.delete(comment);
+		update(time);
+		for (const comment of extended) if (comment.isActive && !comment.hasStaticExpired(renderer.currentTime)) renderer.activeComments.add(comment);
+	};
+	return durations;
 }
-body.in-capture .commentLayerOuter {
-  overflow: hidden;
-  width: 682px;
-  height: 384px;
-  padding: 0 69px;
+function overlayEntry(chat) {
+	const commands = chat.cmd.split(/\s+/).filter(Boolean);
+	commands.push(chat.type, chat.size);
+	if (chat.color) commands.push(chat.color);
+	if (chat.fontCommand) commands.push(chat.fontCommand);
+	if (chat.isInvisible) commands.push("invisible");
+	return {
+		text: chat.text,
+		vposMs: chat.vpos * 10,
+		commands,
+		meta: {
+			no: chat.no,
+			fork: String(chat.fork),
+			threadId: String(chat.threadId),
+			source: chat.id
+		}
+	};
 }
-body.in-capture .commentLayer {
-  transform: none !important;
+function commentPresentation(chat) {
+	const forkOpacity = chat.fork === 2 ? Number(Config.props["commentLayer.easyCommentOpacity"]) : chat.fork === 3 ? Number(Config.props["commentLayer.aiCommentOpacity"]) : 1;
+	const liveOpacity = chat.cmd.split(/\s+/).some((command) => command.toLowerCase() === "_live") ? .5 : 1;
+	return {
+		reverse: chat.isReverse,
+		opacity: chat.opacity / liveOpacity * forkOpacity,
+		fontFamily: chat.fontCommand ? "" : Config.props.baseFontFamily,
+		fontWeight: chat.fontCommand ? null : Config.props.baseFontBolder ? "bold" : "normal",
+		scale: Math.max(.1, Number(Config.props.baseChatScale) || 1),
+		duration: chat.hasDurationSet ? chat.duration * 1e3 : null,
+		shadow: Config.props["commentLayer.textShadowType"],
+		shadowColor: chat.fork === 1 ? Config.props["commentLayer.ownerCommentShadowColor"] : "#000000",
+		owner: chat.fork === 1
+	};
 }
-.mode-3d .commentLayer {
-  perspective: 50px;
+function decorateOverlayComment(comment, presentation, renderer) {
+	const prepare = comment.prepare.bind(comment);
+	const sync = comment.syncWithSettings.bind(comment);
+	const draw = comment.draw.bind(comment);
+	comment.draw = (context, x) => {
+		context.save();
+		const color = presentation.shadowColor;
+		if (presentation.shadow === "shadow-dokaben") context.filter = `drop-shadow(3px 4px 0 ${color})`;
+		else if (presentation.shadow === "shadow-stroke") context.filter = `drop-shadow(1px 0 0 ${color}) drop-shadow(-1px 0 0 ${color})`;
+		else if (presentation.shadow === "shadow-type2" || presentation.owner) context.filter = `drop-shadow(0 0 1px ${color})`;
+		draw(context, x);
+		context.restore();
+	};
+	comment.syncWithSettings = (settings, version) => {
+		sync({
+			...settings,
+			scrollDirection: presentation.reverse ? "ltr" : settings.scrollDirection
+		}, version);
+		comment.opacity = comment.getEffectiveOpacity(settings.commentOpacity) * presentation.opacity;
+	};
+	comment.prepare = (context, width, height, options) => {
+		if (presentation.fontFamily) comment.fontFamily = presentation.fontFamily;
+		if (presentation.fontWeight !== null) comment.fontWeight = presentation.fontWeight;
+		const duration = presentation.duration ?? renderer.settings.scrollVisibleDurationMs;
+		prepare(context, width, height * presentation.scale, duration === null ? options : {
+			...options,
+			minVisibleDurationMs: duration,
+			maxVisibleDurationMs: duration
+		});
+	};
 }
-
-.saved body {
-  pointer-events: auto;
+var comment_overlay_es_default = "const Ee = {\n  small: 0.6666666666666666,\n  medium: 1,\n  big: 1.4444444444444444\n}, Te = {\n  defont: 'Arial,\"ＭＳ Ｐゴシック\",\"MS PGothic\",MSPGothic,MS-PGothic',\n  gothic: '\"游ゴシック体\",\"游ゴシック\",\"Yu Gothic\",YuGothic,yugothic,YuGo-Medium,\"宋体\",SimSun,Arial,\"ＭＳ Ｐゴシック\",\"MS PGothic\",MSPGothic,MS-PGothic',\n  mincho: '\"游明朝体\",\"游明朝\",\"Yu Mincho\",YuMincho,yumincho,YuMin-Medium,\"宋体\",SimSun,Arial,\"ＭＳ Ｐゴシック\",\"MS PGothic\",MSPGothic,MS-PGothic'\n}, we = {\n  defont: \"600\",\n  gothic: \"\",\n  mincho: \"\"\n}, ae = {\n  white: \"#FFFFFF\",\n  red: \"#FF0000\",\n  pink: \"#FFA5CC\",\n  orange: \"#FFBA66\",\n  yellow: \"#FFFFAA\",\n  green: \"#00FF00\",\n  cyan: \"#88FFFF\",\n  blue: \"#8899FF\",\n  purple: \"#D9A5FF\",\n  black: \"#000000\",\n  white2: \"#CC9\",\n  red2: \"#C03\",\n  pink2: \"#F3C\",\n  orange2: \"#F60\",\n  yellow2: \"#990\",\n  green2: \"#0C6\",\n  cyan2: \"#0CC\",\n  blue2: \"#39F\",\n  purple2: \"#63C\",\n  black2: \"#666\"\n}, G = /^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i, xe = /^[,.:;]+/, Ie = /[,.:;]+$/, Le = (e) => {\n  const t = e.trim();\n  return t ? G.test(t) ? t : t.replace(xe, \"\").replace(Ie, \"\") : \"\";\n}, Fe = (e) => G.test(e) ? e.toUpperCase() : null, re = (e) => {\n  const t = e.trim();\n  if (!t)\n    return null;\n  const i = t.toLowerCase().endsWith(\"px\") ? t.slice(0, -2) : t, s = Number.parseFloat(i);\n  return Number.isFinite(s) ? s : null;\n}, Re = (e) => {\n  const t = e.trim();\n  if (!t)\n    return null;\n  if (t.endsWith(\"%\")) {\n    const i = Number.parseFloat(t.slice(0, -1));\n    return Number.isFinite(i) ? i / 100 : null;\n  }\n  return re(t);\n}, Ae = (e) => Number.isFinite(e) ? Math.min(100, Math.max(-100, e)) : 0, Pe = (e) => !Number.isFinite(e) || e === 0 ? 1 : Math.min(5, Math.max(0.25, e)), De = (e) => e === \"naka\" || e === \"ue\" || e === \"shita\", _e = (e) => e === \"small\" || e === \"medium\" || e === \"big\", Ve = (e) => e === \"defont\" || e === \"gothic\" || e === \"mincho\", Oe = (e) => e in ae, He = (e, t) => {\n  let i = \"naka\", s = \"medium\", n = \"defont\", a = null, o = 1, l = null, u = !1, h = !1, r = !1, f = 0, d = 1;\n  for (const S of e) {\n    const y = Le(typeof S == \"string\" ? S : \"\");\n    if (!y)\n      continue;\n    if (G.test(y)) {\n      const b = Fe(y);\n      if (b) {\n        a = b;\n        continue;\n      }\n    }\n    const m = y.toLowerCase();\n    if (De(m)) {\n      i = m;\n      continue;\n    }\n    if (_e(m)) {\n      s = m;\n      continue;\n    }\n    if (Ve(m)) {\n      n = m;\n      continue;\n    }\n    if (Oe(m)) {\n      a = ae[m].toUpperCase();\n      continue;\n    }\n    if (m === \"_live\") {\n      l = 0.5;\n      continue;\n    }\n    if (m === \"invisible\") {\n      o = 0, u = !0;\n      continue;\n    }\n    if (m === \"full\") {\n      h = !0;\n      continue;\n    }\n    if (m === \"ender\") {\n      r = !0;\n      continue;\n    }\n    if (m.startsWith(\"ls:\") || m.startsWith(\"letterspacing:\")) {\n      const b = y.indexOf(\":\");\n      if (b >= 0) {\n        const x = re(y.slice(b + 1));\n        x !== null && (f = Ae(x));\n      }\n      continue;\n    }\n    if (m.startsWith(\"lh:\") || m.startsWith(\"lineheight:\")) {\n      const b = y.indexOf(\":\");\n      if (b >= 0) {\n        const x = Re(y.slice(b + 1));\n        x !== null && (d = Pe(x));\n      }\n      continue;\n    }\n  }\n  const c = Math.max(0, Math.min(1, o)), p = (a ?? t.defaultColor).toUpperCase(), g = typeof l == \"number\" ? Math.max(0, Math.min(1, l)) : null;\n  return {\n    layout: i,\n    size: s,\n    sizeScale: Ee[s],\n    font: n,\n    fontFamily: Te[n],\n    fontWeight: we[n],\n    resolvedColor: p,\n    colorOverride: a,\n    opacityMultiplier: c,\n    opacityOverride: g,\n    isInvisible: u,\n    isFull: h,\n    isEnder: r,\n    letterSpacing: f,\n    lineHeight: d\n  };\n}, Ne = /^#([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i, V = (e) => e.length === 1 ? e.repeat(2) : e, L = (e) => Number.parseInt(e, 16), P = (e) => !Number.isFinite(e) || e <= 0 ? 0 : e >= 1 ? 1 : e, oe = (e, t) => {\n  const i = Ne.exec(e);\n  if (!i)\n    return e;\n  const s = i[1];\n  let n, a, o, l = 1;\n  s.length === 3 || s.length === 4 ? (n = L(V(s[0])), a = L(V(s[1])), o = L(V(s[2])), s.length === 4 && (l = L(V(s[3])) / 255)) : (n = L(s.slice(0, 2)), a = L(s.slice(2, 4)), o = L(s.slice(4, 6)), s.length === 8 && (l = L(s.slice(6, 8)) / 255));\n  const u = P(l * P(t));\n  return `rgba(${n}, ${a}, ${o}, ${u})`;\n}, ke = () => ({\n  now: () => typeof performance < \"u\" && typeof performance.now == \"function\" ? performance.now() : Date.now()\n}), le = () => ke(), T = (e) => e * 1e3, ze = (e) => !Number.isFinite(e) || e < 0 ? null : Math.round(e), U = 6e3, We = 2700, $e = 3, Xe = 0.35, Be = 48, Ge = 48, N = 0, w = 3e3, F = w + U, Ue = 240, K = 1, ce = 12, E = 1e-3, A = 50, j = {\n  debug: 0,\n  info: 1,\n  warn: 2,\n  error: 3\n}, Ye = (e, t, i) => {\n  const n = [`[${t}]`, ...i];\n  switch (e) {\n    case \"debug\":\n      console.debug(...n);\n      break;\n    case \"info\":\n      console.info(...n);\n      break;\n    case \"warn\":\n      console.warn(...n);\n      break;\n    case \"error\":\n      console.error(...n);\n      break;\n    default:\n      console.log(...n);\n  }\n}, he = (e, t = {}) => {\n  const { level: i = \"info\", emitter: s = Ye } = t, n = j[i], a = (o, l) => {\n    j[o] < n || s(o, e, l);\n  };\n  return {\n    debug: (...o) => a(\"debug\", o),\n    info: (...o) => a(\"info\", o),\n    warn: (...o) => a(\"warn\", o),\n    error: (...o) => a(\"error\", o)\n  };\n}, Y = he(\"CommentEngine:Comment\"), J = /* @__PURE__ */ new WeakMap(), qe = (e) => {\n  let t = J.get(e);\n  return t || (t = /* @__PURE__ */ new Map(), J.set(e, t)), t;\n}, q = (e, t) => {\n  if (!e)\n    return 0;\n  const s = `${e.font ?? \"\"}::${t}`, n = qe(e), a = n.get(s);\n  if (a !== void 0)\n    return a;\n  const o = e.measureText(t).width;\n  return n.set(s, o), o;\n}, ue = 768, Ke = 0.1, z = (e) => Ke * (Math.max(1, e) / ue), je = {\n  small: {\n    resizeAtLineCount: 7,\n    normal: {\n      fontSize: 36,\n      blockHeight: 46.4650603532791,\n      lineAdvance: 36.0867458283901\n    },\n    resized: {\n      fontSize: 20,\n      blockHeight: 25.9252893924713,\n      lineAdvance: 20.065746307373\n    }\n  },\n  medium: {\n    resizeAtLineCount: 5,\n    normal: {\n      fontSize: 54,\n      blockHeight: 68.1645984649658,\n      lineAdvance: 57.8541674613953\n    },\n    resized: {\n      fontSize: 28,\n      blockHeight: 35.4883227944374,\n      lineAdvance: 30.0388290286064\n    }\n  },\n  big: {\n    resizeAtLineCount: 3,\n    normal: {\n      fontSize: 78,\n      blockHeight: 98.6615376472473,\n      lineAdvance: 90.4781694412232\n    },\n    resized: {\n      fontSize: 40,\n      blockHeight: 52.1674284785986,\n      lineAdvance: 47.7538447529078\n    }\n  }\n}, Z = ({\n  canvasHeight: e,\n  size: t,\n  lineCount: i,\n  isEnder: s,\n  lineHeightMultiplier: n\n}) => {\n  const a = Math.max(1, e), o = Math.max(1, Math.floor(i)), l = je[t], u = !s && o >= l.resizeAtLineCount, h = u ? l.resized : l.normal, r = a / ue, f = Math.max(1, h.fontSize * r), d = Math.abs(n - 1) > Number.EPSILON, c = d ? Math.max(1, f * n) : Math.max(1, h.lineAdvance * r), p = f + (o - 1) * c, g = (h.blockHeight + (o - 1) * h.lineAdvance) * r, S = d ? p : Math.max(1, g - z(a));\n  return { fontSize: f, lineAdvance: c, textHeight: p, slotHeight: S, wasResizedForLineCount: u };\n}, Je = 1364, Ze = 1024, de = 4e3, fe = 2e3, Qe = 1e3, $ = (e) => Math.max(0, e) / 2 + 3, et = ({\n  visibleWidth: e,\n  inkWidth: t,\n  texturePaddingX: i,\n  direction: s,\n  traversalDurationMs: n = de\n}) => {\n  const a = Math.max(1, e), o = Math.max(0, t), l = Math.max(0, i), u = Math.max(1, n), h = a * (Ze / Je), r = (a - h) / 2, f = (h + o) / u, d = f * Qe, c = s === \"rtl\" ? r + h + l + d : r - o - l - d, p = s === \"rtl\" ? -o - l : a + l, g = Math.abs(p - c) / Math.max(f, Number.EPSILON), S = o / Math.max(f, Number.EPSILON);\n  return {\n    renderLeft: r,\n    renderWidth: h,\n    pixelsPerMs: f,\n    startX: c,\n    exitX: p,\n    collisionDurationMs: S,\n    totalDurationMs: g\n  };\n}, tt = 768, it = 0.75, st = 10, Q = 2, nt = (e, t) => Math.floor((e + Number.EPSILON) / t) * t, at = ({\n  visibleWidth: e,\n  canvasHeight: t,\n  isFull: i,\n  isEnder: s,\n  lineCount: n,\n  verticalFontSize: a,\n  verticalTextWidth: o,\n  originalFontSize: l,\n  originalTextWidth: u\n}) => {\n  const h = Math.max(0.01, t / tt), r = Q * h, f = st * Q * h, d = Math.max(1, e * (i ? 1 : it)), c = !s && n > 1 && o > d, p = c ? l : a, g = c ? u : o, S = c ? d * 2 : d;\n  let y = p;\n  g > S && (y = nt(p * (S / g), r)), c && !i && (y -= r), y = Math.max(f, Math.min(p, y));\n  const m = p > 0 ? g * (y / p) : 0;\n  let b = 1;\n  return m > S && y <= f + Number.EPSILON && (b = Math.max(0.1, Math.floor(S / m * 10) / 10)), { fontSize: y, drawScale: b, useOriginalMetrics: c, targetWidth: S };\n}, k = (e) => `${e.fontWeight ? `${e.fontWeight} ` : \"\"}${e.fontSize}px ${e.fontFamily}`, rt = \"  \", ot = (e) => e.replaceAll(\"	\", rt), lt = (e) => {\n  const t = ot(e);\n  if (t.includes(`\n`)) {\n    const i = t.split(/\\r?\\n/);\n    return i.length > 0 ? i : [\"\"];\n  }\n  return [t];\n}, ee = (e, t, i = Math.max(1, e.fontSize * e.lineHeightMultiplier)) => {\n  let s = 0;\n  const n = e.letterSpacing;\n  for (const o of e.lines) {\n    const l = q(t, o), u = o.length > 1 ? n * (o.length - 1) : 0, h = Math.max(0, l + u);\n    h > s && (s = h);\n  }\n  e.width = s, e.lineHeightPx = Math.max(1, i);\n  const a = e.lines.length > 1 ? (e.lines.length - 1) * e.lineHeightPx : 0;\n  e.height = e.fontSize + a;\n}, ct = (e, t, i) => (t.font = `${e.fontWeight ? `${e.fontWeight} ` : \"\"}${i}px ${e.fontFamily}`, Math.max(\n  0,\n  ...e.lines.map((s) => {\n    const n = s.length > 1 ? e.letterSpacing * (s.length - 1) : 0;\n    return Math.max(0, q(t, s) + n);\n  })\n)), ht = (e, t, i, s, n) => {\n  try {\n    if (!t)\n      throw new Error(\"Canvas context is required\");\n    if (!Number.isFinite(i) || !Number.isFinite(s))\n      throw new Error(\"Canvas dimensions must be numbers\");\n    if (!n)\n      throw new Error(\"Prepare options are required\");\n    const a = Math.max(i, 1);\n    e.lines = lt(e.text);\n    const o = Z({\n      canvasHeight: s,\n      size: e.size,\n      lineCount: e.lines.length,\n      isEnder: e.isEnder,\n      lineHeightMultiplier: e.lineHeightMultiplier\n    });\n    if (e.fontSize = o.fontSize, e.slotHeight = o.slotHeight, e.staticWidthScale = 1, t.font = k(e), ee(e, t, o.lineAdvance), !e.isScrolling) {\n      const d = e.width, c = Z({\n        canvasHeight: s,\n        size: e.size,\n        lineCount: e.lines.length,\n        isEnder: !0,\n        lineHeightMultiplier: e.lineHeightMultiplier\n      }), p = ct(e, t, c.fontSize), g = at({\n        visibleWidth: a,\n        canvasHeight: s,\n        isFull: e.isFull,\n        isEnder: e.isEnder,\n        lineCount: e.lines.length,\n        verticalFontSize: o.fontSize,\n        verticalTextWidth: d,\n        originalFontSize: c.fontSize,\n        originalTextWidth: p\n      }), S = g.useOriginalMetrics ? c : o, y = g.fontSize / Math.max(1, S.fontSize);\n      e.fontSize = g.fontSize, e.staticWidthScale = g.drawScale, t.font = k(e), ee(e, t, S.lineAdvance * y), e.slotHeight = Math.max(1, S.slotHeight * y * g.drawScale);\n    }\n    if (!e.isScrolling) {\n      e.bufferWidth = 0;\n      const d = (a - e.width) / 2;\n      e.virtualStartX = d, e.x = d, e.baseSpeed = 0, e.speed = 0, e.speedPixelsPerMs = 0, e.visibleDurationMs = w, e.preCollisionDurationMs = w, e.totalDurationMs = w, e.reservationWidth = e.width * e.staticWidthScale, e.staticExpiryTimeMs = e.vposMs + w, e.lastUpdateTime = e.getTimeSource().now(), e.isPaused = !1;\n      return;\n    }\n    e.staticExpiryTimeMs = null;\n    const u = n.maxVisibleDurationMs === n.minVisibleDurationMs ? n.maxVisibleDurationMs : de, h = $(e.fontSize), r = et({\n      visibleWidth: a,\n      inkWidth: e.width,\n      texturePaddingX: h,\n      direction: e.scrollDirection,\n      traversalDurationMs: u\n    });\n    e.bufferWidth = 0, e.virtualStartX = r.startX, e.x = r.startX, e.exitThreshold = r.exitX;\n    const f = r.pixelsPerMs * 1e3 / 60;\n    e.baseSpeed = f, e.speed = e.baseSpeed, e.speedPixelsPerMs = r.pixelsPerMs, e.visibleDurationMs = u, e.preCollisionDurationMs = Math.ceil(r.collisionDurationMs), e.totalDurationMs = Math.ceil(r.totalDurationMs), e.reservationWidth = e.width, e.lastUpdateTime = e.getTimeSource().now(), e.isPaused = !1;\n  } catch (a) {\n    throw Y.error(\"Comment.prepare\", a, {\n      text: e.text,\n      visibleWidth: i,\n      canvasHeight: s,\n      hasContext: !!t\n    }), a;\n  }\n}, X = 5, I = {\n  enabled: !1,\n  maxLogsPerCategory: X\n}, D = /* @__PURE__ */ new Map(), ut = (e) => {\n  if (e === void 0 || !Number.isFinite(e))\n    return X;\n  const t = Math.max(1, Math.floor(e));\n  return Math.min(1e4, t);\n}, dt = (e) => {\n  I.enabled = !!e.enabled, I.maxLogsPerCategory = ut(e.maxLogsPerCategory), I.enabled || D.clear();\n}, Ns = () => {\n  D.clear();\n}, R = () => I.enabled, ft = (e) => {\n  const t = D.get(e) ?? 0;\n  return t >= I.maxLogsPerCategory ? (t === I.maxLogsPerCategory && (console.debug(`[CommentOverlay][${e}]`, \"Further logs suppressed.\"), D.set(e, t + 1)), !1) : (D.set(e, t + 1), !0);\n}, C = (e, ...t) => {\n  I.enabled && ft(e) && console.debug(`[CommentOverlay][${e}]`, ...t);\n}, _ = (e, t = 32) => e.length <= t ? e : `${e.slice(0, t)}…`, pt = (e, t) => {\n  I.enabled && (console.group(`[CommentOverlay][state-dump] ${e}`), console.table({\n    \"Current Time\": `${t.currentTime.toFixed(2)}ms`,\n    Duration: `${t.duration.toFixed(2)}ms`,\n    \"Is Playing\": t.isPlaying,\n    \"Epoch ID\": t.epochId,\n    \"Total Comments\": t.totalComments,\n    \"Active Comments\": t.activeComments,\n    \"Reserved Lanes\": t.reservedLanes,\n    \"Final Phase\": t.finalPhaseActive,\n    \"Playback Begun\": t.playbackHasBegun,\n    \"Is Stalled\": t.isStalled\n  }), console.groupEnd());\n}, gt = (e, t, i) => {\n  I.enabled && C(\"epoch-change\", `Epoch changed: ${e} → ${t} (reason: ${i})`);\n}, te = (e) => {\n  if (typeof e == \"string\")\n    return e;\n  if (e != null)\n    return String(e);\n}, pe = () => typeof performance < \"u\" && typeof performance.now == \"function\" ? performance.now() : Date.now(), vt = (e) => {\n  if (typeof e.getTransform != \"function\")\n    return;\n  const t = e.getTransform();\n  return [t.a, t.b, t.c, t.d, t.e, t.f];\n}, St = (e) => {\n  const t = e.canvas;\n  return t ? {\n    canvasWidth: t.width,\n    canvasHeight: t.height\n  } : {};\n}, mt = (e) => e ? {\n  ...e.no !== void 0 ? { no: e.no } : {},\n  ...e.fork !== void 0 ? { fork: e.fork } : {},\n  ...e.source !== void 0 ? { source: e.source } : {},\n  ...e.threadId !== void 0 ? { threadId: e.threadId } : {},\n  ...e.date !== void 0 ? { date: e.date } : {},\n  ...e.userIdHash !== void 0 ? { userIdHash: e.userIdHash } : {}\n} : {}, ge = (e) => ({\n  text: e.text,\n  vposMs: e.vposMs,\n  ...mt(e.meta),\n  layout: e.layout,\n  lane: e.lane,\n  fontSize: e.fontSize,\n  width: e.width,\n  height: e.height,\n  lineHeightPx: e.lineHeightPx,\n  slotHeight: e.slotHeight,\n  color: e.color,\n  opacity: e.opacity,\n  creationIndex: e.creationIndex\n}), B = (e, t, i, s) => {\n  const n = globalThis.__COMMENT_OVERLAY_TRACE__;\n  globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__ !== !0 || typeof n != \"function\" || n({\n    source: \"comment-overlay\",\n    op: e,\n    timestampMs: pe(),\n    font: t.font,\n    fillStyle: te(t.fillStyle),\n    strokeStyle: te(t.strokeStyle),\n    lineWidth: t.lineWidth,\n    lineJoin: t.lineJoin,\n    globalAlpha: t.globalAlpha,\n    shadowColor: t.shadowColor,\n    shadowBlur: t.shadowBlur,\n    shadowOffsetX: t.shadowOffsetX,\n    shadowOffsetY: t.shadowOffsetY,\n    transform: vt(t),\n    ...St(t),\n    comment: ge(i),\n    ...s\n  });\n}, yt = (e, t, i) => {\n  const s = globalThis.__COMMENT_OVERLAY_TRACE__;\n  globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__ !== !0 || typeof s != \"function\" || s({\n    source: \"comment-overlay\",\n    op: e,\n    timestampMs: pe(),\n    comment: ge(t),\n    ...i\n  });\n}, v = {\n  hits: 0,\n  misses: 0,\n  creates: 0,\n  fallbacks: 0,\n  outlineCallsInCache: 0,\n  fillCallsInCache: 0,\n  outlineCallsInFallback: 0,\n  fillCallsInFallback: 0,\n  letterSpacingComments: 0,\n  normalComments: 0,\n  multiLineComments: 0,\n  totalCharactersDrawn: 0,\n  lastReported: 0\n}, ie = () => {\n  if (!R())\n    return;\n  const e = performance.now();\n  if (e - v.lastReported <= 5e3)\n    return;\n  const t = v.hits + v.misses, i = t > 0 ? v.hits / t * 100 : 0, s = v.creates > 0 ? (v.totalCharactersDrawn / v.creates).toFixed(1) : \"0\", n = v.outlineCallsInCache + v.outlineCallsInFallback, a = v.fillCallsInCache + v.fillCallsInFallback;\n  console.log(\n    \"[TextureCache Stats]\",\n    `\n  Cache: Hits=${v.hits}, Misses=${v.misses}, Hit Rate=${i.toFixed(1)}%`,\n    `\n  Creates: ${v.creates}, Fallbacks: ${v.fallbacks}`,\n    `\n  Comments: Normal=${v.normalComments}, LetterSpacing=${v.letterSpacingComments}, MultiLine=${v.multiLineComments}`,\n    `\n  Draw Calls: Outline=${n}, Fill=${a}`,\n    `\n  Avg Characters/Comment: ${s}`\n  ), v.lastReported = e;\n}, Ct = () => typeof OffscreenCanvas < \"u\", ve = (e, t, i) => {\n  if (e === \"none\")\n    return { blur: 0, alpha: 0 };\n  const s = {\n    light: 0.06,\n    medium: 0.1,\n    strong: 0.15\n  }[e], n = {\n    light: 0.6,\n    medium: 0.8,\n    strong: 0.95\n  }[e], a = Math.max(2, t * s), o = P(i * n);\n  return { blur: a, alpha: o };\n}, Se = () => 2.8, Mt = 0.5, bt = (e) => {\n  const t = e.trim().toLowerCase();\n  if (t === \"black\")\n    return !0;\n  const i = t.match(/^#([0-9a-f]{3,8})$/i);\n  if (!i)\n    return !1;\n  const s = i[1], n = s.length === 3 || s.length === 4, a = (h) => h.length === 1 ? `${h}${h}` : h, o = Number.parseInt(a(n ? s[0] : s.slice(0, 2)), 16), l = Number.parseInt(a(n ? s[1] : s.slice(2, 4)), 16), u = Number.parseInt(a(n ? s[2] : s.slice(4, 6)), 16);\n  return o === 0 && l === 0 && u === 0;\n}, me = (e) => bt(e.color) ? \"rgba(255, 255, 255, 0.4)\" : \"rgba(0, 0, 0, 0.4)\", Et = (e, t) => {\n  if (!e.isScrolling)\n    return t + e.fontSize;\n  const i = e.fontSize <= 18 ? e.fontSize * 0.08 : 0;\n  return e.fontSize * 1.5 + i;\n}, ye = (e) => {\n  if (e.isScrolling && e.lines.length > 1) {\n    const o = $(e.fontSize), l = e.fontSize * 0.5;\n    return {\n      paddingX: o,\n      paddingY: l,\n      textureWidth: Math.ceil(e.width + o * 2),\n      textureHeight: Math.ceil(e.height + e.fontSize * 1.25)\n    };\n  }\n  if (!e.isScrolling) {\n    const l = Math.ceil(\n      e.lines.length > 1 ? e.height : e.height + e.fontSize / 3\n    );\n    return {\n      paddingX: 0,\n      paddingY: Math.max(0, (l - e.height) / 2),\n      textureWidth: Math.ceil(e.width + 0),\n      textureHeight: l\n    };\n  }\n  const t = e.isScrolling ? $(e.fontSize) : Math.max(10, e.fontSize * 0.5), i = e.fontSize, s = e.isScrolling ? Math.round(i * (20 / 9)) : e.height + e.fontSize / 3, n = Math.ceil(\n    Math.max(e.height + Math.max(10, e.fontSize), s)\n  ), a = e.isScrolling ? e.fontSize * 0.5 : Math.max(0, (n - e.height) / 2);\n  return {\n    paddingX: t,\n    paddingY: a,\n    textureWidth: Math.ceil(e.width + t * 2),\n    textureHeight: n\n  };\n}, Tt = (e) => e.isScrolling ? 1 : e.staticWidthScale, wt = (e, t) => e.isScrolling ? 1 : t, xt = (e, t, i, s, n) => {\n  const a = wt(e, n), o = !e.isScrolling && a !== 1 ? t.width * (1 - a) * Mt : 0;\n  return {\n    x: i - s + o,\n    scaleX: a,\n    scaleY: n\n  };\n}, Ce = (e, t, i, s, n) => (a, o, l, u = 0) => {\n  if (a.length === 0)\n    return;\n  const h = n + u, r = () => {\n    s === \"cache\" ? l === \"outline\" ? v.outlineCallsInCache++ : v.fillCallsInCache++ : l === \"outline\" ? v.outlineCallsInFallback++ : v.fillCallsInFallback++;\n  }, f = (c, p, g) => {\n    if (r(), l === \"outline\") {\n      t.strokeText(c, p, o), B(\"strokeText\", t, e, {\n        text: c,\n        x: p,\n        y: o,\n        meta: { statsTarget: s, mode: l, ...g }\n      });\n      return;\n    }\n    t.fillText(c, p, o), B(\"fillText\", t, e, {\n      text: c,\n      x: p,\n      y: o,\n      meta: { statsTarget: s, mode: l, ...g }\n    });\n  };\n  if (Math.abs(e.letterSpacing) < Number.EPSILON) {\n    f(a, h);\n    return;\n  }\n  let d = h;\n  for (let c = 0; c < a.length; c += 1) {\n    const p = a[c];\n    f(p, d, { characterIndex: c });\n    const g = q(i, p);\n    d += g, c < a.length - 1 && (d += e.letterSpacing);\n  }\n}, It = (e) => `v9::${e.text}::${e.fontSize}::${e.fontFamily}::${e.fontWeight}::${e.color}::${e.opacity}::${e.renderStyle}::${e.letterSpacing}::${e.lineHeightPx}::${e.width}::${e.height}::${e.staticWidthScale}::${e.lines.length}`, Lt = (e, t) => {\n  if (!Ct())\n    return null;\n  const i = Math.abs(e.letterSpacing) >= Number.EPSILON, s = e.lines.length > 1;\n  i && v.letterSpacingComments++, s && v.multiLineComments++, !i && !s && v.normalComments++, v.totalCharactersDrawn += e.text.length;\n  const { paddingX: n, paddingY: a, textureWidth: o, textureHeight: l } = ye(e), u = new OffscreenCanvas(o, l), h = u.getContext(\"2d\");\n  if (!h)\n    return null;\n  h.save(), h.font = k(e);\n  const r = P(e.opacity), f = n, d = e.lines.length > 0 ? e.lines : [e.text], c = e.lines.length > 1 && e.lineHeightPx > 0 ? e.lineHeightPx : e.fontSize, p = Et(e, a), g = Ce(e, h, t, \"cache\", f), S = oe(e.color, r), y = e.renderStyle === \"outline-only\", m = y ? { blur: 0, alpha: 0 } : ve(e.shadowIntensity, e.fontSize, r);\n  return R() && console.log(\n    \"[Shadow Debug - Cache]\",\n    `\n  Text: \"${e.text}\"`,\n    `\n  FontSize: ${e.fontSize}`,\n    `\n  Shadow intensity: ${e.shadowIntensity}`,\n    `\n  Shadow blur: ${m.blur}px`,\n    `\n  Shadow alpha: ${m.alpha}`,\n    `\n  Fill style: ${S}`\n  ), h.save(), h.shadowColor = `rgba(0, 0, 0, ${m.alpha})`, h.shadowBlur = m.blur, h.shadowOffsetX = 0, h.shadowOffsetY = 0, h.lineJoin = \"round\", h.lineWidth = Se(), h.strokeStyle = me(e), h.fillStyle = S, y && d.forEach((b, x) => {\n    const W = p + x * c;\n    g(b, W, \"outline\");\n  }), d.forEach((b, x) => {\n    const W = p + x * c;\n    g(b, W, \"fill\");\n  }), h.restore(), h.restore(), u;\n}, Ft = (e, t, i) => {\n  v.fallbacks++, t.save(), t.font = k(e);\n  const s = P(e.opacity);\n  let n = i ?? e.x;\n  const a = e.lines.length > 0 ? e.lines : [e.text], o = e.lines.length > 1 && e.lineHeightPx > 0 ? e.lineHeightPx : e.fontSize;\n  let l = e.y + e.fontSize;\n  if (!e.isScrolling && e.staticWidthScale !== 1) {\n    const d = n + e.width / 2;\n    t.translate(d, e.y), t.scale(e.staticWidthScale, e.staticWidthScale), n = -e.width / 2, l = e.fontSize;\n  }\n  const u = Ce(e, t, t, \"fallback\", n), h = oe(e.color, s), r = e.renderStyle === \"outline-only\", f = r ? { blur: 0, alpha: 0 } : ve(e.shadowIntensity, e.fontSize, s);\n  R() && console.log(\n    \"[Shadow Debug - Fallback]\",\n    `\n  Text: \"${e.text}\"`,\n    `\n  FontSize: ${e.fontSize}`,\n    `\n  Shadow intensity: ${e.shadowIntensity}`,\n    `\n  Shadow blur: ${f.blur}px`,\n    `\n  Shadow alpha: ${f.alpha}`,\n    `\n  Fill style: ${h}`\n  ), t.save(), t.shadowColor = `rgba(0, 0, 0, ${f.alpha})`, t.shadowBlur = f.blur, t.shadowOffsetX = 0, t.shadowOffsetY = 0, t.lineJoin = \"round\", t.lineWidth = Se(), t.strokeStyle = me(e), t.fillStyle = h, r && a.forEach((d, c) => {\n    const p = l + c * o;\n    u(d, p, \"outline\");\n  }), a.forEach((d, c) => {\n    const p = l + c * o;\n    u(d, p, \"fill\");\n  }), t.restore(), t.restore();\n}, Rt = (e, t, i) => {\n  try {\n    if (!e.isActive || !t)\n      return;\n    const s = It(e), n = e.getCachedTexture();\n    if (e.getTextureCacheKey() !== s || !n) {\n      v.misses++, v.creates++;\n      const o = Lt(e, t);\n      e.setCachedTexture(o), e.setTextureCacheKey(s);\n    } else\n      v.hits++;\n    const a = e.getCachedTexture();\n    if (a) {\n      const o = i ?? e.x, { paddingX: l, paddingY: u } = ye(e), h = Tt(e), r = xt(e, a, o, l, h), f = r.x, d = e.y - u;\n      r.scaleX === 1 && r.scaleY === 1 ? t.drawImage(a, f, d) : t.drawImage(\n        a,\n        f,\n        d,\n        a.width * r.scaleX,\n        a.height * r.scaleY\n      ), B(\"drawImage\", t, e, {\n        x: f,\n        y: d,\n        width: a.width * r.scaleX,\n        height: a.height * r.scaleY,\n        sourceWidth: a.width,\n        sourceHeight: a.height,\n        meta: {\n          statsTarget: \"cache\",\n          paddingX: l,\n          paddingY: u,\n          drawScale: h,\n          drawScaleX: r.scaleX,\n          drawScaleY: r.scaleY\n        }\n      }), ie();\n      return;\n    }\n    Ft(e, t, i), ie();\n  } catch (s) {\n    Y.error(\"Comment.draw\", s, {\n      text: e.text,\n      isActive: e.isActive,\n      hasContext: !!t,\n      interpolatedX: i\n    });\n  }\n}, At = (e) => e === \"ltr\" ? \"ltr\" : \"rtl\", Pt = (e) => e === \"ltr\" ? 1 : -1;\nclass Dt {\n  text;\n  vposMs;\n  commands;\n  layout;\n  isScrolling;\n  size;\n  sizeScale;\n  opacityMultiplier;\n  opacityOverride;\n  colorOverride;\n  isInvisible;\n  isFull;\n  isEnder;\n  meta;\n  x = 0;\n  y = 0;\n  width = 0;\n  height = 0;\n  baseSpeed = 0;\n  speed = 0;\n  lane = -1;\n  color;\n  fontSize = 0;\n  fontFamily;\n  fontWeight;\n  opacity;\n  activationTimeMs = null;\n  staticExpiryTimeMs = null;\n  isActive = !1;\n  hasShown = !1;\n  isPaused = !1;\n  lastUpdateTime = 0;\n  reservationWidth = 0;\n  bufferWidth = 0;\n  visibleDurationMs = 0;\n  totalDurationMs = 0;\n  preCollisionDurationMs = 0;\n  speedPixelsPerMs = 0;\n  virtualStartX = 0;\n  exitThreshold = 0;\n  scrollDirection = \"rtl\";\n  renderStyle = \"outline-only\";\n  shadowIntensity = \"medium\";\n  creationIndex = 0;\n  letterSpacing = 0;\n  lineHeightMultiplier = 1;\n  lineHeightPx = 0;\n  slotHeight = 0;\n  staticWidthScale = 1;\n  lines = [];\n  epochId = 0;\n  directionSign = -1;\n  timeSource;\n  lastSyncedSettingsVersion = -1;\n  cachedTexture = null;\n  textureCacheKey = \"\";\n  constructor(t, i, s, n, a = {}, o = null) {\n    if (typeof t != \"string\")\n      throw new Error(\"Comment text must be a string\");\n    if (!Number.isFinite(i) || i < 0)\n      throw new Error(\"Comment vposMs must be a non-negative number\");\n    this.text = t, this.vposMs = i, this.commands = Array.isArray(s) ? [...s] : [], this.meta = o ? { ...o } : null;\n    const l = He(this.commands, {\n      defaultColor: n.commentColor\n    });\n    this.layout = l.layout, this.isScrolling = this.layout === \"naka\", this.size = l.size, this.sizeScale = l.sizeScale, this.opacityMultiplier = l.opacityMultiplier, this.opacityOverride = l.opacityOverride, this.colorOverride = l.colorOverride, this.isInvisible = l.isInvisible, this.isFull = l.isFull, this.isEnder = l.isEnder, this.fontFamily = l.fontFamily, this.fontWeight = l.fontWeight, this.color = l.resolvedColor, this.opacity = this.getEffectiveOpacity(n.commentOpacity), this.renderStyle = n.renderStyle, this.shadowIntensity = n.shadowIntensity, this.letterSpacing = l.letterSpacing, this.lineHeightMultiplier = l.lineHeight, this.timeSource = a.timeSource ?? le(), this.applyScrollDirection(n.scrollDirection), this.syncWithSettings(n, a.settingsVersion);\n  }\n  prepare(t, i, s, n) {\n    ht(this, t, i, s, n);\n  }\n  draw(t, i = null) {\n    Rt(this, t, i);\n  }\n  update(t = 1, i = !1) {\n    try {\n      if (!this.isActive) {\n        this.isPaused = i;\n        return;\n      }\n      const s = this.timeSource.now();\n      if (!this.isScrolling) {\n        this.isPaused = i, this.lastUpdateTime = s;\n        return;\n      }\n      if (i) {\n        this.isPaused = !0, this.lastUpdateTime = s;\n        return;\n      }\n      const n = (s - this.lastUpdateTime) / (1e3 / 60);\n      this.speed = this.baseSpeed * t, this.x += this.speed * n * this.directionSign, (this.scrollDirection === \"rtl\" && this.x <= this.exitThreshold || this.scrollDirection === \"ltr\" && this.x >= this.exitThreshold) && (this.isActive = !1), this.lastUpdateTime = s, this.isPaused = !1;\n    } catch (s) {\n      Y.error(\"Comment.update\", s, {\n        text: this.text,\n        playbackRate: t,\n        isPaused: i,\n        isActive: this.isActive\n      });\n    }\n  }\n  syncWithSettings(t, i) {\n    typeof i == \"number\" && i === this.lastSyncedSettingsVersion || (this.color = this.getEffectiveColor(t.commentColor), this.opacity = this.getEffectiveOpacity(t.commentOpacity), this.applyScrollDirection(t.scrollDirection), this.renderStyle = t.renderStyle, this.shadowIntensity = t.shadowIntensity, typeof i == \"number\" && (this.lastSyncedSettingsVersion = i));\n  }\n  getEffectiveColor(t) {\n    const i = this.colorOverride ?? t;\n    return typeof i != \"string\" || i.length === 0 ? t : i.toUpperCase();\n  }\n  getEffectiveOpacity(t) {\n    if (typeof this.opacityOverride == \"number\")\n      return P(this.opacityOverride);\n    const i = t * this.opacityMultiplier;\n    return Number.isFinite(i) ? P(i) : 0;\n  }\n  markActivated(t) {\n    this.activationTimeMs = t;\n  }\n  clearActivation() {\n    this.activationTimeMs = null, this.isScrolling || (this.staticExpiryTimeMs = null), this.resetTextureCache();\n  }\n  hasStaticExpired(t) {\n    return this.isScrolling || this.staticExpiryTimeMs === null ? !1 : t >= this.staticExpiryTimeMs;\n  }\n  getDirectionSign() {\n    return this.directionSign;\n  }\n  getTimeSource() {\n    return this.timeSource;\n  }\n  getTextureCacheKey() {\n    return this.textureCacheKey;\n  }\n  setTextureCacheKey(t) {\n    this.textureCacheKey = t;\n  }\n  getCachedTexture() {\n    return this.cachedTexture;\n  }\n  setCachedTexture(t) {\n    this.cachedTexture = t;\n  }\n  resetTextureCache() {\n    this.cachedTexture = null, this.textureCacheKey = \"\";\n  }\n  applyScrollDirection(t) {\n    const i = At(t);\n    this.scrollDirection = i, this.directionSign = Pt(i);\n  }\n}\nconst H = {\n  commentColor: \"#FFFFFF\",\n  commentOpacity: 1,\n  isCommentVisible: !0,\n  useContainerResizeObserver: !0,\n  ngWords: [],\n  ngRegexps: [],\n  scrollDirection: \"rtl\",\n  renderStyle: \"outline-only\",\n  syncMode: \"raf\",\n  scrollVisibleDurationMs: null,\n  useFixedLaneCount: !1,\n  fixedLaneCount: 12,\n  useDprScaling: !0,\n  shadowIntensity: \"medium\"\n}, ks = H, _t = () => ({\n  ...H,\n  ngWords: [...H.ngWords],\n  ngRegexps: [...H.ngRegexps]\n}), zs = \"v4.1.6\", Vt = (e) => Number.isFinite(e) ? e <= 0 ? 0 : e >= 1 ? 1 : e : 1, O = (e) => {\n  const t = e.scrollVisibleDurationMs, i = t == null ? null : Number.isFinite(t) ? Math.max(1, Math.floor(t)) : null;\n  return {\n    ...e,\n    scrollDirection: e.scrollDirection === \"ltr\" ? \"ltr\" : \"rtl\",\n    commentOpacity: Vt(e.commentOpacity),\n    renderStyle: e.renderStyle === \"classic\" ? \"classic\" : \"outline-only\",\n    scrollVisibleDurationMs: i,\n    syncMode: e.syncMode === \"video-frame\" ? \"video-frame\" : \"raf\",\n    useDprScaling: !!e.useDprScaling\n  };\n}, Ot = (e) => typeof window < \"u\" && typeof window.requestAnimationFrame == \"function\" && typeof window.cancelAnimationFrame == \"function\" ? {\n  request: (t) => window.requestAnimationFrame(t),\n  cancel: (t) => window.cancelAnimationFrame(Number(t))\n} : {\n  request: (t) => globalThis.setTimeout(() => {\n    t(e.now());\n  }, 16),\n  cancel: (t) => {\n    globalThis.clearTimeout(t);\n  }\n}, Ht = () => typeof document > \"u\" ? () => {\n  throw new Error(\n    \"Document is not available. Provide a custom createCanvasElement implementation.\"\n  );\n} : () => document.createElement(\"canvas\"), Nt = (e) => {\n  if (!e || typeof e != \"object\")\n    return !1;\n  const t = e;\n  return typeof t.commentColor == \"string\" && typeof t.commentOpacity == \"number\" && typeof t.isCommentVisible == \"boolean\";\n}, se = (e) => {\n  const t = e.meta?.no;\n  return typeof t == \"number\" && Number.isFinite(t) ? t : null;\n}, kt = function(e) {\n  if (!Array.isArray(e) || e.length === 0)\n    return [];\n  const t = [];\n  this.commentDependencies.settingsVersion = this.settingsVersion;\n  for (const i of e) {\n    const { text: s, vposMs: n, commands: a = [], meta: o = null } = i, l = _(s);\n    if (this.isNGComment(s)) {\n      C(\"comment-skip-ng\", { preview: l, vposMs: n });\n      continue;\n    }\n    const u = ze(n);\n    if (u === null) {\n      this.log.warn(\"CommentRenderer.addComment.invalidVpos\", { text: s, vposMs: n }), C(\"comment-skip-invalid-vpos\", { preview: l, vposMs: n });\n      continue;\n    }\n    const h = o?.no !== void 0 ? `no:${o.source ?? \"\"}:${o.fork ?? \"\"}:${o.threadId ?? \"\"}:${o.no}` : `fallback:${s}\\0${u}`, r = (c) => c.meta?.no !== void 0 ? `no:${c.meta.source ?? \"\"}:${c.meta.fork ?? \"\"}:${c.meta.threadId ?? \"\"}:${c.meta.no}` : `fallback:${c.text}\\0${c.vposMs}`;\n    if (this.comments.some((c) => r(c) === h) || t.some((c) => r(c) === h)) {\n      C(\"comment-skip-duplicate\", { preview: l, vposMs: u });\n      continue;\n    }\n    const d = new Dt(\n      s,\n      u,\n      a,\n      this._settings,\n      this.commentDependencies,\n      o\n    );\n    d.creationIndex = this.commentSequence++, d.epochId = this.epochId, t.push(d), C(\"comment-added\", {\n      preview: l,\n      vposMs: u,\n      commands: d.commands.length,\n      layout: d.layout,\n      isScrolling: d.isScrolling,\n      invisible: d.isInvisible\n    });\n  }\n  return t.length === 0 ? [] : (this.comments.push(...t), this.comments.sort((i, s) => {\n    const n = i.vposMs - s.vposMs;\n    if (Math.abs(n) > E)\n      return n;\n    const a = se(i), o = se(s);\n    return a !== null && o !== null && Math.abs(a - o) > E ? a - o : i.creationIndex - s.creationIndex;\n  }), t);\n}, zt = function(e, t, i = [], s = null) {\n  const [n] = this.addComments([{ text: e, vposMs: t, commands: i, meta: s }]);\n  return n ?? null;\n}, Wt = function() {\n  if (this.comments.length = 0, this.activeComments.clear(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.commentSequence = 0, this.ctx && this.canvas) {\n    const e = this.canvasDpr > 0 ? this.canvasDpr : 1, t = this.displayWidth > 0 ? this.displayWidth : this.canvas.width / e, i = this.displayHeight > 0 ? this.displayHeight : this.canvas.height / e;\n    this.ctx.clearRect(0, 0, t, i);\n  }\n}, $t = function() {\n  this.clearComments(), this.currentTime = 0, this.resetFinalPhaseState(), this.playbackHasBegun = !1, this.skipDrawingForCurrentFrame = !1, this.isStalled = !1, this.pendingInitialSync = !1;\n}, Me = function() {\n  const e = this._settings, t = Array.isArray(e.ngWords) ? e.ngWords : [];\n  this.normalizedNgWords = t.filter((s) => typeof s == \"string\");\n  const i = Array.isArray(e.ngRegexps) ? e.ngRegexps : [];\n  this.compiledNgRegexps = i.map((s) => {\n    if (typeof s != \"string\")\n      return null;\n    try {\n      return new RegExp(s, \"i\");\n    } catch (n) {\n      return this.log.warn(\"CommentRenderer.invalidNgRegexp\", n, { entry: s }), null;\n    }\n  }).filter((s) => !!s);\n}, Xt = function(e) {\n  return typeof e != \"string\" || e.length === 0 ? !1 : this.normalizedNgWords.some((t) => t.length > 0 && e.includes(t)) ? !0 : this.compiledNgRegexps.some((t) => t.test(e));\n}, Bt = (e) => {\n  e.prototype.addComments = kt, e.prototype.addComment = zt, e.prototype.clearComments = Wt, e.prototype.resetState = $t, e.prototype.rebuildNgMatchers = Me, e.prototype.isNGComment = Xt;\n}, Gt = ({\n  vposMs: e,\n  durationMs: t,\n  isScrolling: i\n}) => {\n  const s = Number.isFinite(t) && t > 0 ? Math.max(0, t - w) : e, n = Math.min(e, s), a = i ? Math.max(0, n - fe) : n;\n  return { displayVposMs: n, activationVposMs: a };\n}, Ut = function() {\n  this.finalPhaseActive = !1, this.finalPhaseStartTime = null, this.finalPhaseScheduleDirty = !1, this.finalPhaseVposOverrides.clear();\n}, Yt = function(e) {\n  const t = this.epochId;\n  if (this.epochId += 1, gt(t, this.epochId, e), this.eventHooks.onEpochChange) {\n    const i = {\n      previousEpochId: t,\n      newEpochId: this.epochId,\n      reason: e,\n      timestamp: this.timeSource.now()\n    };\n    try {\n      this.eventHooks.onEpochChange(i);\n    } catch (s) {\n      this.log.error(\"CommentRenderer.incrementEpoch.callback\", s, { info: i });\n    }\n  }\n  this.comments.forEach((i) => {\n    i.epochId = this.epochId;\n  });\n}, qt = function(e) {\n  const t = this.timeSource.now();\n  if (t - this.lastSnapshotEmitTime < this.snapshotEmitThrottleMs)\n    return;\n  const i = {\n    currentTime: this.currentTime,\n    duration: this.duration,\n    isPlaying: this.isPlaying,\n    epochId: this.epochId,\n    totalComments: this.comments.length,\n    activeComments: this.activeComments.size,\n    reservedLanes: this.reservedLanes.size,\n    finalPhaseActive: this.finalPhaseActive,\n    playbackHasBegun: this.playbackHasBegun,\n    isStalled: this.isStalled\n  };\n  if (pt(e, i), this.eventHooks.onStateSnapshot)\n    try {\n      this.eventHooks.onStateSnapshot(i);\n    } catch (s) {\n      this.log.error(\"CommentRenderer.emitStateSnapshot.callback\", s);\n    }\n  this.lastSnapshotEmitTime = t;\n}, Kt = function(e) {\n  return Gt({\n    vposMs: e.vposMs,\n    durationMs: this.duration,\n    isScrolling: e.isScrolling\n  }).activationVposMs;\n}, jt = function(e) {\n  if (!e.isScrolling)\n    return w;\n  const t = [];\n  return Number.isFinite(e.visibleDurationMs) && e.visibleDurationMs > 0 && t.push(e.visibleDurationMs), Number.isFinite(e.totalDurationMs) && e.totalDurationMs > 0 && t.push(e.totalDurationMs), t.length > 0 ? Math.max(...t) : U;\n}, Jt = function(e) {\n  return this.getEffectiveCommentVpos(e);\n}, Zt = function() {\n  this.finalPhaseVposOverrides.clear(), this.finalPhaseScheduleDirty = !1;\n}, Qt = (e) => {\n  e.prototype.resetFinalPhaseState = Ut, e.prototype.incrementEpoch = Yt, e.prototype.emitStateSnapshot = qt, e.prototype.getEffectiveCommentVpos = Kt, e.prototype.getFinalPhaseDisplayDuration = jt, e.prototype.resolveFinalPhaseVpos = Jt, e.prototype.recomputeFinalPhaseTimeline = Zt;\n}, ei = function() {\n  return !this.playbackHasBegun && !this.isPlaying && this.currentTime <= A;\n}, ti = function() {\n  this.playbackHasBegun || (this.isPlaying || this.currentTime > A) && (this.playbackHasBegun = !0);\n}, ii = (e) => {\n  e.prototype.shouldSuppressRendering = ei, e.prototype.updatePlaybackProgressState = ti;\n}, si = function(e) {\n  const t = this.videoElement, i = this.canvas, s = this.ctx;\n  if (!t || !i || !s)\n    return;\n  const n = typeof e == \"number\" ? e : T(t.currentTime);\n  if (this.currentTime = n, this.playbackRate = t.playbackRate, this.isPlaying = !t.paused, this.updatePlaybackProgressState(), this.skipDrawingForCurrentFrame = this.shouldSuppressRendering(), this.skipDrawingForCurrentFrame)\n    return;\n  const a = this.canvasDpr > 0 ? this.canvasDpr : 1, o = this.displayWidth > 0 ? this.displayWidth : i.width / a, l = this.displayHeight > 0 ? this.displayHeight : i.height / a, u = this.buildPrepareOptions(o);\n  this.pruneStaticLaneReservations(this.currentTime);\n  for (const r of Array.from(this.activeComments)) {\n    const f = this.getEffectiveCommentVpos(r), d = f < this.currentTime - F, c = f > this.currentTime + F;\n    if (d || c) {\n      r.isActive = !1, this.activeComments.delete(r), r.clearActivation(), r.lane >= 0 && (r.layout === \"ue\" ? this.releaseStaticLane(\"ue\", r.lane) : r.layout === \"shita\" && this.releaseStaticLane(\"shita\", r.lane));\n      continue;\n    }\n    r.isScrolling && r.hasShown && (r.scrollDirection === \"rtl\" && r.x <= r.exitThreshold || r.scrollDirection === \"ltr\" && r.x >= r.exitThreshold) && (r.isActive = !1, this.activeComments.delete(r), r.clearActivation());\n  }\n  const h = this.getCommentsInTimeWindow(this.currentTime, F);\n  for (const r of h) {\n    const f = R(), d = f ? _(r.text) : \"\";\n    if (f && C(\"comment-evaluate\", {\n      stage: \"update\",\n      preview: d,\n      vposMs: r.vposMs,\n      effectiveVposMs: this.getEffectiveCommentVpos(r),\n      currentTime: this.currentTime,\n      isActive: r.isActive,\n      hasShown: r.hasShown\n    }), this.isNGComment(r.text)) {\n      f && C(\"comment-eval-skip\", {\n        preview: d,\n        vposMs: r.vposMs,\n        effectiveVposMs: this.getEffectiveCommentVpos(r),\n        reason: \"ng-runtime\"\n      });\n      continue;\n    }\n    if (r.isInvisible) {\n      f && C(\"comment-eval-skip\", {\n        preview: d,\n        vposMs: r.vposMs,\n        effectiveVposMs: this.getEffectiveCommentVpos(r),\n        reason: \"invisible\"\n      }), r.isActive = !1, this.activeComments.delete(r), r.hasShown = !0, r.clearActivation();\n      continue;\n    }\n    if (r.syncWithSettings(this._settings, this.settingsVersion), this.shouldActivateCommentAtTime(r, this.currentTime, d) && this.activateComment(\n      r,\n      s,\n      o,\n      l,\n      u,\n      this.currentTime\n    ), r.isActive) {\n      if (r.layout !== \"naka\" && r.hasStaticExpired(this.currentTime)) {\n        const c = r.layout === \"ue\" ? \"ue\" : \"shita\";\n        this.releaseStaticLane(c, r.lane), r.isActive = !1, this.activeComments.delete(r), r.clearActivation();\n        continue;\n      }\n      if (r.layout === \"naka\" && this.getEffectiveCommentVpos(r) > this.currentTime + A) {\n        r.x = r.virtualStartX, r.lastUpdateTime = this.timeSource.now();\n        continue;\n      }\n      if (r.hasShown = !0, r.update(this.playbackRate, !this.isPlaying), !r.isScrolling && r.hasStaticExpired(this.currentTime)) {\n        const c = r.layout === \"ue\" ? \"ue\" : \"shita\";\n        this.releaseStaticLane(c, r.lane), r.isActive = !1, this.activeComments.delete(r), r.clearActivation();\n      }\n    }\n  }\n}, ni = function(e) {\n  const t = this._settings.scrollVisibleDurationMs;\n  let i = U, s = We;\n  return t !== null && (i = t, s = t), {\n    visibleWidth: e,\n    virtualExtension: Ue,\n    maxVisibleDurationMs: i,\n    minVisibleDurationMs: s,\n    maxWidthRatio: $e,\n    bufferRatio: Xe,\n    baseBufferPx: Be,\n    entryBufferPx: Ge\n  };\n}, ai = function(e) {\n  const t = this.currentTime;\n  this.pruneLaneReservations(t), this.pruneStaticLaneReservations(t);\n  const i = this.createLaneReservation(e, t), s = [...this.reservedLanes.values()].flat().filter((d) => this.areReservationsConflicting(d, i)).sort((d, c) => d.verticalStart - c.verticalStart), n = Math.max(1, e.slotHeight || e.height), a = Math.max(1, this.displayHeight || this.canvas?.height || n), o = this._settings.useFixedLaneCount ? Math.min(a, Math.max(n, this.laneCount * this.laneHeight)) : a, l = z(a), u = [], h = [];\n  let r = 0, f = !1;\n  for (; ; ) {\n    u.push(r);\n    const d = r + n, c = s.find(\n      (p) => !(p.verticalEnd < r || d < p.verticalStart)\n    );\n    if (!c)\n      break;\n    if (h.push(\n      `${c.comment.creationIndex}@${c.comment.vposMs}:${c.verticalStart.toFixed(3)}-${c.verticalEnd.toFixed(3)}`\n    ), r = c.verticalEnd + l, r + n >= o) {\n      f = !0, r = Math.random() * (o - n);\n      break;\n    }\n  }\n  return i.verticalStart = r, i.verticalEnd = r + n, this.storeLaneReservation(r, i), yt(\"laneDecision\", e, {\n    meta: {\n      currentTimeMs: t,\n      selectedLane: r,\n      selectedTop: r,\n      selectedBottom: r + n,\n      slotHeight: n,\n      usedFallback: f,\n      candidateLanes: u.map((d) => d.toFixed(3)).join(\",\"),\n      availableLanes: r.toFixed(3),\n      nextAvailableTimes: \"\",\n      blockedBy: h.join(\",\"),\n      reservationStartTimeMs: Math.round(i.startTime),\n      reservationEndTimeMs: Math.round(i.endTime),\n      reservationTotalEndTimeMs: Math.round(i.totalEndTime),\n      reservationWidth: Math.round(i.width)\n    }\n  }), r;\n}, ri = (e) => {\n  e.prototype.updateComments = si, e.prototype.buildPrepareOptions = ni, e.prototype.findAvailableLane = ai;\n}, oi = function(e, t) {\n  let i = 0, s = e.length;\n  for (; i < s; ) {\n    const n = Math.floor((i + s) / 2), a = e[n];\n    a !== void 0 && a.totalEndTime + N <= t ? i = n + 1 : s = n;\n  }\n  return i;\n}, li = function(e) {\n  for (const [t, i] of this.reservedLanes.entries()) {\n    const s = this.findFirstValidReservationIndex(i, e);\n    s >= i.length ? this.reservedLanes.delete(t) : s > 0 && this.reservedLanes.set(t, i.slice(s));\n  }\n}, ci = function(e) {\n  const t = (n) => n.filter((a) => a.releaseTime > e), i = t(this.topStaticLaneReservations), s = t(this.bottomStaticLaneReservations);\n  this.topStaticLaneReservations.length = 0, this.topStaticLaneReservations.push(...i), this.bottomStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.push(...s);\n}, hi = (e) => {\n  e.prototype.findFirstValidReservationIndex = oi, e.prototype.pruneLaneReservations = li, e.prototype.pruneStaticLaneReservations = ci;\n}, ui = function(e) {\n  let t = 0, i = this.comments.length;\n  for (; t < i; ) {\n    const s = Math.floor((t + i) / 2), n = this.comments[s];\n    n !== void 0 && n.vposMs < e ? t = s + 1 : i = s;\n  }\n  return t;\n}, di = function(e, t) {\n  if (this.comments.length === 0)\n    return [];\n  const i = e - t, s = e + t, n = Math.max(\n    0,\n    this.duration - w - fe\n  ), a = this.duration > 0 && s >= n, o = this.findCommentIndexAtOrAfter(i), l = [];\n  for (let u = o; u < this.comments.length; u++) {\n    const h = this.comments[u];\n    if (!h)\n      continue;\n    if (!a && h.vposMs > s)\n      break;\n    const r = this.getEffectiveCommentVpos(h);\n    r >= i && r <= s && l.push(h);\n  }\n  return l;\n}, fi = function(e) {\n  return e === \"ue\" ? this.topStaticLaneReservations : this.bottomStaticLaneReservations;\n}, pi = function(e) {\n  return e === \"ue\" ? this.topStaticLaneReservations.length : this.bottomStaticLaneReservations.length;\n}, gi = function(e) {\n  const t = e === \"ue\" ? \"shita\" : \"ue\", i = this.getStaticLaneDepth(t), s = this.laneCount - i;\n  return s <= 0 ? -1 : s - 1;\n}, vi = function(e) {\n  return Math.max(0, this.laneCount - 1 - e);\n}, Si = function(e, t, i, s) {\n  const n = this.pendingStaticPlacementOffsets.get(s);\n  if (n !== void 0)\n    return this.pendingStaticPlacementOffsets.delete(s), n;\n  const a = Math.max(1, i), o = Math.max(1, s.slotHeight || s.height), l = z(a);\n  if (e === \"ue\") {\n    let d = 0;\n    const p = this.getStaticReservations(e).filter((g) => g.lane < t).sort((g, S) => g.lane - S.lane);\n    for (const g of p) {\n      const S = g.yEnd - g.yStart;\n      d += S + l;\n    }\n    return d;\n  }\n  let u = a;\n  const r = this.getStaticReservations(e).filter((d) => d.lane < t).sort((d, c) => d.lane - c.lane);\n  for (const d of r) {\n    const c = d.yEnd - d.yStart;\n    u -= c + l;\n  }\n  const f = u - o;\n  return Math.max(0, f);\n}, mi = function() {\n  const e = /* @__PURE__ */ new Set();\n  for (const t of this.topStaticLaneReservations)\n    e.add(t.lane);\n  for (const t of this.bottomStaticLaneReservations)\n    e.add(this.getGlobalLaneIndexForBottom(t.lane));\n  return e;\n}, yi = (e) => {\n  e.prototype.findCommentIndexAtOrAfter = ui, e.prototype.getCommentsInTimeWindow = di, e.prototype.getStaticReservations = fi, e.prototype.getStaticLaneDepth = pi, e.prototype.getStaticLaneLimit = gi, e.prototype.getGlobalLaneIndexForBottom = vi, e.prototype.resolveStaticCommentOffset = Si, e.prototype.getStaticReservedLaneSet = mi;\n}, be = (e) => Math.max(1, e.slotHeight || e.height), Ci = ({\n  position: e,\n  reservationHeight: t,\n  displayHeight: i,\n  reservations: s,\n  currentTime: n,\n  random: a = Math.random\n}) => {\n  const o = Math.max(1, i), l = Math.max(1, t), u = z(o), h = s.filter((f) => f.releaseTime > n), r = e === \"ue\" ? [0, ...h.sort((f, d) => f.yEnd - d.yEnd).map((f) => f.yEnd + u)] : [\n    o - l,\n    ...h.sort((f, d) => d.yStart - f.yStart).map((f) => f.yStart - u - l)\n  ];\n  if (l < o) {\n    for (const f of r) {\n      if (f < 0 || f + l > o) continue;\n      if (!h.some(\n        (c) => !(f + l <= c.yStart || f >= c.yEnd)\n      )) return { y: f, usedFallback: !1 };\n    }\n    return {\n      y: a() * (o - l),\n      usedFallback: !0\n    };\n  }\n  return {\n    y: e === \"ue\" ? 0 : o - l,\n    usedFallback: h.length > 0\n  };\n}, Mi = function(e, t, i = \"\") {\n  const s = i.length > 0 && R(), n = this.resolveFinalPhaseVpos(e);\n  return e.isInvisible ? (s && C(\"comment-eval-skip\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    reason: \"invisible\"\n  }), !1) : e.isActive ? (s && C(\"comment-eval-skip\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    reason: \"already-active\"\n  }), !1) : e.hasShown && n <= t ? (s && C(\"comment-eval-skip\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    reason: \"already-shown\",\n    currentTime: t\n  }), !1) : n > t + A ? (s && C(\"comment-eval-pending\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    reason: \"future\",\n    currentTime: t\n  }), !1) : n < t - F ? (s && C(\"comment-eval-skip\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    reason: \"expired-window\",\n    currentTime: t\n  }), !1) : !e.isScrolling && n + w <= t ? (s && C(\"comment-eval-skip\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    reason: \"static-expired\",\n    currentTime: t\n  }), !1) : (s && C(\"comment-eval-ready\", {\n    preview: i,\n    vposMs: e.vposMs,\n    effectiveVposMs: n,\n    currentTime: t\n  }), !0);\n}, bi = function(e, t, i, s, n, a) {\n  e.prepare(t, i, s, n);\n  const o = this.resolveFinalPhaseVpos(e);\n  if (R() && C(\"comment-prepared\", {\n    preview: _(e.text),\n    layout: e.layout,\n    isScrolling: e.isScrolling,\n    width: e.width,\n    height: e.height,\n    bufferWidth: e.bufferWidth,\n    visibleDurationMs: e.visibleDurationMs,\n    effectiveVposMs: o\n  }), e.layout === \"naka\") {\n    const l = Math.max(0, a - o), u = e.speedPixelsPerMs * l;\n    e.x = e.scrollDirection === \"rtl\" ? e.virtualStartX - u : e.virtualStartX + u;\n    const h = this.findAvailableLane(e), r = Math.max(1, this.laneHeight);\n    e.lane = Math.max(0, Math.round(h / r));\n    const f = Math.max(0, s - e.height);\n    e.y = Math.max(0, Math.min(h, f));\n  } else {\n    const l = e.layout === \"ue\" ? \"ue\" : \"shita\", u = this.assignStaticLane(l, e, s, a), h = this.resolveStaticCommentOffset(\n      l,\n      u,\n      s,\n      e\n    );\n    e.x = e.virtualStartX, e.y = h, e.lane = l === \"ue\" ? u : this.getGlobalLaneIndexForBottom(u), e.speed = 0, e.baseSpeed = 0, e.speedPixelsPerMs = 0;\n    const r = o + w;\n    e.visibleDurationMs = Math.max(0, r - a), this.activeComments.add(e), e.isActive = !0, e.hasShown = !0, e.isPaused = !this.isPlaying, e.markActivated(a), e.lastUpdateTime = this.timeSource.now(), e.staticExpiryTimeMs = r, this.reserveStaticLane(l, e, u, r), R() && C(\"comment-activate-static\", {\n      preview: _(e.text),\n      lane: e.lane,\n      position: l,\n      displayEnd: r,\n      effectiveVposMs: o\n    });\n    return;\n  }\n  this.activeComments.add(e), e.isActive = !0, e.hasShown = !0, e.isPaused = !this.isPlaying, e.markActivated(a), e.lastUpdateTime = this.timeSource.now();\n}, Ei = function(e, t, i, s) {\n  const n = this.getStaticReservations(e), a = be(t), o = Ci({\n    position: e,\n    reservationHeight: a,\n    displayHeight: i,\n    reservations: n,\n    currentTime: s\n  });\n  this.pendingStaticPlacementOffsets.set(t, o.y);\n  const l = new Set(n.map((h) => h.lane));\n  let u = 0;\n  for (; l.has(u); ) u++;\n  return u;\n}, Ti = function(e, t, i, s) {\n  const n = this.getStaticReservations(e), a = t.y, o = t.y + be(t);\n  n.push({\n    comment: t,\n    releaseTime: s,\n    yStart: a,\n    yEnd: o,\n    lane: i\n  });\n}, wi = function(e, t) {\n  if (t < 0)\n    return;\n  const i = this.getStaticReservations(e), s = i.findIndex(\n    (n) => e === \"shita\" ? this.getGlobalLaneIndexForBottom(n.lane) === t : n.lane === t\n  );\n  s >= 0 && i.splice(s, 1);\n}, xi = (e) => {\n  e.prototype.shouldActivateCommentAtTime = Mi, e.prototype.activateComment = bi, e.prototype.assignStaticLane = Ei, e.prototype.reserveStaticLane = Ti, e.prototype.releaseStaticLane = wi;\n}, Ii = 1e-3, Li = function() {\n  return Array.from({ length: this.laneCount }, (e, t) => t);\n}, Fi = function(e, t) {\n  const i = this.reservedLanes.get(e);\n  if (!i || i.length === 0)\n    return t;\n  const s = this.findFirstValidReservationIndex(i, t), n = i[s];\n  return n ? Math.max(t, n.endTime + N) : t;\n}, Ri = function(e, t) {\n  const i = Math.max(e.speedPixelsPerMs, E), s = this.getEffectiveCommentVpos(e), n = Number.isFinite(s) ? s : t, a = Math.max(0, n), o = Number.isFinite(e.width) && e.width > 0 ? e.width : e.reservationWidth, l = i > 0 ? Math.max(o, 0) / i : e.preCollisionDurationMs, u = a + l + N, h = a + e.totalDurationMs + N;\n  return {\n    comment: e,\n    startTime: a,\n    endTime: Math.max(a, u),\n    totalEndTime: Math.max(a, h),\n    startLeft: e.virtualStartX,\n    width: o,\n    speed: i,\n    buffer: 0,\n    directionSign: e.getDirectionSign(),\n    verticalStart: 0,\n    verticalEnd: Math.max(1, e.slotHeight || e.height)\n  };\n}, Ai = function(e, t, i) {\n  const s = Math.max(1, t.verticalEnd - t.verticalStart);\n  return t.verticalStart = e, t.verticalEnd = e + s, [...this.reservedLanes.values()].flat().every((n) => n.totalEndTime <= i ? !0 : n.verticalEnd < t.verticalStart || t.verticalEnd < n.verticalStart || !this.areReservationsConflicting(n, t));\n}, Pi = function(e, t) {\n  const s = [...this.reservedLanes.get(e) ?? [], t].sort((n, a) => n.totalEndTime - a.totalEndTime);\n  this.reservedLanes.set(e, s);\n}, Di = function(e, t) {\n  if (e.directionSign === t.directionSign) {\n    const l = e.speed > 0 ? Math.max(e.width, 0) / e.speed : 0, u = t.speed > 0 ? Math.max(t.width, 0) / t.speed : 0, h = Math.max(l, u);\n    return Math.abs(t.startTime - e.startTime) + Ii < h;\n  }\n  const i = Math.max(e.startTime, t.startTime), s = Math.min(e.endTime, t.endTime);\n  if (i >= s)\n    return !1;\n  const n = /* @__PURE__ */ new Set([\n    i,\n    s,\n    i + (s - i) / 2\n  ]), a = this.solveLeftRightEqualityTime(e, t);\n  a !== null && a >= i - E && a <= s + E && n.add(a);\n  const o = this.solveLeftRightEqualityTime(t, e);\n  o !== null && o >= i - E && o <= s + E && n.add(o);\n  for (const l of n) {\n    if (l < i - E || l > s + E)\n      continue;\n    const u = this.computeForwardGap(e, t, l), h = this.computeForwardGap(t, e, l);\n    if (u <= -24 && h <= -24)\n      return !0;\n  }\n  return !1;\n}, _i = function(e, t, i) {\n  const s = this.getBufferedEdges(e, i), n = this.getBufferedEdges(t, i);\n  return s.left - n.right;\n}, Vi = function(e, t) {\n  const i = Math.max(0, t - e.startTime), s = e.speed * i, n = e.startLeft + e.directionSign * s, a = n - e.buffer, o = n + e.width + e.buffer;\n  return { left: a, right: o };\n}, Oi = function(e, t) {\n  const i = e.directionSign, s = t.directionSign, n = s * t.speed - i * e.speed;\n  if (Math.abs(n) < E)\n    return null;\n  const o = (t.startLeft + s * t.speed * t.startTime + t.width + t.buffer - e.startLeft - i * e.speed * e.startTime + e.buffer) / n;\n  return Number.isFinite(o) ? o : null;\n}, Hi = (e) => {\n  e.prototype.getLanePriorityOrder = Li, e.prototype.getLaneNextAvailableTime = Fi, e.prototype.createLaneReservation = Ri, e.prototype.isLaneAvailable = Ai, e.prototype.storeLaneReservation = Pi, e.prototype.areReservationsConflicting = Di, e.prototype.computeForwardGap = _i, e.prototype.getBufferedEdges = Vi, e.prototype.solveLeftRightEqualityTime = Oi;\n}, Ni = function() {\n  const e = this.canvas, t = this.ctx;\n  if (!e || !t)\n    return;\n  const i = this.canvasDpr > 0 ? this.canvasDpr : 1, s = this.displayWidth > 0 ? this.displayWidth : e.width / i, n = this.displayHeight > 0 ? this.displayHeight : e.height / i, a = this.timeSource.now();\n  if (this.skipDrawingForCurrentFrame || this.shouldSuppressRendering() || this.isStalled) {\n    t.clearRect(0, 0, s, n), this.lastDrawTime = a;\n    return;\n  }\n  t.clearRect(0, 0, s, n);\n  const o = Array.from(this.activeComments);\n  if (this._settings.isCommentVisible) {\n    const l = (a - this.lastDrawTime) / 16.666666666666668;\n    o.sort((u, h) => {\n      const r = this.getEffectiveCommentVpos(u), f = this.getEffectiveCommentVpos(h), d = r - f;\n      return Math.abs(d) > E ? d : u.isScrolling !== h.isScrolling ? u.isScrolling ? 1 : -1 : u.creationIndex - h.creationIndex;\n    }), o.forEach((u) => {\n      const r = this.isPlaying && !u.isPaused ? u.x + u.getDirectionSign() * u.speed * l : u.x;\n      u.draw(t, r);\n    });\n  }\n  this.lastDrawTime = a;\n}, ki = function(e) {\n  const t = this.videoElement, i = this.canvas, s = this.ctx;\n  if (!t || !i || !s)\n    return;\n  const n = typeof e == \"number\" ? e : T(t.currentTime);\n  this.currentTime = n, this.lastDrawTime = this.timeSource.now();\n  const a = this.canvasDpr > 0 ? this.canvasDpr : 1, o = this.displayWidth > 0 ? this.displayWidth : i.width / a, l = this.displayHeight > 0 ? this.displayHeight : i.height / a, u = this.buildPrepareOptions(o);\n  this.activeComments.forEach((r) => {\n    r.isActive = !1, r.clearActivation();\n  }), this.activeComments.clear(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.getCommentsInTimeWindow(this.currentTime, F).forEach((r) => {\n    if (this.isNGComment(r.text) || r.isInvisible) {\n      r.isActive = !1, this.activeComments.delete(r), r.clearActivation();\n      return;\n    }\n    if (r.syncWithSettings(this._settings, this.settingsVersion), r.isActive = !1, this.activeComments.delete(r), r.lane = -1, r.hasShown = !1, r.clearActivation(), this.shouldActivateCommentAtTime(r, this.currentTime)) {\n      this.activateComment(\n        r,\n        s,\n        o,\n        l,\n        u,\n        this.currentTime\n      );\n      return;\n    }\n    this.getEffectiveCommentVpos(r) < this.currentTime - F ? r.hasShown = !0 : r.hasShown = !1;\n  });\n}, zi = (e) => {\n  e.prototype.draw = Ni, e.prototype.performInitialSync = ki;\n}, Wi = function(e) {\n  this.videoElement && this._settings.isCommentVisible && (this.pendingInitialSync && (this.performInitialSync(e), this.pendingInitialSync = !1), this.updateComments(e), this.draw());\n}, $i = function() {\n  const e = this.frameId;\n  this.frameId = null, e !== null && this.animationFrameProvider.cancel(e), this.processFrame(), this.scheduleNextFrame();\n}, Xi = function(e, t) {\n  this.videoFrameHandle = null;\n  const i = typeof t?.mediaTime == \"number\" ? t.mediaTime * 1e3 : void 0;\n  this.processFrame(typeof i == \"number\" ? i : void 0), this.scheduleNextFrame();\n}, Bi = function() {\n  if (this._settings.syncMode !== \"video-frame\")\n    return !1;\n  const e = this.videoElement;\n  return !!e && typeof e.requestVideoFrameCallback == \"function\" && typeof e.cancelVideoFrameCallback == \"function\";\n}, Gi = function() {\n  const e = this.videoElement;\n  if (e) {\n    if (this.shouldUseVideoFrameCallback()) {\n      this.cancelAnimationFrameRequest(), this.cancelVideoFrameCallback();\n      const t = e.requestVideoFrameCallback;\n      typeof t == \"function\" && (this.videoFrameHandle = t.call(e, this.handleVideoFrame));\n      return;\n    }\n    this.cancelVideoFrameCallback(), this.frameId = this.animationFrameProvider.request(this.handleAnimationFrame);\n  }\n}, Ui = function() {\n  this.frameId !== null && (this.animationFrameProvider.cancel(this.frameId), this.frameId = null);\n}, Yi = function() {\n  if (this.videoFrameHandle === null)\n    return;\n  const e = this.videoElement;\n  e && typeof e.cancelVideoFrameCallback == \"function\" && e.cancelVideoFrameCallback(this.videoFrameHandle), this.videoFrameHandle = null;\n}, qi = function() {\n  this.stopAnimation(), this.scheduleNextFrame();\n}, Ki = function() {\n  this.cancelAnimationFrameRequest(), this.cancelVideoFrameCallback();\n}, ji = function() {\n  const e = this.canvas, t = this.ctx, i = this.videoElement;\n  if (!e || !t || !i)\n    return;\n  const s = T(i.currentTime), n = Math.abs(s - this.currentTime), a = this.timeSource.now();\n  if (a - this.lastPlayResumeTime < this.playResumeSeekIgnoreDurationMs) {\n    this.currentTime = s, this._settings.isCommentVisible && (this.lastDrawTime = a, this.draw());\n    return;\n  }\n  const l = n > A;\n  if (this.currentTime = s, this.resetFinalPhaseState(), this.updatePlaybackProgressState(), !l) {\n    this._settings.isCommentVisible && (this.lastDrawTime = this.timeSource.now(), this.draw());\n    return;\n  }\n  this.activeComments.clear(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0;\n  const u = this.canvasDpr > 0 ? this.canvasDpr : 1, h = this.displayWidth > 0 ? this.displayWidth : e.width / u, r = this.displayHeight > 0 ? this.displayHeight : e.height / u, f = this.buildPrepareOptions(h);\n  this.getCommentsInTimeWindow(this.currentTime, F).forEach((c) => {\n    const p = R(), g = p ? _(c.text) : \"\";\n    if (p && C(\"comment-evaluate\", {\n      stage: \"seek\",\n      preview: g,\n      vposMs: c.vposMs,\n      effectiveVposMs: this.getEffectiveCommentVpos(c),\n      currentTime: this.currentTime,\n      isActive: c.isActive,\n      hasShown: c.hasShown\n    }), this.isNGComment(c.text)) {\n      p && C(\"comment-eval-skip\", {\n        preview: g,\n        vposMs: c.vposMs,\n        effectiveVposMs: this.getEffectiveCommentVpos(c),\n        reason: \"ng-runtime\"\n      }), c.isActive = !1, this.activeComments.delete(c), c.clearActivation();\n      return;\n    }\n    if (c.isInvisible) {\n      p && C(\"comment-eval-skip\", {\n        preview: g,\n        vposMs: c.vposMs,\n        effectiveVposMs: this.getEffectiveCommentVpos(c),\n        reason: \"invisible\"\n      }), c.isActive = !1, this.activeComments.delete(c), c.hasShown = !0, c.clearActivation();\n      return;\n    }\n    if (c.syncWithSettings(this._settings, this.settingsVersion), c.isActive = !1, this.activeComments.delete(c), c.lane = -1, c.hasShown = !1, c.clearActivation(), this.shouldActivateCommentAtTime(c, this.currentTime, g)) {\n      this.activateComment(\n        c,\n        t,\n        h,\n        r,\n        f,\n        this.currentTime\n      );\n      return;\n    }\n    this.getEffectiveCommentVpos(c) < this.currentTime - F ? c.hasShown = !0 : c.hasShown = !1;\n  }), this._settings.isCommentVisible && (this.lastDrawTime = this.timeSource.now(), this.draw());\n}, Ji = (e) => {\n  e.prototype.processFrame = Wi, e.prototype.handleAnimationFrame = $i, e.prototype.handleVideoFrame = Xi, e.prototype.shouldUseVideoFrameCallback = Bi, e.prototype.scheduleNextFrame = Gi, e.prototype.cancelAnimationFrameRequest = Ui, e.prototype.cancelVideoFrameCallback = Yi, e.prototype.startAnimation = qi, e.prototype.stopAnimation = Ki, e.prototype.onSeek = ji;\n}, Zi = function(e, t) {\n  if (e)\n    return e;\n  if (t.parentElement)\n    return t.parentElement;\n  if (typeof document < \"u\" && document.body)\n    return document.body;\n  throw new Error(\n    \"Cannot resolve container element. Provide container explicitly when DOM is unavailable.\"\n  );\n}, Qi = function(e) {\n  if (typeof getComputedStyle == \"function\") {\n    getComputedStyle(e).position === \"static\" && (e.style.position = \"relative\");\n    return;\n  }\n  e.style.position || (e.style.position = \"relative\");\n}, es = function(e) {\n  try {\n    this.destroyCanvasOnly();\n    const t = e instanceof HTMLVideoElement ? e : e.video, i = e instanceof HTMLVideoElement ? e.parentElement : e.container ?? e.video.parentElement, s = this.resolveContainer(i ?? null, t);\n    this.videoElement = t, this.containerElement = s, this.lastVideoSource = this.getCurrentVideoSource(), this.duration = Number.isFinite(t.duration) ? T(t.duration) : 0, this.currentTime = T(t.currentTime), this.playbackRate = t.playbackRate, this.isPlaying = !t.paused, this.isStalled = !1, this.lastDrawTime = this.timeSource.now(), this.playbackHasBegun = this.isPlaying || this.currentTime > A, this.skipDrawingForCurrentFrame = this.shouldSuppressRendering();\n    const n = this.createCanvasElement(), a = n.getContext(\"2d\");\n    if (!a)\n      throw new Error(\"Failed to acquire 2D canvas context\");\n    n.style.position = \"absolute\", n.style.top = \"0\", n.style.left = \"0\", n.style.right = \"0\", n.style.bottom = \"0\", n.style.display = \"block\", n.style.pointerEvents = \"none\", n.style.zIndex = \"2147483647\";\n    const o = this.containerElement;\n    o instanceof HTMLElement && (this.ensureContainerPositioning(o), o.appendChild(n)), this.canvas = n, this.ctx = a, this.resize(), this.calculateLaneMetrics(), this.setupVideoEventListeners(t), this.setupResizeHandling(t), this.setupFullscreenHandling(), this.setupVideoChangeDetection(t, s), this.startAnimation(), this.setupVisibilityHandling();\n  } catch (t) {\n    throw this.log.error(\"CommentRenderer.initialize\", t), t;\n  }\n}, ts = function() {\n  this.stopAnimation(), this.cleanupResizeHandling(), this.runCleanupTasks(), this.canvas && this.canvas.remove(), this.canvas = null, this.ctx = null, this.videoElement = null, this.containerElement = null, this.comments.length = 0, this.activeComments.clear(), this.reservedLanes.clear(), this.resetFinalPhaseState(), this.displayWidth = 0, this.displayHeight = 0, this.canvasDpr = 1, this.commentSequence = 0, this.playbackHasBegun = !1, this.skipDrawingForCurrentFrame = !1, this.isStalled = !1, this.pendingInitialSync = !1;\n}, is = function() {\n  this.stopAnimation(), this.canvas && this.canvas.remove(), this.canvas = null, this.ctx = null, this.displayWidth = 0, this.displayHeight = 0, this.canvasDpr = 1, this.fullscreenActive = !1;\n}, ss = (e) => {\n  e.prototype.resolveContainer = Zi, e.prototype.ensureContainerPositioning = Qi, e.prototype.initialize = es, e.prototype.destroy = ts, e.prototype.destroyCanvasOnly = is;\n}, ns = function(e) {\n  try {\n    const t = () => {\n      this.isPlaying = !0, this.playbackHasBegun = !0;\n      const d = this.timeSource.now();\n      this.lastDrawTime = d, this.lastPlayResumeTime = d, this.comments.forEach((c) => {\n        c.lastUpdateTime = d, c.isPaused = !1;\n      });\n    }, i = () => {\n      this.isPlaying = !1;\n      const d = this.timeSource.now();\n      this.comments.forEach((c) => {\n        c.lastUpdateTime = d, c.isPaused = !0;\n      });\n    }, s = () => {\n      this.onSeek();\n    }, n = () => {\n      this.onSeek();\n    }, a = () => {\n      this.playbackRate = e.playbackRate;\n      const d = this.timeSource.now();\n      this.comments.forEach((c) => {\n        c.lastUpdateTime = d;\n      });\n    }, o = () => {\n      this.handleVideoMetadataLoaded(e);\n    }, l = () => {\n      this.duration = Number.isFinite(e.duration) ? T(e.duration) : 0;\n    }, u = () => {\n      this.handleVideoSourceChange();\n    }, h = () => {\n      this.handleVideoStalled();\n    }, r = () => {\n      this.handleVideoCanPlay();\n    }, f = () => {\n      this.handleVideoCanPlay();\n    };\n    e.addEventListener(\"play\", t), e.addEventListener(\"pause\", i), e.addEventListener(\"seeking\", s), e.addEventListener(\"seeked\", n), e.addEventListener(\"ratechange\", a), e.addEventListener(\"loadedmetadata\", o), e.addEventListener(\"durationchange\", l), e.addEventListener(\"emptied\", u), e.addEventListener(\"waiting\", h), e.addEventListener(\"canplay\", r), e.addEventListener(\"playing\", f), this.addCleanup(() => e.removeEventListener(\"play\", t)), this.addCleanup(() => e.removeEventListener(\"pause\", i)), this.addCleanup(() => e.removeEventListener(\"seeking\", s)), this.addCleanup(() => e.removeEventListener(\"seeked\", n)), this.addCleanup(() => e.removeEventListener(\"ratechange\", a)), this.addCleanup(() => e.removeEventListener(\"loadedmetadata\", o)), this.addCleanup(() => e.removeEventListener(\"durationchange\", l)), this.addCleanup(() => e.removeEventListener(\"emptied\", u)), this.addCleanup(() => e.removeEventListener(\"waiting\", h)), this.addCleanup(() => e.removeEventListener(\"canplay\", r)), this.addCleanup(() => e.removeEventListener(\"playing\", f));\n  } catch (t) {\n    throw this.log.error(\"CommentRenderer.setupVideoEventListeners\", t), t;\n  }\n}, as = function(e) {\n  this.lastVideoSource = this.getCurrentVideoSource(), this.incrementEpoch(\"metadata-loaded\"), this.handleVideoSourceChange(e), this.resize(), this.calculateLaneMetrics(), this.onSeek(), this.emitStateSnapshot(\"metadata-loaded\");\n}, rs = function() {\n  const e = this.canvas, t = this.ctx;\n  if (!e || !t)\n    return;\n  this.isStalled = !0;\n  const i = this.canvasDpr > 0 ? this.canvasDpr : 1, s = this.displayWidth > 0 ? this.displayWidth : e.width / i, n = this.displayHeight > 0 ? this.displayHeight : e.height / i;\n  t.clearRect(0, 0, s, n), this.comments.forEach((a) => {\n    a.isActive && (a.lastUpdateTime = this.timeSource.now());\n  });\n}, os = function() {\n  this.isStalled && (this.isStalled = !1, this.videoElement && (this.currentTime = T(this.videoElement.currentTime), this.isPlaying = !this.videoElement.paused), this.lastDrawTime = this.timeSource.now());\n}, ls = function(e) {\n  const t = e ?? this.videoElement;\n  if (!t) {\n    this.lastVideoSource = null, this.isPlaying = !1, this.resetFinalPhaseState(), this.resetCommentActivity();\n    return;\n  }\n  const i = this.getCurrentVideoSource();\n  i !== this.lastVideoSource && (this.lastVideoSource = i, this.incrementEpoch(\"source-change\"), this.syncVideoState(t), this.resetFinalPhaseState(), this.resetCommentActivity(), this.emitStateSnapshot(\"source-change\"));\n}, cs = function(e) {\n  this.duration = Number.isFinite(e.duration) ? T(e.duration) : 0, this.currentTime = T(e.currentTime), this.playbackRate = e.playbackRate, this.isPlaying = !e.paused, this.isStalled = !1, this.playbackHasBegun = this.isPlaying || this.currentTime > A, this.lastDrawTime = this.timeSource.now();\n}, hs = function() {\n  const e = this.timeSource.now(), t = this.canvas, i = this.ctx;\n  if (this.resetFinalPhaseState(), this.skipDrawingForCurrentFrame = !1, this.isStalled = !1, this.pendingInitialSync = !1, this.playbackHasBegun = this.isPlaying || this.currentTime > A, t && i) {\n    const s = this.canvasDpr > 0 ? this.canvasDpr : 1, n = this.displayWidth > 0 ? this.displayWidth : t.width / s, a = this.displayHeight > 0 ? this.displayHeight : t.height / s;\n    i.clearRect(0, 0, n, a);\n  }\n  this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.comments.forEach((s) => {\n    s.isActive = !1, s.isPaused = !this.isPlaying, s.hasShown = !1, s.lane = -1, s.x = s.virtualStartX, s.speed = s.baseSpeed, s.lastUpdateTime = e, s.clearActivation();\n  }), this.activeComments.clear();\n}, us = function(e, t) {\n  if (typeof MutationObserver > \"u\") {\n    this.log.debug(\n      \"MutationObserver is not available in this environment. Video change detection is disabled.\"\n    );\n    return;\n  }\n  const i = new MutationObserver((n) => {\n    for (const a of n) {\n      if (a.type === \"attributes\" && a.attributeName === \"src\") {\n        const o = a.target;\n        let l = null, u = null;\n        if ((o instanceof HTMLVideoElement || o instanceof HTMLSourceElement) && (l = typeof a.oldValue == \"string\" ? a.oldValue : null, u = o.getAttribute(\"src\")), l === u)\n          continue;\n        this.handleVideoSourceChange(e);\n        return;\n      }\n      if (a.type === \"childList\") {\n        for (const o of a.addedNodes)\n          if (o instanceof HTMLSourceElement) {\n            this.handleVideoSourceChange(e);\n            return;\n          }\n        for (const o of a.removedNodes)\n          if (o instanceof HTMLSourceElement) {\n            this.handleVideoSourceChange(e);\n            return;\n          }\n      }\n    }\n  });\n  i.observe(e, {\n    attributes: !0,\n    attributeFilter: [\"src\"],\n    attributeOldValue: !0,\n    childList: !0,\n    subtree: !0\n  }), this.addCleanup(() => i.disconnect());\n  const s = new MutationObserver((n) => {\n    for (const a of n)\n      if (a.type === \"childList\") {\n        for (const o of a.addedNodes) {\n          const l = this.extractVideoElement(o);\n          if (l && l !== this.videoElement) {\n            this.initialize(l);\n            return;\n          }\n        }\n        for (const o of a.removedNodes) {\n          if (o === this.videoElement) {\n            this.videoElement = null, this.handleVideoSourceChange(null);\n            return;\n          }\n          if (o instanceof Element) {\n            const l = o.querySelector(\"video\");\n            if (l && l === this.videoElement) {\n              this.videoElement = null, this.handleVideoSourceChange(null);\n              return;\n            }\n          }\n        }\n      }\n  });\n  s.observe(t, { childList: !0, subtree: !0 }), this.addCleanup(() => s.disconnect());\n}, ds = function(e) {\n  if (e instanceof HTMLVideoElement)\n    return e;\n  if (e instanceof Element) {\n    const t = e.querySelector(\"video\");\n    if (t instanceof HTMLVideoElement)\n      return t;\n  }\n  return null;\n}, fs = (e) => {\n  e.prototype.setupVideoEventListeners = ns, e.prototype.handleVideoMetadataLoaded = as, e.prototype.handleVideoStalled = rs, e.prototype.handleVideoCanPlay = os, e.prototype.handleVideoSourceChange = ls, e.prototype.syncVideoState = cs, e.prototype.resetCommentActivity = hs, e.prototype.setupVideoChangeDetection = us, e.prototype.extractVideoElement = ds;\n}, ps = function() {\n  if (typeof document > \"u\" || typeof document.addEventListener != \"function\" || typeof document.removeEventListener != \"function\")\n    return;\n  const e = () => {\n    if (document.visibilityState !== \"visible\") {\n      this.stopAnimation();\n      return;\n    }\n    this._settings.isCommentVisible && (this.handleVisibilityRestore(), this.startAnimation());\n  };\n  document.addEventListener(\"visibilitychange\", e), this.addCleanup(() => document.removeEventListener(\"visibilitychange\", e)), document.visibilityState !== \"visible\" && this.stopAnimation();\n}, gs = function() {\n  const e = this.canvas, t = this.ctx, i = this.videoElement;\n  !e || !t || !i || (this.currentTime = T(i.currentTime), this.lastDrawTime = this.timeSource.now(), this.isPlaying = !i.paused, this.isStalled = !1, this.pendingInitialSync = !0, this.resetFinalPhaseState(), this.updatePlaybackProgressState(), this.draw());\n}, vs = function(e) {\n  const t = this._settings.isCommentVisible;\n  if (this._settings.isCommentVisible = e, t === e)\n    return;\n  this.settingsVersion += 1, this.commentDependencies.settingsVersion = this.settingsVersion;\n  const i = this.canvas, s = this.ctx;\n  if (!(!i || !s))\n    if (e)\n      this.lastDrawTime = this.timeSource.now(), this.pendingInitialSync = !0, this.scheduleNextFrame();\n    else {\n      const n = this.canvasDpr > 0 ? this.canvasDpr : 1, a = this.displayWidth > 0 ? this.displayWidth : i.width / n, o = this.displayHeight > 0 ? this.displayHeight : i.height / n;\n      s.clearRect(0, 0, a, o);\n    }\n}, Ss = (e) => {\n  e.prototype.setupVisibilityHandling = ps, e.prototype.handleVisibilityRestore = gs, e.prototype.setCommentVisibility = vs;\n}, ms = 768, ys = 68.1645984649658, Cs = function(e, t) {\n  const i = this.videoElement, s = this.canvas, n = this.ctx;\n  if (!i || !s)\n    return;\n  const o = (this.fullscreenActive && s.parentElement instanceof HTMLElement ? s.parentElement.getBoundingClientRect() : null) ?? i.getBoundingClientRect(), l = this.canvasDpr > 0 ? this.canvasDpr : 1, u = this.displayWidth > 0 ? this.displayWidth : s.width / l, h = this.displayHeight > 0 ? this.displayHeight : s.height / l, r = e ?? o.width ?? u, f = t ?? o.height ?? h;\n  if (!Number.isFinite(r) || !Number.isFinite(f) || r <= 0 || f <= 0)\n    return;\n  const d = Math.max(1, Math.floor(r)), c = Math.max(1, Math.floor(f)), p = this._settings.useDprScaling ? this.resolveDevicePixelRatio() : 1, g = Math.max(1, Math.round(d * p)), S = Math.max(1, Math.round(c * p));\n  (this.displayWidth !== d || this.displayHeight !== c || Math.abs(this.canvasDpr - p) > Number.EPSILON || s.width !== g || s.height !== S) && (this.displayWidth = d, this.displayHeight = c, this.canvasDpr = p, s.width = g, s.height = S, s.style.width = `${d}px`, s.style.height = `${c}px`, n && (n.setTransform(1, 0, 0, 1, 0, 0), this._settings.useDprScaling && n.scale(p, p)), this.calculateLaneMetrics(), this.reservedLanes.clear(), this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0, this.performInitialSync(T(i.currentTime)), this.draw());\n}, Ms = function() {\n  if (typeof window > \"u\")\n    return 1;\n  const e = Number(window.devicePixelRatio);\n  return !Number.isFinite(e) || e <= 0 ? 1 : e;\n}, bs = function() {\n  const e = this.canvas;\n  if (!e)\n    return;\n  const t = this.displayHeight > 0 ? this.displayHeight : e.height / Math.max(this.canvasDpr, 1);\n  this.laneHeight = t * (ys / ms);\n  const i = Math.max(this.laneHeight, 1), n = Math.floor(Math.max(0, t - i) / i);\n  if (this._settings.useFixedLaneCount) {\n    const a = Number.isFinite(this._settings.fixedLaneCount) ? Math.floor(this._settings.fixedLaneCount) : ce, o = Math.max(K, Math.min(n, a));\n    this.laneCount = o;\n  } else\n    this.laneCount = Math.max(K, n);\n  this.topStaticLaneReservations.length = 0, this.bottomStaticLaneReservations.length = 0;\n}, Es = function(e) {\n  this.cleanupResizeHandling();\n  let t = !1;\n  const i = () => {\n    if (t)\n      return;\n    t = !0;\n    const n = () => {\n      t = !1, this.resize();\n    };\n    if (typeof requestAnimationFrame == \"function\") {\n      requestAnimationFrame(n);\n      return;\n    }\n    n();\n  };\n  if (this._settings.useContainerResizeObserver && this.isResizeObserverAvailable) {\n    const n = this.resolveResizeObserverTarget(e), a = new ResizeObserver((o) => {\n      for (const l of o) {\n        const { width: u, height: h } = l.contentRect;\n        u > 0 && h > 0 ? this.resize(u, h) : this.resize();\n      }\n    });\n    a.observe(n), this.resizeObserver = a, this.resizeObserverTarget = n;\n  } else\n    this.log.debug(\n      \"Resize handling is disabled because neither ResizeObserver nor window APIs are available.\"\n    );\n  typeof window < \"u\" && typeof window.addEventListener == \"function\" && (window.addEventListener(\"resize\", i), this.addCleanup(() => window.removeEventListener(\"resize\", i)));\n  const s = typeof window < \"u\" ? window.visualViewport : void 0;\n  s && typeof s.addEventListener == \"function\" && (s.addEventListener(\"resize\", i), s.addEventListener(\"scroll\", i), this.addCleanup(() => {\n    s.removeEventListener(\"resize\", i), s.removeEventListener(\"scroll\", i);\n  }));\n}, Ts = function() {\n  this.resizeObserver && this.resizeObserverTarget && this.resizeObserver.unobserve(this.resizeObserverTarget), this.resizeObserver?.disconnect(), this.resizeObserver = null, this.resizeObserverTarget = null;\n}, ws = (e) => {\n  e.prototype.resize = Cs, e.prototype.resolveDevicePixelRatio = Ms, e.prototype.calculateLaneMetrics = bs, e.prototype.setupResizeHandling = Es, e.prototype.cleanupResizeHandling = Ts;\n}, xs = function() {\n  if (typeof document > \"u\" || typeof document.addEventListener != \"function\" || typeof document.removeEventListener != \"function\")\n    return;\n  const e = () => {\n    this.handleFullscreenChange();\n  };\n  [\n    \"fullscreenchange\",\n    \"webkitfullscreenchange\",\n    \"mozfullscreenchange\",\n    \"MSFullscreenChange\"\n  ].forEach((i) => {\n    document.addEventListener(i, e), this.addCleanup(() => document.removeEventListener(i, e));\n  }), this.handleFullscreenChange();\n}, ne = (e) => {\n  const t = () => {\n    const i = e.getFullscreenElement();\n    if (i instanceof HTMLElement) {\n      const s = i.getBoundingClientRect();\n      e.resize(s.width, s.height);\n      return;\n    }\n    e.resize();\n  };\n  typeof requestAnimationFrame == \"function\" && requestAnimationFrame(t), typeof setTimeout == \"function\" && setTimeout(t, 80);\n}, Is = function(e) {\n  const t = this.resolveFullscreenContainer(e);\n  return t || (e.parentElement ?? e);\n}, Ls = async function() {\n  const e = this.canvas, t = this.videoElement;\n  if (!e || !t)\n    return;\n  const i = this.containerElement ?? t.parentElement ?? null, s = this.getFullscreenElement(), n = this.resolveActiveOverlayContainer(t, i, s);\n  if (!(n instanceof HTMLElement))\n    return;\n  e.parentElement !== n ? (this.ensureContainerPositioning(n), n.appendChild(e)) : this.ensureContainerPositioning(n);\n  const a = s instanceof HTMLElement && s.contains(t) ? s : null, o = a !== null;\n  if (this.fullscreenActive !== o && (this.fullscreenActive = o, this.setupResizeHandling(t)), e.style.position = \"absolute\", e.style.top = \"0\", e.style.left = \"0\", e.style.right = \"0\", e.style.bottom = \"0\", e.style.display = \"block\", e.style.pointerEvents = \"none\", e.style.zIndex = \"2147483647\", a) {\n    const l = a.getBoundingClientRect();\n    this.resize(l.width, l.height), ne(this);\n    return;\n  }\n  this.resize(), ne(this);\n}, Fs = function(e) {\n  const t = this.getFullscreenElement();\n  return t instanceof HTMLElement && (t === e || t.contains(e)) ? t : null;\n}, Rs = function(e, t, i) {\n  return i instanceof HTMLElement && i.contains(e) ? i instanceof HTMLVideoElement && t instanceof HTMLElement ? t : i : t ?? null;\n}, As = function() {\n  if (typeof document > \"u\")\n    return null;\n  const e = document;\n  return document.fullscreenElement ?? e.webkitFullscreenElement ?? e.mozFullScreenElement ?? e.msFullscreenElement ?? null;\n}, Ps = (e) => {\n  e.prototype.setupFullscreenHandling = xs, e.prototype.resolveResizeObserverTarget = Is, e.prototype.handleFullscreenChange = Ls, e.prototype.resolveFullscreenContainer = Fs, e.prototype.resolveActiveOverlayContainer = Rs, e.prototype.getFullscreenElement = As;\n}, Ds = function(e) {\n  this.cleanupTasks.push(e);\n}, _s = function() {\n  for (; this.cleanupTasks.length > 0; ) {\n    const e = this.cleanupTasks.pop();\n    try {\n      e?.();\n    } catch (t) {\n      this.log.error(\"CommentRenderer.cleanupTask\", t);\n    }\n  }\n}, Vs = (e) => {\n  e.prototype.addCleanup = Ds, e.prototype.runCleanupTasks = _s;\n};\nclass M {\n  _settings;\n  comments = [];\n  activeComments = /* @__PURE__ */ new Set();\n  reservedLanes = /* @__PURE__ */ new Map();\n  topStaticLaneReservations = [];\n  bottomStaticLaneReservations = [];\n  pendingStaticPlacementOffsets = /* @__PURE__ */ new WeakMap();\n  log;\n  timeSource;\n  animationFrameProvider;\n  createCanvasElement;\n  commentDependencies;\n  settingsVersion = 0;\n  normalizedNgWords = [];\n  compiledNgRegexps = [];\n  canvas = null;\n  ctx = null;\n  videoElement = null;\n  containerElement = null;\n  fullscreenActive = !1;\n  laneCount = ce;\n  laneHeight = 0;\n  displayWidth = 0;\n  displayHeight = 0;\n  canvasDpr = 1;\n  currentTime = 0;\n  duration = 0;\n  playbackRate = 1;\n  isPlaying = !0;\n  isStalled = !1;\n  lastDrawTime = 0;\n  /** @deprecated Retained for API compatibility; official timing has no phase state. */\n  finalPhaseActive = !1;\n  /** @deprecated Retained for API compatibility; always null. */\n  finalPhaseStartTime = null;\n  /** @deprecated Retained for API compatibility; always false. */\n  finalPhaseScheduleDirty = !1;\n  playbackHasBegun = !1;\n  skipDrawingForCurrentFrame = !1;\n  pendingInitialSync = !1;\n  /** @deprecated Retained for API compatibility; official timing uses no override map. */\n  finalPhaseVposOverrides = /* @__PURE__ */ new Map();\n  frameId = null;\n  videoFrameHandle = null;\n  resizeObserver = null;\n  resizeObserverTarget = null;\n  isResizeObserverAvailable = typeof ResizeObserver < \"u\";\n  cleanupTasks = [];\n  commentSequence = 0;\n  epochId = 0;\n  eventHooks;\n  lastSnapshotEmitTime = 0;\n  snapshotEmitThrottleMs = 1e3;\n  lastPlayResumeTime = 0;\n  playResumeSeekIgnoreDurationMs = 500;\n  lastVideoSource = null;\n  rebuildNgMatchers() {\n    Me.call(this);\n  }\n  constructor(t = null, i = void 0) {\n    let s, n;\n    if (Nt(t))\n      s = O({ ...t }), n = i ?? {};\n    else {\n      const a = t ?? i ?? {};\n      n = typeof a == \"object\" ? a : {}, s = O(_t());\n    }\n    this._settings = O(s), this.timeSource = n.timeSource ?? le(), this.animationFrameProvider = n.animationFrameProvider ?? Ot(this.timeSource), this.createCanvasElement = n.createCanvasElement ?? Ht(), this.commentDependencies = {\n      timeSource: this.timeSource,\n      settingsVersion: this.settingsVersion\n    }, this.log = he(n.loggerNamespace ?? \"CommentRenderer\"), this.eventHooks = n.eventHooks ?? {}, this.handleAnimationFrame = this.handleAnimationFrame.bind(this), this.handleVideoFrame = this.handleVideoFrame.bind(this), this.rebuildNgMatchers(), n.debug && dt(n.debug);\n  }\n  get settings() {\n    return this._settings;\n  }\n  set settings(t) {\n    this._settings = O(t), this.settingsVersion += 1, this.commentDependencies.settingsVersion = this.settingsVersion, this.rebuildNgMatchers();\n  }\n  getVideoElement() {\n    return this.videoElement;\n  }\n  getCurrentVideoSource() {\n    const t = this.videoElement;\n    if (!t)\n      return null;\n    if (typeof t.currentSrc == \"string\" && t.currentSrc.length > 0)\n      return t.currentSrc;\n    const i = t.getAttribute(\"src\");\n    if (i && i.length > 0)\n      return i;\n    const s = t.querySelector(\"source[src]\");\n    return s && typeof s.src == \"string\" ? s.src : null;\n  }\n  getCommentsSnapshot() {\n    return [...this.comments];\n  }\n}\nBt(M);\nQt(M);\nii(M);\nri(M);\nhi(M);\nyi(M);\nxi(M);\nHi(M);\nzi(M);\nJi(M);\nss(M);\nfs(M);\nSs(M);\nws(M);\nPs(M);\nVs(M);\nconst Os = (e) => ({\n  text: e.text,\n  vposMs: e.vposMs,\n  ...e.meta?.no !== void 0 ? { no: e.meta.no } : {},\n  ...e.meta?.fork !== void 0 ? { fork: e.meta.fork } : {},\n  ...e.meta?.source !== void 0 ? { source: e.meta.source } : {},\n  ...e.meta?.threadId !== void 0 ? { threadId: e.meta.threadId } : {},\n  ...e.meta?.date !== void 0 ? { date: e.meta.date } : {},\n  ...e.meta?.userIdHash !== void 0 ? { userIdHash: e.meta.userIdHash } : {},\n  commands: e.commands,\n  layout: e.layout,\n  lane: e.lane,\n  x: e.x,\n  y: e.y,\n  width: e.width,\n  height: e.height,\n  fontSize: e.fontSize,\n  lineHeightPx: e.lineHeightPx,\n  slotHeight: e.slotHeight,\n  fontFamily: e.fontFamily,\n  color: e.color,\n  opacity: e.opacity,\n  visibleDurationMs: e.visibleDurationMs,\n  totalDurationMs: e.totalDurationMs,\n  preCollisionDurationMs: e.preCollisionDurationMs,\n  speedPixelsPerMs: e.speedPixelsPerMs,\n  virtualStartX: e.virtualStartX,\n  exitThreshold: e.exitThreshold,\n  bufferWidth: e.bufferWidth,\n  reservationWidth: e.reservationWidth,\n  creationIndex: e.creationIndex\n}), Hs = (e) => {\n  const t = e.canvas;\n  if (!t)\n    return null;\n  const i = e.canvasDpr > 0 ? e.canvasDpr : 1;\n  return {\n    width: t.width,\n    height: t.height,\n    cssWidth: e.displayWidth > 0 ? e.displayWidth : t.width / i,\n    cssHeight: e.displayHeight > 0 ? e.displayHeight : t.height / i,\n    dpr: i\n  };\n}, Ws = (e, t, i = {}) => {\n  const s = [], n = globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__, a = globalThis.__COMMENT_OVERLAY_TRACE__;\n  if (i.collectTrace === !0) {\n    const o = i.traceOps && i.traceOps.length > 0 ? new Set(i.traceOps) : null;\n    globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__ = !0, globalThis.__COMMENT_OVERLAY_TRACE__ = ((l) => {\n      o && !o.has(l.op) || s.push(l);\n    });\n  }\n  try {\n    e.processFrame(t);\n  } finally {\n    i.collectTrace === !0 && (globalThis.__COMMENT_OVERLAY_TRACE_ENABLED__ = n, globalThis.__COMMENT_OVERLAY_TRACE__ = a);\n  }\n  return {\n    frameTimeMs: t,\n    canvas: Hs(e),\n    activeComments: Array.from(e.activeComments, Os),\n    records: s\n  };\n};\nexport {\n  zs as COMMENT_OVERLAY_VERSION,\n  Dt as Comment,\n  M as CommentRenderer,\n  ks as DEFAULT_RENDERER_SETTINGS,\n  Ws as captureRendererCalibrationFrame,\n  _t as cloneDefaultSettings,\n  dt as configureDebugLogging,\n  Ot as createDefaultAnimationFrameProvider,\n  le as createDefaultTimeSource,\n  he as createLogger,\n  C as debugLog,\n  pt as dumpRendererState,\n  R as isDebugLoggingEnabled,\n  gt as logEpochChange,\n  Ns as resetDebugCounters\n};\n//# sourceMappingURL=comment-overlay.es.js.map\n";
+var LICENSE_raw_default = "MIT License\n\nCopyright (c) 2025 roflsunriz/comment-overlay contributors\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
+var safeJson = (value) => JSON.stringify(value).replaceAll("<", "\\u003c");
+function exportCommentHtml(chats, settings, duration) {
+	const entries = chats.map(overlayEntry);
+	const presentations = Object.fromEntries(chats.map((chat) => [chat.id, commentPresentation(chat)]));
+	const end = Number.isFinite(duration) && duration > 0 ? duration : Math.max(1, ...entries.map((entry) => entry.vposMs / 1e3 + 5));
+	return `<!doctype html><html lang="ja"><meta charset="utf-8"><title>FutatsumeWatch コメント</title>
+<style>body{margin:0;background:#222;color:white;font:16px sans-serif}#overlay{position:relative;width:100%;height:calc(100vh - 48px)}footer{height:48px;display:flex;align-items:center;gap:12px}input{flex:1}</style>
+<div id="overlay"></div><footer><button id="play">再生 / 停止</button><input id="seek" aria-label="再生位置" type="range" min="0" max="${end}" step="0.01"></footer>
+<script type="module">
+const source = ${safeJson({ code: `/*!\n${LICENSE_raw_default}\n*/\n${comment_overlay_es_default}` })};
+const url = URL.createObjectURL(new Blob([source.code], {type:'text/javascript'}));
+const {CommentRenderer} = await import(url); URL.revokeObjectURL(url);
+const video=document.createElement('video'), container=document.querySelector('#overlay'), seek=document.querySelector('#seek');
+let time=0, paused=true, previous=performance.now();
+Object.defineProperties(video,{currentTime:{get:()=>time},duration:{get:()=>${end}},paused:{get:()=>paused}});
+video.getBoundingClientRect=()=>container.getBoundingClientRect();
+const renderer=new CommentRenderer(${safeJson(settings)}); renderer.initialize({video,container});
+const decorate = (${decorateOverlayComment.toString()});
+const durations = (${installCommentDurations.toString()})(renderer);
+const presentations = ${safeJson(presentations)};
+for (const comment of renderer.addComments(${safeJson(entries)})) {
+  const presentation=presentations[comment.meta.source];
+  decorate(comment,presentation,renderer);
+  if(presentation.duration!==null)durations.set(comment,presentation.duration);
 }
-
-.debug .mincho  { background: rgba(128, 0, 0, 0.3); }
-.debug .gulim   { background: rgba(0, 128, 0, 0.3); }
-.debug .mingLiu { background: rgba(0, 0, 128, 0.3); }
-
-@keyframes fixed {
-   0% { opacity: 1; visibility: visible; }
-  95% { opacity: 1; }
- 100% { opacity: 0; visibility: hidden;}
+document.querySelector('#play').onclick=()=>{paused=!paused;video.dispatchEvent(new Event(paused?'pause':'play'));};
+seek.oninput=()=>{time=Number(seek.value);renderer.performInitialSync();renderer.draw();};
+function tick(now){if(!paused){time=Math.min(${end},time+(now-previous)/1000);seek.value=String(time);if(time>=${end}){paused=true;video.dispatchEvent(new Event('pause'));}}previous=now;requestAnimationFrame(tick);}requestAnimationFrame(tick);
+<\/script></html>`;
 }
-
-@keyframes show-hide {
- 0% { visibility: visible; opacity: 1; }
- /* Chrome 73のバグ？対策 hidden が適用されない */
- 95% { visibility: visible; opacity: 1; }
- 100% { visibility: hidden; opacity: 0; }
-
- /*100% { visibility: hidden; }*/
+function exportCommentXml(chats) {
+	const doc = document.implementation.createDocument(null, "packet");
+	for (const chat of chats) {
+		const element = doc.createElement("chat");
+		for (const [name, value] of Object.entries({
+			vpos: chat.vpos,
+			mail: chat.cmd,
+			no: chat.no,
+			fork: chat.fork,
+			thread: chat.threadId,
+			user_id: chat.userId,
+			date: chat.date
+		})) if (typeof value === "string" || typeof value === "number") element.setAttribute(name, String(value));
+		element.textContent = chat.text;
+		doc.documentElement.append(element);
+	}
+	return new XMLSerializer().serializeToString(doc);
 }
-
-@keyframes dokaben {
-  0% {
-    visibility: visible;
-    transform: translate3d(-50%, 0, 0) perspective(200px) rotateX(90deg) scale(var(--dokaben-scale));
-  }
-  50% {
-    transform: translate3d(-50%, 0, 0) perspective(200px) rotateX(0deg) scale(var(--dokaben-scale));
-  }
-  90% {
-    transform: translate3d(-50%, 0, 0) perspective(200px) rotateX(0deg) scale(var(--dokaben-scale));
-  }
-  100% {
-    visibility: hidden;
-    transform: translate3d(-50%, 0, 0) perspective(200px) rotateX(90deg) scale(var(--dokaben-scale));
-  }
-}
-
-@keyframes idou-props {
-  0%   {
-    visibility: visible;
-    transform: translateX(0);
-  }
-  100% {
-    visibility: hidden;
-    transform: translateX(var(--chat-trans-x));
-  }
-}
-@keyframes idou-props-scaled {
-  0%   {
-    visibility: visible;
-    transform:
-      translateX(0)
-      scale(var(--chat-scale-x), var(--chat-scale-y));
-  }
-  100% {
-    visibility: hidden;
-    transform:
-      translateX(var(--chat-trans-x))
-      scale(var(--chat-scale-x), var(--chat-scale-y));
-  }
-}
-@keyframes idou-props-scaled-middle {
-  0%   {
-    visibility: visible;
-    transform:
-      translateX(0)
-      scale(var(--chat-scale-x), var(--chat-scale-y))
-      translateY(-50%);
-  }
-  100% {
-    visibility: hidden;
-    transform:
-      translateX(var(--chat-trans-x))
-      scale(var(--chat-scale-x), var(--chat-scale-y))
-      translateY(-50%);
-  }
-}
-
-.commentLayerOuter {
-  position: fixed;
-  top: 50vh;
-  left: 50vw;
-  width: 672px;
-  height: 384px;
-  transform: translate3d(-336px, -192px, 0);
-  contain: layout style size;
-}
-
-.saved .commentLayerOuter {
-  background: #333;
-  position: absolute;
-  top: auto; right: auto; bottom: auto;
-  left: 50%;
-  transform: translate(-50%, 0);
-  contain: layout style size;
-  overflow: visible;
-}
-
-.commentLayer {
-  position: absolute;
-  width: 544px;
-  height: 384px;
-  left: 50%;
-  top: 50%;
-  will-change: transform;
-  transform: translate(-272px, -192px) scale(var(--layer-scale, 1));
-  contain: layout style size;
-}
-
-.subLayer {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 0.7;
-  contain: layout style size;
-}
-
-.debug .commentLayer {
-  outline: 1px solid green;
-}
-
-.nicoChat {
-  position: absolute;
-  display: inline-block;
-  line-height: 1.235;
-  visibility: hidden;
-  text-shadow: 1px 1px 0 ${textShadowColor};
-  transform-origin: 0 0;
-  animation-timing-function: linear;
-  /*animation-fill-mode: forwards;*/
-  will-change: transform;
-  contain: layout style paint;
-  color: #fff;
-
-  /*-webkit-font-smoothing: initial;
-  font-smooth: auto;
-  text-rendering: optimizeSpeed;
-  font-kerning: none;*/
-}
-
-.shadow-type2 .nicoChat {
-  text-shadow:
-     1px  1px 0 rgba(0, 0, 0, 0.5),
-    -1px  1px 0 rgba(0, 0, 0, 0.5),
-    -1px -1px 0 rgba(0, 0, 0, 0.5),
-     1px -1px 0 rgba(0, 0, 0, 0.5);
-}
-
-.shadow-type3 .nicoChat {
-  text-shadow:
-     1px  1px 1px rgba(  0,   0,   0, 0.8),
-     0  0 2px rgba(  0,   0,   0, 0.8),
-    -1px -1px 1px rgba(128, 128, 128, 0.8);
-}
-
-.shadow-stroke .nicoChat {
-  text-shadow: none;
-  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.7);
-  text-stroke:         1px rgba(0, 0, 0, 0.7);
-}
-
-/*「RGBは大体　文字200、80、0　縁150,50,0　くらい」らしい*/
-.shadow-dokaben .nicoChat.ue,
-.shadow-dokaben .nicoChat.shita {
-  color: rgb(200, 80, 0);
-  font-family: 'dokaben_ver2_1' !important;
-  font-weight: bolder;
-  animation-name: dokaben !important;
-  text-shadow:
-    1px  1px 0 rgba(150, 50, 0, 1),
-   -1px  1px 0 rgba(150, 50, 0, 1),
-   -1px -1px 0 rgba(150, 50, 0, 1),
-    1px -1px 0 rgba(150, 50, 0, 1) !important;
-  transform-origin: center bottom;
-  animation-timing-function: steps(10);
-  perspective-origin: center bottom;
-}
-
-.shadow-dokaben .nicoChat.ue *,
-.shadow-dokaben .nicoChat.shita * {
-  font-family: 'dokaben_ver2_1' !important;
-}
-.shadow-dokaben .nicoChat {
-  text-shadow:
-     1px  1px 0 rgba(0, 0, 0, 0.5),
-    -1px  1px 0 rgba(0, 0, 0, 0.5),
-    -1px -1px 0 rgba(0, 0, 0, 0.5),
-     1px -1px 0 rgba(0, 0, 0, 0.5);
-}
-
-
-.nicoChat.ue, .nicoChat.shita {
-  animation-name: fixed;
-  visibility: hidden;
-  will-change: transform, opacity;
-}
-
-.nicoChat.ue.html5, .nicoChat.shita.html5 {
-  animation-name: show-hide;
-  animation-timing-function: steps(20, jump-none);
-}
-
-.nicoChat.black, .nicoChat.black.fork1 {
-  text-shadow:
-   -1px -1px 0 ${textShadowGray},
-   1px  1px 0 ${textShadowGray};
-}
-
-.nicoChat.ue,
-.nicoChat.shita {
-  display: inline-block;
-  text-shadow: 0 0 3px #000;
-}
-.nicoChat.ue.black,
-.nicoChat.shita.black {
-  text-shadow: 0 0 3px #fff;
-}
-
-.nicoChat .type0655,
-.nicoChat .zero_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-  opacity: 0;
-}
-
-.nicoChat .han_space,
-.nicoChat .zen_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-  opacity: 0;
-}
-
-.debug .nicoChat .han_space,
-.debug .nicoChat .zen_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-  color: yellow;
-  background: #fff;
-  opacity: 0.3;
-}
-
-.debug .nicoChat .tab_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-  background: #ff0;
-  opacity: 0.3;
-}
-
-.nicoChat .invisible_code {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-  opacity: 0;
-}
-
-.nicoChat .zero_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-  opacity: 0;
-}
-
-.debug .nicoChat .zero_space {
-  display: inline;
-  position: absolute;
-}
-.debug .html5_zen_space {
-  color: #888;
-  opacity: 0.5;
-}
-
-.nicoChat .fill_space, .nicoChat .html5_fill_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset !important;
-  text-stroke: unset !important;
-  background: currentColor;
-}
-
-.nicoChat .mesh_space {
-  text-shadow: none;
-  -webkit-text-stroke: unset;
-}
-
-.nicoChat .block_space, .nicoChat .html5_block_space {
-  text-shadow: none;
-}
-
-.debug .nicoChat.ue {
-  text-decoration: overline;
-}
-
-.debug .nicoChat.shita {
-  text-decoration: underline;
-}
-
-.nicoChat.mine {
-  border: 1px solid yellow;
-}
-.nicoChat.nicotta {
-  border: 1px solid orange;
-}
-
-.nicoChat.updating {
-  border: 1px dotted;
-}
-
-.nicoChat.fork1 {
-  text-shadow:
-   1px 1px 0 ${ownerShadowColor},
-   -1px -1px 0 ${ownerShadowColor};
-  -webkit-text-stroke: unset;
-}
-.nicoChat.ue.fork1,
-.nicoChat.shita.fork1 {
-  display: inline-block;
-  text-shadow: 0 0 3px ${ownerShadowColor};
-  -webkit-text-stroke: unset;
-}
-
-.nicoChat.fork2 {
-  opacity: var(--easy-comment-opacity, ${easyCommentOpacity}) !important;
-}
-
-.nicoChat.fork3 {
-  opacity: var(--ai-comment-opacity, ${aiCommentOpacity}) !important;
-}
-
-.nicoChat.blink {
-  border: 1px solid #f00;
-}
-
-.nicoChat.subThread {
-  filter: opacity(0.7);
-}
-
-@keyframes spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(3600deg); }
-}
-
-.nicoChat.updating::before {
-  content: '❀';
-  opacity: 0.8;
-  color: #f99;
-  display: inline-block;
-  text-align: center;
-  animation-name: spin;
-  animation-iteration-count: infinite;
-  animation-duration: 10s;
-}
-
-.nicoChat.updating::after {
-  content: ' 通信中...';
-  font-size: 50%;
-  opacity: 0.8;
-  color: #ccc;
-}
-
-.nicoChat.updating::after {
-  animation-direction: alternate;
-}
-
-.nicoChat.fail {
-  border: 1px dotted red;
-  text-decoration: line-through;
-}
-
-.nicoChat.fail:after {
-  content: ' 投稿失敗...';
-  text-decoration: none;
-  font-size: 80%;
-  opacity: 0.8;
-  color: #ccc;
-}
-
-.debug .nicoChat {
-  outline: 1px outset;
-}
-
-spacer {
-  visibility: hidden;
-}
-.debug spacer {
-  visibility: visible;
-  outline: 3px dotted orange;
-}
-
-.is-stalled *,
-.paused *{
-  animation-play-state: paused !important;
-}
-
-</style>
-<style id="nicoChatAnimationDefinition">
-%CSS%
-</style>
-</head>
-<body style="background-color: unset !important; background: none !important;">
-<div hidden="true" id="keyframesContainer"></div>
-<div id="commentLayerOuter" class="commentLayerOuter">
-<div class="commentLayer" id="commentLayer">%MSG%</div>
-</div>
-</body></html>
-  `.trim();
-})(Config);
+var CommentOverlayView = class {
+	constructor(model, options) {
+		this.model = model;
+		this.renderer = null;
+		this.element = document.createElement("div");
+		this.surface = document.createElement("div");
+		this.clock = document.createElement("video");
+		this.attached = false;
+		this.closed = true;
+		this.durations = /* @__PURE__ */ new Map();
+		this.ratio = 16 / 9;
+		this._isShow = options.showComment ?? true;
+		this.playbackRate = options.playbackRate ?? 1;
+		this.media = options.media ?? {
+			get currentTime() {
+				return model.currentTime;
+			},
+			duration: 0,
+			playbackRate: this.playbackRate,
+			paused: true
+		};
+		this.element.className = "commentLayerFrame futatsume-comment-overlay";
+		this.element.dataset.commentEngine = "comment-overlay";
+		Object.assign(this.element.style, {
+			position: "absolute",
+			inset: "0",
+			margin: "auto",
+			overflow: "hidden",
+			pointerEvents: "none",
+			containerType: "size"
+		});
+		Object.assign(this.surface.style, {
+			position: "absolute",
+			inset: "0",
+			margin: "auto",
+			overflow: "hidden"
+		});
+		this.element.append(this.surface);
+		for (const key of [
+			"currentTime",
+			"duration",
+			"playbackRate",
+			"paused"
+		]) Object.defineProperty(this.clock, key, { get: () => this.media[key] });
+		this.clock.getBoundingClientRect = () => this.surface.getBoundingClientRect();
+		for (const key of [
+			"commentLayerOpacity",
+			"commentSpeedRate",
+			"autoCommentSpeedRate",
+			"playbackRate",
+			"baseFontFamily",
+			"baseFontBolder",
+			"baseChatScale",
+			"backComment",
+			"commentLayer.textShadowType",
+			"commentLayer.easyCommentOpacity",
+			"commentLayer.aiCommentOpacity",
+			"commentLayer.ownerCommentShadowColor"
+		]) Config.onkey(key, () => this.refresh());
+	}
+	settings() {
+		const settings = _t();
+		settings.isCommentVisible = this._isShow;
+		settings.useContainerResizeObserver = true;
+		settings.commentOpacity = Number(Config.props.commentLayerOpacity);
+		const rate = Math.max(.1, Number(Config.props.commentSpeedRate)) / (Config.props.autoCommentSpeedRate ? Math.max(this.media.playbackRate, 1) : 1);
+		settings.scrollVisibleDurationMs = rate === 1 ? null : 4e3 / rate;
+		settings.shadowIntensity = Config.props["commentLayer.textShadowType"] === "shadow-type3" ? "strong" : "medium";
+		settings.renderStyle = "classic";
+		return settings;
+	}
+	appendTo(node) {
+		node.append(this.element);
+		this.attached = true;
+		this.resize();
+		if (!this.closed) this.refresh();
+	}
+	initialize() {
+		if (!this.attached || this.renderer) return;
+		const renderer = new M(this.settings(), { loggerNamespace: "FutatsumeWatch" });
+		renderer.getFullscreenElement = () => null;
+		this.renderer = renderer;
+		this.durations = installCommentDurations(renderer);
+		try {
+			renderer.initialize({
+				video: this.clock,
+				container: this.surface
+			});
+			if (!renderer.canvas) throw new Error("コメントCanvasを作成できませんでした");
+			renderer.canvas.dataset.futatsumeCommentCanvas = "";
+			renderer.canvas.style.zIndex = "0";
+			this.resize();
+		} catch (error) {
+			renderer.destroy();
+			this.renderer = null;
+			throw error;
+		}
+	}
+	refresh() {
+		if (this.closed) return;
+		this.initialize();
+		const renderer = this.renderer;
+		if (!renderer) return;
+		this.element.style.opacity = "1";
+		renderer.settings = this.settings();
+		renderer.clearComments();
+		this.durations.clear();
+		const chats = Object.values(this.model.chatList).flat();
+		const entries = chats.filter((chat) => !chat.isInvisible && !chat.isDeleted).map(overlayEntry);
+		const sources = new Map(chats.map((chat) => [chat.id, chat]));
+		for (const comment of renderer.addComments(entries)) {
+			const source = sources.get(comment.meta?.source ?? "");
+			if (source) {
+				const presentation = commentPresentation(source);
+				decorateOverlayComment(comment, presentation, renderer);
+				if (presentation.duration !== null) this.durations.set(comment, presentation.duration);
+			}
+		}
+		renderer.syncVideoState(this.clock);
+		renderer.performInitialSync();
+		renderer.draw();
+		if (!this._isShow || document.hidden) renderer.stopAnimation();
+		else renderer.startAnimation();
+	}
+	open() {
+		this.closed = false;
+		this.initialize();
+	}
+	mediaEvent(name) {
+		if (!this.renderer || this.closed) return;
+		this.clock.dispatchEvent(new Event(name));
+		if (name === "seeked") {
+			this.renderer.performInitialSync();
+			this.renderer.draw();
+		}
+		if (name === "ratechange") this.refresh();
+	}
+	setVisibility(visible) {
+		this._isShow = visible;
+		this.renderer?.setCommentVisibility(visible);
+		if (!visible) this.renderer?.stopAnimation();
+	}
+	setAspectRatio(ratio) {
+		if (Number.isFinite(ratio) && ratio > 0) this.ratio = 1 / ratio;
+		this.resize();
+	}
+	resize() {
+		this.surface.style.width = `min(100%, ${this.ratio * 100}cqh)`;
+		this.surface.style.height = `min(100%, ${100 / this.ratio}cqw)`;
+		this.renderer?.resize();
+	}
+	close() {
+		this.closed = true;
+		this.renderer?.destroy();
+		this.renderer = null;
+		this.durations.clear();
+	}
+	export() {
+		return exportCommentHtml(Object.values(this.model.chatList).flat(), this.settings(), this.media.duration);
+	}
+	exportXml() {
+		return exportCommentXml(Object.values(this.model.nonFilteredChatList).flat());
+	}
+	getCurrentScreenHtml() {
+		return `<html xmlns="http://www.w3.org/1999/xhtml"><body style="margin:0;width:100%;height:100%"><img src="${this.renderer?.canvas?.toDataURL("image/png") ?? ""}" style="width:100%;height:100%" /></body></html>`;
+	}
+};
 var NicoCommentPlayer = class extends Emitter {
 	constructor(params) {
 		super();
+		this.generation = 0;
 		this._model = new NicoComment(params);
-		this._viewModel = new NicoCommentViewModel(this._model);
-		this._view = new NicoCommentCss3PlayerView({
-			viewModel: this._viewModel,
-			playbackRate: params.playbackRate,
-			show: params.showComment,
-			opacity: import_lodash.isNumber(params.commentOpacity) ? params.commentOpacity : 1
+		this._view = new CommentOverlayView(this._model, params);
+		this._model.on("change", () => {
+			this._view.refresh();
+			this.emit("change");
 		});
-		const onCommentChange = import_lodash.throttle(this._onCommentChange.bind(this), 1e3);
-		this._model.on("change", onCommentChange);
-		this._model.on("filterChange", this._onFilterChange.bind(this));
-		this._model.on("parsed", this._onCommentParsed.bind(this));
-		this._model.on("command", this._onCommand.bind(this));
-		global.emitter.on("commentLayoutChange", onCommentChange);
+		this._model.on("filterChange", (filter) => this.emit("filterChange", filter));
+		this._model.on("parsed", () => {
+			this._view.refresh();
+			this.emit("parsed");
+		});
+		this._model.on("command", (command, param) => this.emit("command", command, param));
 		global.debug.nicoCommentPlayer = this;
 		this.emitResolve("GetReady!");
 	}
-	setComment(data, options) {
-		if (typeof data === "string") {
-			if (options.format === "json") this._model.setData(JSON.parse(data), options);
-			else this._model.setXml(new DOMParser().parseFromString(data, "text/xml"), options);
-		} else if (typeof data.getElementsByTagName === "function") this._model.setXml(data, options);
-		else if (options.format === "threads") this._model.setThreads(data, options);
-		else this._model.setData(data, options);
+	setComment(data, options = {}) {
+		const generation = ++this.generation;
+		try {
+			this._view.open();
+			if (typeof data === "string") data = options.format === "json" ? JSON.parse(data) : new DOMParser().parseFromString(data, "text/xml");
+			let parsed;
+			if (data instanceof Document || typeof data === "object" && data !== null && "getElementsByTagName" in data) parsed = this._model.setXml(data, {
+				...options,
+				format: "xml"
+			});
+			else if (options.format === "threads") parsed = this._model.setThreads(data, options);
+			else parsed = this._model.setData(data, options);
+			parsed.catch((error) => {
+				if (generation === this.generation) this.reportError(error);
+			});
+		} catch (error) {
+			this.reportError(error);
+		}
 	}
-	_onCommand(command, param) {
-		this.emit("command", command, param);
-	}
-	_onCommentChange(e) {
-		console.log("onCommentChange", e);
-		if (this._view) setTimeout(() => this._view.refresh(), 0);
-		this.emit("change");
-	}
-	_onFilterChange(nicoChatFilter) {
-		this.emit("filterChange", nicoChatFilter);
-	}
-	_onCommentParsed() {
-		this.emit("parsed");
+	reportError(error) {
+		console.error("FutatsumeWatch comment-overlay:", error);
+		this.emit("command", "notify", `コメントを読み込めませんでした: ${error instanceof Error ? error.message : String(error)}`);
 	}
 	getMymemory() {
-		if (!this._view) this._view = new NicoCommentCss3PlayerView({ viewModel: this._viewModel });
 		return this._view.export();
 	}
 	set currentTime(sec) {
@@ -8792,51 +8717,57 @@ var NicoCommentPlayer = class extends Emitter {
 	get currentTime() {
 		return this._model.currentTime;
 	}
-	set vpos(vpos) {
-		this._model.currentTime = vpos / 100;
+	set vpos(value) {
+		this.currentTime = value / 100;
 	}
 	get vpos() {
-		return this._model.currentTime * 100;
+		return this.currentTime * 100;
 	}
-	setVisibility(v) {
-		if (v) this._view.show();
-		else this._view.hide();
+	setVisibility(visible) {
+		this._view.setVisibility(visible);
 	}
-	addChat(text, cmd, vpos, options) {
-		if (typeof vpos !== "number") vpos = this.vpos;
-		const nicoChat = NicoChat.create(Object.assign({
+	addChat(text, cmd, vpos = this.vpos, options = {}) {
+		const chat = NicoChat.create({
 			text,
 			cmd,
-			vpos
-		}, options));
-		this._model.addChat(nicoChat);
-		return nicoChat;
+			vpos,
+			...options
+		});
+		this._model.addChat(chat);
+		this._view.refresh();
+		return chat;
 	}
-	removeChat(nicoChat) {
-		this._model.removeChat(nicoChat);
+	removeChat(chat) {
+		if (!(chat instanceof NicoChat)) return;
+		this._model.removeChat(chat);
+		this._view.refresh();
 	}
-	set playbackRate(v) {
-		if (this._view) this._view.playbackRate = v;
+	set playbackRate(value) {
+		this._view.playbackRate = value;
 	}
 	get playbackRate() {
-		if (this._view) return this._view.playbackRate;
-		return 1;
+		return this._view.playbackRate;
+	}
+	mediaEvent(name) {
+		this._view.mediaEvent(name);
 	}
 	setAspectRatio(ratio) {
 		this._view.setAspectRatio(ratio);
 	}
 	appendTo(node) {
+		if (!(node instanceof HTMLElement)) throw new TypeError("コメント描画先がHTMLElementではありません");
 		this._view.appendTo(node);
 	}
 	show() {
-		this._view.show();
+		this.setVisibility(true);
 	}
 	hide() {
-		this._view.hide();
+		this.setVisibility(false);
 	}
 	close() {
+		this.generation++;
 		this._model.clear();
-		if (this._view) this._view.clear();
+		this._view.close();
 	}
 	get filter() {
 		return this._model.filter;
@@ -8844,37 +8775,23 @@ var NicoCommentPlayer = class extends Emitter {
 	get chatList() {
 		return this._model.chatList;
 	}
-	/**
-	* NGフィルタなどのかかってない全chatを返す
-	*/
+	get nonFilteredChatList() {
+		return this._model.nonFilteredChatList;
+	}
 	get nonfilteredChatList() {
-		return this._model.nonfilteredChatList;
+		return this.nonFilteredChatList;
 	}
 	export() {
-		return this._viewModel.export();
+		return this._view.exportXml();
 	}
 	getCurrentScreenHtml() {
 		return this._view.getCurrentScreenHtml();
 	}
-};
-NicoComment.offscreenLayer = OffscreenLayer(Config);
-var updateSpeedRate = () => {
-	const speedRateHolder = NicoChatViewModel;
-	let rate = Config.props.commentSpeedRate * 1;
-	if (Config.props.autoCommentSpeedRate) rate = rate / Math.max(Config.props.playbackRate, 1);
-	if (rate !== speedRateHolder.SPEED_RATE) {
-		speedRateHolder.SPEED_RATE = rate;
-		speedRateHolder.emitter.emit("updateCommentSpeedRate", rate);
+	get canvas() {
+		return this._view.renderer?.canvas ?? null;
 	}
 };
-Config.onkey("commentSpeedRate", updateSpeedRate);
-Config.onkey("autoCommentSpeedRate", updateSpeedRate);
-Config.onkey("playbackRate", updateSpeedRate);
-updateSpeedRate();
-Object.assign(global.debug, {
-	NicoChat,
-	NicoChatViewModel
-});
+Object.assign(global.debug, { NicoChat });
 var { YouTubeWrapper } = (() => {
 	const STATE_PLAYING = 1;
 	class YouTubeWrapper extends Emitter {
@@ -9304,6 +9221,7 @@ var NicoVideoPlayer = class extends Emitter {
 		});
 		this._videoPlayer.on("command", onCommand);
 		this._commentPlayer = new NicoCommentPlayer({
+			media: this._videoPlayer,
 			filter: {
 				enableFilter: conf.props.enableFilter,
 				wordFilter: conf.props.wordFilter,
@@ -9355,6 +9273,18 @@ var NicoVideoPlayer = class extends Emitter {
 		this._videoWatchTimer = null;
 	}
 	_initializeEvents() {
+		for (const [source, target] of [
+			["play", "play"],
+			["playing", "playing"],
+			["pause", "pause"],
+			["ended", "pause"],
+			["seeking", "seeking"],
+			["seeked", "seeked"],
+			["waiting", "waiting"],
+			["canPlay", "canplay"],
+			["loadedMetaData", "loadedmetadata"],
+			["durationChange", "durationchange"]
+		]) this._videoPlayer.on(source, () => this._commentPlayer.mediaEvent(target));
 		const eventBridge = function(name, ...args) {
 			this.emit(name, ...args);
 		};
@@ -9399,6 +9329,7 @@ var NicoVideoPlayer = class extends Emitter {
 			case "playbackRate":
 				this._videoPlayer.playbackRate = value;
 				this._commentPlayer.playbackRate = value;
+				this._commentPlayer.mediaEvent("ratechange");
 				break;
 			case "isAutoPlay":
 				this._videoPlayer.isAutoPlay = value;
@@ -9518,7 +9449,8 @@ var NicoVideoPlayer = class extends Emitter {
 	setPlaybackRate(playbackRate) {
 		playbackRate = Math.max(0, Math.min(playbackRate, 10));
 		this._videoPlayer.playbackRate = playbackRate;
-		this._commentPlayer.setPlaybackRate(playbackRate);
+		this._commentPlayer.playbackRate = playbackRate;
+		this._commentPlayer.mediaEvent("ratechange");
 	}
 	fastSeek(t) {
 		this._videoPlayer.fastSeek(Math.max(0, t));
@@ -9618,11 +9550,9 @@ var NicoVideoPlayer = class extends Emitter {
 		window.console.time("screenShotWithComment");
 		const fileName = this._getSaveFileName({ suffix: "C" });
 		const video = this._videoPlayer.videoElement;
-		const html = this._commentPlayer.getCurrentScreenHtml();
-		return VideoCaptureUtil.nicoVideoToCanvas({
-			video,
-			html
-		}).then(({ canvas }) => {
+		const overlay = this._commentPlayer.canvas;
+		return VideoCaptureUtil.videoToCanvas(video).then(({ canvas }) => {
+			if (overlay) canvas.getContext("2d")?.drawImage(overlay, 0, 0, canvas.width, canvas.height);
 			VideoCaptureUtil.saveToFile(canvas, fileName);
 			window.console.timeEnd("screenShotWithComment");
 		});
@@ -28955,7 +28885,6 @@ var { initialize } = (() => {
 	};
 	const initWorker = () => {
 		if (!location.host.endsWith(".nicovideo.jp")) return;
-		CommentLayoutWorker.getInstance();
 		ThumbInfoLoader.load("sm9");
 		console.time("init Workers");
 		return Promise.all([
@@ -28979,11 +28908,7 @@ var { initialize } = (() => {
 		const isWatch = await isWatchPage();
 		if (typeof Config.props.commentLanguage === "string") Config.props.commentLanguage = Config.props.commentLanguage.replace("_", "-").toLowerCase();
 		const hoverMenu = global.debug.hoverMenu = new HoverMenu({ playerConfig: Config });
-		await Promise.all([
-			NicoComment.offscreenLayer.get(Config),
-			global.emitter.promise("lit-html"),
-			initWorker()
-		]);
+		await Promise.all([global.emitter.promise("lit-html"), initWorker()]);
 		document.body.classList.toggle("is-watch", isWatch);
 		const dialog = initializeDialogPlayer(Config);
 		hoverMenu.setPlayer(dialog);
@@ -65652,7 +65577,7 @@ async function initializeHls() {
 				initDebug({
 					hlsConfig,
 					html: x,
-					render: D,
+					render: D$1,
 					ZenzaWatch
 				});
 				console.timeEnd("ZenzaWatch HLS");
@@ -65728,7 +65653,31 @@ async function startPlayer() {
 	if (location.hostname !== "www.nicovideo.jp") await NicoVideoApi.configBridge(Config);
 	await initialize();
 }})}}));
-System.register("./modernLazyload-zB7j3Iot-Bfuq3pOf.js", [],(function(){'use strict';return{execute:(function(){(() => {
+System.register("./modernLazyload-ByBNGgi5-BrQvFfLx.js", [],(function(){'use strict';return{execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+(() => {
 	const nicoWindow = window;
 	if (window !== top || location.host !== "www.nicovideo.jp") return;
 	const override = () => {
@@ -65826,7 +65775,31 @@ System.register("./modernLazyload-zB7j3Iot-Bfuq3pOf.js", [],(function(){'use str
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-ATawe6TV-Dpjl_kkZ.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistApiLoader-viYWpMNq-CQnJlTC1.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_pocket-CKfKlwet-6pDlhjev.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-BQxYKV91-CvKzGcyC.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 AntiPrototypeJs().then(() => {
 	const PRODUCT = "MylistPocket";
 	const monkey = (PRODUCT) => {
@@ -69222,7 +69195,31 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-viYWpMNq-CQnJlTC1.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);var PRODUCT$1 = "FutatsumeWatch";
+System.register("./MylistApiLoader-BQxYKV91-CvKzGcyC.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var PRODUCT$1 = "FutatsumeWatch";
 var gate = exports("g",() => {
 	const post = function(body, { type, token, sessionId, origin } = {}) {
 		sessionId = sessionId || "";
@@ -71095,7 +71092,31 @@ var MylistApiLoader = exports("M",(() => {
 	}
 	return new MylistApiLoader();
 })());})}}));
-System.register("./workerUtil-DSB24T8w-CeW7BdGX.js", ['./Emitter-DK5U5Km7-CqZ3w4gB.js'],(function(exports){'use strict';var EmitterInitFunc;return{setters:[function(module){EmitterInitFunc=module.a;}],execute:(function(){var PID = "PID";
+System.register("./workerUtil-BlKG5z7B-DzPTCpVf.js", ['./Emitter-Dgv1h9Zz-C7VdQTj3.js'],(function(exports){'use strict';var EmitterInitFunc;return{setters:[function(module){EmitterInitFunc=module.a;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var PID = "PID";
 var bcast = {};
 var portMap = {};
 var workerUtil = exports("w",(() => {
@@ -71567,7 +71588,31 @@ var workerUtil = exports("w",(() => {
 	};
 	return workerUtil;
 })());})}}));
-System.register("./_gamepad-CFTL9_xv-BV6P7JJt.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./lodash-BCVqxvO1-NnjNIe24.js','./jquery-CJc4kJ3v-BAibxNtt.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,require_lodash,require_jquery,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_gamepad-0FnwQg0v-DTUB_UMB.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,require_lodash,require_jquery,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 (async (window) => {
 	const monkey = (ZenzaWatch) => {
@@ -72873,7 +72918,31 @@ var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 	await ZenzaDetector.detect();
 	loadMonkey();
 })(globalThis ? globalThis.window : window);})}}));
-System.register("./_heatsync-DgM7kU8Q-Dypiasdv.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./lodash-BCVqxvO1-NnjNIe24.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,Emitter,require_lodash,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){Emitter=module.E;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_heatsync-D2ynjdKd-DhV5xEs9.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./lodash-iCWT3gA4-DPJF93lo.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Emitter,require_lodash,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){Emitter=module.E;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 (() => {
 	const PRODUCT = "HeatSync";
 	const monkey = function(PRODUCT) {
@@ -73767,7 +73836,31 @@ System.register("./_heatsync-DgM7kU8Q-Dypiasdv.js", ['./rolldown-runtime-DzKC14H
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-C4ImGhZJ-DHhnoLTk.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./___monkey.entry.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_setting-BoiiwbQo-4z3IlVaO.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-C47lAM86-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 ((window) => {
 	const monkey = async (PRODUCT) => {
 		const _ = import_lodash.default;
@@ -74204,13 +74297,6 @@ System.register("./_setting-C4ImGhZJ-DHhnoLTk.js", ['./rolldown-runtime-DzKC14H2
             </label>
           </div>
 
-          <div class="enableSlotLayoutEmulation control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="commentLayer.enableSlotLayoutEmulation">
-              Flash版のコメントスロット処理をエミュレーションする
-            </label>
-          </div>
-
           <div class="touch-tap2command control toggle">
             <label>
               2本指タッチ
@@ -74328,7 +74414,31 @@ System.register("./_setting-C4ImGhZJ-DHhnoLTk.js", ['./rolldown-runtime-DzKC14H2
 	};
 	ZenzaDetector.detect().then(() => loadGM());
 })(globalThis ? globalThis.window : window);})}}));
-System.register("./uQuery-Dj4-zXlk-0zQGXk8v.js", ['./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var PromiseHandler,Emitter,throttle;return{setters:[function(module){PromiseHandler=module.P;Emitter=module.E;},function(module){throttle=module.t;}],execute:(function(){var uQuery = exports("u",(() => {
+System.register("./uQuery-0YleMoyW-DFBvvOXK.js", ['./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var PromiseHandler,Emitter,throttle;return{setters:[function(module){PromiseHandler=module.P;Emitter=module.E;},function(module){throttle=module.t;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var uQuery = exports("u",(() => {
 	const endMap = /* @__PURE__ */ new WeakMap();
 	const emptyMap = /* @__PURE__ */ new Map();
 	const emptySet = /* @__PURE__ */ new Set();
@@ -74891,7 +75001,31 @@ System.register("./uQuery-Dj4-zXlk-0zQGXk8v.js", ['./Emitter-DK5U5Km7-CqZ3w4gB.j
 	return uQuery;
 })());
 var uq = exports("a",uQuery);})}}));
-System.register("./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js", ['./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(exports){'use strict';return{setters:[null],execute:(function(){var ZenzaDetector = exports("Z",(() => {
+System.register("./ZenzaDetector-BW2R4lUE-8oKWOkcI.js", ['./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(exports){'use strict';return{setters:[null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var ZenzaDetector = exports("Z",(() => {
 	const zenzaWindow = window;
 	const current = zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch;
 	const promise = current && current.ready ? Promise.resolve(current) : new Promise((resolve) => {
@@ -74906,7 +75040,31 @@ System.register("./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js", ['./MylistPocketDetector
 	});
 	return { detect: () => promise };
 })());})}}));
-System.register("./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js", [],(function(exports){'use strict';return{execute:(function(){var MylistPocketDetector = exports("M",(() => {
+System.register("./MylistPocketDetector-GLQNM3GT-O21KDJi8.js", [],(function(exports){'use strict';return{execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var MylistPocketDetector = exports("M",(() => {
 	const pocketWindow = window;
 	const promise = pocketWindow.MylistPocket && pocketWindow.MylistPocket.isReady ? Promise.resolve(pocketWindow.MylistPocket) : new Promise((resolve) => {
 		[window, document.body || document.documentElement].forEach((e) => e.addEventListener("MylistPocketInitialized", () => {
@@ -74915,7 +75073,31 @@ System.register("./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js", [],(function(expo
 	});
 	return { detect: () => promise };
 })());})}}));
-System.register("./lodash-BCVqxvO1-NnjNIe24.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js'],(function(exports){'use strict';var __commonJSMin;return{setters:[function(module){__commonJSMin=module.b;}],execute:(function(){var require_lodash = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module) => {
+System.register("./lodash-iCWT3gA4-DPJF93lo.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js'],(function(exports){'use strict';var __commonJSMin;return{setters:[function(module){__commonJSMin=module.b;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var require_lodash = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* @license
 	* Lodash <https://lodash.com/>
@@ -89503,7 +89685,31 @@ System.register("./lodash-BCVqxvO1-NnjNIe24.js", ['./rolldown-runtime-DzKC14H2-B
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-LAbuWGDX-BJt1zEM0.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./bounce-DKboHjjE-C9F5WYFP.js','./css-QMOlyvk3-BAtHmOgL.js','./jquery-CJc4kJ3v-BAibxNtt.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
+System.register("./_my4-mI92wI_O-C5Pdom2S.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-C47lAM86-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 ((window) => {
 	const { html } = html_exports;
 	const $ = import_jquery.default;
@@ -89659,7 +89865,31 @@ System.register("./_my4-LAbuWGDX-BJt1zEM0.js", ['./rolldown-runtime-DzKC14H2-Bpo
 	};
 	$(() => init());
 })(globalThis ? globalThis.window : window);})}}));
-System.register("./jquery-CJc4kJ3v-BAibxNtt.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js'],(function(exports){'use strict';var __commonJSMin;return{setters:[function(module){__commonJSMin=module.b;}],execute:(function(){var require_jquery = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module) => {
+System.register("./jquery-BTPTXiGT-DrgtaNFc.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js'],(function(exports){'use strict';var __commonJSMin;return{setters:[function(module){__commonJSMin=module.b;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var require_jquery = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/*!
 	* jQuery JavaScript Library v3.7.1
 	* https://jquery.com/
@@ -94349,7 +94579,31 @@ System.register("./jquery-CJc4kJ3v-BAibxNtt.js", ['./rolldown-runtime-DzKC14H2-B
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-QMOlyvk3-BAtHmOgL.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/**
+System.register("./css-C47lAM86-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+/**
 * @license
 * Copyright 2017 Google LLC
 * SPDX-License-Identifier: BSD-3-Clause
@@ -95172,7 +95426,31 @@ var css = exports("a",(() => {
 	};
 })());
 var cssUtil = exports("c",css);})}}));
-System.register("./Config-BA-Z-GaL-CZCLPk6c.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var __exportAll,Emitter,Handler,PromiseHandler,bounce;return{setters:[function(module){__exportAll=module._;},function(module){Emitter=module.E;Handler=module.H;PromiseHandler=module.P;},function(module){bounce=module.b;}],execute:(function(){function migrateConfig(storage, keys) {
+System.register("./Config-CesmpQk0-pkxmxyww.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,Emitter,Handler,PromiseHandler,bounce;return{setters:[function(module){__exportAll=module._;},function(module){Emitter=module.E;Handler=module.H;PromiseHandler=module.P;},function(module){bounce=module.b;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+function migrateConfig(storage, keys) {
 	const versionKey = "FutatsumeWatch_storageVersion";
 	if (storage.getItem(versionKey) === "1") return;
 	for (const key of keys) {
@@ -95758,7 +96036,6 @@ var Config = exports("t",(() => {
 		loadLinkedChannelVideo: false,
 		commentLayerOpacity: 1,
 		"commentLayer.textShadowType": "",
-		"commentLayer.enableSlotLayoutEmulation": false,
 		"commentLayer.ownerCommentShadowColor": "#008800",
 		"commentLayer.easyCommentOpacity": .5,
 		"commentLayer.aiCommentOpacity": .5,
@@ -95864,7 +96141,31 @@ Config.exportToFile = () => {
 		href: url
 	}).click();
 };})}}));
-System.register("./bounce-DKboHjjE-C9F5WYFP.js", ['./Emitter-DK5U5Km7-CqZ3w4gB.js'],(function(exports){'use strict';var PromiseHandler;return{setters:[function(module){PromiseHandler=module.P;}],execute:(function(){var bounce = exports("b",{
+System.register("./bounce-CPTmGP_1-DP3baqZ6.js", ['./Emitter-Dgv1h9Zz-C7VdQTj3.js'],(function(exports){'use strict';var PromiseHandler;return{setters:[function(module){PromiseHandler=module.P;}],execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var bounce = exports("b",{
 	origin: Symbol("origin"),
 	idle(func, time) {
 		let reqId = null;
@@ -95974,7 +96275,31 @@ throttle.idle = (func) => {
 	};
 	return result;
 };})}}));
-System.register("./Emitter-DK5U5Km7-CqZ3w4gB.js", [],(function(exports){'use strict';return{execute:(function(){exports("a",EmitterInitFunc);function EmitterInitFunc() {
+System.register("./Emitter-Dgv1h9Zz-C7VdQTj3.js", [],(function(exports){'use strict';return{execute:(function(){exports("a",EmitterInitFunc);/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+function EmitterInitFunc() {
 	class Handler {
 		constructor(...args) {
 			this._list = args;
@@ -96189,7 +96514,31 @@ System.register("./Emitter-DK5U5Km7-CqZ3w4gB.js", [],(function(exports){'use str
 	};
 }
 var { Handler, PromiseHandler, Emitter } = EmitterInitFunc(); exports({H:Handler,P:PromiseHandler,E:Emitter});})}}));
-System.register("./rolldown-runtime-DzKC14H2-BpoohWw6.js", [],(function(exports){'use strict';return{execute:(function(){var __create = Object.create;
+System.register("./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js", [],(function(exports){'use strict';return{execute:(function(){/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;

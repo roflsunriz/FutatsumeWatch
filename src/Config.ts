@@ -78,7 +78,6 @@ export interface ConfigProps {
   loadLinkedChannelVideo: boolean;
   commentLayerOpacity: number;
   'commentLayer.textShadowType': string;
-  'commentLayer.enableSlotLayoutEmulation': boolean;
   'commentLayer.ownerCommentShadowColor': string;
   'commentLayer.easyCommentOpacity': number;
   'commentLayer.aiCommentOpacity': number;
@@ -288,7 +287,6 @@ const Config = (() => {
 
     commentLayerOpacity: 1.0, //
     'commentLayer.textShadowType': '', // フォントの修飾タイプ
-    'commentLayer.enableSlotLayoutEmulation': false,
     'commentLayer.ownerCommentShadowColor': '#008800', // 投稿者コメントの影の色
     'commentLayer.easyCommentOpacity': 0.5, // かんたんコメントの透明度
     'commentLayer.aiCommentOpacity': 0.5, // かんたんコメントの透明度

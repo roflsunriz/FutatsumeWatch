@@ -48,9 +48,8 @@ class NicoChatGroup extends Emitter {
   addChat(nicoChat: NicoChat): void {
     this._members.push(nicoChat);
     nicoChat.group = this;
-
-    if (this._nicoChatFilter.isSafe(nicoChat)) {
-      this._filteredMembers.push(nicoChat);
+    this._filteredMembers = this._nicoChatFilter.applyFilter(this._members).slice();
+    if (this._filteredMembers.includes(nicoChat)) {
       this.emit('addChat', nicoChat);
     }
   }
@@ -59,13 +58,13 @@ class NicoChatGroup extends Emitter {
   }
   removeChat(nicoChat: NicoChat): void {
     const getChat = this._getChat(nicoChat);
-    this._members.splice(this._members.findIndex(getChat), 1);
+    const index =
+      this._members.indexOf(nicoChat) >= 0 ? this._members.indexOf(nicoChat) : this._members.findIndex(getChat);
+    if (index < 0) return;
+    this._members.splice(index, 1);
     nicoChat.group = this;
 
-    if (this._nicoChatFilter.isSafe(nicoChat)) {
-      this._filteredMembers.splice(this._filteredMembers.findIndex(getChat), 1);
-      this.onChange(null);
-    }
+    this.onChange(null);
   }
   get type(): string {
     return this._type;
@@ -74,7 +73,7 @@ class NicoChatGroup extends Emitter {
     if (this._filteredMembers.length > 0) {
       return this._filteredMembers;
     }
-    return (this._filteredMembers = this._nicoChatFilter.applyFilter(this._members));
+    return (this._filteredMembers = this._nicoChatFilter.applyFilter(this._members).slice());
   }
   get nonFilteredMembers(): NicoChat[] {
     return this._members;

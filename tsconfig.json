@@ -7,6 +7,8 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    // comment-overlay 4.1.6 の公開 d.ts に残る内部 alias を実際の型定義へ解決する。
+    "paths": { "@/*": ["./node_modules/comment-overlay/dist/types/*"] },
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,

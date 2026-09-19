@@ -1,6 +1,7 @@
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
+import { verifyCommentOverlay } from './dev-verify-comments';
 
 const outputDir = new URL('../dev-assets/verification/', import.meta.url);
 const urlIndex = Bun.argv.indexOf('--url');
@@ -42,6 +43,7 @@ async function main(): Promise<void> {
   if (!target) throw new Error('検証用タブがありません');
   const session = await attach(target);
   const failures: string[] = [];
+  const workerSubscriptions = new Set<Promise<unknown>>();
   const report = { url: watchUrl, checks, failures, completed: false };
   session.onEvent((method, params) => {
     if (method === 'Runtime.exceptionThrown') {
@@ -51,10 +53,14 @@ async function main(): Promise<void> {
         failures.push(message.slice(0, 800));
     }
     if (method === 'Target.attachedToTarget') {
-      void session.send('Target.sendMessageToTarget', {
+      const subscription = session.send('Target.sendMessageToTarget', {
         sessionId: params.sessionId,
         message: JSON.stringify({ id: 1, method: 'Runtime.enable' }),
       });
+      workerSubscriptions.add(subscription);
+      void subscription
+        .catch((error: unknown) => failures.push(String(error)))
+        .finally(() => workerSubscriptions.delete(subscription));
     }
     if (method === 'Target.receivedMessageFromTarget') {
       const child = JSON.parse(String(params.message)) as {
@@ -68,6 +74,12 @@ async function main(): Promise<void> {
   try {
     await session.send('Page.enable');
     await session.send('Runtime.enable');
+    if (Bun.argv.includes('--bundle')) {
+      const source = await Bun.file(new URL('../dist/FutatsumeWatch.user.js', import.meta.url)).text();
+      await session.send('Page.addScriptToEvaluateOnNewDocument', {
+        source: `document.addEventListener('DOMContentLoaded', () => { ${source}\n }, {once:true});`,
+      });
+    }
     await session.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: false });
     await session.send('Emulation.setDeviceMetricsOverride', {
       width: 1280,
@@ -80,7 +92,7 @@ async function main(): Promise<void> {
     await until(
       session,
       `!!${root}?.ready && ${root} === window.ZenzaWatch && !!document.querySelector('#zenzaVideoPlayerDialog')`,
-      'マネージャ経由の初期化・互換名・プレイヤー生成'
+      `${Bun.argv.includes('--bundle') ? '配布物注入' : 'マネージャ経由'}の初期化・互換名・プレイヤー生成`
     );
     await until(session, `!!document.querySelector('[data-futatsume-open]')`, '動画ページの再生導線');
     await clickVisible(session, '[data-futatsume-open]');
@@ -91,9 +103,10 @@ async function main(): Promise<void> {
     );
     await until(
       session,
-      `${root}.debug.nicoCommentPlayer?._model?.nakaGroup?.members.length > 0 && ${root}.debug.nicoCommentPlayer?._view?._domTable.size > 0`,
+      `(() => { const r=${root}.debug.nicoCommentPlayer?._view?.renderer; const c=r?.canvas; return r?.comments.length>0 && r.activeComments.size>0 && c?.width>0 && c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0); })()`,
       'コメント取得・解析・画面描画'
     );
+    checks.push(...(await verifyCommentOverlay(session)));
     await click(session, 'togglePlay');
     await until(session, `${video}.paused`, '再生ボタンで一時停止', 5000);
     await exec(session, 'seek', 30);
@@ -225,6 +238,13 @@ async function main(): Promise<void> {
       mobile: false,
     });
     await exec(session, 'close');
+    await Bun.sleep(300);
+    await until(
+      session,
+      `${root}.debug.nicoCommentPlayer._view.renderer === null && !document.querySelector('[data-futatsume-comment-canvas]')`,
+      '閉じるとCanvasと描画処理を解放し、遅延通知でも再生成しない',
+      5000
+    );
     await until(
       session,
       `!document.body.classList.contains('showNicoVideoPlayerDialog') && getComputedStyle(document.querySelector('[data-futatsume-open]')).display !== 'none'`,
@@ -241,6 +261,8 @@ async function main(): Promise<void> {
       `!!${root}?.ready && ${root}.config.getValue('${setting}') === ${String(oldSetting)} && !!document.querySelector('[data-futatsume-open]')`,
       '再読み込み後の初期化と設定保持'
     );
+    await session.send('Target.setAutoAttach', { autoAttach: false, waitForDebuggerOnStart: false, flatten: false });
+    await Promise.all(workerSubscriptions);
     if (failures.length) throw new Error(`製品またはWorkerの未処理例外: ${failures.join('\n')}`);
     report.completed = true;
     console.log(`実測検証に合格しました（${checks.length}項目）`);

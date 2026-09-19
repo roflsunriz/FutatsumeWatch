@@ -1,177 +1,77 @@
-import * as _ from 'lodash';
 import { global } from './FutatsumeWatchIndex';
-import { Config, PopupMessage, VideoCaptureUtil } from './util';
-import { NicoScripter } from '../packages/zenza/src/commentLayer/NicoScripter';
-import { SlotLayoutWorker } from '../packages/zenza/src/commentLayer/SlotLayoutWorker';
-import { Emitter } from './baselib';
-import { bounce } from '../packages/lib/src/infra/bounce';
-import { sleep } from '../packages/lib/src/infra/sleep';
+import { Emitter } from '../packages/lib/src/Emitter';
+import { NicoComment, type SetChatsOptions } from '../packages/zenza/src/commentLayer/NicoComment';
+import { NicoChat, type NicoChatType } from '../packages/zenza/src/commentLayer/NicoChat';
+import { CommentOverlayView, type CommentMedia } from './comment-overlay-view';
 
-import { CommentLayer } from '../packages/zenza/src/commentLayer/CommentLayer';
-import { NicoChatFilter } from '../packages/zenza/src/commentLayer/NicoChatFilter';
-import { NicoTextParser } from '../packages/zenza/src/commentLayer/NicoTextParser';
-import { NicoChat } from '../packages/zenza/src/commentLayer/NicoChat';
-import { NicoChatViewModel } from '../packages/zenza/src/commentLayer/NicoChatViewModel';
-import { OffscreenLayer } from '../packages/zenza/src/commentLayer/OffscreenLayer';
-import { NicoChatCss3View } from '../packages/zenza/src/commentLayer/NicoChatCss3View';
-import { NicoChatGroup } from '../packages/zenza/src/commentLayer/NicoChatGroup';
-import { NicoChatGroupViewModel } from '../packages/zenza/src/commentLayer/NicoChatGroupViewModel';
-import { NicoComment } from '../packages/zenza/src/commentLayer/NicoComment';
-import { NicoCommentViewModel } from '../packages/zenza/src/commentLayer/NicoCommentViewModel';
-import { NicoCommentCss3PlayerView } from '../packages/zenza/src/commentLayer/NicoCommentCss3PlayerView';
-import type { ConfigStore } from './Config';
-
-interface CommentPlayerEmitter {
-  on(event: string, listener: (...args: unknown[]) => void): unknown;
-  emit(event: string, ...args: unknown[]): unknown;
-  emitResolve(...args: unknown[]): unknown;
+export type CommentPlayerOptions = SetChatsOptions;
+// 既存の設定ブリッジはキーを動的に指定する。
+export interface CommentPlayerChatFilter {
+  [key: string]: unknown;
 }
-
-interface CommentPlayerEmitterCtor {
-  new (): CommentPlayerEmitter;
-}
-
-export interface CommentPlayerOptions {
-  format?: string;
-}
-
 export interface CommentPlayerParams {
   playbackRate?: number;
   showComment?: boolean;
   commentOpacity?: number;
+  filter?: ConstructorParameters<typeof NicoComment>[0]['filter'];
+  media?: CommentMedia;
 }
 
-export interface CommentPlayerChatFilter {
-  [key: string]: unknown;
-}
+class NicoCommentPlayer extends Emitter {
+  readonly _model: NicoComment;
+  readonly _view: CommentOverlayView;
+  private generation = 0;
 
-export interface CommentPlayerModel {
-  on(event: string, listener: (...args: unknown[]) => void): unknown;
-  setData(data: unknown, options: CommentPlayerOptions): void;
-  setXml(doc: Document, options: CommentPlayerOptions): void;
-  setThreads(data: unknown, options: CommentPlayerOptions): void;
-  addChat(chat: unknown): void;
-  removeChat(chat: unknown): void;
-  clear(): void;
-  currentTime: number;
-  filter: CommentPlayerChatFilter;
-  chatList: unknown;
-  nonfilteredChatList: unknown;
-}
-
-export interface CommentPlayerViewModel {
-  export(): unknown;
-}
-
-export interface CommentPlayerView {
-  refresh(): void;
-  show(): void;
-  hide(): void;
-  clear(): void;
-  export(): unknown;
-  getCurrentScreenHtml(): unknown;
-  playbackRate: number;
-  setAspectRatio(ratio: number): void;
-  appendTo(node: Node): void;
-}
-
-interface CommentPlayerModelCtor {
-  new (params: CommentPlayerParams): CommentPlayerModel;
-}
-
-interface CommentPlayerViewModelCtor {
-  new (model: CommentPlayerModel): CommentPlayerViewModel;
-}
-
-interface CommentPlayerViewCtor {
-  new (options: {
-    viewModel: CommentPlayerViewModel;
-    playbackRate?: number;
-    show?: boolean;
-    opacity?: number;
-  }): CommentPlayerView;
-}
-
-interface CommentPlayerChatCtor {
-  create(data: Record<string, unknown>): unknown;
-}
-
-interface CommentPlayerSpeedRateHolder {
-  SPEED_RATE: number;
-  emitter: { emit(event: string, ...args: unknown[]): unknown };
-}
-//===BEGIN===
-//@require NicoTextParser
-//@require CommentLayer
-
-//@require NicoChat
-//@require NicoChatViewModel
-//@require NicoChatCss3View
-//@require NicoChatFilter
-
-class NicoCommentPlayer extends (Emitter as unknown as CommentPlayerEmitterCtor) {
-  private _model!: CommentPlayerModel;
-  private _viewModel!: CommentPlayerViewModel;
-  private _view!: CommentPlayerView;
   constructor(params: CommentPlayerParams) {
     super();
-
-    this._model = new (NicoComment as unknown as CommentPlayerModelCtor)(params);
-    this._viewModel = new (NicoCommentViewModel as unknown as CommentPlayerViewModelCtor)(this._model);
-    this._view = new (NicoCommentCss3PlayerView as unknown as CommentPlayerViewCtor)({
-      viewModel: this._viewModel,
-      playbackRate: params.playbackRate,
-      show: params.showComment,
-      opacity: _.isNumber(params.commentOpacity) ? params.commentOpacity : 1.0,
+    this._model = new NicoComment(params);
+    this._view = new CommentOverlayView(this._model, params);
+    this._model.on('change', () => {
+      this._view.refresh();
+      this.emit('change');
     });
-
-    const onCommentChange = _.throttle(this._onCommentChange.bind(this), 1000);
-    this._model.on('change', onCommentChange);
-    this._model.on('filterChange', this._onFilterChange.bind(this));
-    this._model.on('parsed', this._onCommentParsed.bind(this));
-    this._model.on('command', this._onCommand.bind(this));
-    global.emitter.on('commentLayoutChange', onCommentChange);
-
+    this._model.on('filterChange', (filter) => this.emit('filterChange', filter));
+    this._model.on('parsed', () => {
+      this._view.refresh();
+      this.emit('parsed');
+    });
+    this._model.on('command', (command, param) => this.emit('command', command, param));
     global.debug.nicoCommentPlayer = this;
-    this.emitResolve('GetReady!');
+    void this.emitResolve('GetReady!');
   }
-  setComment(data: unknown, options: CommentPlayerOptions): void {
-    if (typeof data === 'string') {
-      if (options.format === 'json') {
-        this._model.setData(JSON.parse(data) as unknown, options);
-      } else {
-        this._model.setXml(new DOMParser().parseFromString(data, 'text/xml'), options);
+  setComment(data: unknown, options: CommentPlayerOptions = {}): void {
+    const generation = ++this.generation;
+    // データ境界は既存パーサーへ集約する。描画側へ未検証オブジェクトを渡さない。
+    try {
+      this._view.open();
+      if (typeof data === 'string') {
+        data =
+          options.format === 'json' ? (JSON.parse(data) as unknown) : new DOMParser().parseFromString(data, 'text/xml');
       }
-    } else if (typeof (data as { getElementsByTagName?: unknown }).getElementsByTagName === 'function') {
-      this._model.setXml(data as Document, options);
-    } else if (options.format === 'threads') {
-      this._model.setThreads(data, options);
-    } else {
-      this._model.setData(data, options);
-    }
-  }
-  _onCommand(command: unknown, param: unknown): void {
-    this.emit('command', command, param);
-  }
-  _onCommentChange(e: unknown): void {
-    console.log('onCommentChange', e);
-    if (this._view) {
-      setTimeout(() => this._view.refresh(), 0);
-    }
-    this.emit('change');
-  }
-  _onFilterChange(nicoChatFilter: unknown): void {
-    this.emit('filterChange', nicoChatFilter);
-  }
-  _onCommentParsed(): void {
-    this.emit('parsed');
-  }
-  getMymemory(): unknown {
-    if (!this._view) {
-      this._view = new (NicoCommentCss3PlayerView as unknown as CommentPlayerViewCtor)({
-        viewModel: this._viewModel,
+      let parsed: Promise<void>;
+      if (data instanceof Document || (typeof data === 'object' && data !== null && 'getElementsByTagName' in data)) {
+        parsed = this._model.setXml(data as Document, { ...options, format: 'xml' });
+      } else if (options.format === 'threads') {
+        parsed = this._model.setThreads(data as Parameters<NicoComment['setThreads']>[0], options);
+      } else {
+        parsed = this._model.setData(data as Parameters<NicoComment['setData']>[0], options);
+      }
+      void parsed.catch((error: unknown) => {
+        if (generation === this.generation) this.reportError(error);
       });
+    } catch (error) {
+      this.reportError(error);
     }
+  }
+  private reportError(error: unknown): void {
+    console.error('FutatsumeWatch comment-overlay:', error);
+    this.emit(
+      'command',
+      'notify',
+      `コメントを読み込めませんでした: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+  getMymemory(): string {
     return this._view.export();
   }
   set currentTime(sec: number) {
@@ -180,127 +80,76 @@ class NicoCommentPlayer extends (Emitter as unknown as CommentPlayerEmitterCtor)
   get currentTime(): number {
     return this._model.currentTime;
   }
-  set vpos(vpos: number) {
-    this._model.currentTime = vpos / 100;
+  set vpos(value: number) {
+    this.currentTime = value / 100;
   }
   get vpos(): number {
-    return this._model.currentTime * 100;
+    return this.currentTime * 100;
   }
-
-  setVisibility(v: boolean): void {
-    if (v) {
-      this._view.show();
-    } else {
-      this._view.hide();
-    }
+  setVisibility(visible: boolean): void {
+    this._view.setVisibility(visible);
   }
-  addChat(text: string, cmd: string, vpos?: number, options?: Record<string, unknown>): unknown {
-    if (typeof vpos !== 'number') {
-      vpos = this.vpos;
-    }
-    const nicoChat = (NicoChat.create as unknown as CommentPlayerChatCtor['create'])(
-      Object.assign({ text, cmd, vpos }, options)
-    );
-    this._model.addChat(nicoChat);
-
-    return nicoChat;
+  addChat(text: string, cmd: string, vpos = this.vpos, options: Record<string, unknown> = {}): NicoChatType {
+    const chat = NicoChat.create({ text, cmd, vpos, ...options });
+    this._model.addChat(chat);
+    this._view.refresh();
+    return chat;
   }
-  removeChat(nicoChat: unknown): void {
-    this._model.removeChat(nicoChat);
+  removeChat(chat: unknown): void {
+    if (!(chat instanceof NicoChat)) return;
+    this._model.removeChat(chat);
+    this._view.refresh();
   }
-  set playbackRate(v: number) {
-    if (this._view) {
-      this._view.playbackRate = v;
-    }
+  set playbackRate(value: number) {
+    this._view.playbackRate = value;
   }
   get playbackRate(): number {
-    if (this._view) {
-      return this._view.playbackRate;
-    }
-    return 1;
+    return this._view.playbackRate;
+  }
+  mediaEvent(name: string): void {
+    this._view.mediaEvent(name);
   }
   setAspectRatio(ratio: number): void {
     this._view.setAspectRatio(ratio);
   }
   appendTo(node: Node): void {
+    if (!(node instanceof HTMLElement)) throw new TypeError('コメント描画先がHTMLElementではありません');
     this._view.appendTo(node);
   }
   show(): void {
-    this._view.show();
+    this.setVisibility(true);
   }
   hide(): void {
-    this._view.hide();
+    this.setVisibility(false);
   }
   close(): void {
+    this.generation++;
     this._model.clear();
-    if (this._view) {
-      this._view.clear();
-    }
+    this._view.close();
   }
   get filter(): CommentPlayerChatFilter {
-    return this._model.filter;
+    return this._model.filter as unknown as CommentPlayerChatFilter;
   }
-  // getChatList() {return this._model.getChatList();}
-  get chatList(): unknown {
+  get chatList(): NicoComment['chatList'] {
     return this._model.chatList;
   }
-  /**
-   * NGフィルタなどのかかってない全chatを返す
-   */
-  get nonfilteredChatList(): unknown {
-    return this._model.nonfilteredChatList;
+  get nonFilteredChatList(): NicoComment['nonFilteredChatList'] {
+    return this._model.nonFilteredChatList;
   }
-  // getNonfilteredChatList() {return this._model.getNonfilteredChatList();}
-  export(): unknown {
-    return this._viewModel.export();
+  get nonfilteredChatList(): NicoComment['nonFilteredChatList'] {
+    return this.nonFilteredChatList;
   }
-  getCurrentScreenHtml(): unknown {
+  export(): string {
+    return this._view.exportXml();
+  }
+  getCurrentScreenHtml(): string {
     return this._view.getCurrentScreenHtml();
+  }
+  get canvas(): HTMLCanvasElement | null {
+    return this._view.renderer?.canvas ?? null;
   }
 }
 
-//@require NicoComment
-//@require OffscreenLayer
-(NicoComment as unknown as { offscreenLayer: unknown }).offscreenLayer = (
-  OffscreenLayer as unknown as (config: ConfigStore) => unknown
-)(Config);
-//@require NicoCommentViewModel
-//@require NicoChatGroup
-//@require NicoChatGroupViewModel
+Object.assign(global.debug, { NicoChat });
 
-const updateSpeedRate = (): void => {
-  const speedRateHolder = NicoChatViewModel as unknown as CommentPlayerSpeedRateHolder;
-  let rate = Config.props.commentSpeedRate * 1;
-  if (Config.props.autoCommentSpeedRate) {
-    rate = rate / Math.max(Config.props.playbackRate, 1);
-  }
-  // window.console.info('updateSpeedRate', rate, Config.getValue('commentSpeedRate'), NicoChatViewModel.SPEED_RATE);
-  if (rate !== speedRateHolder.SPEED_RATE) {
-    speedRateHolder.SPEED_RATE = rate;
-    speedRateHolder.emitter.emit('updateCommentSpeedRate', rate);
-  }
-};
-Config.onkey('commentSpeedRate', updateSpeedRate);
-Config.onkey('autoCommentSpeedRate', updateSpeedRate);
-Config.onkey('playbackRate', updateSpeedRate);
-updateSpeedRate();
-
-//@require NicoCommentCss3PlayerView
-
-Object.assign(global.debug, {
-  NicoChat,
-  NicoChatViewModel,
-});
-//===END===
-
-export {
-  NicoCommentPlayer,
-  NicoComment,
-  NicoCommentViewModel,
-  NicoChatGroup,
-  NicoChatGroupViewModel,
-  NicoChat,
-  NicoChatViewModel,
-  NicoCommentCss3PlayerView,
-  NicoChatFilter,
-};
+export { NicoCommentPlayer, NicoComment, NicoChat };

@@ -96,3 +96,14 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 起動用ポップアップは利用者の指定で廃止した。視聴ページはh1を含むタイトルの枝と、data-anchor-area=video_informationを持つ投稿者プロフィールの枝が分かれる最も近い行を探し、投稿者側の直前にアイコンを置く。生成クラスや固定座標を使わない。検索結果も同じ二つの四角形のSVGだけを表示する。
 - 状態と版の導入確認用data-futatsume-entryはhead内の非表示metaへ移した。これを可視UIと判定しない。準備中・失敗はボタンのdisabled/data-state/title/aria-labelに反映する。検索ページに視聴用ボタンは残さない。
 - TM確認タブは作成直後にボタンがないことがあるため、承認ボタンが操作可能になるまで上限10秒で待つ。
+
+## コメントエンジン（2026-09-20、0.0.4）
+
+- npm名は`comment-overlay`（roflsunriz/comment-overlay）、採用版はpackage.jsonとbun.lockを正本とする。4.1.6のd.tsに残る`@/*`をtsconfigでパッケージ内の型定義へ解決する。型の代用品やanyに置き換えない。公開型が修正されたらpathsを再確認する。
+- NicoComment/NicoChat/NicoChatFilter/NicoScripterは解析・一覧・NG・投稿者命令用。旧CSS描画、文字計測iframe、レイアウトWorkerは除去済み。配置・衝突・文字計測は新エンジンに任せる。動画終端をNicoChat側で再補正しない。
+- VideoPlayerのaspectRatioFixはheight/width。新描画面では逆数を使う。全画面の親要素へCanvasを拡大せず、動画の実際の比率で内側のsurfaceを縮める。重なりは既存commentLayerFrameのCSSに従う。Canvasの画素だけで可視表示を合格にしない。
+- HTML5（shadow DOM内）とYouTubeの時計をCommentMediaで共有し、再生しないHTMLVideoElementへ時刻・イベントを橋渡しする。closeはdestroyし、保留中のモデル通知や設定変更で再生成しない。setCommentで再初期化する。
+- comment-overlay-dataの表示補助とcomment-overlay-timingの投稿者秒数補助は、保存HTMLでも使う自己完結関数。toString後の自由変数を増やさず、scripts/dev-verify-comment-exports.tsで実ビルドの保存HTMLを通信遮断して検証する。パッケージのLICENSEは配布物・保存HTMLに同梱する。
+- 空配列のフィルター結果が元配列と同じ実体だと、投稿時に二重追加される。NicoChatGroupはコピーを保持する。取得後の非フィルター一覧と描画用一覧を混同しない。
+- scripts/dev-verify.tsはコメントCanvasの画素・重なり・比率・NG・投稿プレビュー取り消し・全画面・保存まで検証する。FUTATSUME_DEV_PORTで別ポートへ接続でき、--bundleは配布物を文書生成時に注入する（マネージャ導入検証とは区別する）。今回の環境・制約はverification.mdを参照する。
+- buildはdistを一旦空にし、futatsume-branding.test.tsはdistの実ファイルを読むため、buildとtestを並列実行しない。ビルド完了後に単体テストを実行する。

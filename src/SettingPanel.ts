@@ -604,7 +604,7 @@ SettingPanel.__tpl__ = `
                 <option value="1" selected>標準</option>
                 <option value="1.2">1.2倍</option>
                 <option value="1.5">1.5倍</option>
-                <option value="2.0"2倍</option>
+                <option value="2.0">2倍</option>
             </select>
             コメントの速度(倍率)<br>
               <small>※ コメントのレイアウトが一部崩れます</small>
@@ -624,7 +624,6 @@ SettingPanel.__tpl__ = `
           data-setting-name="baseFontFamily">
 
         <p>投稿者コメントの影の色</p>
-        <span class="info">※ リロード後に反映</span>
         <input type="text" class="textInput" pattern="(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{6}|^[a-zA-Z]+$)"
           data-setting-name="commentLayer.ownerCommentShadowColor">
 
