@@ -20,7 +20,10 @@ import { NicoSearchApiV2Loader } from '../packages/lib/src/nico/VideoSearch';
 import { TextLabel } from '../packages/lib/src/ui/TextLabel';
 import { WindowResizeObserver } from '../packages/lib/src/infra/Observable';
 import { cssUtil } from '../packages/lib/src/css/css';
-import { installWatchEntry } from './watch-entry';
+
+export function openVideo(watchId: string): unknown {
+  return (FutatsumeWatch.external.open as (id: string) => unknown)(watchId);
+}
 
 export async function startPlayer(): Promise<void> {
   if (window !== window.top) {
@@ -65,5 +68,4 @@ export async function startPlayer(): Promise<void> {
   global.emitter.emitResolve('lit-html', dll.lit);
   if (location.hostname !== 'www.nicovideo.jp') await loaders.NicoVideoApi.configBridge(Config);
   await initialize();
-  installWatchEntry((watchId) => (FutatsumeWatch.external.open as (id: string) => unknown)(watchId));
 }

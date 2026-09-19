@@ -5,6 +5,8 @@
 //   bun scripts/dev-install.ts [--file FutatsumeWatch-dev.user.js]
 
 import { attach, attachBrowser, evaluate, listTargets, waitFor } from './dev-cdp';
+import { checkInstallation, confirmAfterNavigation } from './dev-check-installation';
+import { VERSION } from '../src/version';
 
 const DIST = `${import.meta.dir}/../dist`;
 const SERVE_PORT = 9343;
@@ -129,6 +131,7 @@ try {
       `(() => {
         const row = [...document.querySelectorAll('tr.scripttr')].find(e => e.querySelector('.script_name')?.textContent?.trim() === 'FutatsumeWatch');
         if (!row) return 'not-found';
+        if (row.querySelector('.script_version')?.textContent?.trim() !== ${JSON.stringify(VERSION)}) return 'version-mismatch';
         const toggle = row.querySelector('.enabler');
         if (!toggle) return 'no-toggle';
         if (!toggle.classList.contains('enabler_enabled')) toggle.click();
@@ -141,6 +144,34 @@ try {
     }
   } finally {
     dashSession.close();
+  }
+  await checkInstallation();
+  for (const target of (await listTargets()).filter(
+    (target) => target.type === 'page' && target.url.startsWith('https://www.nicovideo.jp/')
+  )) {
+    const page = await attach(target);
+    try {
+      const version = await evaluate(
+        page,
+        `document.querySelector('[data-futatsume-entry]')?.dataset.futatsumeVersion`
+      );
+      if (version === VERSION) continue;
+      const editing = await evaluate(page, `document.activeElement?.matches('input,textarea,[contenteditable=true]')`);
+      if (editing) {
+        console.log('入力中のニコニコタブは保護しました。入力完了後に再読み込みしてください。');
+      } else {
+        await page.send('Page.reload');
+      }
+    } catch (error) {
+      if (
+        !(error instanceof Error) ||
+        !/CDP connection closed|context.*destroyed|Cannot find context/i.test(error.message)
+      )
+        throw error;
+      await confirmAfterNavigation(target.id);
+    } finally {
+      page.close();
+    }
   }
 } finally {
   await server.stop();

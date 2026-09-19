@@ -82,3 +82,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - test/fixtures/cdpにはsm9から採取したHTML・API・コメント・m3u8を保持する。映像セグメント、広告、環境依存nicocachenl.test、署名クエリは含めない。
 - access-rightsとpublic.nvcommentのコメント取得はPOST。GETへ置き換えると照合しない。コメントの打ち切りは完全なコメント単位としJSON妥当性を保つ。
 - 未登録リクエストはoffline.tsで外部へ出さず失敗させる。実行済み検証・制約・再開条件はverification.md、配布と復旧はhow-to-update.mdを正本とする。
+
+## 導線の確認漏れからの修正（2026-09-20）
+
+- 利用者のbun run devで、既存タブの本体未実行を実測した。同じheaded Chromeの新規文書では実行され、既存タブも再読み込みで回復した。拡張の登録タイミングを原因と断定せず、登録/有効化と文書への適用を分けて検証する。dev-installは版表示を持つ起動パネルを新規文書で確認し、未適用・旧版のニコニコタブを再読み込みする（入力中は保護）。
+- 旧watch-entryはinitialize完了時に一度だけ/watch/を判定していたため、検索→視聴のSPA遷移では入口が作られなかった。現在はmainの早い段階で状態パネルを作り、リンク・pushState/replaceState/popstateの変化に追従する。検索結果には明示的な再生ボタンを置く。
+- DOMに入口があるだけ、JavaScriptのclick()が成功しただけを可視操作確認と呼ばない。dev-ui.tsで寸法・表示状態・ヒットテストを確認し、Input.dispatchMouseEventでクリックする。NicoCacheのサムネイルプレビュー等が重なる場合も覆われた点を強制クリックしない。
+- scripts/dev-verify-entry.tsはキーワード検索・タグ検索・通常リンクによるSPA遷移・視聴ページの起動・戻る・戻った後の再生を実際の画面操作で検証する。
+- WatchPageHistoryのpopstate時には遅延復元を取り消し、遷移先を保存してからプレイヤーを閉じる。history.stateをnullで壊さない。

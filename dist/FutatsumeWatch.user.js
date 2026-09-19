@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.1
+// @version      0.0.2
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。動画ページで再生・コメント・プレイリストを操作できます。初期化と単一ファイル配布を修正。
+// @description  ニコニコ動画の外付けプレイヤー。視聴ページ右下・検索結果のFWで再生ボタンから起動。再生・コメント・プレイリストを操作できます。ページ内遷移と導入確認を修正。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -76,17 +76,202 @@ System.register("./___monkey.entry.js", [],(function(exports,module){'use strict
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
+var VERSION = exports("V","0.0.2");
+function watchIdFromUrl(value, base = location.href) {
+	try {
+		const url = new URL(value, base);
+		return url.hostname === "www.nicovideo.jp" ? /^\/watch\/((?:[a-z]{2})?\d+)\/?$/.exec(url.pathname)?.[1] ?? null : null;
+	} catch {
+		return null;
+	}
+}
+function installWatchEntry() {
+	const words = navigator.language.startsWith("ja") ? {
+		loading: "プレイヤーを準備しています…",
+		ready: "再生できます",
+		watch: "この動画をFutatsumeWatchで再生",
+		search: "動画タイトル横の「FWで再生」を押してください。",
+		action: "FWで再生",
+		reload: "再読み込み",
+		failed: "起動できませんでした。再読み込みしても直らない場合は、この表示を添えてお知らせください。"
+	} : {
+		loading: "Preparing the player…",
+		ready: "Ready to play",
+		watch: "Play this video in FutatsumeWatch",
+		search: "Choose “Play with FW” beside a video title.",
+		action: "Play with FW",
+		reload: "Reload",
+		failed: "The player could not start. Reload the page; if this continues, report the message below."
+	};
+	let openVideo;
+	let state = "starting";
+	let scheduled;
+	const mounted = /* @__PURE__ */ new Map();
+	const panel = document.createElement("aside");
+	panel.dataset.futatsumeEntry = "";
+	panel.dataset.futatsumeVersion = VERSION;
+	panel.dataset.state = state;
+	panel.setAttribute("aria-label", "FutatsumeWatch");
+	const title = document.createElement("strong");
+	title.textContent = `FutatsumeWatch ${VERSION}`;
+	const status = document.createElement("span");
+	status.setAttribute("role", "status");
+	status.textContent = words.loading;
+	const hint = document.createElement("p");
+	const button = document.createElement("button");
+	button.type = "button";
+	button.dataset.futatsumeOpen = "";
+	button.textContent = words.watch;
+	button.disabled = true;
+	const reload = document.createElement("button");
+	reload.type = "button";
+	reload.dataset.futatsumeReload = "";
+	reload.textContent = words.reload;
+	reload.hidden = true;
+	reload.addEventListener("click", () => location.reload());
+	const open = (id) => {
+		if (!openVideo || state !== "ready") return;
+		document.querySelectorAll("video").forEach((video) => {
+			if (!video.closest("#zenzaVideoPlayerDialog")) video.pause();
+		});
+		openVideo(id);
+	};
+	button.addEventListener("click", () => {
+		const id = watchIdFromUrl(location.href);
+		if (id) open(id);
+	});
+	panel.append(title, status, hint, button, reload);
+	const style = document.createElement("style");
+	style.textContent = `
+    [data-futatsume-entry]{position:fixed;right:12px;bottom:12px;z-index:99999;box-sizing:border-box;width:300px;max-width:calc(100vw - 24px);padding:12px;border:1px solid #4acac0;border-radius:8px;background:#153b39;color:#fff;font:14px/1.5 sans-serif;box-shadow:0 3px 14px #0005;text-align:left}
+    [data-futatsume-entry]>strong,[data-futatsume-entry]>[role=status]{display:block}
+    [data-futatsume-entry]>[role=status]{font-size:12px;color:#b7ebe4}
+    [data-futatsume-entry]>p{margin:6px 0;overflow-wrap:anywhere}
+    [data-futatsume-entry] button,[data-futatsume-video]{box-sizing:border-box;border:1px solid #33877e;border-radius:5px;background:#e9fff9;color:#123e38;font:600 13px/1.4 sans-serif;cursor:pointer;padding:6px 10px}
+    [data-futatsume-entry] button:disabled,[data-futatsume-video]:disabled{opacity:.6;cursor:wait}
+    [data-futatsume-entry] [hidden]{display:none}
+    [data-futatsume-video]{display:inline-block;margin:4px 6px 4px 0;position:relative;z-index:2;vertical-align:middle;max-width:100%}
+    body.showNicoVideoPlayerDialog [data-futatsume-entry]{display:none}
+  `;
+	document.head.append(style);
+	document.body.append(panel);
+	const update = () => {
+		scheduled = void 0;
+		if (!panel.isConnected) document.body.append(panel);
+		const isWatch = watchIdFromUrl(location.href) !== null;
+		button.hidden = !isWatch;
+		if (state !== "failed") {
+			const message = isWatch ? "" : words.search;
+			if (hint.textContent !== message) hint.textContent = message;
+		}
+		for (const [link, control] of mounted) {
+			const id = watchIdFromUrl(link.href);
+			if (!link.isConnected || !id || isWatch || link.closest("#zenzaVideoPlayerDialog")) {
+				control.remove();
+				mounted.delete(link);
+			} else if (control.dataset.futatsumeVideo !== id) control.dataset.futatsumeVideo = id;
+		}
+		if (isWatch) return;
+		for (const link of document.querySelectorAll("a[href*=\"/watch/\"]")) {
+			const id = watchIdFromUrl(link.href);
+			if (!id || !link.textContent?.trim() || link.querySelector("img") || link.closest("#zenzaVideoPlayerDialog, #mylistPocket-popup, [data-futatsume-entry]")) continue;
+			const existing = mounted.get(link);
+			const label = `${words.watch}: ${link.textContent.trim()}`;
+			if (existing?.isConnected) {
+				if (existing.title !== label) {
+					existing.title = label;
+					existing.setAttribute("aria-label", label);
+				}
+				continue;
+			}
+			existing?.remove();
+			const control = document.createElement("button");
+			control.type = "button";
+			control.dataset.futatsumeVideo = id;
+			control.textContent = words.action;
+			control.title = label;
+			control.setAttribute("aria-label", label);
+			control.disabled = state !== "ready";
+			control.addEventListener("click", (event) => {
+				event.preventDefault();
+				event.stopPropagation();
+				const id = watchIdFromUrl(link.href);
+				if (id) open(id);
+			});
+			link.after(control);
+			mounted.set(link, control);
+		}
+	};
+	const schedule = () => {
+		if (scheduled === void 0) scheduled = window.requestAnimationFrame(update);
+	};
+	const observer = new MutationObserver(schedule);
+	observer.observe(document.body, {
+		childList: true,
+		subtree: true,
+		attributes: true,
+		attributeFilter: ["href"]
+	});
+	const push = history.pushState.bind(history);
+	const replace = history.replaceState.bind(history);
+	const pushWrapper = (data, unused, url) => {
+		push(data, unused, url);
+		schedule();
+	};
+	const replaceWrapper = (data, unused, url) => {
+		replace(data, unused, url);
+		schedule();
+	};
+	history.pushState = pushWrapper;
+	history.replaceState = replaceWrapper;
+	window.addEventListener("popstate", schedule);
+	update();
+	return {
+		ready(callback) {
+			openVideo = callback;
+			state = "ready";
+			panel.dataset.state = state;
+			status.textContent = words.ready;
+			button.disabled = false;
+			for (const control of mounted.values()) control.disabled = false;
+			update();
+		},
+		fail(message) {
+			state = "failed";
+			panel.dataset.state = state;
+			status.textContent = words.failed;
+			hint.textContent = message;
+			button.disabled = true;
+			reload.hidden = false;
+			for (const control of mounted.values()) control.disabled = true;
+		},
+		dispose() {
+			observer.disconnect();
+			if (scheduled !== void 0) window.cancelAnimationFrame(scheduled);
+			window.removeEventListener("popstate", schedule);
+			if (history.pushState === pushWrapper) history.pushState = push;
+			if (history.replaceState === replaceWrapper) history.replaceState = replace;
+			for (const control of mounted.values()) control.remove();
+			mounted.clear();
+			panel.remove();
+			style.remove();
+		}
+	};
+}
+var entry;
 async function start() {
 	const key = Symbol.for("FutatsumeWatch.start");
 	if (Reflect.get(window, key)) return;
 	Reflect.set(window, key, true);
+	if (!document.body) await new Promise((resolve) => document.addEventListener("DOMContentLoaded", () => resolve(), { once: true }));
+	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-GfSx8AzQ-DknMqITP.js');
+	if (window === window.top) await module.import('./_uquery-jebuqcwt-DUJB-s5T.js');
 	const { Config } = await module.import('./Config-BA-Z-GaL-CZCLPk6c.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-pp-msn6j-Chjv2k_s.js');
+		await module.import('./_captube-BH7JC5pj-DoHasCpp.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
@@ -98,25 +283,27 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-D0XRp1_O-CINcfFMo.js');
+		await module.import('./_shape-DjgKf85A-BTJfTjXz.js');
 		return;
 	}
-	const { startPlayer } = await module.import('./runtime-C-SfZlwN-CuQ90G9M.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-BJd8B3XE-D-Up-A0W.js');
 	await startPlayer();
+	entry?.ready(openVideo);
 	if (window === window.top) {
 		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-zB7j3Iot-Bfuq3pOf.js');
-		await module.import('./_pocket-Cch8NEhI-BjydV5Aa.js');
+		await module.import('./_pocket-DVXtc9Ws-D-D3xe5w.js');
 		await module.import('./_gamepad-CFTL9_xv-BV6P7JJt.js');
 		await module.import('./_heatsync-DgM7kU8Q-Dypiasdv.js');
-		await module.import('./_shape-D0XRp1_O-CINcfFMo.js');
-		await module.import('./_setting-9fTw8UMh-13YL8WGi.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-DI_PS9UO-DvLJZA6f.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-Cch8NEhI-BjydV5Aa.js');
+		await module.import('./_shape-DjgKf85A-BTJfTjXz.js');
+		await module.import('./_setting-bUfkigiX-Bg9l7Kq-.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-CfsHROq1-v6y-MyLj.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-DVXtc9Ws-D-D3xe5w.js');
 }
 start().catch((error) => {
+	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-GfSx8AzQ-DknMqITP.js", ['./___monkey.entry.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){var uQuery = uQuery$1;
+System.register("./_uquery-jebuqcwt-DUJB-s5T.js", ['./___monkey.entry.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){var uQuery = uQuery$1;
 AntiPrototypeJs().then(() => {
 	const PRODUCT = "uQuery";
 	const util = {};
@@ -124,7 +311,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.1";
+	uQuery.fn.uQuery = "0.0.2";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -365,7 +552,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.1
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.2
   `, `
     font-size: 8px;
     font-family:
@@ -375,7 +562,7 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-pp-msn6j-Chjv2k_s.js", ['./workerUtil-DSB24T8w-CeW7BdGX.js','./css-DH5O0net-DVxh-1NG.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null],execute:(function(){(() => {
+System.register("./_captube-BH7JC5pj-DoHasCpp.js", ['./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){(() => {
 	const PRODUCT = "CapTube";
 	let previewContainer = null, meterContainer = null;
 	const DataUrlConv = (() => {
@@ -814,7 +1001,7 @@ System.register("./_blog-CWTfF_hF-BtS6yyug.js", [],(function(){'use strict';retu
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-D0XRp1_O-CINcfFMo.js", ['./css-DH5O0net-DVxh-1NG.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null],execute:(function(){/**
+System.register("./_shape-DjgKf85A-BTJfTjXz.js", ['./css-BZGoPVKg-BAtHmOgL.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/**
 * @typedf BoundingBox
 * @property {number} x
 * @property {number} y
@@ -1474,14 +1661,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.1`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.2`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-C-SfZlwN-CuQ90G9M.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-DH5O0net-DVxh-1NG.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js','./MylistApiLoader-1ilUuHkr-C7z61tgx.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports("startPlayer",startPlayer);const s = new Set;
+System.register("./runtime-BJd8B3XE-D-Up-A0W.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js','./MylistApiLoader-UxYIYRAV-DGaEVKh0.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -3173,7 +3360,7 @@ var WatchPageHistory = (() => {
 	let dialog;
 	let path;
 	const replaceHistoryState = (url) => {
-		history.replaceState(null, null, url);
+		history.replaceState(history.state, "", url);
 	};
 	const restore = () => {
 		replaceHistoryState(originalUrl);
@@ -3218,6 +3405,12 @@ var WatchPageHistory = (() => {
 		dialog.on("open", onDialogOpen);
 		dialog.on("loadVideoInfo", (info) => onVideoInfoLoad(info));
 		if (location.host !== "www.nicovideo.jp") return;
+		window.addEventListener("popstate", () => {
+			bouncedRestore.cancel();
+			onVideoInfoLoad.cancel();
+			updateOriginal();
+			if (isOpen) dialog?.close();
+		});
 		window.addEventListener("beforeunload", () => {
 			if (isOpen) restore();
 		}, { passive: true });
@@ -65450,25 +65643,8 @@ async function initializeHls() {
 		DOMException
 	});
 }
-function installWatchEntry(open) {
-	if (location.hostname !== "www.nicovideo.jp" || !/^\/watch\/\w+/.test(location.pathname)) return;
-	if (document.querySelector("[data-futatsume-open]")) return;
-	const button = document.createElement("button");
-	button.type = "button";
-	button.dataset.futatsumeOpen = "";
-	button.textContent = navigator.language.startsWith("ja") ? "FutatsumeWatchで再生" : "Play in FutatsumeWatch";
-	button.addEventListener("click", () => {
-		const watchId = /^\/watch\/(\w+)/.exec(location.pathname)?.[1];
-		if (!watchId) return;
-		document.querySelectorAll("video").forEach((video) => {
-			if (!video.closest("#zenzaVideoPlayerDialog")) video.pause();
-		});
-		open(watchId);
-	});
-	const style = document.createElement("style");
-	style.textContent = `[data-futatsume-open]{position:fixed;right:12px;bottom:12px;z-index:99999;max-width:calc(100vw - 24px);padding:10px 16px;border:1px solid #4acac0;border-radius:6px;background:#153b39;color:white;font:600 14px/1.4 sans-serif;cursor:pointer}body.showNicoVideoPlayerDialog [data-futatsume-open]{display:none}`;
-	document.head.append(style);
-	document.body.append(button);
+function openVideo(watchId) {
+	return FutatsumeWatch.external.open(watchId);
 }
 async function startPlayer() {
 	if (window !== window.top) {
@@ -65527,7 +65703,6 @@ async function startPlayer() {
 	global.emitter.emitResolve("lit-html", dll$4.lit);
 	if (location.hostname !== "www.nicovideo.jp") await NicoVideoApi.configBridge(Config);
 	await initialize();
-	installWatchEntry((watchId) => FutatsumeWatch.external.open(watchId));
 }})}}));
 System.register("./modernLazyload-zB7j3Iot-Bfuq3pOf.js", [],(function(){'use strict';return{execute:(function(){(() => {
 	const nicoWindow = window;
@@ -65627,7 +65802,7 @@ System.register("./modernLazyload-zB7j3Iot-Bfuq3pOf.js", [],(function(){'use str
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-Cch8NEhI-BjydV5Aa.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-DH5O0net-DVxh-1NG.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistApiLoader-1ilUuHkr-C7z61tgx.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_pocket-DVXtc9Ws-D-D3xe5w.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistApiLoader-UxYIYRAV-DGaEVKh0.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 AntiPrototypeJs().then(() => {
 	const PRODUCT = "MylistPocket";
 	const monkey = (PRODUCT) => {
@@ -69023,7 +69198,7 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-1ilUuHkr-C7z61tgx.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-DH5O0net-DVxh-1NG.js','./lodash-BCVqxvO1-NnjNIe24.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);var PRODUCT$1 = "FutatsumeWatch";
+System.register("./MylistApiLoader-UxYIYRAV-DGaEVKh0.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);var PRODUCT$1 = "FutatsumeWatch";
 var gate = exports("g",() => {
 	const post = function(body, { type, token, sessionId, origin } = {}) {
 		sessionId = sessionId || "";
@@ -73568,7 +73743,7 @@ System.register("./_heatsync-DgM7kU8Q-Dypiasdv.js", ['./rolldown-runtime-DzKC14H
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-9fTw8UMh-13YL8WGi.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./css-DH5O0net-DVxh-1NG.js','./lodash-BCVqxvO1-NnjNIe24.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_setting-bUfkigiX-Bg9l7Kq-.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./___monkey.entry.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 ((window) => {
 	const monkey = async (PRODUCT) => {
 		const _ = import_lodash.default;
@@ -89304,7 +89479,7 @@ System.register("./lodash-BCVqxvO1-NnjNIe24.js", ['./rolldown-runtime-DzKC14H2-B
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-DI_PS9UO-DvLJZA6f.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./bounce-DKboHjjE-C9F5WYFP.js','./css-DH5O0net-DVxh-1NG.js','./jquery-CJc4kJ3v-BAibxNtt.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./Config-BA-Z-GaL-CZCLPk6c.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null],execute:(function(){var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
+System.register("./_my4-CfsHROq1-v6y-MyLj.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./bounce-DKboHjjE-C9F5WYFP.js','./css-BZGoPVKg-BAtHmOgL.js','./jquery-CJc4kJ3v-BAibxNtt.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 ((window) => {
 	const { html } = html_exports;
 	const $ = import_jquery.default;
@@ -94150,7 +94325,7 @@ System.register("./jquery-CJc4kJ3v-BAibxNtt.js", ['./rolldown-runtime-DzKC14H2-B
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-DH5O0net-DVxh-1NG.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var __exportAll,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/**
+System.register("./css-BZGoPVKg-BAtHmOgL.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/**
 * @license
 * Copyright 2017 Google LLC
 * SPDX-License-Identifier: BSD-3-Clause
@@ -94839,7 +95014,6 @@ CONSTANT.SCROLLBAR_CSS = `
   }
 `.trim();
 var NICORU = exports("N","data:image/png;base64,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");
-var VERSION = "0.0.1";
 var TOKEN = Math.random();
 var PRODUCT = exports("P","FutatsumeWatch");
 var FutatsumeWatch = exports("F",{

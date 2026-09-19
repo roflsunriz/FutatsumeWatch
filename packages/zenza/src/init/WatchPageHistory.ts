@@ -18,6 +18,7 @@ interface VideoInfoEvent {
 
 interface HistoryDialog {
   on(name: string, handler: (...args: unknown[]) => void): void;
+  close(): void;
 }
 
 import { NicoVideoApi } from '../../../lib/src/nico/NicoVideoApi';
@@ -46,7 +47,7 @@ const WatchPageHistory = (() => {
   let title: string | null;
 
   const replaceHistoryState = (url: string | null): void => {
-    history.replaceState(null, null as unknown as string, url);
+    history.replaceState(history.state, '', url);
   };
 
   const restore = (): void => {
@@ -114,6 +115,13 @@ const WatchPageHistory = (() => {
     if (location.host !== 'www.nicovideo.jp') {
       return;
     }
+    window.addEventListener('popstate', () => {
+      // 戻る/進む先を、開く前のURLや遅延したrestoreで上書きしない。
+      bouncedRestore.cancel();
+      onVideoInfoLoad.cancel();
+      updateOriginal();
+      if (isOpen) dialog?.close();
+    });
     window.addEventListener(
       'beforeunload',
       () => {

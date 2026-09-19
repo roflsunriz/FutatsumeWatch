@@ -1,0 +1,97 @@
+import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
+import type { CdpSession } from './dev-cdp';
+import { clickVisible } from './dev-ui';
+import { VERSION } from '../src/version';
+
+const checks: string[] = [];
+const report: { checks: string[]; completed: boolean; error?: string } = { checks, completed: false };
+const searchUrl =
+  'https://www.nicovideo.jp/search/' + encodeURIComponent('レッツゴー！陰陽師') + '?sort=viewCount&order=desc';
+const tagUrl =
+  'https://www.nicovideo.jp/tag/' + encodeURIComponent('レッツゴー！陰陽師') + '?sort=viewCount&order=desc';
+const out = new URL('../dev-assets/verification/', import.meta.url);
+async function until(page: CdpSession, expression: string, label: string): Promise<void> {
+  const end = Date.now() + 25000;
+  while (Date.now() < end) {
+    if (await evaluate(page, expression)) {
+      checks.push(label);
+      console.log(`合格: ${label}`);
+      return;
+    }
+    await Bun.sleep(200);
+  }
+  throw new Error(`導線の検証失敗: ${label}`);
+}
+async function shot(page: CdpSession, name: string): Promise<void> {
+  const image = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
+  await Bun.write(new URL(name, out), Buffer.from(image.data, 'base64'));
+}
+const browser = await attachBrowser();
+const created = (await browser.send('Target.createTarget', { url: 'about:blank' })) as { targetId: string };
+const page = await attach((await listTargets()).find((t) => t.id === created.targetId)!);
+try {
+  await page.send('Page.enable');
+  await page.send('Page.navigate', { url: searchUrl });
+  await page.send('Page.bringToFront');
+  await until(
+    page,
+    `document.querySelector('[data-futatsume-entry]')?.dataset.futatsumeVersion===${JSON.stringify(VERSION)} && document.querySelector('[data-futatsume-entry]')?.dataset.state==='ready' && !!document.querySelector('[data-futatsume-video="sm9"]:not(:disabled)')`,
+    'キーワード検索で版・準備完了・結果ボタンを表示'
+  );
+  await shot(page, 'entry-search.png');
+  await clickVisible(page, '[data-futatsume-video="sm9"]');
+  await until(
+    page,
+    `(()=>{const v=document.querySelector('#zenzaVideoPlayerDialog zenza-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
+    '検索結果の見えるボタンをマウスで押して再生'
+  );
+  await page.send('Page.navigate', { url: tagUrl });
+  await until(
+    page,
+    `document.querySelector('[data-futatsume-entry]')?.dataset.state==='ready' && !!document.querySelector('[data-futatsume-video="sm9"]:not(:disabled)')`,
+    'タグ検索でも結果ボタンを表示'
+  );
+  const history = (await page.send('Page.getNavigationHistory')) as { currentIndex: number; entries: { id: number }[] };
+  const searchEntry = history.entries[history.currentIndex]!;
+  await evaluate(page, `window.__fwEntryDocument=performance.timeOrigin`);
+  await clickVisible(
+    page,
+    'a:is([href="/watch/sm9"],[href^="/watch/sm9?"],[href="https://www.nicovideo.jp/watch/sm9"],[href^="https://www.nicovideo.jp/watch/sm9?"])'
+  );
+  await until(
+    page,
+    `location.pathname==='/watch/sm9' && !!document.querySelector('[data-futatsume-open]:not([hidden]):not(:disabled)')`,
+    '通常の動画リンクから視聴ページへ移っても起動ボタンを表示'
+  );
+  await until(page, `window.__fwEntryDocument===performance.timeOrigin`, '再読み込みしないページ内遷移を確認');
+  await shot(page, 'entry-watch.png');
+  await clickVisible(page, '[data-futatsume-open]');
+  await until(
+    page,
+    `(()=>{const v=document.querySelector('#zenzaVideoPlayerDialog zenza-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
+    '視聴ページの見えるボタンをマウスで押して再生'
+  );
+  await page.send('Page.navigateToHistoryEntry', { entryId: searchEntry.id });
+  await until(
+    page,
+    `location.pathname.startsWith('/tag/') && !!document.querySelector('[data-futatsume-video="sm9"]:not(:disabled)') && document.querySelector('[data-futatsume-open]').hidden`,
+    '戻る操作で検索ページの導線を復元'
+  );
+  await clickVisible(page, '[data-futatsume-video="sm9"]');
+  await until(
+    page,
+    `(()=>{const v=document.querySelector('#zenzaVideoPlayerDialog zenza-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
+    '戻った検索ページのボタンから再び再生'
+  );
+  report.completed = true;
+  console.log(`導線の実操作検証に合格しました（${checks.length}項目）`);
+} catch (error) {
+  report.error = error instanceof Error ? error.message : '導線の検証に失敗しました';
+  await shot(page, 'entry-failure.png');
+  throw error;
+} finally {
+  await Bun.write(new URL('entry-report.json', out), JSON.stringify(report, null, 2) + '\n');
+  page.close();
+  await browser.send('Target.closeTarget', { targetId: created.targetId });
+  browser.close();
+}

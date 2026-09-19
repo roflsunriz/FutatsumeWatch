@@ -4,13 +4,16 @@
 
 ## インストールと使い方
 
-配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（バージョン **0.0.1**）。
+配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（バージョン **0.0.2**）。
 
 Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。今回の実動作確認はTampermonkeyで実施しています。Violentmonkey・Greasemonkeyは未検証です。
 
 1. 旧ZenzaWatch・FutatsumeWatch開発版や、以前に個別導入したHLS・GamePad・MylistPocketなどの同梱対象を無効にします。設定は削除しないでください。
-2. 動画ページを開き、右下の「FutatsumeWatchで再生」を押します。動画一覧では動画リンクのホバーメニューも使えます。
-3. 再生バーから再生・一時停止・シーク・ミュート・コメント表示を操作します。設定、HLS、ゲームパッド、HeatSync、MaskedWatch、詳細設定も同じプレイヤーから開けます。
+2. 視聴ページ右下の **FutatsumeWatch 0.0.2** パネルで「この動画をFutatsumeWatchで再生」を押します。
+3. キーワード検索・タグ検索では、動画タイトルの横にある **「FWで再生」** を押します。元の動画リンクから視聴ページへ移った場合も、右下のパネルから再生できます。
+4. 再生バーから再生・一時停止・シーク・ミュート・コメント表示を操作します。設定、HLS、ゲームパッド、HeatSync、MaskedWatch、詳細設定も同じプレイヤーから開けます。
+
+「プレイヤーを準備しています…」は初期化中です。「起動できませんでした」と表示された場合は、パネルの「再読み込み」を押してください。パネル自体がない場合はスクリプトが適用されていません。マネージャで有効になっていることを確認してページを再読み込みしてください。ZenzaWatchの操作を知っている必要はありません。
 
 旧ZenzaWatchの設定は、新名称側に設定がない項目だけ自動で引き継ぎます。旧データは残します。
 
@@ -43,9 +46,11 @@ bun audit
 
 ```powershell
 bun run dev:setup   # 初回のみ
-bun run dev         # ビルド・専用ブラウザ起動・導入・実動作確認
+bun run dev         # ビルド・導入・ページ適用確認・検索/視聴からの実操作検証
 bun run dev:verify:addons # 別ページ機能の通信を遮断した検証
 ```
+
+`bun run dev` は登録・有効化だけで導入成功にせず、ページ上の版表示まで確認します。専用Chromeの未適用・旧版のニコニコタブも再読み込みします（入力中のタブは保護します）。検索からの遷移検証だけなら `bun run dev:verify:entry` を実行できます。
 
 初回のTampermonkey「ユーザー スクリプトを許可する」は手動で有効化します。`bun scripts/dev-allow-userscripts.ts` で該当画面を開けます。通常のVite開発サーバーは `bun run dev:server` です。
 

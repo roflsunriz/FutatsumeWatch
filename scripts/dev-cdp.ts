@@ -34,7 +34,12 @@ function fromSocket(ws: WebSocket): CdpSession {
   let id = 0;
   const pending = new Map<
     number,
-    { resolve: (v: unknown) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }
+    {
+      method: string;
+      resolve: (v: unknown) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
   >();
   const handlers = new Set<(method: string, params: Record<string, unknown>) => void>();
   const send = (method: string, params: Record<string, unknown> = {}): Promise<unknown> => {
@@ -45,7 +50,7 @@ function fromSocket(ws: WebSocket): CdpSession {
         pending.delete(cur);
         reject(new Error(`CDP timeout: ${method}`));
       }, 15000);
-      pending.set(cur, { resolve, reject, timer });
+      pending.set(cur, { method, resolve, reject, timer });
       ws.send(JSON.stringify({ id: cur, method, params }));
     });
   };
@@ -76,7 +81,7 @@ function fromSocket(ws: WebSocket): CdpSession {
   ws.addEventListener('close', () => {
     for (const request of pending.values()) {
       clearTimeout(request.timer);
-      request.reject(new Error('CDP connection closed'));
+      request.reject(new Error(`CDP connection closed: ${request.method}`));
     }
     pending.clear();
   });

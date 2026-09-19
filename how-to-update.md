@@ -10,7 +10,7 @@ BunとGitを用意し、リポジトリ直下で作業します。ブラウザ�
 2. `bun install --frozen-lockfile` で依存を揃えます。
 3. `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test`、`bun audit` を実行します。
 4. `dist` に `FutatsumeWatch.user.js` だけがあることを確認します。ビルドはdist内の旧成果物を整理するため、手作業のファイルを置かないでください。
-5. 初回は `bun run dev:setup`、以降は `bun run dev` で実際に配布物をインストールして検証します。無人実行では `bun scripts/dev-browser.ts start --headless` → `bun run dev:install` → `bun run dev:verify` を使います。
+5. 初回は `bun run dev:setup`、以降は `bun run dev` で実際に配布物をインストールして検証します。無人実行では `bun scripts/dev-browser.ts start --headless` → `bun run dev:install` → `bun run dev:verify:entry` → `bun run dev:verify` を使います。
 6. `bun run dev:verify:addons` を実行し、別ページ機能も確認します。結果は `dev-assets/verification/` に保存され、Gitには含めません。
 7. `git diff --stat` と生成物の差分を確認します。生成物の手修正は行いません。
 

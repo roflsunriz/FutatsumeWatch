@@ -1,5 +1,6 @@
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
+import { clickVisible } from './dev-ui';
 
 const outputDir = new URL('../dev-assets/verification/', import.meta.url);
 const urlIndex = Bun.argv.indexOf('--url');
@@ -82,7 +83,7 @@ async function main(): Promise<void> {
       'マネージャ経由の初期化・互換名・プレイヤー生成'
     );
     await until(session, `!!document.querySelector('[data-futatsume-open]')`, '動画ページの再生導線');
-    await evaluate(session, `document.querySelector('[data-futatsume-open]').click()`);
+    await clickVisible(session, '[data-futatsume-open]');
     await until(
       session,
       `${video}?.readyState >= 3 && ${video}.currentTime > 0.5 && !${video}.paused && !${video}.error`,
@@ -230,7 +231,7 @@ async function main(): Promise<void> {
       'プレイヤーを閉じて再生導線に戻る',
       5000
     );
-    await evaluate(session, `document.querySelector('[data-futatsume-open]').click()`);
+    await clickVisible(session, '[data-futatsume-open]');
     await until(session, `${video}?.readyState>=3 && !${video}.paused`, '閉じた後の再生復帰', 10000);
     const shot = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
     await Bun.write(new URL('player.png', outputDir), Buffer.from(shot.data, 'base64'));
