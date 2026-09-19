@@ -114,4 +114,5 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - TM 5.5（MV3）のユーザースクリプト実行には「ユーザー スクリプトを許可する」の有効化が必須で、初回のみ手動操作が要る（`dev-allow-userscripts.ts` が拡張ページを開く）。以降はプロファイル保存される。確認ページ（ask.html）の承認と行トグル有効化はCDPで自動化できるが、新規登録時は無効で入る場合があるため有効化まで行うこと。
 - 生成物に静的 `export` 宣言3件（`export { CONSTANT };`・`export {};`×2）が混入し、classic script として死んでいた（安定版・DEV版とも実害あり）。原因は `requireFile` が `skipExports=false` 固定だったこと。`node --check` はモジュール検出で ESM として通過するため検出できず、検証の穴だった。対策は `build.js` の除外修正＋`scripts/build.ts` の AST 直接検出＋`writeIfModified` の同期化（非同期ではプロセス終了時に書き込みが失われる）。
 - `transpileModule` は副作用なし export（`export {};` 等）を末尾へ移動させるため、BEGIN/END 内配置の規約違反チェックは原文位置で行うこと（transpiled 位置では誤検出する）。
+- `transpileModule` は先頭の除去対象文（`declare`・`interface`・`type`）に付随する先頭コメント（`//==BEGIN==` 等）も除去する。連結範囲は原文の BEGIN/END 内を切り出してから transpile すること（transpiled 後のマーカー走査では範囲を失う）。`requireFile` はこの方式に修正済みである。
 - TM実行確認は未解決である（User Scripts 許可ON・登録・有効化まで確認済みだが sm9 上で未起動、TM内部エラーなし）。`dev-verify.ts` のブラウザログ収集（Log.entryAdded・exceptionThrown）で切り分けを続けること。`verification.md` の未解消事項に記録する。

@@ -248,18 +248,10 @@ function requireFile(srcDir, file, params, parent = '') {
   // transpiled テキストから作ると実行時に必要な名前が欠落する。
   const parsedMap = parseModuleStatements(sourceText, srcFile, false);
   Object.assign(imports, parsedMap.imports);
-  if (srcFile.endsWith('.ts')) {
-    sourceText = transpileTypeScript(sourceText, srcFile);
-  }
-  // 連結される BEGIN/END 内に値なし export 宣言が残ると生成物が classic script として
-  // 死ぬ（node --check は ESM 検出で通過するため検出できない）。値なし export 節・
-  // 空 export・型宣言はここで除外する。値付き export が BEGIN/END 内にあれば
-  // 規約違反のため、除外せず残して scripts/build.ts の直接検出で落とす。
-  const parsed = parseModuleStatements(sourceText, srcFile, true);
   // BEGIN/END 内配置の規約違反チェックは原文の位置で行う。transpile が
-  // 副作用なし export（`export {};` 等）を末尾へ移動させるため、
-  // transpiled 位置で判定すると誤検出になる。
-  const origLines = fs.readFileSync(srcFile, 'utf-8').split('\n');
+  // 先頭コメント除去や副作用なし export（`export {};` 等）の末尾移動を行うため、
+  // transpiled 位置で範囲を求めると誤検出・連結漏れになる。
+  const origLines = sourceText.split('\n');
   let origBegin = -1;
   let origEnd = -1;
   origLines.forEach((l, i) => {
@@ -274,7 +266,22 @@ function requireFile(srcDir, file, params, parent = '') {
       throw new Error(`import 文が //==BEGIN== 内にあります: ${srcFile}:${s + 1}`);
     }
   });
-  const sourceLines = sourceText.split('\n');
+  // 連結範囲は原文の BEGIN/END 内だけを切り出してから transpile する。
+  // マーカーがないファイルは従来通り全体を対象にする。
+  const hasMarkers = origBegin >= 0 && origEnd >= 0;
+  const bodyText = hasMarkers ? origLines.slice(origBegin + 1, origEnd).join('\n') : sourceText;
+  let linkedText = bodyText;
+  if (srcFile.endsWith('.ts')) {
+    linkedText = transpileTypeScript(bodyText, srcFile);
+  }
+  // 連結範囲内の値なし export 宣言が残ると生成物が classic script として
+  // 死ぬ（node --check は ESM 検出で通過するため検出できない）。値なし export 節・
+  // 空 export・型宣言はここで除外する。値付き export が範囲内にあれば
+  // 規約違反のため、除外せず残して scripts/build.ts の直接検出で落とす。
+  const parsed = parseModuleStatements(linkedText, srcFile, true);
+  const sourceLines = linkedText.split('\n');
+  // マーカーは切り出し済みのため、範囲内テキストは無条件に連結対象とする。
+  begin = hasMarkers;
   sourceLines.some(function(line, index) {
     if (isSkippedLine(parsed.skipRanges, index)) {
       return;

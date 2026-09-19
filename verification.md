@@ -38,7 +38,7 @@ bun run dev         # ビルド→dev用Chrome起動（9333）→TMへ自動イ�
 - CDP実ページ採取は sm9 で実測済みである（Chrome headless 153、`http://127.0.0.1:9222` の raw CDP、`test/fixtures/cdp/scenes/watch-sm9-cdp.json`）。生記録235件から静的資産・フォント・画像・映像セグメント・環境依存（`nicocachenl.test`）を除外し、署名クエリ（`session`・`Expires`・`Signature`・`Policy`・`actionTrackId` 等）を正規化した curated 17件（約243KB）として固定した。コメント取得は完全なコメント単位で打ち切り JSON 妥当に修復した（186件）。`thumbinfo`/`search` は本導線で呼ばれないため `watch-basic-sm9.json` で補う。
 - `src/_hls.ts` の `preloadFragment` 内に束縛のない `stats` 参照があり、実行時に到達すると `ReferenceError` になる可能性がある。HLS ローダーの挙動変更になるため、別タスクで上流差分と実機検証のうえ修正する（`@ts-expect-error` で温存）。HLSシーンは構造固定の退行検出に留める。
 - `src/boot.ts` が呼ぶ `GateAPI.exApi()` は上流3系統（segabito/kphrx/現行）いずれにも存在しないことを一次情報で確認済みのため別タスク化が確定した（`@ts-expect-error` で温存）。
-- dev実測（`bun run dev:verify`）は未合格である。TM登録・有効化・User Scripts API許可までは自動確認済みだが、sm9上で `window.FutatsumeWatch` が現れない。ページ本体の主経路（動画・コメント・nvapi）は正常で、失敗は広告・計測・周辺APIのみ。TM内部にエラーはなく、スクリプト行にもエラー表示はない。動的登録まわりの調査が残作業である（`scripts/dev-verify.ts` のブラウザログ収集で切り分けを続ける）。
+- dev実測（`bun run dev:verify`）は未合格である。TM登録・有効化・User Scripts API許可までは自動確認済みで、export修正後は sm9 上で `window.ZenzaWatch` の出現まで前進したが、`ready` に至らずプレイヤー容器が出ない。`api`・`init`・`external` が空のまま止まり、製品由来の例外もない。`dev-verify.ts` のブラウザログ収集（Log.entryAdded・exceptionThrown）で切り分けを続けること。`verification.md` の未解消事項に記録する。
 - 実ブラウザでの動作確認は上記のとおりdev実測まで進めたが合格に至っていない。`src`/`dist` 差分比較と実機検証は別途行う。
 
 ## 再開条件

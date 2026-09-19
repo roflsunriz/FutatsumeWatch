@@ -34,6 +34,7 @@
 
 - 生成物に混入していた静的 `export` 宣言3件を除去し、classic script として起動できるようにした（安定版・DEV版とも起動しない実害があった。原因は `requireFile` の `skipExports=false` 固定で、`node --check` はモジュール検出で通過するため検出できなかった。`scripts/build.ts` に AST 直接検出を追加し再発を防止する）
 - ビルド書き込みの非同期消失を修正し、`dist` が確実に更新されるようにした（プロセス終了時に書き込みが失われることがあった）
+- 連結範囲の抽出を原文の BEGIN/END 基準に修正し、transpile による先頭コメント消失や文移動での定義漏れを解消した（`AntiPrototypeJs` 未定義で起動しない実害があった）
 
 ### Removed
 
