@@ -30,7 +30,16 @@ const legacyGlobals = {
 
 export default tseslint.config(
   {
-    ignores: ['node_modules/**', 'dist/**', '**/dist/**', 'lib/**', 'bun.lock', 'subagents/**'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      '**/dist/**',
+      'lib/**',
+      'bun.lock',
+      'subagents/**',
+      'dev-extensions/**',
+      'dev-assets/**',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,

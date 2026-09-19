@@ -20,13 +20,26 @@ bun run test
 
 従来の mocha 基盤は退役済み（`test/setup.js`・`test/mocha.opts`・`test:mocha` スクリプトを削除）。
 
+## ブラウザでの動作確認（開発版＋Tampermonkey）
+
+```powershell
+bun run dev:setup   # 初回のみ（TM 5.5.0・Chrome for Testing 153.0.8010.52 を取得）
+bun run dev         # ビルド→dev用Chrome起動（9333）→TMへ自動インストール→sm9で実測
+```
+
+- dev用Chromeは独自プロファイル（`Documents/.browser-debug/ChromeDev`）とポート9333を使い、`chrome-debug.ps1`（9222）と競合しない。
+- Google Chrome ブランドでは `--load-extension` が無視されるため、自動化用の公式バイナリ（Chrome for Testing、同版）を使う。取得物は Git 管理外（`dev-extensions/`・`dev-assets/`）。
+- TM 5.5（MV3）は初回のみ「ユーザー スクリプトを許可する」の手動有効化が要る（`bun scripts/dev-allow-userscripts.ts` が拡張ページを開く）。以降はプロファイルに保存される。
+- TM確認ページ（ask.html）の承認と行トグルの有効化は `scripts/dev-install.ts` がCDPで自動化する。既登録時は確認を飛ばして登録確認へ進む。
+
 ## 既知の未解消事項（今回の検証では直さない）
 
 - `bun run build` の生成物は FutatsumeWatch 名で正規規模を維持した（`dist/FutatsumeWatch.user.js` 約100万バイト、`dist/FutatsumeWatch-dev.user.js` 同規模、関連4種も新名で生成）。旧 `dist/Zenza*.user.js` 6件は削除済み。`src`/`dist` 差分比較とリリース手順（`how-to-update.md`）の確定は別途行う。
 - CDP実ページ採取は sm9 で実測済みである（Chrome headless 153、`http://127.0.0.1:9222` の raw CDP、`test/fixtures/cdp/scenes/watch-sm9-cdp.json`）。生記録235件から静的資産・フォント・画像・映像セグメント・環境依存（`nicocachenl.test`）を除外し、署名クエリ（`session`・`Expires`・`Signature`・`Policy`・`actionTrackId` 等）を正規化した curated 17件（約243KB）として固定した。コメント取得は完全なコメント単位で打ち切り JSON 妥当に修復した（186件）。`thumbinfo`/`search` は本導線で呼ばれないため `watch-basic-sm9.json` で補う。
 - `src/_hls.ts` の `preloadFragment` 内に束縛のない `stats` 参照があり、実行時に到達すると `ReferenceError` になる可能性がある。HLS ローダーの挙動変更になるため、別タスクで上流差分と実機検証のうえ修正する（`@ts-expect-error` で温存）。HLSシーンは構造固定の退行検出に留める。
 - `src/boot.ts` が呼ぶ `GateAPI.exApi()` は上流3系統（segabito/kphrx/現行）いずれにも存在しないことを一次情報で確認済みのため別タスク化が確定した（`@ts-expect-error` で温存）。
-- 実ブラウザでの動作確認は未実施。理由は改名の互換層とフィクスチャ基盤の確立を優先し、生成物の構文検証（`node --check`）と単体テスト（113件）で担保しているため。`src`/`dist` 差分比較と実機検証は別途行う。
+- dev実測（`bun run dev:verify`）は未合格である。TM登録・有効化・User Scripts API許可までは自動確認済みだが、sm9上で `window.FutatsumeWatch` が現れない。ページ本体の主経路（動画・コメント・nvapi）は正常で、失敗は広告・計測・周辺APIのみ。TM内部にエラーはなく、スクリプト行にもエラー表示はない。動的登録まわりの調査が残作業である（`scripts/dev-verify.ts` のブラウザログ収集で切り分けを続ける）。
+- 実ブラウザでの動作確認は上記のとおりdev実測まで進めたが合格に至っていない。`src`/`dist` 差分比較と実機検証は別途行う。
 
 ## 再開条件
 

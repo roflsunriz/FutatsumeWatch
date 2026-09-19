@@ -17,3 +17,5 @@ session/*
 package-lock.json
 COMMON-AGENTS.md
 subagents/
+dev-extensions/
+dev-assets/

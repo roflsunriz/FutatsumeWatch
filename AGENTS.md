@@ -104,3 +104,13 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `nvapi` の `access-rights` とコメント取得（`public.nvcomment`）は POST である。オフライン照合のテストは実測メソッドに合わせること（GET では `matchFixture` が当たらない）。
 - コメント取得の body 打ち切りは完全なコメント単位で行い、末尾に `]}]}}` を補って JSON 妥当に修復すること。中途半端な切断は後のパース系テストを壊す。
 - `bun run format` は改名前に既存2件（`packages/lib/src/css/css.ts`・`src/Config.ts`）で非準拠だった。改名で触れた `.ts` は `prettier --write` で準拠化した。`test/fixtures` と `packages/components/mock` は `.prettierignore` の対象外・対象を維持する。
+
+### dev実測基盤と生成物export混入の修正（2026-09-19〜）
+
+- `bun run dev` で開発版のビルド→dev用Chrome起動（9333・独自プロファイル`ChromeDev`）→TM自動インストール→sm9実測まで行える（`scripts/dev-setup.ts`・`dev-browser.ts`・`dev-install.ts`・`dev-verify.ts`・`dev-cdp.ts`・`dev-allow-userscripts.ts`）。`chrome-debug.ps1`（9222）とは競合しない。
+- Google Chrome ブランドでは `--load-extension` が無視される（実測で確認）。自動化には公式の Chrome for Testing（同版153.0.8010.52、`dev-setup.ts` が取得・sha記録）を使う。TM 5.5.0（MV3）は公式アップデートサービスからCRX取得・展開する。取得物は `dev-extensions/`・`dev-assets/` に置き Git 管理外とする。
+- `Bun.spawn` の子Chromeは親終了に追従して死ぬため、起動は `Start-Process` で切り離すこと。停止は state ファイル（`chrome-dev-browser-state.json`、`chrome-debug.ps1` の同名ファイルと区別）の PID を `taskkill /T /F` する。
+- TM 5.5（MV3）のユーザースクリプト実行には「ユーザー スクリプトを許可する」の有効化が必須で、初回のみ手動操作が要る（`dev-allow-userscripts.ts` が拡張ページを開く）。以降はプロファイル保存される。確認ページ（ask.html）の承認と行トグル有効化はCDPで自動化できるが、新規登録時は無効で入る場合があるため有効化まで行うこと。
+- 生成物に静的 `export` 宣言3件（`export { CONSTANT };`・`export {};`×2）が混入し、classic script として死んでいた（安定版・DEV版とも実害あり）。原因は `requireFile` が `skipExports=false` 固定だったこと。`node --check` はモジュール検出で ESM として通過するため検出できず、検証の穴だった。対策は `build.js` の除外修正＋`scripts/build.ts` の AST 直接検出＋`writeIfModified` の同期化（非同期ではプロセス終了時に書き込みが失われる）。
+- `transpileModule` は副作用なし export（`export {};` 等）を末尾へ移動させるため、BEGIN/END 内配置の規約違反チェックは原文位置で行うこと（transpiled 位置では誤検出する）。
+- TM実行確認は未解決である（User Scripts 許可ON・登録・有効化まで確認済みだが sm9 上で未起動、TM内部エラーなし）。`dev-verify.ts` のブラウザログ収集（Log.entryAdded・exceptionThrown）で切り分けを続けること。`verification.md` の未解消事項に記録する。

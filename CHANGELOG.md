@@ -17,6 +17,7 @@
 - CDP記録再生のオフライン基盤を追加し、不要通信の遮断と必要通信の固定を可能にした（`test/fixtures/cdp/network-policy.ts`・`scene.ts`・`offline.ts`、採取雛形 `scripts/cdp-capture.ts`、初期シーン `watch-basic-sm9.json`・`hls-playback-sm9.json`）
 - 機能別テストにオフライン解決と改名退行防止を追加した（`test/unit/cdp-offline.test.ts`・`test/unit/futatsume-branding.test.ts`、116件 passing）
 - CDP実測シーン `test/fixtures/cdp/scenes/watch-sm9-cdp.json` を追加し、sm9 の watch HTML・`nvapi`・コメント186件・HLSプレイリスト3件を署名除去のうえ固定した（静的資産・映像セグメント・環境依存は除外）
+- 開発版のブラウザ実測基盤を追加し、`bun run dev` でビルドからdev用Chrome起動・Tampermonkey自動インストール・sm9実測まで行えるようにした（`scripts/dev-*.ts`、初回の User Scripts 許可のみ手動）
 
 ### Changed
 
@@ -28,6 +29,11 @@
 - `VideoSearch` の `dateFrom`/`dateTo` で `Date` 受領を型で明示した（実行時は従来どおり epoch 換算で同一）
 - 陳腐化した `VideoInfo` テスト（2016年の flvInfo 判定）を現行の domand/dmc 判定仕様で書き直し、実スナップショット由来の入力組み立てに変えた（期待値の緩和なし）
 - 旧スクリプト `test:mocha`・`build:legacy`・`test:browser` を削除し、`bun test --preload ./test/setup.ts` に一本化した
+
+### Fixed
+
+- 生成物に混入していた静的 `export` 宣言3件を除去し、classic script として起動できるようにした（安定版・DEV版とも起動しない実害があった。原因は `requireFile` の `skipExports=false` 固定で、`node --check` はモジュール検出で通過するため検出できなかった。`scripts/build.ts` に AST 直接検出を追加し再発を防止する）
+- ビルド書き込みの非同期消失を修正し、`dist` が確実に更新されるようにした（プロセス終了時に書き込みが失われることがあった）
 
 ### Removed
 

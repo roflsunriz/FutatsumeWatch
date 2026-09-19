@@ -27,3 +27,7 @@ sample
 .babelrc
 .eslintrc
 packages/components/.babelrc
+
+# dev用外部取得物（TM本体・Chrome for Testing。dev-setup.ts が取得・検証する）
+/dev-extensions
+/dev-assets

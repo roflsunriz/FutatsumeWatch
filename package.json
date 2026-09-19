@@ -91,6 +91,12 @@
     "test": "bun test --preload ./test/setup.ts",
     "build:production": "node ./build.js",
     "build:monkey": "node ./build.js --dev",
-    "watch:monkey": "node ./build.js --dev --watch"
+    "watch:monkey": "node ./build.js --dev --watch",
+    "dev:setup": "bun scripts/dev-setup.ts",
+    "dev:browse": "bun scripts/dev-browser.ts start",
+    "dev:stop": "bun scripts/dev-browser.ts stop",
+    "dev:install": "bun scripts/dev-install.ts",
+    "dev:verify": "bun scripts/dev-verify.ts",
+    "dev": "bun run build:dev && bun scripts/dev-browser.ts start && bun scripts/dev-install.ts && bun scripts/dev-verify.ts"
   }
 }
