@@ -4,7 +4,7 @@
 // @description    視聴不可能な動画だけ表示して一括削除とかできるやつ
 // @match          *://www.nicovideo.jp/my/mylist*
 // @grant          none
-// @author         名無しさん@匿名希望
+// @author         roflsunriz
 // @version        0.0.1
 // @run-at         document-body
 // @license        public domain

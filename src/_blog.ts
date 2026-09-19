@@ -4,9 +4,9 @@
 // @description    ニコニコ動画のブログパーツにFutatsumeWatch起動用ボタンを追加
 // @match          *://ext.nicovideo.jp/thumb/*
 // @grant          none
-// @author         segabito macmoto
+// @author         roflsunriz
 // @license        public domain
-// @version        0.0.3
+// @version        0.0.1
 // ==/UserScript==
 
 interface BlogPartsMessage {

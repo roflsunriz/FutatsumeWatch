@@ -10,9 +10,9 @@
 // @exclude     *://ads*.nicovideo.jp/*
 // @exclude     *://www.nicovideo.jp/favicon.ico*
 // @exclude     *://www.nicovideo.jp/robots.txt*
-// @version     0.3.2
+// @version     0.0.1
 // @grant       none
-// @author      名無しさん
+// @author      roflsunriz
 // @license     public domain
 // ==/UserScript==
 import { css } from '../packages/lib/src/css/css';

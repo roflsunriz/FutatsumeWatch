@@ -4,7 +4,7 @@
 // @description    コンソールのデバッグ補助ツール(開発者用)
 // @match          *://*/*
 // @grant          none
-// @author         guest
+// @author         roflsunriz
 // @version        0.0.1
 // @run-at         document-start
 // @license        public domain

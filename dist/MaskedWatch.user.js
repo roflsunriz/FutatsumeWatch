@@ -10,9 +10,9 @@
 // @exclude     *://ads*.nicovideo.jp/*
 // @exclude     *://www.nicovideo.jp/favicon.ico*
 // @exclude     *://www.nicovideo.jp/robots.txt*
-// @version     0.3.2
+// @version     0.0.1
 // @grant       none
-// @author      名無しさん
+// @author      roflsunriz
 // @license     public domain
 // @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/MaskedWatch.user.js
 // ==/UserScript==
@@ -30,7 +30,7 @@
     const PRODUCT = 'MaskedWatch';
     const monkey = (PRODUCT) => {
         'use strict';
-        var VER = '0.3.2';
+        var VER = '0.0.1';
         const ENV = 'STABLE';
 
         let ZenzaWatch = null;

@@ -1,3 +1,17 @@
+// ==UserScript==
+// @name           uQuery
+// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
+// @description    コンソールのデバッグ補助ツール(開発者用)
+// @match          *://*/*
+// @grant          none
+// @author         roflsunriz
+// @version        0.0.1
+// @run-at         document-start
+// @license        public domain
+// @noframes
+// @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/uQuery.user.js
+// ==/UserScript==
+/* eslint-disable */
 const AntiPrototypeJs = function () {
 		if (this.promise !== null || !window.Prototype || window.PureArray) {
 				return this.promise ?? Promise.resolve(window.PureArray ?? Array);
@@ -44,7 +58,7 @@ void AntiPrototypeJs().then(() => {
     //   console[k] = window.console[k].bind(window.console);
     // }
     // console.log = window.console.log.bind(window.console, '%c[LOG]', 'background: cyan');
-    //@version
+    var VER = '0.0.1';
     const ENV = 'STABLE';
 
 function EmitterInitFunc() {

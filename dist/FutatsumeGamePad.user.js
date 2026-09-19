@@ -3,8 +3,8 @@
 // @namespace   https://github.com/roflsunriz/FutatsumeWatch/
 // @description FutatsumeWatchをゲームパッドで操作
 // @include     *://*.nicovideo.jp/*
-// @version     1.5.3
-// @author      segabito macmoto
+// @version     0.0.1
+// @author      roflsunriz
 // @license     public domain
 // @grant       none
 // @noframes

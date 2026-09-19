@@ -5,8 +5,9 @@
 // @include     https://www.youtube.com/*
 // @include     https://www.youtube.com/embed/*
 // @include     https://youtube.com/*
-// @version     0.0.11
+// @version     0.0.1
 // @grant       none
+// @author      roflsunriz
 // @license     public domain
 // @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/CapTube.user.js
 // ==/UserScript==

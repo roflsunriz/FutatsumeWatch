@@ -19,7 +19,7 @@ var templates = [
   { src: '_blog.js',     dist: 'dist/FutatsumeBlogPartsButton.user.js',  dev: false },
   { src: '_captube.js',  dist: 'dist/CapTube.user.js',               dev: false },
   { src: '_heatsync.js', dist: 'dist/HeatSync.user.js',              dev: false },
-  // { src: '_my4.js',      dist: 'dist/MylistFilter.user.js',          dev: false },
+  { src: '_my4.js',      dist: 'dist/MylistFilter.user.js',          dev: false },
   // { src: '_navi.js',    dist: 'dist/Navi.user.js', dev: false },
   // { src: '_yomi.js',    dist: 'dist/Yomi.user.js', dev: false },
   // { src: '_vc.js',    dist: 'dist/VoiceControl.user.js', dev: false }
@@ -396,11 +396,52 @@ function loadTemplateFile(srcDir, indexFile, outFile, params) {
   // インポートマップは原文から作る（transpile による型のみ import の除去で欠落するため）。
   const parsedMapTemplate = parseModuleStatements(templateText, srcFile, false);
   Object.assign(imports, parsedMapTemplate.imports);
+  // UserScript ヘッダは原文から退避する。transpile が先頭の除去対象文
+  //（import・interface 連続ブロック等）に付随する先頭コメントごと消すため、
+  // transpiled テキストではヘッダを失うファイルがある（_uquery.ts で実測）。
+  const origTemplateLines = templateText.split('\n');
+  const headerEnd = origTemplateLines.findIndex((l) => /\/\/ *==\/UserScript==/.test(l));
+  const headerBlock =
+    origTemplateLines[0] !== undefined &&
+    /\/\/ *==UserScript==/.test(origTemplateLines[0]) &&
+    headerEnd > 0
+      ? origTemplateLines.slice(0, headerEnd + 1)
+      : null;
   if (srcFile.endsWith('.ts')) {
     templateText = transpileTypeScript(templateText, srcFile);
   }
   const parsedTemplate = parseModuleStatements(templateText, srcFile, true);
   Object.assign(imports, parsedTemplate.imports);
+  if (headerBlock !== null && !/==UserScript==/.test(templateText)) {
+    // ヘッダを失った場合は原文ヘッダを行ループと同じ扱いで先頭へ復元する。
+    headerBlock.forEach((headerLine) => {
+      let line = headerLine;
+      if (params.dev) {
+        const m = line.match(/^\/\/\s*@([a-z0-9+]+)(.*)$/);
+        if (m && DEV_HEADER[indexFile][m[1]]) {
+          line = DEV_HEADER[indexFile][m[1]].trim();
+        }
+      }
+      if (/\/\/ *==\/UserScript==/.test(line)) {
+        lines.push(`// @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/${outFile}`);
+        lines.push(line);
+        lines.push('/* eslint-disable */');
+        return;
+      }
+      const vm = line.match(/^(\s*)\/\/\s*@version(.*)$/);
+      if (vm) {
+        if (!ver) {
+          ver = vm[2].trim();
+          console.log('ver: ' + ver);
+          lines.push(line);
+        } else {
+          lines.push(vm[1] + 'var VER = \'' + ver + '\';');
+        }
+        return;
+      }
+      lines.push(line);
+    });
+  }
   templateText.split('\n').some(function(line, index) {
     if (isSkippedLine(parsedTemplate.skipRanges, index)) {
       return;

@@ -15,9 +15,9 @@
 // @exclude     *://ch.nicovideo.jp/tool/*
 // @exclude     *://flapi.nicovideo.jp/*
 // @exclude     *://dic.nicovideo.jp/p/*
-// @version     0.0.18 Another.1
+// @version     0.0.1
 // @grant       none
-// @author      segabito macmoto
+// @author      roflsunriz
 // @license     public domain
 // @noframes
 // ==/UserScript==

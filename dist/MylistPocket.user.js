@@ -26,9 +26,9 @@
 // @exclude     *://dic.nicovideo.jp/p/*
 // @exclude     *://ext.nicovideo.jp/thumb/*
 // @exclude     *://ext.nicovideo.jp/thumb_channel/*
-// @version     0.5.15-fix-mylist-api.17
+// @version     0.0.1
 // @grant       none
-// @author      segabito macmoto
+// @author      roflsunriz
 // @license     public domain
 // @require     https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.min.js
 // @downloadURL    https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/MylistPocket.user.js

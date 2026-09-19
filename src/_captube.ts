@@ -5,8 +5,9 @@
 // @include     https://www.youtube.com/*
 // @include     https://www.youtube.com/embed/*
 // @include     https://youtube.com/*
-// @version     0.0.11
+// @version     0.0.1
 // @grant       none
+// @author      roflsunriz
 // @license     public domain
 // ==/UserScript==
 
