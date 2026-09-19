@@ -41,7 +41,7 @@ TypeScript 移行中のため、既存 JavaScript には段階移行の例外規
 
 ```powershell
 bun run dev:setup   # 初回のみ（TM取得・Chrome for Testing取得）
-bun run dev         # ビルド→dev用Chrome起動→TMへ自動インストール→sm9で実測
+bun run dev         # ビルド→dev用Chrome起動（headed）→TMへ自動インストール→sm9で実測
 ```
 
 個別実行もできる（`dev:browse` 起動、`dev:install` 導入、`dev:verify` 実測、`dev:stop` 停止）。初回は TM の「ユーザー スクリプトを許可する」有効化だけ手動で行う（`bun scripts/dev-allow-userscripts.ts` が拡張ページを開く）。詳細は `verification.md`。

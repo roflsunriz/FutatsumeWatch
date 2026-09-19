@@ -1,8 +1,9 @@
 // 開発用Chromeの起動・停止・状態確認。
 // chrome-debug.ps1（9222）とは競合しないよう、独自プロファイルとポート9333を使う。
 // Tampermonkey（dev-extensions/tampermonkey）を --load-extension で事前導入する。
+// 操作して確かめる用途のため既定は headed で起動し、無人実行時のみ --headless を付ける。
 //
-//   bun scripts/dev-browser.ts start [--headed]
+//   bun scripts/dev-browser.ts start [--headless]
 //   bun scripts/dev-browser.ts status
 //   bun scripts/dev-browser.ts stop
 
@@ -132,7 +133,7 @@ async function stop(): Promise<void> {
 async function main(): Promise<void> {
   const action = Bun.argv[2] ?? 'status';
   if (action === 'start') {
-    await start(Bun.argv.includes('--headed'));
+    await start(!Bun.argv.includes('--headless'));
   } else if (action === 'stop') {
     await stop();
   } else if (action === 'status') {

@@ -108,6 +108,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ### dev実測基盤と生成物export混入の修正（2026-09-19〜）
 
 - `bun run dev` で開発版のビルド→dev用Chrome起動（9333・独自プロファイル`ChromeDev`）→TM自動インストール→sm9実測まで行える（`scripts/dev-setup.ts`・`dev-browser.ts`・`dev-install.ts`・`dev-verify.ts`・`dev-cdp.ts`・`dev-allow-userscripts.ts`）。`chrome-debug.ps1`（9222）とは競合しない。
+- dev用Chromeは操作して確かめる用途のため既定で headed 起動する（無人実行時のみ `--headless` を付ける）。共通ルールの「原則ヘッドレス」は自動検証の話であり、利用者が直接見る dev フローは例外とする。
 - Google Chrome ブランドでは `--load-extension` が無視される（実測で確認）。自動化には公式の Chrome for Testing（同版153.0.8010.52、`dev-setup.ts` が取得・sha記録）を使う。TM 5.5.0（MV3）は公式アップデートサービスからCRX取得・展開する。取得物は `dev-extensions/`・`dev-assets/` に置き Git 管理外とする。
 - `Bun.spawn` の子Chromeは親終了に追従して死ぬため、起動は `Start-Process` で切り離すこと。停止は state ファイル（`chrome-dev-browser-state.json`、`chrome-debug.ps1` の同名ファイルと区別）の PID を `taskkill /T /F` する。
 - TM 5.5（MV3）のユーザースクリプト実行には「ユーザー スクリプトを許可する」の有効化が必須で、初回のみ手動操作が要る（`dev-allow-userscripts.ts` が拡張ページを開く）。以降はプロファイル保存される。確認ページ（ask.html）の承認と行トグル有効化はCDPで自動化できるが、新規登録時は無効で入る場合があるため有効化まで行うこと。
