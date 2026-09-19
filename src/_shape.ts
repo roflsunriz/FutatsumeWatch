@@ -1,4 +1,5 @@
 import { css } from '../packages/lib/src/css/css';
+import { SettingsDialog } from '../packages/components/src/settings-dialog';
 import { throttle } from '../packages/lib/src/infra/bounce';
 
 interface MaskedWatchConfig {
@@ -457,6 +458,7 @@ interval: ${config.interval}        // マスクの更新間隔
 
     const dialog = ((config: MaskedWatchConfig) => {
       class MaskedWatchDialog extends HTMLElement {
+        private modal!: SettingsDialog;
         private shadow!: ShadowRoot;
         private root!: HTMLDialogElement;
         init(): void {
@@ -466,15 +468,13 @@ interval: ${config.interval}        // マスクの更新間隔
           this.shadow = this.attachShadow({ mode: 'open' });
           this.shadow.innerHTML = this.getTemplate(config);
           this.root = this.shadow.querySelector('#root') as HTMLDialogElement;
+          this.modal = new SettingsDialog(this.root, 'masked', () => {});
           this.shadow.querySelector('.close-button')!.addEventListener('click', (e: Event) => {
             this.close();
             e.stopPropagation();
             e.preventDefault();
           });
           this.root.addEventListener('click', (e: Event) => {
-            if (e.target === this.root) {
-              this.close();
-            }
             e.stopPropagation();
           });
           this.classList.add('zen-family');
@@ -613,19 +613,19 @@ interval: ${config.interval}        // マスクの更新間隔
 
         open(): void {
           this.update();
-          this.root.showModal();
+          this.modal.open();
         }
 
         close(): void {
           if (this.root) {
-            this.root.close();
+            this.modal.close();
           }
         }
 
         toggle(): void {
           this.init();
           if (this.isOpen) {
-            this.root.close();
+            this.close();
           } else {
             this.open();
           }

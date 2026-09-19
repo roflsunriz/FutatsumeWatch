@@ -205,7 +205,7 @@ async function main(): Promise<void> {
     await click(session, 'general');
     await check(
       session,
-      `document.querySelector('zenza-setting-panel')?.isOpen && !!window.__fwQuery('.setting-close')`,
+      `document.querySelector('zenza-setting-panel')?.isOpen && !!window.__fwQuery('[data-fw-settings="general"] [data-settings-close]')`,
       '左メニューから一般設定を開く'
     );
     await screenshot(session, 'general');
@@ -214,11 +214,11 @@ async function main(): Promise<void> {
     await deepClick(session, '[data-setting-name="autoPlay"]');
     await check(
       session,
-      `${root}.config.props.autoPlay!==${String(oldAutoPlay)} && JSON.parse(localStorage.getItem('FutatsumeWatch_autoPlay'))!==${String(oldAutoPlay)}`,
+      `${root}.config.props.autoPlay!==${String(oldAutoPlay)} && JSON.parse(localStorage.getItem(${root}.config.getStorageKey(${root}.config.getNativeKey('autoPlay'))))===${String(!oldAutoPlay)}`,
       '一般設定のチェックボックスを実クリックで保存'
     );
     await deepClick(session, '[data-setting-name="autoPlay"]');
-    await deepClick(session, '.setting-close');
+    await deepClick(session, '[data-fw-settings="general"] [data-settings-close]');
     await check(session, `!document.querySelector('zenza-setting-panel').isOpen`, '一般設定の閉じるボタン');
     await click(session, 'settings');
     await click(session, 'advanced');

@@ -1,5 +1,6 @@
 import lodash from 'lodash';
 import jquery from 'jquery';
+import { SettingsDialog } from '../packages/components/src/settings-dialog';
 
 // 推奨
 //
@@ -444,6 +445,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     }
 
     class ConfigPanel extends BaseViewComponent {
+      declare private modal: SettingsDialog;
       declare static __shadow__: string;
       constructor({ parentNode }: BaseViewParams) {
         super({
@@ -463,6 +465,9 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       _initDom(...args: [BaseViewParams]) {
         super._initDom(...args);
         const v = this._shadow;
+        this.modal = new SettingsDialog(v as HTMLDialogElement, 'gamepad', () =>
+          this.setState({ isOpen: false, isVisible: false })
+        );
 
         this._elm.enabled = v.querySelector('[data-config-name="enabled"]') as HTMLInputElement;
         this._elm.needFocus = v.querySelector('[data-config-name="needFocus"]') as HTMLInputElement;
@@ -506,27 +511,13 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       }
 
       show() {
-        document.body.addEventListener('click', this._bound.onBodyClick);
         this._onBeforeShow();
-
-        this.setState({ isOpen: true });
-        if ((this._shadow as HTMLDialogElement).showModal) {
-          (this._shadow as HTMLDialogElement).showModal();
-        }
-        window.setTimeout(() => {
-          this.setState({ isVisible: true });
-        }, 100);
+        this.setState({ isOpen: true, isVisible: true });
+        this.modal.open();
       }
 
       hide() {
-        document.body.removeEventListener('click', this._bound.onBodyClick);
-        if ((this._shadow as HTMLDialogElement).close) {
-          (this._shadow as HTMLDialogElement).close();
-        }
-        this.setState({ isVisible: false });
-        window.setTimeout(() => {
-          this.setState({ isOpen: false });
-        }, 2100);
+        this.modal.close();
       }
 
       toggle() {

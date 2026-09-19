@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { SettingsDialog } from '../packages/components/src/settings-dialog';
 import { Emitter } from '../packages/lib/src/Emitter';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
 import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
@@ -753,6 +754,7 @@ interface HeatsyncShadowHost extends Element {
     }
 
     class ConfigPanel extends BaseViewComponent {
+      declare private modal: SettingsDialog;
       declare static __shadow__: string;
       constructor({ parentNode }: BaseViewParams) {
         super({
@@ -776,6 +778,9 @@ interface HeatsyncShadowHost extends Element {
       _initDom(...args: [BaseViewParams]) {
         super._initDom(...args);
         const v = this._shadow;
+        this.modal = new SettingsDialog(v as HTMLDialogElement, 'heatsync', () =>
+          this.setState({ isOpen: false, isVisible: false })
+        );
 
         this._elm.red = v.querySelector('*[data-config-name="turbo.red"]') as HTMLInputElement;
         this._elm.dmc = v.querySelector('*[data-config-name="turbo.dmc-blue"]') as HTMLInputElement;
@@ -825,21 +830,13 @@ interface HeatsyncShadowHost extends Element {
       }
 
       show(): void {
-        document.body.addEventListener('click', this._bound.onBodyClick);
         this._onBeforeShow();
-
-        this.setState({ isOpen: true });
-        window.setTimeout(() => {
-          this.setState({ isVisible: true });
-        }, 100);
+        this.setState({ isOpen: true, isVisible: true });
+        this.modal.open();
       }
 
       hide(): void {
-        document.body.removeEventListener('click', this._bound.onBodyClick);
-        this.setState({ isVisible: false });
-        window.setTimeout(() => {
-          this.setState({ isOpen: false });
-        }, 2100);
+        this.modal.close();
       }
 
       toggle(): void {
@@ -970,7 +967,7 @@ interface HeatsyncShadowHost extends Element {
           width: 50px;
         }
       </style>
-      <div class="root HeatSyncConfigPanel">
+      <dialog class="root HeatSyncConfigPanel">
         <p class="title">†HeatSync†</p>
 
         <div class="speedSelect dmc">
@@ -1081,7 +1078,7 @@ interface HeatsyncShadowHost extends Element {
           </button>
         </div>
 
-      </div>
+      </dialog>
     `.trim();
 
     class ToggleButton extends BaseViewComponent {

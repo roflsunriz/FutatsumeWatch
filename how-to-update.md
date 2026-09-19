@@ -16,6 +16,8 @@ BunとGitを用意し、リポジトリ直下で作業します。ブラウザ�
 
 UIを変更した場合は、専用ブラウザに対して`bun run dev:verify:ui`も実行します。生成済み配布物を新しいタブへ注入し、中央操作、左右パネル、一般設定の実入力、追加設定への導線、ABリピート、狭幅・低高さ・4Kを確認します。`FUTATSUME_DEV_PORT`で接続先を指定でき、画像と結果は`dev-assets/verification/shell-*`へ保存します。公開コメント投稿やタグ編集の送信は行いません。
 
+設定パネルを変更した場合は`bun run dev:verify:settings`で、6種類すべての背景クリック・Escape・閉じるボタン、入力と保存・再表示、全画面、狭幅・低高さを確認します。保存先は`dev-assets/verification/settings-*`です。設定値は検証用プロファイル内だけで変更し、確認後に元の値へ戻します。
+
 ## 公開前
 
 - プッシュ時は `src/version.ts` と `package.json`、READMEの版を更新します。ユーザースクリプトの版と説明はVite設定から生成します。

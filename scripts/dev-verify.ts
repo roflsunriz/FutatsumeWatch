@@ -44,6 +44,7 @@ async function main(): Promise<void> {
   const session = await attach(target);
   const failures: string[] = [];
   const workerSubscriptions = new Set<Promise<unknown>>();
+  let acceptWorkerSubscriptions = true;
   const report = { url: watchUrl, checks, failures, completed: false };
   session.onEvent((method, params) => {
     if (method === 'Runtime.exceptionThrown') {
@@ -52,7 +53,7 @@ async function main(): Promise<void> {
       if (/FutatsumeWatch|userscript.html|fw-probe|blob:/.test(message + (detail.url ?? '')))
         failures.push(message.slice(0, 800));
     }
-    if (method === 'Target.attachedToTarget') {
+    if (method === 'Target.attachedToTarget' && acceptWorkerSubscriptions) {
       const subscription = session.send('Target.sendMessageToTarget', {
         sessionId: params.sessionId,
         message: JSON.stringify({ id: 1, method: 'Runtime.enable' }),
@@ -261,8 +262,10 @@ async function main(): Promise<void> {
       `!!${root}?.ready && ${root}.config.getValue('${setting}') === ${String(oldSetting)} && !!document.querySelector('[data-futatsume-open]')`,
       '再読み込み後の初期化と設定保持'
     );
-    await session.send('Target.setAutoAttach', { autoAttach: false, waitForDebuggerOnStart: false, flatten: false });
+    // Detaching first can invalidate an in-flight Runtime.enable request.
+    acceptWorkerSubscriptions = false;
     await Promise.all(workerSubscriptions);
+    await session.send('Target.setAutoAttach', { autoAttach: false, waitForDebuggerOnStart: false, flatten: false });
     if (failures.length) throw new Error(`製品またはWorkerの未処理例外: ${failures.join('\n')}`);
     report.completed = true;
     console.log(`実測検証に合格しました（${checks.length}項目）`);

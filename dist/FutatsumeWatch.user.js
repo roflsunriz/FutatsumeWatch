@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.5
+// @version      0.0.6
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。ブラウザ内いっぱいに動画とコメントを表示。中央で再生、左上で設定、右上で詳細を開きます。操作UIの3秒非表示、背景ぼかし付きパネル、ABリピートを追加。
+// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。6種類の設定画面を共通デザインに統一し、背景ぼかし・背景クリック・Escapeで閉じる操作に対応。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -100,7 +100,7 @@ var AntiPrototypeJs = exports("A",function() {
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
-var VERSION = exports("V","0.0.5");
+var VERSION = exports("V","0.0.6");
 function watchIdFromUrl(value, base = location.href) {
 	try {
 		const url = new URL(value, base);
@@ -315,11 +315,11 @@ async function start() {
 	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-BlwOG5qc-CoeO_vmm.js');
+	if (window === window.top) await module.import('./_uquery-DgFt5t4L-CWcWkcfG.js');
 	const { Config } = await module.import('./Config-CesmpQk0-pkxmxyww.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-CQG3EMWb-CBbghyF9.js');
+		await module.import('./_captube-cBNsN1PE-CaCO7bZm.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
@@ -331,27 +331,27 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-6c0Wasvy-Ckr5TRfl.js');
+		await module.import('./_shape-DPlh8nn3-qV58ftXG.js');
 		return;
 	}
-	const { startPlayer, openVideo } = await module.import('./runtime-sunEQkpP-DfVOJpKJ.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-B4WciZPF-CgsMvaq6.js');
 	await startPlayer();
 	entry?.ready(openVideo);
 	if (window === window.top) {
 		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-ByBNGgi5-BrQvFfLx.js');
-		await module.import('./_pocket-4tcrfnGI-DePTGuDn.js');
-		await module.import('./_gamepad-0FnwQg0v-DTUB_UMB.js');
-		await module.import('./_heatsync-D2ynjdKd-DhV5xEs9.js');
-		await module.import('./_shape-6c0Wasvy-Ckr5TRfl.js');
-		await module.import('./_setting-lV9cx-AR-CAdQ0sPq.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-CsDMg228-BsSuhHVa.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-4tcrfnGI-DePTGuDn.js');
+		await module.import('./_pocket-7wrDjPLy-DNZZS9XB.js');
+		await module.import('./_gamepad-Dpcs16C5-DAymtUGG.js');
+		await module.import('./_heatsync--0fWPnJL-DHEqU7cb.js');
+		await module.import('./_shape-DPlh8nn3-qV58ftXG.js');
+		await module.import('./_setting-DtHVlQTP-DRc50p8H.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-yBXbFqoG-CaGmIUbr.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-7wrDjPLy-DNZZS9XB.js');
 }
 start().catch((error) => {
 	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-BlwOG5qc-CoeO_vmm.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
+System.register("./_uquery-DgFt5t4L-CWcWkcfG.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -383,7 +383,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.5";
+	uQuery.fn.uQuery = "0.0.6";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -624,7 +624,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.5
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.6
   `, `
     font-size: 8px;
     font-family:
@@ -634,7 +634,7 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-CQG3EMWb-CBbghyF9.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_captube-cBNsN1PE-CaCO7bZm.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1121,7 +1121,7 @@ SOFTWARE.
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-6c0Wasvy-Ckr5TRfl.js", ['./css-DLex8qfq-CdKClobQ.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_shape-DPlh8nn3-qV58ftXG.js", ['./css-BKbZXBIT-CdKClobQ.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css,SettingsDialog;return{setters:[function(module){css=module.a;},function(module){SettingsDialog=module.S;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1440,13 +1440,13 @@ interval: ${config.interval}        // マスクの更新間隔
 					this.shadow = this.attachShadow({ mode: "open" });
 					this.shadow.innerHTML = this.getTemplate(config);
 					this.root = this.shadow.querySelector("#root");
+					this.modal = new SettingsDialog(this.root, "masked", () => {});
 					this.shadow.querySelector(".close-button").addEventListener("click", (e) => {
 						this.close();
 						e.stopPropagation();
 						e.preventDefault();
 					});
 					this.root.addEventListener("click", (e) => {
-						if (e.target === this.root) this.close();
 						e.stopPropagation();
 					});
 					this.classList.add("zen-family");
@@ -1581,14 +1581,14 @@ interval: ${config.interval}        // マスクの更新間隔
 				}
 				open() {
 					this.update();
-					this.root.showModal();
+					this.modal.open();
 				}
 				close() {
-					if (this.root) this.root.close();
+					if (this.root) this.modal.close();
 				}
 				toggle() {
 					this.init();
-					if (this.isOpen) this.root.close();
+					if (this.isOpen) this.close();
 					else this.open();
 				}
 			}
@@ -1805,14 +1805,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.5`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.6`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-sunEQkpP-DfVOJpKJ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-B8MlgXN6-D-1Tej7v.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
+System.register("./runtime-B4WciZPF-CgsMvaq6.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-BFM6ajV7-vOJkaJOH.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$3,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,closeSettingsDialog,SettingsDialog,SETTINGS_FIELD_THEME,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$3=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){closeSettingsDialog=module.c;SettingsDialog=module.S;SETTINGS_FIELD_THEME=module.a;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -1846,7 +1846,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-_css("#zenzaVideoPlayerDialog{--fw-panel-width:min(390px, 88vw);--fw-ink:#f1f4f9;--fw-muted:#aab4c6;--fw-accent:#8ddbc7;color:var(--fw-ink);background:#000;font-family:system-ui,sans-serif}#zenzaVideoPlayerDialog.is-open{inset:0}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:none;height:100%;box-shadow:none;position:absolute;inset:0;transform:none}#zenzaVideoPlayerDialog .fw-player{--padding-bottom:0px;--zenza-control-bar-height:24px;isolation:isolate;position:absolute;inset:0;width:100%!important;height:100%!important}#zenzaVideoPlayerDialog .fw-player .videoPlayer,#zenzaVideoPlayerDialog .fw-player .commentLayerFrame,#zenzaVideoPlayerDialog .fw-player .resizeObserver{width:100%;height:100%;top:0;left:0}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoHeaderPanel,#zenzaVideoPlayerDialog .fw-player .videoControlBar>.controlItemContainer,#zenzaVideoPlayerDialog .fw-player .menuItemContainer{display:none}#zenzaVideoPlayerDialog .fw-controls{z-index:400;pointer-events:none;background:linear-gradient(#0009,#0000 24% 73%,#000b);transition:opacity .16s,visibility .16s;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-controls input,#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings{pointer-events:auto}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-settings button{min-width:44px;min-height:44px;color:var(--fw-ink);font:inherit;cursor:pointer;background:0 0;border:1px solid #0000;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;padding:9px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls button:hover,#zenzaVideoPlayerDialog .fw-settings button:hover,#zenzaVideoPlayerDialog .fw-settings a:hover{background:#ffffff18}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) :focus-visible{outline:2px solid var(--fw-accent);outline-offset:-2px}#zenzaVideoPlayerDialog [data-shell-action][aria-pressed=true]{color:var(--fw-accent);background:#8ddbc71c}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) svg{flex-shrink:0;width:24px;height:24px}#zenzaVideoPlayerDialog .fw-header{align-items:flex-start;gap:clamp(8px,1.5vw,28px);padding:clamp(12px,2.5vw,36px);display:flex}#zenzaVideoPlayerDialog .fw-heading{flex:1;min-width:0}#zenzaVideoPlayerDialog .fw-title{overflow-wrap:anywhere;text-shadow:0 2px 8px #000;max-height:2.8em;font-size:clamp(18px,2vw,30px);font-weight:600;line-height:1.4;overflow:hidden}#zenzaVideoPlayerDialog .fw-stats{color:#d0d7e2;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:clamp(11px,1.2vw,14px);display:flex}#zenzaVideoPlayerDialog .fw-stats span{align-items:center;gap:6px;display:inline-flex}#zenzaVideoPlayerDialog .fw-stats svg{width:16px;height:16px}#zenzaVideoPlayerDialog .fw-transport{align-items:center;gap:clamp(24px,7vw,100px);display:flex;position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%)}#zenzaVideoPlayerDialog .fw-transport button{background:#10151da6;border-radius:50%;width:clamp(56px,7vw,88px);height:clamp(56px,7vw,88px);box-shadow:0 2px 16px #0004}#zenzaVideoPlayerDialog .fw-transport svg{filter:drop-shadow(0 1px 4px #000);width:65%;height:65%}#zenzaVideoPlayerDialog .fw-bottom{flex-wrap:wrap;align-items:center;gap:8px;display:flex;position:absolute;bottom:30px;left:clamp(8px,2vw,28px);right:clamp(8px,2vw,28px)}#zenzaVideoPlayerDialog .fw-speed{align-items:center;gap:4px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings select{font:inherit;color:var(--fw-ink);background:#19202ce6;border:1px solid #ffffff30;border-radius:6px;min-height:40px;padding:8px 4px}#zenzaVideoPlayerDialog [data-shell-volume]{width:clamp(64px,10vw,150px);accent-color:var(--fw-accent)}#zenzaVideoPlayerDialog .fw-time{color:#d0d7e2;font-variant-numeric:tabular-nums;margin-inline-start:auto}#zenzaVideoPlayerDialog .fw-announcement{clip-path:inset(50%);width:1px;height:1px;position:absolute;overflow:hidden}#zenzaVideoPlayerDialog .fw-player .videoControlBar{z-index:410;opacity:1;background:0 0;width:100%;height:24px;margin:0;position:absolute;inset:auto 0 0;transform:none}#zenzaVideoPlayerDialog .fw-player .seekBarContainer{width:100%;height:24px;top:auto;bottom:0}#zenzaVideoPlayerDialog .fw-player .seekBar{height:24px;margin:0}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .fw-controls,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoControlBar,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .commentInputPanel{opacity:0;visibility:hidden;pointer-events:none}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoPlayer>*{cursor:none}#zenzaVideoPlayerDialog .fw-backdrop{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:500;cursor:pointer;background:#060a1266;border:0;width:100%;height:100%;display:none;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-backdrop,#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-backdrop{display:block}#zenzaVideoPlayerDialog .fw-settings{overscroll-behavior:contain;z-index:510;background:#131923f5;border-right:1px solid #ffffff20;width:min(280px,88vw);padding:20px 14px;font-size:15px;display:none;position:absolute;inset:0 auto 0 0;overflow-y:auto;box-shadow:12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-settings{display:block}#zenzaVideoPlayerDialog .fw-menu-heading{justify-content:space-between;align-items:center;margin:0 0 24px 8px;display:flex}#zenzaVideoPlayerDialog .fw-menu-heading small{color:var(--fw-muted);margin-top:4px;display:block}#zenzaVideoPlayerDialog .fw-settings>button,#zenzaVideoPlayerDialog .fw-settings details button,#zenzaVideoPlayerDialog .fw-settings>a,#zenzaVideoPlayerDialog .fw-quality{width:100%;min-height:44px;color:var(--fw-ink);border-radius:8px;justify-content:space-between;align-items:center;padding:10px 12px;text-decoration:none;display:flex}#zenzaVideoPlayerDialog .fw-settings details{border-top:1px solid #ffffff20;margin-top:16px;padding-top:16px}#zenzaVideoPlayerDialog .fw-settings summary{cursor:pointer;color:var(--fw-muted);padding:10px}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanel{width:var(--fw-panel-width);opacity:1;height:100%;max-height:none;color:var(--fw-ink);z-index:510;background:#131923f7;border:0;border-left:1px solid #ffffff20;margin:0;padding:0;transition:none;display:none;position:absolute;inset:0 0 0 auto;overflow:hidden;transform:none;box-shadow:-12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel{display:block}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .tabSelectContainer{background:#131923;border-bottom:1px solid #ffffff20;width:100%;height:60px;padding:4px 8px;display:flex;position:absolute;inset:0 0 auto}#zenzaVideoPlayerDialog .fw-player .tabSelect{width:auto;height:52px;color:var(--fw-muted);background:0 0;border:0;border-radius:0;flex:1;justify-content:center;align-items:center;margin:0;padding:8px;display:flex}#zenzaVideoPlayerDialog .fw-player .tabSelect.activeTab{color:var(--fw-accent);box-shadow:inset 0 -2px var(--fw-accent)}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 60px);margin-top:60px;overflow:auto}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelInner,#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelContent{color:var(--fw-ink);background:0 0}#zenzaVideoPlayerDialog .fw-player .videoDescription{color:#d0d7e2;padding:16px;line-height:1.8}#zenzaVideoPlayerDialog .fw-player .videoDescription a{color:#8ddbc7}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer{align-items:center;gap:16px;padding:20px 16px;display:flex}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner{align-items:center;gap:10px;min-width:0;display:flex}#zenzaVideoPlayerDialog .fw-player .ownerIcon{border-radius:12px;width:64px;height:64px}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-header,.playlist-header){color:#d0d7e2;background:#19212e;border-bottom:1px solid #ffffff20}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-menu-button,.playlist-menu-button){color:#d0d7e2;background:#253141;border:0;border-radius:5px;font-size:13px}#zenzaVideoPlayerDialog .fw-player .autoScroll .autoScroll,#zenzaVideoPlayerDialog .fw-player .is-enable .toggleEnable{color:var(--fw-accent);text-shadow:none}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelFoot{background:0 0}#zenzaVideoPlayerDialog .fw-tags{scrollbar-width:thin;scrollbar-color:#526173 #131923}#zenzaVideoPlayerDialog .fw-settings button:disabled{opacity:.4;cursor:wait}#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel{color:var(--fw-ink);background:#131923;border:1px solid #ffffff30;border-radius:12px;width:min(900px,100vw - 32px);height:calc(100dvh - 32px)}#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel .settingPanelInner{border:0}#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel .caption{background:#253141;border-radius:6px}#zenzaVideoPlayerDialog .zenzaAdvancedSetting-close{background:#253141;border:0;border-radius:8px;font-size:16px}#zenzaVideoPlayerDialog .fw-player .seriesList{margin:12px}#zenzaVideoPlayerDialog .fw-tags{inset:0 var(--fw-panel-width) auto 0;z-index:510;background:#131923cc;border-bottom:1px solid #ffffff20;max-height:35%;padding:16px 24px;display:none;position:absolute;overflow:auto}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{display:block}#zenzaVideoPlayerDialog .fw-tags .videoTagsContainer{width:100%;color:var(--fw-ink);background:0 0;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel{z-index:420;width:min(720px,100% - 32px);height:auto;position:absolute;top:auto;bottom:132px;left:50%;transform:translate(-50%)}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{box-shadow:none;opacity:1;background:#131923e6;border-radius:8px;gap:8px;padding:6px;display:flex}#zenzaVideoPlayerDialog .fw-player .commentInputPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .commentInput{opacity:.85;min-width:0;color:var(--fw-ink);text-align:left;box-shadow:none;background:0 0;flex:1;font-size:14px}#zenzaVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput,.commentSubmit){display:none}#zenzaVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput,.commentSubmit){opacity:1;z-index:1;color:var(--fw-ink);box-shadow:none;background:#253141;font-size:13px;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel{color:var(--fw-ink);background:#253141;top:calc(100% + 6px)}@media (max-width:600px){#zenzaVideoPlayerDialog .fw-player .commentInputPanel{bottom:164px}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{grid-template-columns:1fr 100px;display:grid}#zenzaVideoPlayerDialog .fw-player .commentInput{grid-area:1/1/auto/-1}#zenzaVideoPlayerDialog .fw-header{gap:4px;padding:10px 6px}#zenzaVideoPlayerDialog .fw-header button{min-width:36px;padding:6px}#zenzaVideoPlayerDialog .fw-stats{gap:5px 10px}#zenzaVideoPlayerDialog .fw-bottom{gap:3px}#zenzaVideoPlayerDialog .fw-speed svg{display:none}#zenzaVideoPlayerDialog .fw-time{font-size:11px}#zenzaVideoPlayerDialog [data-shell-volume]{width:64px}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{width:var(--fw-panel-width);max-height:100px;padding:8px;inset:60px 0 auto auto}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 160px);margin-top:160px}}@media (max-height:480px){#zenzaVideoPlayerDialog .fw-header{padding:8px}#zenzaVideoPlayerDialog .fw-title{max-height:1.4em;font-size:18px}#zenzaVideoPlayerDialog .fw-transport button{width:48px;height:48px}#zenzaVideoPlayerDialog .fw-settings{padding-top:8px}#zenzaVideoPlayerDialog .fw-menu-heading{margin-bottom:6px}}@media (prefers-reduced-motion:reduce){#zenzaVideoPlayerDialog .fw-controls{transition:none}}");
+_css("#zenzaVideoPlayerDialog{--fw-panel-width:min(390px, 88vw);--fw-ink:#f1f4f9;--fw-muted:#aab4c6;--fw-accent:#8ddbc7;color:var(--fw-ink);background:#000;font-family:system-ui,sans-serif}#zenzaVideoPlayerDialog.is-open{inset:0}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:none;height:100%;box-shadow:none;position:absolute;inset:0;transform:none}#zenzaVideoPlayerDialog .fw-player{--padding-bottom:0px;--zenza-control-bar-height:24px;isolation:isolate;position:absolute;inset:0;width:100%!important;height:100%!important}#zenzaVideoPlayerDialog .fw-player .videoPlayer,#zenzaVideoPlayerDialog .fw-player .commentLayerFrame,#zenzaVideoPlayerDialog .fw-player .resizeObserver{width:100%;height:100%;top:0;left:0}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoHeaderPanel,#zenzaVideoPlayerDialog .fw-player .videoControlBar>.controlItemContainer,#zenzaVideoPlayerDialog .fw-player .menuItemContainer{display:none}#zenzaVideoPlayerDialog .fw-controls{z-index:400;pointer-events:none;background:linear-gradient(#0009,#0000 24% 73%,#000b);transition:opacity .16s,visibility .16s;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-controls input,#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings{pointer-events:auto}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-settings button{min-width:44px;min-height:44px;color:var(--fw-ink);font:inherit;cursor:pointer;background:0 0;border:1px solid #0000;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;padding:9px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls button:hover,#zenzaVideoPlayerDialog .fw-settings button:hover,#zenzaVideoPlayerDialog .fw-settings a:hover{background:#ffffff18}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) :focus-visible{outline:2px solid var(--fw-accent);outline-offset:-2px}#zenzaVideoPlayerDialog [data-shell-action][aria-pressed=true]{color:var(--fw-accent);background:#8ddbc71c}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) svg{flex-shrink:0;width:24px;height:24px}#zenzaVideoPlayerDialog .fw-header{align-items:flex-start;gap:clamp(8px,1.5vw,28px);padding:clamp(12px,2.5vw,36px);display:flex}#zenzaVideoPlayerDialog .fw-heading{flex:1;min-width:0}#zenzaVideoPlayerDialog .fw-title{overflow-wrap:anywhere;text-shadow:0 2px 8px #000;max-height:2.8em;font-size:clamp(18px,2vw,30px);font-weight:600;line-height:1.4;overflow:hidden}#zenzaVideoPlayerDialog .fw-stats{color:#d0d7e2;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:clamp(11px,1.2vw,14px);display:flex}#zenzaVideoPlayerDialog .fw-stats span{align-items:center;gap:6px;display:inline-flex}#zenzaVideoPlayerDialog .fw-stats svg{width:16px;height:16px}#zenzaVideoPlayerDialog .fw-transport{align-items:center;gap:clamp(24px,7vw,100px);display:flex;position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%)}#zenzaVideoPlayerDialog .fw-transport button{background:#10151da6;border-radius:50%;width:clamp(56px,7vw,88px);height:clamp(56px,7vw,88px);box-shadow:0 2px 16px #0004}#zenzaVideoPlayerDialog .fw-transport svg{filter:drop-shadow(0 1px 4px #000);width:65%;height:65%}#zenzaVideoPlayerDialog .fw-bottom{flex-wrap:wrap;align-items:center;gap:8px;display:flex;position:absolute;bottom:30px;left:clamp(8px,2vw,28px);right:clamp(8px,2vw,28px)}#zenzaVideoPlayerDialog .fw-speed{align-items:center;gap:4px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings select{font:inherit;color:var(--fw-ink);background:#19202ce6;border:1px solid #ffffff30;border-radius:6px;min-height:40px;padding:8px 4px}#zenzaVideoPlayerDialog [data-shell-volume]{width:clamp(64px,10vw,150px);accent-color:var(--fw-accent)}#zenzaVideoPlayerDialog .fw-time{color:#d0d7e2;font-variant-numeric:tabular-nums;margin-inline-start:auto}#zenzaVideoPlayerDialog .fw-announcement{clip-path:inset(50%);width:1px;height:1px;position:absolute;overflow:hidden}#zenzaVideoPlayerDialog .fw-player .videoControlBar{z-index:410;opacity:1;background:0 0;width:100%;height:24px;margin:0;position:absolute;inset:auto 0 0;transform:none}#zenzaVideoPlayerDialog .fw-player .seekBarContainer{width:100%;height:24px;top:auto;bottom:0}#zenzaVideoPlayerDialog .fw-player .seekBar{height:24px;margin:0}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .fw-controls,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoControlBar,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .commentInputPanel{opacity:0;visibility:hidden;pointer-events:none}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoPlayer>*{cursor:none}#zenzaVideoPlayerDialog .fw-backdrop{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:500;cursor:pointer;background:#060a1266;border:0;width:100%;height:100%;display:none;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-backdrop,#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-backdrop{display:block}#zenzaVideoPlayerDialog .fw-settings{overscroll-behavior:contain;z-index:510;background:#131923f5;border-right:1px solid #ffffff20;width:min(280px,88vw);padding:20px 14px;font-size:15px;display:none;position:absolute;inset:0 auto 0 0;overflow-y:auto;box-shadow:12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-settings{display:block}#zenzaVideoPlayerDialog .fw-menu-heading{justify-content:space-between;align-items:center;margin:0 0 24px 8px;display:flex}#zenzaVideoPlayerDialog .fw-menu-heading small{color:var(--fw-muted);margin-top:4px;display:block}#zenzaVideoPlayerDialog .fw-settings>button,#zenzaVideoPlayerDialog .fw-settings details button,#zenzaVideoPlayerDialog .fw-settings>a,#zenzaVideoPlayerDialog .fw-quality{width:100%;min-height:44px;color:var(--fw-ink);border-radius:8px;justify-content:space-between;align-items:center;padding:10px 12px;text-decoration:none;display:flex}#zenzaVideoPlayerDialog .fw-settings details{border-top:1px solid #ffffff20;margin-top:16px;padding-top:16px}#zenzaVideoPlayerDialog .fw-settings summary{cursor:pointer;color:var(--fw-muted);padding:10px}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanel{width:var(--fw-panel-width);opacity:1;height:100%;max-height:none;color:var(--fw-ink);z-index:510;background:#131923f7;border:0;border-left:1px solid #ffffff20;margin:0;padding:0;transition:none;display:none;position:absolute;inset:0 0 0 auto;overflow:hidden;transform:none;box-shadow:-12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel{display:block}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .tabSelectContainer{background:#131923;border-bottom:1px solid #ffffff20;width:100%;height:60px;padding:4px 8px;display:flex;position:absolute;inset:0 0 auto}#zenzaVideoPlayerDialog .fw-player .tabSelect{width:auto;height:52px;color:var(--fw-muted);background:0 0;border:0;border-radius:0;flex:1;justify-content:center;align-items:center;margin:0;padding:8px;display:flex}#zenzaVideoPlayerDialog .fw-player .tabSelect.activeTab{color:var(--fw-accent);box-shadow:inset 0 -2px var(--fw-accent)}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 60px);margin-top:60px;overflow:auto}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelInner,#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelContent{color:var(--fw-ink);background:0 0}#zenzaVideoPlayerDialog .fw-player .videoDescription{color:#d0d7e2;padding:16px;line-height:1.8}#zenzaVideoPlayerDialog .fw-player .videoDescription a{color:#8ddbc7}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer{align-items:center;gap:16px;padding:20px 16px;display:flex}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner{align-items:center;gap:10px;min-width:0;display:flex}#zenzaVideoPlayerDialog .fw-player .ownerIcon{border-radius:12px;width:64px;height:64px}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-header,.playlist-header){color:#d0d7e2;background:#19212e;border-bottom:1px solid #ffffff20}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-menu-button,.playlist-menu-button){color:#d0d7e2;background:#253141;border:0;border-radius:5px;font-size:13px}#zenzaVideoPlayerDialog .fw-player .autoScroll .autoScroll,#zenzaVideoPlayerDialog .fw-player .is-enable .toggleEnable{color:var(--fw-accent);text-shadow:none}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelFoot{background:0 0}#zenzaVideoPlayerDialog .fw-tags{scrollbar-width:thin;scrollbar-color:#526173 #131923}#zenzaVideoPlayerDialog .fw-settings button:disabled{opacity:.4;cursor:wait}#zenzaVideoPlayerDialog .fw-player .seriesList{margin:12px}#zenzaVideoPlayerDialog .fw-tags{inset:0 var(--fw-panel-width) auto 0;z-index:510;background:#131923cc;border-bottom:1px solid #ffffff20;max-height:35%;padding:16px 24px;display:none;position:absolute;overflow:auto}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{display:block}#zenzaVideoPlayerDialog .fw-tags .videoTagsContainer{width:100%;color:var(--fw-ink);background:0 0;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel{z-index:420;width:min(720px,100% - 32px);height:auto;position:absolute;top:auto;bottom:132px;left:50%;transform:translate(-50%)}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{box-shadow:none;opacity:1;background:#131923e6;border-radius:8px;gap:8px;padding:6px;display:flex}#zenzaVideoPlayerDialog .fw-player .commentInputPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .commentInput{opacity:.85;min-width:0;color:var(--fw-ink);text-align:left;box-shadow:none;background:0 0;flex:1;font-size:14px}#zenzaVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput,.commentSubmit){display:none}#zenzaVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput,.commentSubmit){opacity:1;z-index:1;color:var(--fw-ink);box-shadow:none;background:#253141;font-size:13px;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel{color:var(--fw-ink);background:#253141;top:calc(100% + 6px)}@media (max-width:600px){#zenzaVideoPlayerDialog .fw-player .commentInputPanel{bottom:164px}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{grid-template-columns:1fr 100px;display:grid}#zenzaVideoPlayerDialog .fw-player .commentInput{grid-area:1/1/auto/-1}#zenzaVideoPlayerDialog .fw-header{gap:4px;padding:10px 6px}#zenzaVideoPlayerDialog .fw-header button{min-width:36px;padding:6px}#zenzaVideoPlayerDialog .fw-stats{gap:5px 10px}#zenzaVideoPlayerDialog .fw-bottom{gap:3px}#zenzaVideoPlayerDialog .fw-speed svg{display:none}#zenzaVideoPlayerDialog .fw-time{font-size:11px}#zenzaVideoPlayerDialog [data-shell-volume]{width:64px}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{width:var(--fw-panel-width);max-height:100px;padding:8px;inset:60px 0 auto auto}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 160px);margin-top:160px}}@media (max-height:480px){#zenzaVideoPlayerDialog .fw-header{padding:8px}#zenzaVideoPlayerDialog .fw-title{max-height:1.4em;font-size:18px}#zenzaVideoPlayerDialog .fw-transport button{width:48px;height:48px}#zenzaVideoPlayerDialog .fw-settings{padding-top:8px}#zenzaVideoPlayerDialog .fw-menu-heading{margin-bottom:6px}}@media (prefers-reduced-motion:reduce){#zenzaVideoPlayerDialog .fw-controls{transition:none}}");
 var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 var browser = {
 	window};
@@ -19490,7 +19490,7 @@ var VideoListItemView = class {
   `;
 	}
 	static build(item, index = 0) {
-		const dllLike = dll$4;
+		const dllLike = dll$3;
 		const textUtilLike = textUtil;
 		const addComma = (m) => isNaN(m) ? "---" : String(m.toLocaleString?.() ?? m);
 		const { cache, timestamp, index: _index } = this.map.get(item) ?? {};
@@ -19837,7 +19837,7 @@ var VideoListView = class VideoListView extends Emitter {
 		const list = this.list;
 		if (!list) return;
 		const targets = items || this.items || [];
-		const dllLike = dll$4;
+		const dllLike = dll$3;
 		const globalLike = global;
 		const lit = dllLike.lit || await globalLike.emitter.promise("lit-html");
 		const timeLabel = `update playlistView items = ${targets.length}`;
@@ -19849,7 +19849,7 @@ var VideoListView = class VideoListView extends Emitter {
 	}
 	async _buildList(items) {
 		const targets = items || this.items || [];
-		const dllLike = dll$4;
+		const dllLike = dll$3;
 		const globalLike = global;
 		const lit = dllLike.lit || await globalLike.emitter.promise("lit-html");
 		const mapper = (item, index) => VideoListItemView.build(item, index);
@@ -26124,6 +26124,7 @@ var NicoVideoPlayerDialogView = class NicoVideoPlayerDialogView extends Emitter 
 		this._updateScreenModeStyle();
 	}
 	hide() {
+		closeSettingsDialog();
 		this.shell?.close();
 		ClassList(this._$dialog[0]).remove("is-open");
 		if (this.settingPanel) this.settingPanel.close();
@@ -29668,7 +29669,7 @@ var { initialize } = (() => {
 	};
 	return { initialize };
 })();
-var dll$3 = { lit: html_exports };
+var dll$2 = { lit: html_exports };
 var BaseCommandElement = class extends HTMLElement {
 	static toAttributeName(camel) {
 		return "data-" + camel.replace(/([A-Z])/g, (s) => "-" + s.toLowerCase());
@@ -29692,7 +29693,7 @@ var BaseCommandElement = class extends HTMLElement {
 		return {};
 	}
 	static async getTemplate(state = {}, props = {}, events = {}) {
-		const { html } = dll$3.lit || await this.importLit();
+		const { html } = dll$2.lit || await this.importLit();
 		return html`<div
       id="root"
       data-state="${JSON.stringify(state)}"
@@ -29728,7 +29729,7 @@ var BaseCommandElement = class extends HTMLElement {
 	}
 	async render() {
 		const ctor = this.constructor;
-		const { render } = dll$3.lit || await ctor.importLit();
+		const { render } = dll$2.lit || await ctor.importLit();
 		if (!this.shadowRoot) this.attachShadow({ mode: "open" });
 		const shadowRoot = this.shadowRoot;
 		render(await ctor.getTemplate(this.state, this.props, this.events), shadowRoot, { isConnected: this._isConnected });
@@ -29756,7 +29757,7 @@ var BaseCommandElement = class extends HTMLElement {
 			this._root = null;
 		}
 		const ctor = this.constructor;
-		const { render } = dll$3.lit || await ctor.importLit();
+		const { render } = dll$2.lit || await ctor.importLit();
 		render("", this.shadowRoot, { isConnected: this._isConnected });
 	}
 	attributeChangedCallback(attr, oldValue, newValue) {
@@ -29826,7 +29827,7 @@ var BaseCommandElement = class extends HTMLElement {
 		}).length > 0) this.requestRender();
 	}
 };
-var dll$2 = {};
+var dll$1 = {};
 var { VideoItemElement} = (() => {
 	const ITEM_HEIGHT = 100;
 	const THUMBNAIL_WIDTH = 96;
@@ -29871,7 +29872,7 @@ var { VideoItemElement} = (() => {
 			};
 		}
 		static async getTemplate(state = {}, props = VideoItemProps, events = {}) {
-			const { html } = dll$2.list || await this.importLit();
+			const { html } = dll$1.list || await this.importLit();
 			const watchId = props.watchId;
 			const watchUrl = `https://www.nicovideo.jp/watch/${props.watchId}`;
 			const title = props.title ? html`<span title="${props.title}">${props.title}<span></span></span>` : props.watchId;
@@ -30167,7 +30168,7 @@ var { VideoItemElement} = (() => {
 		VideoItemProps
 	};
 })();
-var dll$1 = {};
+var dll = {};
 var { VideoSeriesLabel } = (() => {
 	const ITEM_HEIGHT = 100;
 	const THUMBNAIL_WIDTH = 120;
@@ -30191,7 +30192,7 @@ var { VideoSeriesLabel } = (() => {
 			return VideoSeriesAttributes;
 		}
 		static async getTemplate(state = {}, props = VideoSeriesProps, events = {}) {
-			const { html } = dll$1.list || await this.importLit();
+			const { html } = dll.list || await this.importLit();
 			if (!props.id) return html``;
 			const title = props.title || `series/${props.id}`;
 			const url = `https://www.nicovideo.jp/series/${props.id}`;
@@ -30515,358 +30516,85 @@ cssUtil.registerProps({
 if (window.customElements) {
 	if (!customElements.get("zenza-range-bar")) window.customElements.define("zenza-range-bar", RangeBarElement);
 }
-var dll = {};
-var { DialogElement} = (() => {
-	const DialogProps = {};
-	const DialogAttributes = Object.keys(DialogProps).map((prop) => BaseCommandElement.toAttributeName(prop));
-	class DialogElement extends BaseCommandElement {
-		static get propTypes() {
-			return DialogProps;
-		}
-		static get defaultProps() {
-			return DialogProps;
-		}
-		static get observedAttributes() {
-			return DialogAttributes;
-		}
-		static get defaultState() {
-			return { isOpen: false };
-		}
-		static getContentsTemplate(html, state = {}, props = {}, events = {}) {
-			return Promise.resolve(null);
-		}
-		static async getTemplate(state = {}, props = {}, events = {}) {
-			const { html } = dll.list || await this.importLit();
-			const body = html`
-        <style>
-          * {
-            box-sizing: border-box;
-            overscroll-behavior: none;
-          }
-
-          *::-webkit-scrollbar {
-            background: transparent;
-            /*bordedr-radius: 6px;*/
-            width: 16px;
-          }
-
-          *::-webkit-scrollbar-thumb {
-            /*border-radius: 4px;*/
-            background: var(--scrollbar-thumb-color, #999);
-            box-shadow: 0 0 4px #333 inset;
-            will-change: transform;
-          }
-
-          *::-webkit-scrollbar-button {
-            display: none;
-          }
-
-          #root {
-            --dialog-border-width: 12px;
-            --dialog-background-color: rgba(48, 48, 48, 0.9);
-            --dialog-text-color: #ccc;
-            text-align: left;
-          }
-
-          button {
-            cursor: pointer;
-            outline: none;
-          }
-
-          .dialog {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: var(--dialog-width, 60vw);
-            height: var(--dialog-height, 80vh);
-            z-index: 1000000;
-            will-change: transform;
-            visibility: hidden;
-            user-select: none;
-            transform: translate(-50%, -50%);
-            border-radius: 16px;
-            transform-origin: center top;
-            animation-name: closing;
-            animation-fill-mode: forwards;
-            animation-iteration-count: 1;
-            animation-duration: 0.5s;
-            animation-timing-function: linear;
-            border: 1px solid rgba(128, 128, 128, 0.5);
-          }
-
-          .dialog.is-open::before {
-            content: '';
-            position: fixed;
-            top: calc(-50vh + 50%);
-            left: calc(-50vw + 50%);
-            width: 100vw;
-            height: 100vh;
-            animation-name: opening-shadow;
-            visibility: hidden;
-            animation-delay: 1s;
-            animation-fill-mode: forwards;
-            animation-iteration-count: 1;
-            animation-duration: 1s;
-            animation-timing-function: linear;
-          }
-
-          @keyframes opening-shadow {
-            0% {
-              visibility: hidden;
-            }
-            100% {
-              visibility: visible;
-            }
-          }
-
-          .dialog.is-open {
-            visibility: visible;
-            animation-name: opening;
-          }
-
-          @keyframes closing {
-            0% {
-              visibility: visible;
-              overflow: hidden;
-              transform: translate(-50%, -50%);
-            }
-            10% {
-              visibility: visible;
-              transform: translate(-50%, -50%) skew(-20deg) translate(20vw, 0);
-            }
-            45% {
-              visibility: hidden;
-              transform: translate(-50%, -50%) skew(-20deg) translate(100vw, 0);
-            }
-            100% {
-            }
-          }
-
-          @keyframes opening {
-            0% {
-              visibility: visible;
-              overflow: hidden;
-              transform: translate(-50%, -50%) skew(20deg) translate(200vw, 0);
-            }
-            90% {
-              transform: translate(-50%, -50%) skew(20deg);
-            }
-            93% {
-              transform: translate(-50%, -50%) skew(-10deg);
-            }
-            95% {
-              transform: translate(-50%, -50%) skew(5deg);
-            }
-            100% {
-              overflow: visible;
-              transform: translate(-50%, -50%);
-            }
-          }
-
-          .dialog-background {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 16px;
-            border-width: 16px;
-            border-style: solid;
-            --hue: calc(var(--current-hue, 0) + 120);
-            --hsl: hsla(var(--hue, 0), 50%, 80%, 0.5);
-            color: var(--hsl, hsla(120, 50%, 30%, 0.8));
-            box-shadow:
-              0 0 8px hsl(var(--hue, 0), 50%, 30%),
-              0 0 4px hsl(var(--hue, 0), 50%, 50%);
-            border-color: currentcolor;
-          }
-
-          .dialog.is-open .dialog-background {
-            animation-name: hue-roll;
-            animation-delay: 1s;
-            animation-fill-mode: forwards;
-            animation-iteration-count: infinite;
-            animation-duration: 30s;
-            animation-timing-function: linear;
-          }
-          @keyframes hue-roll {
-            0% {
-              --current-hue: 0;
-            }
-            100% {
-              --current-hue: 360;
-            }
-          }
-
-          .dialog-inner {
-            position: absolute;
-            background: hsla(var(--hue, 120), 10%, 15%, 0.9);
-            opacity: 1;
-            z-index: 100;
-            top: -4px;
-            left: -4px;
-            bottom: -4px;
-            right: -4px;
-            padding-right: 16px;
-            color: var(--dialog-text-color, #ccc);
-            overflow: auto;
-            overscroll-behavior: none;
-            border-radius: 8px;
-            border: 12px solid transparent;
-            box-shadow: 0 0 0 1px hsla(var(--hue, 0), 50%, 10%, 0.5);
-          }
-
-          h1,
-          h2,
-          h3,
-          h4,
-          h5,
-          h6,
-          h7,
-          summary {
-            background: rgba(3, 147, 147, 1);
-            /*box-shadow: 0 0 8px rgba(0, 0, 0, 0.5) inset;*/
-            text-shadow: 1px 1px #999;
-            border-radius: 4px;
-            font-weight: bold;
-            color: #333;
-            padding: 4px 8px;
-            margin: 0 8px 0 0;
-            text-align: left;
-          }
-
-          h3,
-          h4 {
-            margin: 0 auto;
-            background: rgba(192, 192, 192, 0.8);
-            box-shadow: none;
-          }
-
-          h3 {
-            width: calc(100% - 16px);
-          }
-
-          h4 {
-            width: calc(100% - 32px);
-          }
-
-          summary {
-            margin: 0 0 16px;
-            cursor: pointer;
-            outline: none;
-            font-size: 150%;
-          }
-          summary::-webkit-details-marker {
-            color: #f39393;
-            text-shadow: 0 0 1px red;
-          }
-          details: {
-            margin: 0 0 16px;
-          }
-          p {
-            padding: 8px;
-            margin: 0;
-          }
-
-          button,
-          input[type='button'] {
-            cursor: pointer;
-          }
-
-          textarea,
-          input,
-          select,
-          option {
-            background: transparent;
-            color: var(--dialog-text-color, #ccc);
-          }
-        </style>
-        <div class="dialog-background" data-command="nop">
-          <div class="dialog-inner">${state.isOpen ? await this.getContentsTemplate(html, state, props, events) : null}</div>
-        </div>
-      `;
-			return html`
-        <div id="root" @click=${events.onClick}>
-          <div class="dialog ${state.isOpen ? "is-open" : ""}" data-command="close">
-            <form @change=${events.onChange} @keydown=${events.onKeyDown} @keyup=${events.onKeyUp}>
-              ${state.isOpen ? body : ""}
-            </form>
-          </div>
-        </div>
-      `;
-		}
-		constructor() {
-			super();
-			this._dialog = null;
-			const onKey = this.onKey.bind(this);
-			Object.assign(this.events, {
-				onChange: this.onChange.bind(this),
-				onKeyDown: onKey,
-				onKeyUp: onKey
-			});
-			Object.assign(this.state, this.props);
-			cssUtil.registerProps({
-				name: "--current-hue",
-				syntax: "<number>",
-				initialValue: 0,
-				inherits: true
-			});
-		}
-		async connectedCallback() {
-			await super.connectedCallback();
-			if (!this._root) return;
-			this._dialog = this._root.querySelector(".dialog");
-			this._dialog.addEventListener("animationend", (e) => {
-				if (e.animationName !== "opening") return;
-				if (this.state.isOpen) this.onOpen();
-			});
-		}
-		get isOpen() {
-			return this.state.isOpen;
-		}
-		set isOpen(v) {
-			if (this.isOpen === v) return;
-			if (v) this.open();
-			else this.close();
-		}
-		get dialog() {
-			return this._dialog;
-		}
-		open() {
-			this.setState({ isOpen: true });
-			if (this._dialog) this._dialog.classList.add("is-open");
-		}
-		close() {
-			if (this._dialog) this._dialog.classList.remove("is-open");
-			setTimeout(() => this.setState({ isOpen: false }), 1e3);
-		}
-		toggle() {
-			if (this.isOpen) this.close();
-			else this.open();
-		}
-		onCommand(e) {
-			const { command } = e.detail;
-			switch (command) {
-				case "close":
-					this.close();
-					break;
-				default: return;
-			}
-			e.stopPropagation();
-			e.preventDefault();
-		}
-		onChange(e) {}
-		onOpen() {}
-		onKey(e) {
-			const path = e.path;
-			const tagName = (path && path[0] ? path[0] : e.target).tagName;
-			if (tagName === "SELECT" || tagName === "INPUT" || tagName === "TEXTAREA") e.stopPropagation();
-		}
-		attributeChangedCallback(attr, oldValue, newValue) {}
+var DialogProps = {};
+var DialogElement = class extends BaseCommandElement {
+	static get propTypes() {
+		return DialogProps;
 	}
-	return {
-		DialogElement,
-		DialogProps
-	};
-})();
+	static get defaultProps() {
+		return DialogProps;
+	}
+	static get defaultState() {
+		return { isOpen: false };
+	}
+	static getContentsTemplate(_html, _state = {}, _props = {}, _events = {}) {
+		return Promise.resolve(null);
+	}
+	static async getTemplate(state = {}, props = {}, events = {}) {
+		const { html } = await this.importLit();
+		const contents = state.isOpen ? await this.getContentsTemplate(html, state, props, events) : null;
+		return html`<div id="root" @click=${events.onClick}>
+      <dialog class="dialog">
+        <form @change=${events.onChange} @keydown=${events.onKeyDown} @keyup=${events.onKeyUp}>${contents}</form>
+      </dialog>
+    </div>`;
+	}
+	constructor() {
+		super();
+		this._dialog = null;
+		Object.assign(this.events, {
+			onChange: this.onChange.bind(this),
+			onKeyDown: this.onKey.bind(this),
+			onKeyUp: this.onKey.bind(this)
+		});
+	}
+	async render() {
+		await super.render();
+		const dialog = this._root?.querySelector(".dialog");
+		if (!dialog) return;
+		if (dialog !== this._dialog) {
+			this._dialog = dialog;
+			this.modal = new SettingsDialog(dialog, "general", () => this.setState({ isOpen: false }));
+		}
+		if (this.isOpen) {
+			const wasOpen = dialog.open;
+			this.modal?.open();
+			if (!wasOpen) this.onOpen();
+		} else this.modal?.close();
+	}
+	get isOpen() {
+		return this.state.isOpen === true;
+	}
+	set isOpen(value) {
+		if (value) this.open();
+		else this.close();
+	}
+	get dialog() {
+		return this._dialog;
+	}
+	open() {
+		this.setState({ isOpen: true });
+	}
+	close() {
+		this.modal?.close();
+		this.setState({ isOpen: false });
+	}
+	toggle() {
+		if (this.isOpen) this.close();
+		else this.open();
+	}
+	onCommand(event) {
+		if (event.detail.command !== "close") return;
+		this.close();
+		event.stopPropagation();
+		event.preventDefault();
+	}
+	onChange(_event) {}
+	onOpen() {}
+	onKey(event) {
+		event.stopPropagation();
+	}
+};
 var { SettingPanelElement } = (() => {
 	class SettingPanelElement extends DialogElement {
 		static get defaultState() {
@@ -31460,66 +31188,6 @@ var { SettingPanelElement } = (() => {
 			const conf = props.config.props;
 			return Promise.resolve(html`
         <style>
-          .dialog {
-            width: min(760px, calc(100vw - 32px));
-            height: min(800px, calc(100dvh - 32px));
-            border-radius: 12px;
-            animation: none;
-            font:
-              14px/1.6 system-ui,
-              sans-serif;
-          }
-          .dialog.is-open .dialog-background {
-            animation: none;
-          }
-          .dialog-background {
-            border: 1px solid #ffffff30;
-            box-shadow: 0 24px 80px #0009;
-            border-radius: 12px;
-          }
-          .dialog-inner {
-            inset: 0;
-            padding: 20px;
-            border: 0;
-            background: #131923;
-            color: #f1f4f9;
-            border-radius: 12px;
-          }
-          summary {
-            background: #253141;
-            color: #f1f4f9;
-            text-shadow: none;
-            font-size: 16px;
-            padding: 12px;
-            margin: 0 0 12px;
-          }
-          details {
-            margin-bottom: 12px;
-          }
-          input,
-          select,
-          textarea {
-            accent-color: #8ddbc7;
-          }
-          :focus-visible {
-            outline: 2px solid #8ddbc7;
-            outline-offset: 2px;
-          }
-          .setting-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-          }
-          .setting-close {
-            width: 44px;
-            height: 44px;
-            border: 0;
-            border-radius: 8px;
-            background: #253141;
-            color: #fff;
-            font-size: 24px;
-          }
           label {
             display: block;
             margin: 8px;
@@ -31594,17 +31262,6 @@ var { SettingPanelElement } = (() => {
           }
         </style>
         <div data-revision="${state.revision}">
-          <div class="setting-heading">
-            <strong>FutatsumeWatch</strong
-            ><button
-              type="button"
-              class="setting-close"
-              aria-label=${navigator.language.startsWith("ja") ? "閉じる" : "Close"}
-              @click=${events.onSettingClose}
-            >
-              ×
-            </button>
-          </div>
           ${this.getPlayerSettingMenu(html, conf)} ${this.getCommentSettingMenu(html, conf)}
           ${this.getFilterSettingMenu(html, conf)}
 
@@ -31628,11 +31285,6 @@ var { SettingPanelElement } = (() => {
 		constructor() {
 			super();
 			Object.assign(this.events, {
-				onSettingClose: (event) => {
-					event.preventDefault();
-					event.stopPropagation();
-					this.close();
-				},
 				onChange: this.onChange.bind(this),
 				onImportFileSelect: this.onImportFileSelect.bind(this)
 			});
@@ -65469,6 +65121,9 @@ async function initializeHls() {
 					});
 					this._shadow = this.attachShadow({ mode: "open" });
 					render(this.html(this._props), this._shadow);
+					const theme = document.createElement("style");
+					theme.textContent = SETTINGS_FIELD_THEME;
+					this._shadow.append(theme);
 					this._input = this._shadow.querySelector("input");
 					this._root = this._shadow.querySelector(".root, input");
 					this._details = this._shadow.querySelector(".details");
@@ -65713,6 +65368,7 @@ async function initializeHls() {
               <label>
                 <input type="range" min="${props.min}" max="${props.max}" step="${props.step}" value="${props.value}" />
                 <span class="labelText">${props.name}<content></content></span>
+                <output class="current-value"></output>
               </label>
               <details class="details">
                 <summary class="summary">詳細</summary>
@@ -65722,11 +65378,13 @@ async function initializeHls() {
 				}
 				set value(v) {
 					v = parseFloat(String(v));
-					if (Math.abs(this._props.value - v) <= .01) return;
+					const diff = Math.abs(this._props.value - v);
+					if (typeof this._props.value === "number" && diff <= .01) return;
 					this._props.value = v;
 					this._input.value = String(v);
 					this.setAttribute("value", String(v));
 					this._input.setAttribute("data-value", v.toLocaleString());
+					this._root.querySelector("output").textContent = v.toLocaleString();
 					this._root.classList.toggle("is-changed", this.value !== this.defaultValue);
 					this.dispatchEvent(new Event("change"));
 				}
@@ -65785,11 +65443,11 @@ async function initializeHls() {
 				}
 				open() {
 					if (!this._root) return;
-					if (!this._root.open) this._root.showModal();
+					if (!this._root.open) this.modal.open();
 				}
 				close() {
 					if (!this._root) return;
-					if (this._root.open) this._root.close();
+					if (this._root.open) this.modal.close();
 				}
 				toggle() {
 					if (!this._root) return;
@@ -65801,6 +65459,7 @@ async function initializeHls() {
 						this._shadow = this.attachShadow({ mode: "open" });
 						render(this.html(), this._shadow);
 						this._root = this._shadow.querySelector(".root");
+						this.modal = new SettingsDialog(this._root, "hls", () => {});
 						Array.from(this._shadow.querySelectorAll("video-debug-checkbox, video-debug-slider")).forEach((elm) => {
 							this._elm[elm.name] = elm;
 							elm.defaultValue = this.hlsConfig[elm.name];
@@ -65825,10 +65484,6 @@ async function initializeHls() {
 				}
 				_onClick(e) {
 					const target = e.target;
-					if (target === this._root) {
-						this.close();
-						return;
-					}
 					const commandElement = target.closest("[data-command]");
 					if (!commandElement) return;
 					switch (commandElement.getAttribute("data-command")) {
@@ -66279,7 +65934,7 @@ async function startPlayer() {
 		]);
 	});
 	await initializeHls();
-	global.emitter.emitResolve("lit-html", dll$4.lit);
+	global.emitter.emitResolve("lit-html", dll$3.lit);
 	if (location.hostname !== "www.nicovideo.jp") await NicoVideoApi.configBridge(Config);
 	await initialize();
 }})}}));
@@ -66405,7 +66060,7 @@ SOFTWARE.
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-4tcrfnGI-DePTGuDn.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-B8MlgXN6-D-1Tej7v.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
+System.register("./_pocket-7wrDjPLy-DNZZS9XB.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-BFM6ajV7-vOJkaJOH.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -69825,7 +69480,7 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-B8MlgXN6-D-1Tej7v.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
+System.register("./MylistApiLoader-BFM6ajV7-vOJkaJOH.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -72218,7 +71873,7 @@ var workerUtil = exports("w",(() => {
 	};
 	return workerUtil;
 })());})}}));
-System.register("./_gamepad-0FnwQg0v-DTUB_UMB.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,require_lodash,require_jquery,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
+System.register("./_gamepad-Dpcs16C5-DAymtUGG.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,require_lodash,require_jquery,SettingsDialog,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -72522,6 +72177,10 @@ var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 			_initDom(...args) {
 				super._initDom(...args);
 				const v = this._shadow;
+				this.modal = new SettingsDialog(v, "gamepad", () => this.setState({
+					isOpen: false,
+					isVisible: false
+				}));
 				this._elm.enabled = v.querySelector("[data-config-name=\"enabled\"]");
 				this._elm.needFocus = v.querySelector("[data-config-name=\"needFocus\"]");
 				this._elm.deviceIndex = v.querySelector("[data-config-name=\"deviceIndex\"]");
@@ -72553,21 +72212,15 @@ var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 				this._onClick(e);
 			}
 			show() {
-				document.body.addEventListener("click", this._bound.onBodyClick);
 				this._onBeforeShow();
-				this.setState({ isOpen: true });
-				if (this._shadow.showModal) this._shadow.showModal();
-				window.setTimeout(() => {
-					this.setState({ isVisible: true });
-				}, 100);
+				this.setState({
+					isOpen: true,
+					isVisible: true
+				});
+				this.modal.open();
 			}
 			hide() {
-				document.body.removeEventListener("click", this._bound.onBodyClick);
-				if (this._shadow.close) this._shadow.close();
-				this.setState({ isVisible: false });
-				window.setTimeout(() => {
-					this.setState({ isOpen: false });
-				}, 2100);
+				this.modal.close();
 			}
 			toggle() {
 				if (this._state.isOpen) this.hide();
@@ -73548,7 +73201,7 @@ var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 	await ZenzaDetector.detect();
 	loadMonkey();
 })(globalThis ? globalThis.window : window);})}}));
-System.register("./_heatsync-D2ynjdKd-DhV5xEs9.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./lodash-iCWT3gA4-DPJF93lo.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Emitter,require_lodash,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){Emitter=module.E;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
+System.register("./_heatsync--0fWPnJL-DHEqU7cb.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Emitter,require_lodash,SettingsDialog,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){Emitter=module.E;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -74040,6 +73693,10 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 			_initDom(...args) {
 				super._initDom(...args);
 				const v = this._shadow;
+				this.modal = new SettingsDialog(v, "heatsync", () => this.setState({
+					isOpen: false,
+					isVisible: false
+				}));
 				this._elm.red = v.querySelector("*[data-config-name=\"turbo.red\"]");
 				this._elm.dmc = v.querySelector("*[data-config-name=\"turbo.dmc-blue\"]");
 				this._elm.smile = v.querySelector("*[data-config-name=\"turbo.smile-blue\"]");
@@ -74078,19 +73735,15 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 				this._onClick(e);
 			}
 			show() {
-				document.body.addEventListener("click", this._bound.onBodyClick);
 				this._onBeforeShow();
-				this.setState({ isOpen: true });
-				window.setTimeout(() => {
-					this.setState({ isVisible: true });
-				}, 100);
+				this.setState({
+					isOpen: true,
+					isVisible: true
+				});
+				this.modal.open();
 			}
 			hide() {
-				document.body.removeEventListener("click", this._bound.onBodyClick);
-				this.setState({ isVisible: false });
-				window.setTimeout(() => {
-					this.setState({ isOpen: false });
-				}, 2100);
+				this.modal.close();
 			}
 			toggle() {
 				if (this._state.isOpen) this.hide();
@@ -74214,7 +73867,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
           width: 50px;
         }
       </style>
-      <div class="root HeatSyncConfigPanel">
+      <dialog class="root HeatSyncConfigPanel">
         <p class="title">†HeatSync†</p>
 
         <div class="speedSelect dmc">
@@ -74325,7 +73978,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
           </button>
         </div>
 
-      </div>
+      </dialog>
     `.trim();
 		class ToggleButton extends BaseViewComponent {
 			constructor({ parentNode }) {
@@ -74466,7 +74119,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-lV9cx-AR-CAdQ0sPq.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-DLex8qfq-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
+System.register("./_setting-DtHVlQTP-DRc50p8H.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,SettingsDialog,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -74549,6 +74202,8 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 				$container.append(uq.html(SettingPanel.__tpl__));
 				const $panel = this._$panel = $container.find(".zenzaAdvancedSettingPanel");
 				this._$view = $container.find(".zenzaAdvancedSettingPanel");
+				const dialog = document.querySelector(".zenzaAdvancedSettingPanel");
+				this.modal = new SettingsDialog(dialog, "advanced", () => this._$view.toggleClass("show", false));
 				this._$view.on("click", (e) => e.stopPropagation());
 				this._$rawData = $panel.find(".zenzaAdvancedSetting-rawData");
 				this._$rawData.val(config.exportJson());
@@ -74667,7 +74322,10 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 			toggle(v) {
 				this._initializeDom();
 				this._$view.toggleClass("show", v);
-				if (this._$view.hasClass("show")) this._beforeShow();
+				if (this._$view.hasClass("show")) {
+					this._beforeShow();
+					this.modal.open();
+				} else this.modal.close();
 			}
 			show() {
 				this.toggle(true);
@@ -74882,7 +74540,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
       <option value="picture-in-picture">picture-in-picture</option>
     `.trim();
 		SettingPanel.__tpl__ = `
-      <div class="zenzaAdvancedSettingPanel zen-family">
+      <dialog class="zenzaAdvancedSettingPanel zen-family">
         <div class="settingPanelInner">
           <div class="enableFullScreenOnDoubleClickControl control toggle">
             <label>
@@ -75004,7 +74662,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 
         </div>
         <button type="button" class="zenzaAdvancedSetting-close">閉じる</button>
-      </div>
+      </dialog>
     `.trim();
 		const initializePanel = () => {
 			if (panel == null) panel = new SettingPanel({
@@ -75016,9 +74674,6 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 			const openPanel = () => {
 				initializePanel();
 				panel.toggle();
-				const host = document.querySelector("#zenzaVideoPlayerDialog.is-open .zenzaPlayerContainer") ?? document.body;
-				const view = document.querySelector(".zenzaAdvancedSettingPanel");
-				if (view) host.append(view);
 			};
 			FutatsumeWatch.emitter.promise("videoControBar.addonMenuReady").then((value) => {
 				const { container } = value;
@@ -75705,6 +75360,220 @@ var MylistPocketDetector = exports("M",(() => {
 	});
 	return { detect: () => promise };
 })());})}}));
+System.register("./settings-dialog-DNHVARbw-Cpw0WW-a.js", [],(function(exports){'use strict';return{execute:(function(){exports("c",closeSettingsDialog);/*!
+MIT License
+
+Copyright (c) 2025 roflsunriz/comment-overlay contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var SETTINGS_DIALOG_THEME = `
+dialog.fw-settings-dialog[data-fw-settings] {
+  position: fixed; inset: 0; margin: 0; padding: 16px;
+  width: 100vw; height: 100dvh; max-width: none; max-height: none;
+  box-sizing: border-box; border: 0; border-radius: 0; background: transparent;
+  color: #f1f4f9; box-shadow: none; text-shadow: none;
+  transform: none; transition: none; animation: none;
+  visibility: visible; opacity: 1; overflow: hidden;
+  font: 14px/1.6 system-ui, sans-serif; color-scheme: dark;
+}
+dialog.fw-settings-dialog[data-fw-settings]:not([open]) { display: none; }
+dialog.fw-settings-dialog[data-fw-settings][open] { display: grid; place-items: center; }
+dialog.fw-settings-dialog[data-fw-settings]::before { content: none; display: none; }
+dialog.fw-settings-dialog[data-fw-settings]::backdrop { background: #060a1280; backdrop-filter: blur(12px); }
+dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
+  display: flex; flex-direction: column; position: relative; min-width: 0; min-height: 0;
+  width: min(760px, 100%); max-width: 100%; max-height: 100%; padding: 0;
+  margin: 0; background: #131923; color: #f1f4f9; border: 1px solid #ffffff26;
+  border-radius: 14px; box-shadow: 0 24px 80px #0008; overflow: hidden;
+}
+[data-fw-settings] .fw-modal-heading {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-shrink: 0; padding: 14px 20px; border-bottom: 1px solid #ffffff20;
+  margin: 0; background: #131923; color: #f1f4f9;
+}
+[data-fw-settings] .fw-modal-heading h2 { margin: 0; padding: 0; background: transparent; color: inherit; font: 600 18px/1.5 system-ui, sans-serif; text-shadow: none; }
+[data-fw-settings] .fw-modal-content .fw-modal-close { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; width: 44px; height: 44px; padding: 0; margin: 0; border: 0; border-radius: 8px; background: #253141; color: #f1f4f9; font: 24px/1 system-ui, sans-serif; cursor: pointer; }
+[data-fw-settings] .fw-modal-body { min-height: 0; overflow: auto; overflow-wrap: anywhere; overscroll-behavior: contain; padding: 20px; scrollbar-width: thin; scrollbar-color: #526173 #131923; }
+[data-fw-settings] .fw-modal-body *, [data-fw-settings] .fw-modal-heading * { box-sizing: border-box; }
+[data-fw-settings] .fw-modal-body :is(.title,.setting-heading) { display: none; }
+[data-fw-settings] .fw-modal-body :is(.dialogInner,.settingPanelInner) { margin: 0; padding: 0; height: auto; border: 0; overflow: visible; }
+[data-fw-settings] .fw-modal-body :is(h3,h4,.caption,summary) { color: #f1f4f9; background: #253141; border: 0; border-radius: 8px; text-shadow: none; padding: 10px 12px; font-size: 15px; font-weight: 600; line-height: 1.5; }
+[data-fw-settings] .fw-modal-body summary { cursor: pointer; margin: 0 0 12px; }
+[data-fw-settings] .fw-modal-body details { margin-bottom: 12px; }
+[data-fw-settings] .fw-modal-body :is(.control,.config,.speedSelect,.enableSelect,.needFocusSelect,.deviceIndex,.minDuration,.ignoreTags) { margin: 0 0 12px; padding: 12px; border-radius: 8px; background: #1a2431; color: #f1f4f9; }
+[data-fw-settings] .fw-modal-body :is(.speedSelect,.deviceIndex,.minDuration) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+[data-fw-settings] .fw-modal-body label { max-width: 100%; padding: 6px; margin: 0; border: 0; border-radius: 6px; line-height: 1.7; white-space: normal; cursor: pointer; }
+[data-fw-settings] .fw-modal-body label:hover { background: #ffffff0b; }
+[data-fw-settings] .fw-modal-body :is(.name,.labelText) { min-width: 0; max-width: 100%; white-space: normal; }
+[data-fw-settings] .fw-modal-body a { color: #8ddbc7; }
+[data-fw-settings] .fw-modal-body :is(input,select,textarea,button) { max-width: 100%; font: inherit; color: #f1f4f9; accent-color: #8ddbc7; }
+[data-fw-settings] .fw-modal-body :is(input[type=text],input[type=number],input[type=datetime-local],select,textarea) { background: #101721; border: 1px solid #526173; border-radius: 6px; padding: 8px; margin: 4px 0; font-size: 14px; min-width: 0; }
+[data-fw-settings] .fw-modal-body textarea { width: 100%; min-height: 100px; }
+[data-fw-settings] .fw-modal-body :is(input[type=checkbox],input[type=radio]) { transform: none; width: 18px; height: 18px; margin: 0 8px 0 0; vertical-align: middle; }
+[data-fw-settings] .fw-modal-body input[type=range] { max-width: 100%; }
+[data-fw-settings] .fw-modal-body button { position: static; inset: auto; display: inline-flex; align-items: center; justify-content: center; width: auto; min-height: 40px; padding: 8px 16px; margin: 6px 4px; color: #f1f4f9; background: #253141; border: 1px solid #ffffff20; border-radius: 8px; box-shadow: none; transform: none; font-size: 14px; line-height: 1.5; cursor: pointer; }
+[data-fw-settings] .fw-modal-content button:hover { background: #33445a; }
+[data-fw-settings] .fw-modal-content :focus-visible { outline: 2px solid #8ddbc7; outline-offset: 2px; }
+[data-fw-settings] .fw-modal-body :is(.closeButtonContainer,.buttomContainer) { text-align: right; }
+@media (max-width: 480px) {
+  dialog.fw-settings-dialog[data-fw-settings] { padding: 12px; }
+  [data-fw-settings] .fw-modal-heading { padding: 10px 12px; }
+  [data-fw-settings] .fw-modal-body { padding: 12px; }
+  [data-fw-settings] .fw-modal-body :is(.control,.config,.speedSelect) { padding: 8px; }
+  [data-fw-settings] .fw-modal-body :is(input[type=text],textarea) { width: 100%; }
+}
+`;
+var SETTINGS_FIELD_THEME = exports("a",`
+:host { display: block; color: #f1f4f9; font: 14px/1.6 system-ui,sans-serif; color-scheme: dark; }
+.root { background: #1a2431; color: #f1f4f9; border: 0; border-radius: 8px; padding: 12px; margin-bottom: 12px; white-space: normal; box-sizing: border-box; }
+.root label { display: grid; gap: 8px; min-width: 0; max-width: 100%; color: #f1f4f9; background: transparent; text-shadow: none; }
+:host(video-debug-checkbox) .root label { display: flex; align-items: center; }
+.root .labelText { order: -1; padding: 0; text-align: left; font-family: inherit; }
+:host(video-debug-checkbox) .root .labelText { order: 0; }
+.root .current-value { color: #8ddbc7; font-variant-numeric: tabular-nums; }
+.root :is(.name,.labelText) { color: #f1f4f9; white-space: normal; min-width: 0; overflow-wrap: anywhere; }
+.root :is(.details,.detailsText) { color: #bac8da; background: #131923; }
+.root input { accent-color: #8ddbc7; color: #f1f4f9; max-width: 100%; }
+.root input[type=range] { width: 100%; min-width: 0; appearance: auto; }
+.root input[type=range]::after { content: none; }
+.root input[type=checkbox] { transform: none; width: 18px; height: 18px; }
+.root :focus-visible { outline: 2px solid #8ddbc7; }
+`);
+var labels = {
+	ja: {
+		general: "一般設定",
+		advanced: "詳細設定",
+		hls: "HLS",
+		masked: "MaskedWatch",
+		gamepad: "GamePad",
+		heatsync: "HeatSync",
+		close: "閉じる"
+	},
+	en: {
+		general: "General settings",
+		advanced: "Advanced settings",
+		hls: "HLS",
+		masked: "MaskedWatch",
+		gamepad: "GamePad",
+		heatsync: "HeatSync",
+		close: "Close"
+	}
+};
+var activeSettings = {};
+function closeSettingsDialog() {
+	activeSettings.dialog?.close();
+}
+/** Shared native modal: preserves each panel's inputs and save handlers. */
+var SettingsDialog = exports("S",class {
+	constructor(element, name, onClose) {
+		this.element = element;
+		this.onClose = onClose;
+		this.active = false;
+		this.outsidePress = false;
+		this.outsideRelease = false;
+		const text = labels[navigator.language.startsWith("ja") ? "ja" : "en"];
+		element.dataset.fwSettings = name;
+		element.classList.add("fw-settings-dialog");
+		element.setAttribute("aria-label", text[name]);
+		const root = element.getRootNode();
+		const styleRoot = root instanceof ShadowRoot ? root : document.head;
+		if (!styleRoot.querySelector("[data-fw-settings-theme]")) {
+			const style = document.createElement("style");
+			style.dataset.fwSettingsTheme = "";
+			style.textContent = SETTINGS_DIALOG_THEME;
+			styleRoot.append(style);
+		}
+		this.content = document.createElement("div");
+		this.content.className = "fw-modal-content";
+		const body = document.createElement("div");
+		body.className = "fw-modal-body";
+		body.append(...element.childNodes);
+		const header = document.createElement("header");
+		header.className = "fw-modal-heading";
+		const title = document.createElement("h2");
+		title.textContent = text[name];
+		const close = document.createElement("button");
+		close.type = "button";
+		close.className = "fw-modal-close";
+		close.dataset.settingsClose = "";
+		close.setAttribute("aria-label", text.close);
+		close.textContent = "×";
+		close.addEventListener("click", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			this.close();
+		});
+		header.append(title, close);
+		this.content.append(header, body);
+		element.append(this.content);
+		element.addEventListener("pointerdown", (event) => {
+			this.outsidePress = event.target === element;
+			this.outsideRelease = false;
+		}, true);
+		element.addEventListener("pointercancel", () => {
+			this.outsidePress = false;
+			this.outsideRelease = false;
+		});
+		element.addEventListener("pointerup", (event) => {
+			this.outsideRelease = event.target === element;
+		}, true);
+		element.addEventListener("click", (event) => {
+			if (event.target !== element) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			if (this.outsidePress && this.outsideRelease) this.close();
+			this.outsidePress = false;
+			this.outsideRelease = false;
+		}, true);
+		element.addEventListener("click", (event) => event.stopPropagation());
+		element.addEventListener("keydown", (event) => event.stopPropagation());
+		element.addEventListener("cancel", (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			this.close();
+		});
+		element.addEventListener("close", () => {
+			if (!element.open) this.finishClose();
+		});
+	}
+	open() {
+		if (this.element.open) return;
+		if (activeSettings.dialog && activeSettings.dialog !== this) activeSettings.dialog.close();
+		this.element.showModal();
+		this.active = true;
+		activeSettings.dialog = this;
+	}
+	close() {
+		if (this.element.open) this.element.close();
+		this.finishClose();
+	}
+	finishClose() {
+		if (!this.active) return;
+		this.active = false;
+		this.outsidePress = false;
+		this.outsideRelease = false;
+		if (activeSettings.dialog === this) activeSettings.dialog = void 0;
+		this.onClose();
+	}
+});})}}));
 System.register("./lodash-iCWT3gA4-DPJF93lo.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js'],(function(exports){'use strict';var __commonJSMin;return{setters:[function(module){__commonJSMin=module.b;}],execute:(function(){/*!
 MIT License
 
@@ -90317,7 +90186,7 @@ var require_lodash = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-CsDMg228-BsSuhHVa.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-DLex8qfq-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
+System.register("./_my4-yBXbFqoG-CaGmIUbr.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-BKbZXBIT-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -95211,7 +95080,7 @@ var require_jquery = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-DLex8qfq-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
+System.register("./css-BKbZXBIT-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors

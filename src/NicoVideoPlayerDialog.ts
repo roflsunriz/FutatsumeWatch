@@ -13,6 +13,7 @@ import { VideoControlBar } from './VideoControlBar';
 import { VideoInfoPanel } from './VideoInfoPanel';
 import { SettingPanel } from './SettingPanel';
 import { PlayerShell } from './player-shell';
+import { closeSettingsDialog } from '../packages/components/src/settings-dialog';
 import { PlayList, PlayListSession } from '../packages/zenza/src/Playlist/PlayList';
 import type { PlaylistDescriptor } from '../packages/zenza/src/Playlist/PlayList';
 import { Emitter } from './baselib';
@@ -897,6 +898,7 @@ class NicoVideoPlayerDialogView extends Emitter {
     this._updateScreenModeStyle();
   }
   hide(): void {
+    closeSettingsDialog();
     this.shell?.close();
     ClassList(this._$dialog[0] as Element).remove('is-open');
     if (this.settingPanel) {

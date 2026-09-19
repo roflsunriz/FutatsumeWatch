@@ -1,4 +1,5 @@
 import lodash from 'lodash';
+import { SettingsDialog } from '../packages/components/src/settings-dialog';
 
 import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
 import { uq } from '../packages/lib/src/uQuery';
@@ -111,6 +112,7 @@ interface SettingScriptCssUtil {
     `.trim();
 
     class SettingPanel {
+      private modal!: SettingsDialog;
       static __css__: string;
       static __tpl__: string;
       private _playerConfig!: ConfigStore;
@@ -141,6 +143,8 @@ interface SettingScriptCssUtil {
 
         const $panel = (this._$panel = $container.find('.zenzaAdvancedSettingPanel'));
         this._$view = $container.find('.zenzaAdvancedSettingPanel');
+        const dialog = document.querySelector<HTMLDialogElement>('.zenzaAdvancedSettingPanel')!;
+        this.modal = new SettingsDialog(dialog, 'advanced', () => this._$view.toggleClass('show', false));
         this._$view.on('click', (e: unknown) => (e as { stopPropagation(): void }).stopPropagation());
 
         this._$rawData = $panel.find('.zenzaAdvancedSetting-rawData');
@@ -299,7 +303,8 @@ interface SettingScriptCssUtil {
         this._$view.toggleClass('show', v);
         if (this._$view.hasClass('show')) {
           this._beforeShow();
-        }
+          this.modal.open();
+        } else this.modal.close();
       }
       show(): void {
         this.toggle(true);
@@ -517,7 +522,7 @@ interface SettingScriptCssUtil {
     `.trim();
 
     SettingPanel.__tpl__ = `
-      <div class="zenzaAdvancedSettingPanel zen-family">
+      <dialog class="zenzaAdvancedSettingPanel zen-family">
         <div class="settingPanelInner">
           <div class="enableFullScreenOnDoubleClickControl control toggle">
             <label>
@@ -639,7 +644,7 @@ interface SettingScriptCssUtil {
 
         </div>
         <button type="button" class="zenzaAdvancedSetting-close">閉じる</button>
-      </div>
+      </dialog>
     `.trim();
 
     const initializePanel = (): void => {
@@ -656,9 +661,6 @@ interface SettingScriptCssUtil {
       const openPanel = (): void => {
         initializePanel();
         panel!.toggle();
-        const host = document.querySelector('#zenzaVideoPlayerDialog.is-open .zenzaPlayerContainer') ?? document.body;
-        const view = document.querySelector('.zenzaAdvancedSettingPanel');
-        if (view) host.append(view);
       };
       void FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady').then((value) => {
         const { container } = value as { container: HTMLElement };

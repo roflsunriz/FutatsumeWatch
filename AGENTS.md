@@ -114,4 +114,13 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 右の動画情報・関連動画・コメント・プレイリストは既存のパネルとモデルを使う。タグは既存ヘッダーから同じDOMを移動する。関連動画とコメント一覧は隔離iframeなので、外側CSSだけで配色や表示を変更できない。仮想スクロールの固定行高は変えない。
 - ABリピートは動画切替・closeで消す。Bが動画終端でもプレイリストの自動遷移に先行してAへ戻す。新規UIの実操作検証は`bun scripts/dev-verify-shell.ts`。配布物注入による検証で、マネージャへの登録確認とは区別する。
 - 一般設定の`DialogElement.getContentsTemplate`はPromiseを返す。litへPromiseをそのまま渡すと`[object Promise]`だけが表示されるため、`getTemplate`でawaitする。`isOpen`だけの確認ではこの不具合を検出できない。設定項目の表示・実入力・保存・閉じるまで検証する。
-- 詳細設定はbody直下のz-index 200000ではプレイヤー（6000002）の背後になる。開く際に表示中のプレイヤー内へ移す。DOMのshow属性とJavaScriptのclickだけで検証せず、ヒットテストと実入力で確認する。
+- 0.0.5の詳細設定はbody直下のz-index 200000でプレイヤー（6000002）の背後になっていたためプレイヤー内へ移していた。0.0.6では標準dialogのtop layerへ統一し、この移動は廃止した。DOMのshow属性とJavaScriptのclickだけで検証せず、ヒットテストと実入力で確認する。
+
+## 共通設定パネル（2026-09-20、0.0.6）
+
+- 6種類の設定の開閉は`packages/components/src/settings-dialog.ts`、共通配色・寸法は`settings-dialog-theme.ts`を正本とする。標準dialogと`::backdrop`を使い、設定内容のDOM・保存処理は各機能に保持する。外側は画面全体、内側の`.fw-modal-content`が可視パネル。入力欄・パネル内の余白クリックや内側からのドラッグを背景クリックとして扱わない。
+- Generalはlitのrender完了後に開く。GamePad/HeatSyncの遅延closeは撤去し、背景・Escapeでも各機能のisOpen/isVisibleを同期する。古いcloseイベントが再表示後の状態を壊さないようにし、プレイヤー終了時にも共通パネルを閉じる。
+- HLSの各入力部品にもShadow DOMがあるため、外側テーマだけでは入力欄の固定幅・配色を変更できない。共有のfield themeを入力側へ入れる。スライダー値は疑似要素でなくoutputへ描画する。
+- `bun run dev:verify:settings`は配布物注入による実入力検証。各設定の開閉・保存と復元・全画面・複数寸法を確認し、結果と画像を`dev-assets/verification/settings-*`へ残す。機器の入力や検出APIの実機能検証とは区別する。
+- 自動再生など一部の設定は`PlayerConfig.wrapKey`で視聴ページ用の`:ginza`へ解決される。保存検証は`getStorageKey(getNativeKey(key))`で実際のキーを調べ、nullを「変更前と違う」だけで保存成功にしない。
+- `dev-verify.ts`のWorker監視は終了時に新規購読を止め、発行済みのRuntime.enable要求を待ってからauto-attachを解除する。解除を先にすると購読対象sessionが消え、製品操作が成功しても検証自身がNo sessionエラーになる。

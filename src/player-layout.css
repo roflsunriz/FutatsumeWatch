@@ -405,27 +405,6 @@
   opacity: 0.4;
   cursor: wait;
 }
-#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel {
-  background: #131923;
-  color: var(--fw-ink);
-  border: 1px solid #ffffff30;
-  border-radius: 12px;
-  width: min(900px, calc(100vw - 32px));
-  height: calc(100dvh - 32px);
-}
-#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel .settingPanelInner {
-  border: 0;
-}
-#zenzaVideoPlayerDialog .zenzaAdvancedSettingPanel .caption {
-  background: #253141;
-  border-radius: 6px;
-}
-#zenzaVideoPlayerDialog .zenzaAdvancedSetting-close {
-  border: 0;
-  border-radius: 8px;
-  background: #253141;
-  font-size: 16px;
-}
 #zenzaVideoPlayerDialog .fw-player .seriesList {
   margin: 12px;
 }

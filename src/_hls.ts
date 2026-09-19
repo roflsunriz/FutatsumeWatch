@@ -1,4 +1,6 @@
 import HlsRuntime from 'hls.js';
+import { SettingsDialog } from '../packages/components/src/settings-dialog';
+import { SETTINGS_FIELD_THEME } from '../packages/components/src/settings-dialog-theme';
 const Hls = HlsRuntime as unknown as HlsStatic;
 import { html, render } from 'lit/html.js';
 import { AntiPrototypeJs } from '../packages/lib/src/infra/AntiPrototype-js';
@@ -1970,6 +1972,9 @@ export async function initializeHls(): Promise<void> {
 
           this._shadow = this.attachShadow({ mode: 'open' });
           render(this.html(this._props), this._shadow);
+          const theme = document.createElement('style');
+          theme.textContent = SETTINGS_FIELD_THEME;
+          this._shadow.append(theme);
 
           this._input = this._shadow.querySelector('input') as HTMLInputElement;
           this._root = this._shadow.querySelector('.root, input') as Element;
@@ -2226,6 +2231,7 @@ export async function initializeHls(): Promise<void> {
               <label>
                 <input type="range" min="${props.min}" max="${props.max}" step="${props.step}" value="${props.value}" />
                 <span class="labelText">${props.name}<content></content></span>
+                <output class="current-value"></output>
               </label>
               <details class="details">
                 <summary class="summary">詳細</summary>
@@ -2237,13 +2243,14 @@ export async function initializeHls(): Promise<void> {
         set value(v: string | number) {
           v = parseFloat(String(v));
           const diff = Math.abs((this._props.value as number) - v);
-          if (diff <= 0.01) {
+          if (typeof this._props.value === 'number' && diff <= 0.01) {
             return;
           }
           this._props.value = v;
           this._input.value = String(v);
           this.setAttribute('value', String(v));
           this._input.setAttribute('data-value', v.toLocaleString());
+          this._root.querySelector('output')!.textContent = v.toLocaleString();
           this._root.classList.toggle('is-changed', this.value !== this.defaultValue);
           this.dispatchEvent(new Event('change'));
         }
@@ -2255,6 +2262,7 @@ export async function initializeHls(): Promise<void> {
       window.customElements.define('video-debug-slider', VideoDebugSlider);
 
       class VideoDebugDialog extends HTMLElement {
+        declare private modal: SettingsDialog;
         declare _hlsConfig: Record<string, unknown>;
         declare _elm: Record<string, HlsDebugElement>;
         declare _shadow: ShadowRoot;
@@ -2326,7 +2334,7 @@ export async function initializeHls(): Promise<void> {
             return;
           }
           if (!this._root.open) {
-            this._root.showModal();
+            this.modal.open();
           }
         }
 
@@ -2335,7 +2343,7 @@ export async function initializeHls(): Promise<void> {
             return;
           }
           if (this._root.open) {
-            this._root.close();
+            this.modal.close();
           }
         }
 
@@ -2355,6 +2363,7 @@ export async function initializeHls(): Promise<void> {
             this._shadow = this.attachShadow({ mode: 'open' });
             render(this.html(), this._shadow);
             this._root = this._shadow.querySelector('.root') as HTMLDialogElement;
+            this.modal = new SettingsDialog(this._root, 'hls', () => {});
 
             Array.from(
               this._shadow.querySelectorAll<HlsDebugElement>('video-debug-checkbox, video-debug-slider')
@@ -2392,10 +2401,6 @@ export async function initializeHls(): Promise<void> {
 
         _onClick(e: Event): void {
           const target = e.target as Element | null;
-          if (target === this._root) {
-            this.close();
-            return;
-          }
           const commandElement = (target as Element).closest('[data-command]');
           if (!commandElement) {
             return;
