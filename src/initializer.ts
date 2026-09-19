@@ -89,8 +89,8 @@ interface InitializerPlaylistSession {
   restore(): unknown;
 }
 
-declare const PlaylistSession: InitializerPlaylistSession;
-const START_PAGE_QUERY = 'hoge=fuga';
+import { PlayListSession as PlaylistSession } from '../packages/zenza/src/Playlist/PlayListSession';
+const START_PAGE_QUERY = location.search.slice(1);
 
 //===BEGIN===
 

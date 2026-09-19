@@ -3,7 +3,7 @@ import { domEvent } from '../../../lib/src/dom/domEvent';
 // import {textUtil} from '../../../lib/src/text/textUtil';
 // import {cssUtil} from '../../../lib/src/css/css';
 
-import type { TemplateResult } from '../../../../node_modules/lit/html.js';
+import type { TemplateResult } from 'lit/html.js';
 import type { ElementEvents } from './BaseCommandElement.js';
 import type { HtmlTag } from './DialogElement.js';
 

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 // import * as _ from 'lodash';
 // const emitter;
 import { global } from '../../../../src/FutatsumeWatchIndex';

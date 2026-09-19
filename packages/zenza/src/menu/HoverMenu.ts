@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { ZenzaWatch } from '../../../../src/FutatsumeWatchIndex';
 import { uq } from '../../../lib/src/uQuery';
 import { nicoUtil } from '../../../lib/src/nico/nicoUtil';

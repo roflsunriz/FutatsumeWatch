@@ -1,37 +1,4 @@
-// ==UserScript==
-// @name        MylistPocket
-// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
-// @description 動画をあとで見る ＋ 簡易NG機能。 FutatsumeWatchとの連携も可能。
-// @match       *://www.nicovideo.jp/*
-// @match       *://ext.nicovideo.jp/
-// @match       *://ext.nicovideo.jp/#*
-// @match       *://ch.nicovideo.jp/*
-// @match       *://com.nicovideo.jp/*
-// @match       *://commons.nicovideo.jp/*
-// @match       *://dic.nicovideo.jp/*
-// @match       *://ex.nicovideo.jp/*
-// @match       *://info.nicovideo.jp/*
-// @match       *://search.nicovideo.jp/*
-// @match       *://uad.nicovideo.jp/*
-// @match       *://site.nicovideo.jp/*
-// @match       *://anime.nicovideo.jp/*
-// @match       https://www.google.com/search?*
-// @match       https://www.google.co.jp/search?*
-// @match       https://*.bing.com/*
-// @exclude     *://ads*.nicovideo.jp/*
-// @exclude     *://www.upload.nicovideo.jp/*
-// @exclude     *://www.nicovideo.jp/watch/*?edit=*
-// @exclude     *://ch.nicovideo.jp/tool/*
-// @exclude     *://flapi.nicovideo.jp/*
-// @exclude     *://dic.nicovideo.jp/p/*
-// @exclude     *://ext.nicovideo.jp/thumb/*
-// @exclude     *://ext.nicovideo.jp/thumb_channel/*
-// @version     0.0.1
-// @grant       none
-// @author      roflsunriz
-// @license     public domain
-// @require     https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.5/lodash.min.js
-// ==/UserScript==
+import _ from 'lodash';
 
 import { gate } from '../packages/lib/src/message/gate';
 import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
@@ -246,7 +213,6 @@ interface PocketCommandResult {
   message?: string;
 }
 type PocketDispatcher = (command: string, param: string | { value: string }, src?: unknown) => unknown;
-//@require AntiPrototypeJs
 void AntiPrototypeJs().then(() => {
   const PRODUCT = 'MylistPocket';
 
@@ -2066,17 +2032,11 @@ void AntiPrototypeJs().then(() => {
 
       return util;
     })());
-    //@require bounce
-    //@require css
     Object.assign(util, css);
     Object.assign(util, workerUtil);
-    //@require nicoUtil
     Object.assign(util, nicoUtil);
-    //@require netUtil
     Object.assign(util, netUtil);
-    //@require textUtil
     Object.assign(util, textUtil);
-    //@require reg
 
     MylistPocket.emitter = util.emitter = new Emitter();
 
@@ -2142,9 +2102,6 @@ void AntiPrototypeJs().then(() => {
         detect: detect,
       };
     })();
-    //@require objUtil
-    //@require StorageWriter
-    //@require DataStorage
 
     const config = (() => {
       const DEFAULT_CONFIG = {
@@ -2358,8 +2315,6 @@ void AntiPrototypeJs().then(() => {
       return emitter;
     })();
 
-    //@require CrossDomainGate
-
     const CsrfTokenLoader = (() => {
       const cacheStorage = new CacheStorage(location.host === 'www.nicovideo.jp' ? localStorage : sessionStorage);
       const TIMEOUT = 10 * 1000;
@@ -2509,7 +2464,6 @@ void AntiPrototypeJs().then(() => {
     MylistPocket.debug.ThumbInfoLoader = ThumbInfoLoader;
 
     const emitter = util.emitter;
-    //@require MylistApiLoader
 
     class HoverMenu extends Emitter {
       _view!: HTMLElement;
@@ -4297,16 +4251,10 @@ void AntiPrototypeJs().then(() => {
 
     void init();
   };
-  //@require Emitter
-  //@require parseThumbInfo
-  //@require workerUtil
-  //@require IndexedDbStorage
-  //@require ThumbInfoCacheDb
   (window as unknown as PocketWindow).MylistPocketLib = {
     workerUtil,
   };
   const thumbInfoApi = async function (): Promise<void> {
-    //@require gate
     const gateApi = (gate as unknown as () => GateApi)();
     const { port, TOKEN } = gateApi.init({ prefix: `thumbInfo${PRODUCT}`, type: 'thumbInfo' });
     const db = await ThumbInfoCacheDb.open();
@@ -4357,18 +4305,7 @@ void AntiPrototypeJs().then(() => {
   };
 
   const loadGm = (): void => {
-    const script = document.createElement('script');
-    script.id = `${PRODUCT}Loader`;
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('charset', 'UTF-8');
-    script.append(`
-    (() => {
-      const {Handler, PromiseHandler, Emitter} = (${EmitterInitFunc.toString()})();
-      ${parseThumbInfo.toString()}
-
-      (${monkey.toString()})("${PRODUCT}");
-    })();`);
-    (document.head || document.documentElement).append(script);
+    monkey(PRODUCT);
   };
 
   const host = window.location.host || '';

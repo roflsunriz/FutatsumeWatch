@@ -1,0 +1,2 @@
+# 外部ライブラリとテンプレートの空白を保持する生成物。差分自体は通常どおり比較する。
+dist/*.user.js linguist-generated=true -whitespace

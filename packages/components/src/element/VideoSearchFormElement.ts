@@ -3,7 +3,7 @@ import { util } from '../util/util.js';
 import { VideoItemElement, VideoItemProps } from './VideoItemElement';
 import { NicoQuery } from '../../../lib/src/nico/NicoQuery';
 
-import type { TemplateResult } from '../../../../node_modules/lit/html.js';
+import type { TemplateResult } from 'lit/html.js';
 import type { ElementEvents, PropsMap, StateMap } from './BaseCommandElement.js';
 
 interface ParsedNicoQuery {

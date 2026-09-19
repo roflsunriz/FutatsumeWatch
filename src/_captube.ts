@@ -1,16 +1,3 @@
-// ==UserScript==
-// @name        CapTube
-// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
-// @description "S"キーでYouTubeのスクリーンショット保存
-// @include     https://www.youtube.com/*
-// @include     https://www.youtube.com/embed/*
-// @include     https://youtube.com/*
-// @version     0.0.1
-// @grant       none
-// @author      roflsunriz
-// @license     public domain
-// ==/UserScript==
-
 import { workerUtil } from '../packages/lib/src/infra/workerUtil';
 import { cssUtil } from '../packages/lib/src/css/css';
 
@@ -63,8 +50,6 @@ export interface CapTubeShotParams {
 
 (() => {
   const PRODUCT = 'CapTube';
-  //@require cssUtil
-  //@require workerUtil
   let previewContainer: HTMLElement | null = null,
     meterContainer: HTMLElement | null = null;
 
@@ -263,7 +248,9 @@ export interface CapTubeShotParams {
     const title = document.querySelector('.title yt-formatted-string') ||
       document.querySelector('.watch-title') || { textContent: document.title };
     const authorName = toSafeName(
-      params.author || document.querySelector('#owner-container yt-formatted-string')!.textContent || ''
+      params.author ||
+        document.querySelector('#owner-container yt-formatted-string, #owner #channel-name a')?.textContent ||
+        ''
     );
     const titleText = toSafeName(params.title || title.textContent);
     return `${prefix}${titleText} - by ${authorName} (v=${videoId})`;
@@ -422,7 +409,20 @@ export interface CapTubeShotParams {
   };
 
   let isVerySlow = false;
+  const isTyping = (event: KeyboardEvent): boolean =>
+    event.isComposing ||
+    event.ctrlKey ||
+    event.altKey ||
+    event.metaKey ||
+    event
+      .composedPath()
+      .some(
+        (target) =>
+          target instanceof HTMLElement &&
+          (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+      );
   const onKeyDown = (e: KeyboardEvent): void => {
+    if (isTyping(e)) return;
     const key = e.key.toLowerCase();
     switch (key) {
       case 'd':
@@ -436,6 +436,7 @@ export interface CapTubeShotParams {
   };
 
   const onKeyUp = (e: KeyboardEvent): void => {
+    if (isTyping(e) && !isVerySlow) return;
     //console.log('onKeyUp', e);
     const key = e.key.toLowerCase();
     switch (key) {
@@ -447,6 +448,7 @@ export interface CapTubeShotParams {
   };
 
   const onKeyPress = (e: KeyboardEvent): void => {
+    if (isTyping(e)) return;
     const key = e.key.toLowerCase();
     switch (key) {
       case 'w':
@@ -499,14 +501,17 @@ export interface CapTubeShotParams {
       console.log('disable bridge');
       return;
     }
-    const origin = document.referrer;
+    const origin = new URL(document.referrer).origin;
     console.log('%cinit embed CapTube', 'background: lightgreen;');
     window.addEventListener('message', (e) => {
-      if (!HOST_REG.test(parseUrl(e.origin).hostname)) {
+      if (e.source !== parent || e.origin !== origin) {
         return;
       }
       const data = (typeof e.data === 'string' ? JSON.parse(e.data) : e.data) as {
-        body: { command: string; params: { title?: string; videoId?: string; author?: string } };
+        body: {
+          command: string;
+          params: { title?: string; videoId?: string; author?: string; width?: number; height?: number; type?: string };
+        };
         sessionId: string;
         command: string;
       };
@@ -526,15 +531,14 @@ export interface CapTubeShotParams {
           break;
         case 'capTubeThumbnail':
           {
-            // @ts-expect-error 既存の呼び出し形（引数不足のままの呼び出し）を温存する
-            const url = getThumbnailDataURL(params);
-            const body = {
-              command: 'commandResult',
-              status: 'ok',
-              params: { url },
-            };
-            const msg = { id: PRODUCT, sessionId, body };
-            parent.postMessage(msg, origin);
+            void getThumbnailDataURL(params.width ?? 320, params.height ?? 180, params.type ?? 'image/png').then(
+              (url) => {
+                parent.postMessage(
+                  { id: PRODUCT, sessionId, body: { command: 'commandResult', status: 'ok', params: { url } } },
+                  origin
+                );
+              }
+            );
           }
           break;
       }

@@ -134,6 +134,12 @@ const nicoUtil = {
   },
   isLoginLegacy: (): boolean => {
     const a = 'a[href^="https://account.nicovideo.jp/login"]';
+    if (!document.querySelector('#topline, #CommonHeader')) {
+      return (
+        !document.querySelector(a) &&
+        !!document.querySelector('a[href^="https://www.nicovideo.jp/my"], a[href^="/my/"]')
+      );
+    }
     return !document.querySelector(`#topline ${a}, #CommonHeader ${a}`);
   },
   isPremium: (): boolean =>

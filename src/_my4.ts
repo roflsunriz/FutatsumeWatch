@@ -1,17 +1,6 @@
-// ==UserScript==
-// @name           Mylist Filter
-// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
-// @description    視聴不可能な動画だけ表示して一括削除とかできるやつ
-// @match          *://www.nicovideo.jp/my/mylist*
-// @grant          none
-// @author         roflsunriz
-// @version        0.0.1
-// @run-at         document-body
-// @license        public domain
-// @noframes
-// ==/UserScript==
+import jquery from 'jquery';
 
-import { dimport } from '../packages/lib/src/infra/dimport';
+import * as lit from 'lit/html.js';
 import { bounce } from '../packages/lib/src/infra/bounce';
 import { cssUtil } from '../packages/lib/src/css/css';
 import { PromiseHandler } from '../packages/lib/src/Emitter';
@@ -44,17 +33,12 @@ interface My4Item {
   description?: string;
 }
 
-void (async (window: Window) => {
+((window: Window) => {
   const global = {
     PRODUCT: 'MylistFilter',
   };
-  //@require PromiseHandler
-  //@require dimport
-  //@require bounce
-  //@require cssUtil
-  const [lit] = await Promise.all([(dimport as unknown as (url: string) => Promise<My4Lit>)('https://esm.run/lit')]);
   const { html } = lit;
-  const $ = (self as unknown as { jQuery: My4JQuery }).jQuery;
+  const $ = jquery;
 
   (cssUtil as unknown as { addStyle(cssText: string): void }).addStyle(`
     .ItemSelectMenuContainer-itemSelect {
@@ -125,7 +109,7 @@ void (async (window: Window) => {
     }
   `);
 
-  const playableFilterTpl = (props: My4FilterProps): string => {
+  const playableFilterTpl = (props: My4FilterProps): lit.TemplateResult => {
     const playable = props.playable || '';
     return html` <div class="playableFilter">
       <span class="caption">状態</span>
@@ -146,10 +130,10 @@ void (async (window: Window) => {
         <input type="radio" name="playable-filter" value="not-playable" ?checked=${playable === 'not-playable'} />
         <span>視聴不可</span>
       </label>
-    </div>` as string;
+    </div>`;
   };
 
-  const wordFilterTpl = (props: My4FilterProps): string => {
+  const wordFilterTpl = (props: My4FilterProps): lit.TemplateResult => {
     return html` <div class="wordFilter">
       <input
         type="text"
@@ -160,7 +144,7 @@ void (async (window: Window) => {
       />
       <input type="button" data-click-command="clear-word-filter" title="・✗・" value=" ✗ " />
       <small>\\u3000タイトル・マイリストコメント検索</small>
-    </div>` as string;
+    </div>`;
   };
 
   const resetForm = (): void => {

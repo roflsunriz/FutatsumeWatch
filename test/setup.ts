@@ -52,7 +52,7 @@ if (typeof g['CSS'] === 'undefined') {
   g['CSS'] = {};
 }
 {
-  // 製品では _template.ts が連結順序の保証で console.nicoru を事前注入する。
+  // 製品では main.ts が初期化順序の保証で console.nicoru を事前注入する。
   // util.ts はその存在を前提とするため、テスト環境でも同等品を用意する。
   const c = console as unknown as Record<string, unknown>;
   if (typeof c['nicoru'] !== 'function') {
@@ -61,3 +61,7 @@ if (typeof g['CSS'] === 'undefined') {
     };
   }
 }
+
+// 各テストの実行順に依存せず、製品のDOM依存を読み込む前に用意する。
+const { setupNicoDom } = await import('./unit/nico-test-setup');
+setupNicoDom();

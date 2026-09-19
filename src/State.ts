@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from './baselib';
 import { global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';

@@ -10,7 +10,7 @@ const DIST = `${import.meta.dir}/../dist`;
 const SERVE_PORT = 9343;
 const FILE = Bun.argv.includes('--file')
   ? (Bun.argv[Bun.argv.indexOf('--file') + 1] as string)
-  : 'FutatsumeWatch-dev.user.js';
+  : 'FutatsumeWatch.user.js';
 
 if (!/^[\w.-]+\.user\.js$/.test(FILE)) {
   throw new Error(`不正なファイル名です: ${FILE}`);
@@ -77,7 +77,7 @@ try {
     try {
       const clicked = (await evaluate(
         session,
-        `(() => { const b = [...document.querySelectorAll('input.button.install')].find(x => (x.value || '').includes('インストール')); if (!b) return 'not-found'; b.click(); return 'clicked'; })()`
+        `(() => { const b = [...document.querySelectorAll('input.button.install')].find(x => !x.disabled); if (!b) return 'not-found'; b.click(); return 'clicked'; })()`
       )) as string;
       if (clicked !== 'clicked') {
         throw new Error('承認ボタンが見つかりませんでした');
@@ -127,18 +127,12 @@ try {
     const enabled = (await evaluate(
       dashSession,
       `(() => {
-        const nameEl = [...document.querySelectorAll('*')].find(e => e.children.length === 0 && (e.textContent || '').includes(${JSON.stringify(FILE.replace(/\.user\.js$/, '').replace(/^FutatsumeWatch-dev$/, 'FutatsumeWatch DEV'))}));
-        if (!nameEl) return 'not-found';
-        let row = nameEl;
-        for (let i = 0; i < 8 && row.parentElement; i++) {
-          row = row.parentElement;
-          const box = row.querySelector('input[type=checkbox]');
-          if (box) {
-            if (!box.checked) box.click();
-            return box.checked || true ? 'enabled' : 'toggle-failed';
-          }
-        }
-        return 'no-toggle';
+        const row = [...document.querySelectorAll('tr.scripttr')].find(e => e.querySelector('.script_name')?.textContent?.trim() === 'FutatsumeWatch');
+        if (!row) return 'not-found';
+        const toggle = row.querySelector('.enabler');
+        if (!toggle) return 'no-toggle';
+        if (!toggle.classList.contains('enabler_enabled')) toggle.click();
+        return toggle.classList.contains('enabler_enabled') ? 'enabled' : 'toggle-pending';
       })()`
     )) as string;
     console.log(`スクリプト有効化: ${enabled}`);

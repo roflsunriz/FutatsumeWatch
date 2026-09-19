@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { textUtil } from '../packages/lib/src/text/textUtil';
 import { PromiseHandler } from '../packages/lib/src/Emitter';
 import type { AnyPromiseHandler } from '../packages/lib/src/Emitter';
@@ -147,7 +148,7 @@ interface RawVideoInfoData {
   viewerInfo: unknown;
   ngFilters: NgFilterItem[];
   msgInfo: MessageInfo;
-  dmcInfo?: Omit<Partial<DmcMovieData>, 'movie'> & { movie?: Partial<DmcMovieData['movie']> };
+  dmcInfo?: (Omit<Partial<DmcMovieData>, 'movie'> & { movie?: Partial<DmcMovieData['movie']> }) | null;
   domandInfo?: DomandRawData;
   linkedChannelVideo?: LinkedChannelVideo | null;
   playlist: { playlist?: RelatedVideoItem[] };
@@ -473,11 +474,11 @@ class VideoInfoModel extends JSONable {
     this._ngFilters = info.ngFilters;
     this._msgInfo = info.msgInfo;
     this._dmcInfo =
-      info.dmcInfo !== undefined && info.dmcInfo.movie?.session !== undefined
+      info.dmcInfo != null && info.dmcInfo.movie?.session !== undefined
         ? new DmcInfo(info.dmcInfo as DmcMovieData)
         : null;
     this._domandInfo =
-      info.domandInfo !== undefined
+      info.domandInfo != null
         ? new DomandInfo(info.domandInfo, info.watchApiData.videoDetail, info.linkedChannelVideo)
         : null;
     this._relatedVideo = info.playlist; // playlistという名前だが実質は関連動画

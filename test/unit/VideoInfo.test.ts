@@ -177,7 +177,8 @@ describe('maybeBetterQualityServerType 現行判定', () => {
     expect(info.extension).toBe('mp4');
   });
 
-  it('domand のみ対応なら domand', () => {
+  it('現行APIのdmcInfo:nullでもdomand再生できる', () => {
+    raw.dmcInfo = null;
     raw.isDmc = false;
     raw.isDomand = true;
     raw.domandInfo = {

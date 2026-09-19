@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import {
-  DEV_USERSCRIPT_FILE,
-  STABLE_USERSCRIPT_FILE,
-  isDevUserscript,
-  parseUserscriptVersion,
-  resolveUserscriptOutFile,
-} from '../../src/version';
+import { VERSION, STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/version';
+import packageJson from '../../package.json';
 
 describe('version', () => {
   it('ユーザースクリプトヘッダーからバージョンを抜き出す', () => {
@@ -17,10 +12,8 @@ describe('version', () => {
     expect(parseUserscriptVersion('// ==UserScript==\n// @name ZenzaWatch\n')).toBeNull();
   });
 
-  it('dev 判定と生成物パス解決が一致する', () => {
-    expect(isDevUserscript(DEV_USERSCRIPT_FILE)).toBe(true);
-    expect(isDevUserscript(STABLE_USERSCRIPT_FILE)).toBe(false);
-    expect(resolveUserscriptOutFile(true)).toBe(DEV_USERSCRIPT_FILE);
-    expect(resolveUserscriptOutFile(false)).toBe(STABLE_USERSCRIPT_FILE);
+  it('版と単一配布先が一致する', () => {
+    expect(VERSION).toBe(packageJson.version);
+    expect(STABLE_USERSCRIPT_FILE).toBe('dist/FutatsumeWatch.user.js');
   });
 });

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import type { StoryboardInfoModel } from './StoryboardInfoModel';
 import { global } from '../../../../src/FutatsumeWatchIndex';

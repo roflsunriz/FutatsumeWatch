@@ -1,6 +1,6 @@
 // import {PRODUCT} from './FutatsumeWatchIndex';
 const PRODUCT = 'FutatsumeWatch';
-const LEGACY_PRODUCT = 'ZenzaWatch';
+import { migrateConfig } from './config-migration';
 import { DataStorage } from '../packages/lib/src/infra/DataStorage';
 
 export interface ConfigProps {
@@ -186,13 +186,6 @@ interface DataStorageOptions {
   storage: Storage;
 }
 
-const location: { host: string } = { host: 'www.nicovideo.jp' };
-const navigator: { userAgent?: string } = {};
-interface ConfigTestWindow {
-  console: Console;
-  ontouchstart?: unknown;
-}
-const window: ConfigTestWindow = { console: console };
 // let console = window.console;
 
 //===BEGIN===
@@ -405,6 +398,7 @@ const Config = (() => {
     DEFAULT_CONFIG['uaa.enable'] = false;
   }
 
+  if (location.host === 'www.nicovideo.jp') migrateConfig(localStorage, Object.keys(DEFAULT_CONFIG));
   return (DataStorage as unknown as DataStorageModule).create(DEFAULT_CONFIG, {
     prefix: PRODUCT,
     ignoreExportKeys: ['message', 'lastPlayerId', 'lastWatchId', 'debug'],

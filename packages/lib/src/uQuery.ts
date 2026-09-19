@@ -157,14 +157,14 @@ const uQuery = (() => {
   const isHTMLCollection = (e: unknown): e is HTMLCollection => {
     return (
       e instanceof HTMLCollection ||
-      (e !== null && (e as { [Symbol.toStringTag]?: unknown })[Symbol.toStringTag] === 'HTMLCollection')
+      (e != null && (e as { [Symbol.toStringTag]?: unknown })[Symbol.toStringTag] === 'HTMLCollection')
     );
   };
 
   const isNodeList = (e: unknown): e is NodeList => {
     return (
       e instanceof NodeList ||
-      (e !== null && (e as { [Symbol.toStringTag]?: unknown })[Symbol.toStringTag] === 'NodeList')
+      (e != null && (e as { [Symbol.toStringTag]?: unknown })[Symbol.toStringTag] === 'NodeList')
     );
   };
 
@@ -244,6 +244,9 @@ const uQuery = (() => {
 
     constructor(...args: unknown[]) {
       super();
+      if (args.length === 0) {
+        return;
+      }
       const elm = args.length > 1 ? args : args[0];
       if (isHTMLCollection(elm) || isNodeList(elm)) {
         for (const e of elm) {

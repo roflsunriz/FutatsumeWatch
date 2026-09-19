@@ -1,15 +1,4 @@
-// ==UserScript==
-// @name        FutatsumeWatch 上級者用設定
-// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
-// @description1 FutatsumeWatchの上級者向け設定。変更する時だけ有効にすればOK
-// @include     *//www.nicovideo.jp/my*
-// @version     0.0.1
-// @author      roflsunriz
-// @license     public domain
-// @grant       none
-// @noframes
-// @require     https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js
-// ==/UserScript==
+import lodash from 'lodash';
 
 import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
 import { uq } from '../packages/lib/src/uQuery';
@@ -17,6 +6,7 @@ import { cssUtil } from '../packages/lib/src/css/css';
 import { DataStorage } from '../packages/lib/src/infra/DataStorage';
 import { Config } from './Config';
 import type { ConfigStore } from './Config';
+import { FutatsumeWatch } from './FutatsumeWatchIndex';
 import { Emitter, Handler } from '../packages/lib/src/Emitter';
 
 interface SettingScriptLodash {
@@ -72,14 +62,10 @@ interface SettingScriptCssUtil {
   const PRODUCT = 'ZenzaWatch';
   const monkey = async (PRODUCT: string): Promise<void> => {
     const scriptWindow = window as unknown as SettingScriptWindow;
-    const _ = scriptWindow._;
+    const _ = lodash;
     const Array = scriptWindow.PureArray || scriptWindow.Array;
-    //@require Emitter
-    //@require Config
     await Config.promise('restore');
-    //@require uq
     const $ = uq as unknown as SettingScriptUq;
-    //@require cssUtil
     (window as unknown as { ZenzaAdvancedSettings: unknown }).ZenzaAdvancedSettings = {
       config: Config,
     };
@@ -222,7 +208,7 @@ interface SettingScriptCssUtil {
         });
         $input.on('change', onInputItemChange);
 
-        $panel.find('.zenzaAdvancedSetting-close').on('mousedown', (e: unknown) => {
+        $panel.find('.zenzaAdvancedSetting-close').on('click', (e: unknown) => {
           (e as { stopPropagation(): void }).stopPropagation();
           this.hide();
         });
@@ -659,7 +645,7 @@ interface SettingScriptCssUtil {
           </div>
 
         </div>
-        <div class="zenzaAdvancedSetting-close">閉じる</div>
+        <button type="button" class="zenzaAdvancedSetting-close">閉じる</button>
       </div>
     `.trim();
 
@@ -674,6 +660,22 @@ interface SettingScriptCssUtil {
     };
 
     const initialize = (): void => {
+      const openPanel = (): void => {
+        initializePanel();
+        panel!.toggle();
+      };
+      void FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady').then((value) => {
+        const { container } = value as { container: HTMLElement };
+        const button = document.createElement('button');
+        button.className = 'controlButton';
+        button.dataset.command = 'toggleAdvancedSettings';
+        button.textContent = '詳細設定';
+        button.addEventListener('click', (event) => {
+          event.stopPropagation();
+          openPanel();
+        });
+        container.append(button);
+      });
       const $button = $(__tpl__);
       (cssUtil as unknown as SettingScriptCssUtil).addStyle(__css__);
 
@@ -692,15 +694,7 @@ interface SettingScriptCssUtil {
   };
 
   const loadGM = (): void => {
-    const script = document.createElement('script');
-    script.id = 'ZenzaWatchAdvancedSettingsLoader';
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('charset', 'UTF-8');
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    script.append(`(${monkey})('${PRODUCT}');`);
-    document.body.append(script);
+    void monkey(PRODUCT);
   };
-
-  //@require ZenzaDetector
   void ZenzaDetector.detect().then(() => loadGM());
 })(globalThis ? (globalThis as unknown as { window: Window }).window : window);

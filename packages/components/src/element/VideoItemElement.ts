@@ -3,7 +3,7 @@ import { textUtil } from '../../../lib/src/text/textUtil';
 // import {util} from '../util/util.js';
 // console.info('BaseCommandElement', BaseCommandElement);
 
-import type { TemplateResult } from '../../../../node_modules/lit/html.js';
+import type { TemplateResult } from 'lit/html.js';
 import type { ElementEvents, LitModule, PropsMap, StateMap } from './BaseCommandElement.js';
 
 const dll: { list?: LitModule } = {};

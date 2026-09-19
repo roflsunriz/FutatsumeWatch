@@ -83,10 +83,10 @@ interface WorkerEnvParams {
   config?: { export: (isAll?: boolean) => unknown };
   TOKEN?: string | number | null;
   PRODUCT?: string;
-  netUtil?: { fetch: (url: string, options?: unknown) => Promise<unknown> };
+  netUtil?: { fetch: (url: string, options?: RequestInit) => Promise<unknown> };
   CONSTANT?: unknown;
   global?: {
-    emitter?: { emitAsync: (...args: unknown[]) => unknown };
+    emitter?: { emitAsync: (event: string, ...args: unknown[]) => unknown };
     notify?: (message: unknown) => void;
     alert?: (message: unknown) => void;
     config?: { export: (isAll?: boolean) => unknown };
@@ -117,7 +117,7 @@ const workerUtil = (() => {
   let config: { export: (isAll?: boolean) => unknown } | undefined;
   let TOKEN: string | number | null | undefined;
   let PRODUCT: string | undefined = 'ZenzaWatch?';
-  let netUtil: { fetch: (url: string, options?: unknown) => Promise<unknown> } | undefined;
+  let netUtil: { fetch: (url: string, options?: RequestInit) => Promise<unknown> } | undefined;
   let CONSTANT: unknown;
   const NAME = '';
   let global: WorkerEnvParams['global'] = null;
@@ -408,7 +408,7 @@ const workerUtil = (() => {
               break;
             case 'emit':
               if (global) {
-                global.emitter!.emitAsync(params.eventName, params.data);
+                global.emitter!.emitAsync(params.eventName as string, params.data);
               }
               break;
             case 'fetch':

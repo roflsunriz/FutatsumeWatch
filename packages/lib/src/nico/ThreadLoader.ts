@@ -116,7 +116,8 @@ interface ChatInfo {
   [key: string]: unknown;
 }
 
-const debug: { lastMessageServerResult?: unknown } = {};
+import { global } from '../../../../src/FutatsumeWatchIndex';
+const debug = global.debug;
 
 //===BEGIN===
 

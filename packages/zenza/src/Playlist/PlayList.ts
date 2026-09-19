@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { VideoListItem } from './VideoListItem';
 import type { VideoRawData, MylistItemLike, VideoInfoModelLike, ThumbInfoLike } from './VideoListItem';
 import { VideoListModel } from './VideoListModel';
@@ -17,7 +18,7 @@ import type { SearchQueryParams } from '../../../lib/src/nico/VideoSearch';
 
 // lib波が packages/lib/src/nico/PlaylistApiLoader.ts に export を追加するまでの暫定措置。
 // ビルドは import 行を除去して連結スコープで解決するため、実行時の解決先は変わらない。
-declare const PlaylistApiLoader: PlaylistApiLoaderLike;
+import { PlaylistApiLoader } from '../../../lib/src/nico/PlaylistApiLoader';
 
 interface PlayListParams {
   loader?: unknown;
@@ -320,7 +321,7 @@ class PlayList extends VideoList {
     this._initializeView();
 
     if (!this._playlistApiLoader) {
-      this._playlistApiLoader = PlaylistApiLoader;
+      this._playlistApiLoader = PlaylistApiLoader as unknown as PlaylistApiLoaderLike;
     }
     const loader = this._playlistApiLoader;
     const listOptions = playlist.options as { tag?: unknown; keyword?: unknown };

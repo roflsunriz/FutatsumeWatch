@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import { NicoChatFilter } from './NicoChatFilter';
 import { ZenzaWatch, global } from '../../../../src/FutatsumeWatchIndex';

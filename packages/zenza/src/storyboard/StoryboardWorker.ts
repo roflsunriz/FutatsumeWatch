@@ -1,5 +1,5 @@
 import { workerUtil } from '../../../lib/src/infra/workerUtil';
-import { StoryboardInfoModel } from './StoryboardInfoModel';
+import { StoryboardInfoModel, createStoryboardInfoModel } from './StoryboardInfoModel';
 import type { StoryboardRawData } from './StoryboardInfoModel';
 
 interface StoryboardWorkerScope {
@@ -822,7 +822,12 @@ const StoryboardWorker = (() => {
       }
     } else {
       const util = workerUtil as unknown as CrossMessageWorkerUtil;
-      worker = worker || util.createCrossMessageWorker(func, { name: NAME, inject: StoryboardInfoModel.toString() });
+      worker =
+        worker ||
+        util.createCrossMessageWorker(func, {
+          name: NAME,
+          inject: `const StoryboardInfoModel = (${createStoryboardInfoModel.toString()})(Emitter);`,
+        });
     }
     return worker;
   };

@@ -127,12 +127,9 @@ interface LinkedChannelVideoHolder {
   isDomand: boolean;
 }
 
-const Config: { getValue: (key: string) => unknown } = {
-  getValue: () => {},
-};
-
-const emitter = new Emitter();
-const debug: { watchApiData?: unknown } = {};
+import { Config } from '../../../../src/Config';
+import { global } from '../../../../src/FutatsumeWatchIndex';
+const { emitter, debug } = global;
 
 //===BEGIN===
 const VideoInfoLoader = (function () {

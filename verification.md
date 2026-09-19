@@ -1,6 +1,10 @@
-# 検証手順
+# 検証記録
 
-## TypeScript 基盤の検証コマンド
+## 2026-09-19の確認結果
+
+TypeScriptの拡張子変換だけでは起動できていませんでした。旧連結ビルドの例外を実ページで再現して修正し、Bunで実行するVite＋vite-plugin-monkeyへ移行しました。通常のimport依存から単一のdist/FutatsumeWatch.user.jsを生成します。Bun.buildへの移行ではなく、Vite内部はRolldownです。
+
+### 自動検査
 
 ```powershell
 bun run lint
@@ -8,40 +12,84 @@ bun run format
 bun run type-check
 bun run build
 bun run test
+bun audit
 ```
 
-期待結果はすべて終了コード 0 である。
+- TypeScript: strict、allowJs:false、allowUmdGlobalAccess:false。設定ファイルeslint.config.mjsと生成物を除き、製品・テスト・ビルドスクリプトはTypeScript。
+- ビルド: 配布物1件、ヘッダーの版、classic script構文、外部@requireの不在を検査する。
+- 単体テスト: 旧設定の移行・既存値の優先・破損値、空DOM配列、現行APIのdmcInfo:nullを含む119件。
+- 依存監査: 旧Babel・webpack・mochaを除去し、jsdomを更新。bun auditで脆弱性0件。
+- CI: .github/workflows/ci.ymlに同じ品質確認と生成物の一致検査を追加。リモートへプッシュしていないためGitHub Actions自体は未実行。
 
-- `lint`: 新規 TypeScript は strict（error）、既存 JavaScript は段階移行の例外として warn 表示に留める。error が 0 件であること。
-- `format`: prettier 準拠を確認する。既存資産の除外は `.prettierignore` に理由付きで記載する。
-- `type-check`: `tsc --noEmit` が成功すること。
-- `build`: `scripts/build.ts` が既存 `build.js` を実行し、`dist/FutatsumeWatch.user.js` の `==UserScript==` と `@version` を検証すること。加えて全 `dist/*.user.js` へ `node --check` 構文検証を行い、静的 `import`/`export` 宣言の混入を検出すること。`.ts` 連結対象は `typescript.transpileModule`（ES2020/ESNext）で型注釈のみ除去する。
-- `test`: `bun test --preload ./test/setup.ts` が成功すること（116件 passing）。環境依存（`localStorage`・`location`・`_`・`CSS`・`console.nicoru`・`Config` の restore 待ち）は `test/setup.ts` と各テストの起動順序で吸収し、製品コード側は変えない。CDP系は `test/fixtures/cdp/scenes/*.json` を `offline.ts` で解決し、未登録・広告系は例外にして外部へ出ないことを検証する。
+### 実際の配布物のブラウザ検証
 
-従来の mocha 基盤は退役済み（`test/setup.js`・`test/mocha.opts`・`test:mocha` スクリプトを削除）。
-
-## ブラウザでの動作確認（開発版＋Tampermonkey）
+環境はWindows、Bun 1.4.0、Chrome for Testing 153.0.8010.52、Tampermonkey 5.5.0。専用ChromeDevプロファイル、headless、raw CDPを使用。実利用Firefoxのプロファイルは操作していない。
 
 ```powershell
-bun run dev:setup   # 初回のみ（TM 5.5.0・Chrome for Testing 153.0.8010.52 を取得）
-bun run dev         # ビルド→dev用Chrome起動（9333）→TMへ自動インストール→sm9で実測
+bun run build
+bun scripts/dev-browser.ts start --headless
+bun run dev:install
+bun run dev:verify
+bun run dev:verify -- --url https://www.nicovideo.jp/watch/sm2057168
+bun run dev:verify:addons
 ```
 
-- dev用Chromeは独自プロファイル（`Documents/.browser-debug/ChromeDev`）とポート9333を使い、`chrome-debug.ps1`（9222）と競合しない。
-- Google Chrome ブランドでは `--load-extension` が無視されるため、自動化用の公式バイナリ（Chrome for Testing、同版）を使う。取得物は Git 管理外（`dev-extensions/`・`dev-assets/`）。
-- TM 5.5（MV3）は初回のみ「ユーザー スクリプトを許可する」の手動有効化が要る（`bun scripts/dev-allow-userscripts.ts` が拡張ページを開く）。以降はプロファイルに保存される。
-- TM確認ページ（ask.html）の承認と行トグルの有効化は `scripts/dev-install.ts` がCDPで自動化する。既登録時は確認を飛ばして登録確認へ進む。
+実ページのsm9と、ページ上の実在リンクから選んだsm2057168で、それぞれ35項目を確認した。製品例外・Worker例外は0件。主な判定は以下。
 
-## 既知の未解消事項（今回の検証では直さない）
+| 対象         | 確認した挙動                                                                          |
+| ------------ | ------------------------------------------------------------------------------------- |
+| 起動         | TMによる実配布物の実行、ready、旧名との同一性、プレイヤー生成、動画ページの再生ボタン |
+| HLS          | 動画の時間進行、readyState、メディアエラーの不在、一時停止、30秒へのシーク、再生復帰  |
+| コメント     | 実サーバーから取得したコメントの解析、画面上の描画、非表示と再表示                    |
+| 音声         | ミュートと復帰                                                                        |
+| 設定         | 本体設定の開閉、詳細設定の変更、localStorage保存、元の値への復元、閉じる操作          |
+| 追加設定     | HLS、GamePad、HeatSync、MaskedWatchの設定画面を開閉                                   |
+| プレイリスト | 有効化と状態復元                                                                      |
+| 表示         | 640×480、390×844、1920×1080でプレイヤーと動画領域が画面内に収まること（画像でも確認） |
+| 復帰         | プレイヤーを閉じる、再生ボタンへ戻る、再度再生する                                    |
 
-- `bun run build` の生成物は FutatsumeWatch 名で正規規模を維持した（`dist/FutatsumeWatch.user.js` 約100万バイト、`dist/FutatsumeWatch-dev.user.js` 同規模、関連4種も新名で生成）。旧 `dist/Zenza*.user.js` 6件は削除済み。`src`/`dist` 差分比較とリリース手順（`how-to-update.md`）の確定は別途行う。
-- CDP実ページ採取は sm9 で実測済みである（Chrome headless 153、`http://127.0.0.1:9222` の raw CDP、`test/fixtures/cdp/scenes/watch-sm9-cdp.json`）。生記録235件から静的資産・フォント・画像・映像セグメント・環境依存（`nicocachenl.test`）を除外し、署名クエリ（`session`・`Expires`・`Signature`・`Policy`・`actionTrackId` 等）を正規化した curated 17件（約243KB）として固定した。コメント取得は完全なコメント単位で打ち切り JSON 妥当に修復した（186件）。`thumbinfo`/`search` は本導線で呼ばれないため `watch-basic-sm9.json` で補う。
-- `src/_hls.ts` の `preloadFragment` 内に束縛のない `stats` 参照があり、実行時に到達すると `ReferenceError` になる可能性がある。HLS ローダーの挙動変更になるため、別タスクで上流差分と実機検証のうえ修正する（`@ts-expect-error` で温存）。HLSシーンは構造固定の退行検出に留める。
-- `src/boot.ts` が呼ぶ `GateAPI.exApi()` は上流3系統（segabito/kphrx/現行）いずれにも存在しないことを一次情報で確認済みのため別タスク化が確定した（`@ts-expect-error` で温存）。
-- dev実測（`bun run dev:verify`）は未合格である。TM登録・有効化・User Scripts API許可までは自動確認済みで、export修正後は sm9 上で `window.ZenzaWatch` の出現まで前進したが、`ready` に至らずプレイヤー容器が出ない。`api`・`init`・`external` が空のまま止まり、製品由来の例外もない。`dev-verify.ts` のブラウザログ収集（Log.entryAdded・exceptionThrown）で切り分けを続けること。`verification.md` の未解消事項に記録する。
-- 実ブラウザでの動作確認は上記のとおりdev実測まで進めたが合格に至っていない。`src`/`dist` 差分比較と実機検証は別途行う。
+scripts/dev-verify.tsの結果はdev-assets/verification/report.json、画面はplayer.pngに保存する。成果物はGit管理外。URLを変えると同じファイルを更新する。
 
-## 再開条件
+### 別ページの機能
 
-- `dist` 再生成時は、生成物とコミット済み `dist` の差分比較を行い、型注釈除去・整形以外の差がないことを確認してからリリース手順（`how-to-update.md`）を確定する。
-- 新規ファイルは最初から lint・format・型検査の対象にする。
+scripts/dev-verify-addons.tsは隔離コンテキストで外部通信を遮断し、固定HTMLとブラウザでエンコードしたWebM映像を使う。実サイトでの確認と同一視しない。
+
+- CapTube: 起動、映像描画、低速化・速度復帰、入力欄でのショートカット抑止、PNG生成・プレビュー・ダウンロード導線を確認。保存リンクのクリックをテスト内で捕捉し、利用者のダウンロードフォルダへ書き込まない。
+- ブログパーツ: ボタン生成、通常クリックのopen、Shiftクリックのsendと動画IDを確認。親宛てメッセージの内容を捕捉する。
+- 合計9項目。記録はdev-assets/verification/addons.json。
+
+### 修正の根拠
+
+- 旧_templateのconst consoleに連結されたutilが再代入し、TMでAssignment to constant variableを再現した。
+- uQueryのArray.fromが引数なしの配列サブクラスを作ると、undefinedのSymbol.toStringTag参照で停止した。空生成とnullish判定を修正しテスト化した。
+- ES2022のクラスフィールド生成が親の初期化済み_viewを消していた。useDefineForClassFields:falseで従来の生成規則を維持する。
+- 未接続だったConfig・共有イベント・デバッグ情報を実モジュールへ接続し、ホストページのlodash/jQueryを上書きしない構成にした。
+- 現行APIのdmcInfo:nullをVideoInfoModelが扱えず停止した。nullを含む退行テストを追加した。
+- バンドルで匿名化されたStoryboardクラスを文字列だけでWorkerへ渡すとSyntaxErrorになる。factoryにEmitterを渡して生成する形へ修正し、Worker例外の収集を追加した。
+- HLS先読みの未定義stats/context参照とバッファ長を修正した。配布HLSは固定したnpm依存を同梱する。
+- TMのチェックボックスは行選択であり有効化ではなかった。.enablerの実状態を確認する。旧verifyはグローバルの存在だけで合格したが、現在は実操作で判定する。
+- CapTubeは作者DOM不在で停止し、埋め込みサムネイルでPromiseを返していた。入力欄のキー横取りも含め修正した。
+
+生成物の再ビルドでSHA-256が一致することも確認した。lintはerror 0件（既存の未使用宣言等のwarnは残る）、format・type-check・build・testは成功。
+
+## 未確認・制約と再開条件
+
+| 対象                 | 確認できない理由・次に必要な検証                                                                                                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 認証操作             | 検証プロファイルのmylists APIは401 UNAUTHORIZED。ログイン済みの分離プロファイルで、マイリスト・あとで見る・コメント投稿・いいね等を別途検証する。投稿や削除を勝手に実行しない                       |
+| MylistFilter         | 同梱・ページ条件による起動経路はあるが、旧MylistHelperと旧DOMへの依存が残る。認証済みの現行マイリストページを採取し、現在のデータと操作導線に合わせる必要がある。現行ページで動作確認済みとはしない |
+| MylistPocket         | 初期化、連携、実動画情報の取得と表示・閉じる操作を確認。NG/Fav・マイリスト操作を含む全操作の網羅検証は未実施                                                                                        |
+| ゲームパッド         | 設定画面と初期化を確認。実測接続数0のため実機入力・切断復帰は未確認                                                                                                                                 |
+| MaskedWatch          | 設定画面は確認。検証ChromeでFaceDetector/TextDetectorはundefinedのため顔・文字検出自体は未確認。Firefoxを含めた代替検出方式の評価が必要                                                             |
+| その他の詳細操作     | HLSキャッシュの全設定組合せ、投稿者コメントの全命令、YouTube実ページの全世代のDOM等は網羅していない                                                                                                 |
+| ブラウザ・マネージャ | Firefox/Violentmonkey/Greasemonkeyは未検証。実利用プロファイルには触れていない                                                                                                                      |
+
+全機能の完了宣言はしない。最低条件の「初期化から実再生まで動く配布物」と、それを固定する再現可能な検証を達成した段階である。
+
+## フィクスチャと通信
+
+test/fixtures/cdp/scenes/watch-sm9-cdp.jsonは以前採取した実ページのcurated記録。HTML・API・コメント・プレイリストを保持し、映像セグメント・広告・環境依存ホスト・署名は除去する。POSTメソッドとJSON妥当性を維持する。実環境にはNicoCache系プロキシや別スクリプトが混在するため、第三者の広告通信エラーと製品例外を分けて判定する。
+
+## 採用したビルド依存
+
+[Vite公式](https://vite.dev/guide/)と[vite-plugin-monkey公式](https://github.com/lisonge/vite-plugin-monkey)の構成に従う。npmメタデータでvite-plugin-monkey 8.1.1のpeerがVite 8、2026-08-30更新であることを確認して採用した。旧ビルダーをプラグインで包む案では連結スコープ問題が残るため、通常のモジュール依存へ移した。lockfileと全検証を更新し、実際のコード・Worker・マネージャ実行で互換性を判定した。

@@ -1,12 +1,12 @@
 // import {html, render} from 'lit/html.js';
 // import * as lit from 'https://esm.run/lit';
-import * as lit from '../../../../node_modules/lit/html.js';
+import * as lit from 'lit/html.js';
 // import * as lit from 'https://esm.run/lit';
 // const {html, render} = lit;
 const dll: { lit: typeof lit } = { lit };
 import { util } from '../util/util.js';
 
-import type { TemplateResult } from '../../../../node_modules/lit/html.js';
+import type { TemplateResult } from 'lit/html.js';
 
 export type PropsMap = Record<string, unknown>;
 export type StateMap = Record<string, unknown>;
@@ -43,12 +43,8 @@ class BaseCommandElement extends HTMLElement {
     return snake.replace(/^data-/, '').replace(/(-.)/g, (s: string): string => s.charAt(1).toUpperCase());
   }
 
-  static async importLit(): Promise<typeof lit> {
-    if (dll.lit) {
-      return dll.lit;
-    }
-    dll.lit = (await util.dimport('https://esm.run/lit')) as typeof lit;
-    return dll.lit;
+  static importLit(): Promise<typeof lit> {
+    return Promise.resolve(lit);
   }
 
   static get observedAttributes(): string[] {

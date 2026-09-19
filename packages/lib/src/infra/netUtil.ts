@@ -1,7 +1,4 @@
-interface NicoVideoApiStub {
-  ajax: (params: unknown) => unknown;
-  fetch: (url: string, params?: unknown) => Promise<unknown>;
-}
+import $ from 'jquery';
 
 interface AbortableFetchParams extends RequestInit {
   timeout?: number;
@@ -14,16 +11,11 @@ interface NetUtil {
   jsonp: (url: string, funcName?: string) => Promise<unknown>;
 }
 
-// import * as jQuery from 'jQuery';
-// const $ = jQuery.default;
-const NicoVideoApi = { ajax: () => {} } as unknown as NicoVideoApiStub;
+import { NicoVideoApi } from '../nico/NicoVideoApi';
 
 //===BEGIN===
 const netUtil: NetUtil = {
   ajax: (params) => {
-    if (location.host !== 'www.nicovideo.jp') {
-      return NicoVideoApi.ajax(params);
-    }
     return $.ajax(params);
   },
   abortableFetch: (url, params = {}) => {

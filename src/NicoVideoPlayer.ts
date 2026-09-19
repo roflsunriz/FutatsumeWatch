@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { global } from './FutatsumeWatchIndex';
 import { NicoCommentPlayer } from './CommentPlayer';
 import type { CommentPlayerOptions, CommentPlayerChatFilter, CommentPlayerParams } from './CommentPlayer';

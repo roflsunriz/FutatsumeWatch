@@ -17,10 +17,8 @@ import type { NicoVideoPlayer } from './NicoVideoPlayer';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
 import type { BounceCallback } from '../packages/lib/src/infra/bounce';
 
-// NICORU は _template.js の monkey クロージャ内で定義される dataURL 定数で、
-// 連結後は同一字句スコープとして参照される。TS 上はマーカー外で宣言だけを与える。
-// （ビルドはマーカー外を除去するため生成物に影響しない）
-declare const NICORU: string;
+// コメントパネルと本体で同じアイコンを使用する。
+import { NICORU } from './nicoru-icon';
 
 // uq（uQuery.js）は実行時に配列サブクラスのラッパーを返すが、
 // ファクトリ本体の推論型は any[] のため、利用する表面だけを構造的に宣言する。

@@ -1,83 +1,18 @@
-// `bun run build` のエントリーポイント。
-// 既存の build.js（//@require 連結方式）へ委譲し、生成物を検証する薄い TypeScript 層。
+import { readdir, readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { Script } from 'node:vm';
+import { build } from 'vite';
+import { parseUserscriptVersion, STABLE_USERSCRIPT_FILE, VERSION } from '../src/version';
 
-import { readdirSync, readFileSync } from 'node:fs';
-import { isDevUserscript, parseUserscriptVersion, resolveUserscriptOutFile } from '../src/version';
-import * as ts from 'typescript';
-
-function hasFlag(flag: string): boolean {
-  return Bun.argv.includes(flag);
+await build({ configFile: fileURLToPath(new URL('../vite.config.mts', import.meta.url)) });
+const dist = new URL('../dist/', import.meta.url);
+const files = await readdir(dist);
+if (files.length !== 1 || files[0] !== 'FutatsumeWatch.user.js') {
+  throw new Error(`配布物は FutatsumeWatch.user.js の1件である必要があります: ${files.join(', ')}`);
 }
-
-function fail(message: string): never {
-  console.error(`ビルド失敗: ${message}`);
-  process.exit(1);
-}
-
-function checkClassicScriptSyntax(path: string): void {
-  // 生成物は classic script として配信される。静的な import/export 宣言が
-  // 混入すると実行時 SyntaxError になるため、node --check で構文検証する。
-  // 動的 import()・メソッド呼び出し・テンプレート文字列中の断片は正常に通る。
-  const result = Bun.spawnSync(['node', '--check', path], { stderr: 'pipe', stdout: 'pipe' });
-  if (result.exitCode !== 0) {
-    const detail = result.stderr.toString().trim().split('\n').slice(0, 3).join('\n');
-    fail(`構文検証に失敗しました: ${path}\n${detail}`);
-  }
-  // node --check はモジュール検出により export 混入を ESM として通過させるため、
-  // 静的宣言の有無は AST で直接検出する（コメント・文字列中の断片は誤検出しない）。
-  const text = readFileSync(path, 'utf8');
-  const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
-  const hits: string[] = [];
-  const visit = (node: ts.Node): void => {
-    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node) || ts.isExportAssignment(node)) {
-      const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
-      hits.push(`${line + 1}行目: ${text.split('\n')[line]?.trim().slice(0, 80)}`);
-    }
-    ts.forEachChild(node, visit);
-  };
-  ts.forEachChild(source, visit);
-  if (hits.length > 0) {
-    fail(`静的な import/export 宣言が混入しています: ${path}\n${hits.slice(0, 5).join('\n')}`);
-  }
-}
-
-const forwardArgs = Bun.argv.slice(2);
-const isDev = hasFlag('--dev');
-
-const child = Bun.spawnSync(['bun', './build.js', ...forwardArgs], {
-  cwd: import.meta.dir + '/..',
-  stdout: 'inherit',
-  stderr: 'inherit',
-});
-
-if (child.exitCode !== 0) {
-  fail(`build.js が exit code ${child.exitCode} で終了しました。`);
-}
-
-const outFile = resolveUserscriptOutFile(isDev);
-const outPath = `${import.meta.dir}/../${outFile}`;
-const file = Bun.file(outPath);
-if (!(await file.exists())) {
-  fail(`生成物が見つかりません: ${outFile}`);
-}
-
-const header = await file.text();
-if (!header.includes('==UserScript==')) {
-  fail(`${outFile} に ==UserScript== ブロックがありません。`);
-}
-const version = parseUserscriptVersion(header);
-if (version === null) {
-  fail(`${outFile} から @version を検出できませんでした。`);
-}
-if (isDevUserscript(outFile) !== isDev) {
-  fail(`dev 指定と生成物名が一致しません: ${outFile}`);
-}
-
-const distDir = `${import.meta.dir}/../dist`;
-for (const entry of readdirSync(distDir)) {
-  if (entry.endsWith('.user.js')) {
-    checkClassicScriptSyntax(`${distDir}/${entry}`);
-  }
-}
-
-console.log(`ビルド成功: ${outFile} (@version ${version})`);
+const source = await readFile(new URL(files[0], dist), 'utf8');
+if (parseUserscriptVersion(source) !== VERSION) throw new Error('配布物のバージョンが一致しません');
+// ESM自動検出を使わず、マネージャと同じclassic scriptとして検証する。
+new Script(source, { filename: STABLE_USERSCRIPT_FILE });
+if (/^\/\/\s*@require\s/m.test(source)) throw new Error('外部スクリプトへの依存が残っています');
+console.log(`ビルド成功: ${STABLE_USERSCRIPT_FILE} (${VERSION}, ${source.length}文字)`);

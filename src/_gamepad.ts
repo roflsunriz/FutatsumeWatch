@@ -1,14 +1,5 @@
-// ==UserScript==
-// @name        FutatsumeGamePad
-// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
-// @description FutatsumeWatchをゲームパッドで操作
-// @include     *://*.nicovideo.jp/*
-// @version     0.0.1
-// @author      roflsunriz
-// @license     public domain
-// @grant       none
-// @noframes
-// ==/UserScript==
+import lodash from 'lodash';
+import jquery from 'jquery';
 
 // 推奨
 //
@@ -180,8 +171,8 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       U_L: -0.71429,
     };
 
-    const _ = (window as unknown as GamepadWindow)._ || ZenzaWatch.lib._;
-    const $ = (window as unknown as GamepadWindow).jQuery || ZenzaWatch.lib.$;
+    const _ = lodash;
+    const $ = jquery;
     const util = ZenzaWatch.util;
     const Emitter: GamepadEmitterClass = ZenzaWatch.modules ? ZenzaWatch.modules.Emitter : ZenzaWatch.lib.AsyncEmitter;
 
@@ -1939,15 +1930,8 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
   };
 
   const loadMonkey = (): void => {
-    const script = document.createElement('script');
-    script.id = 'ZenzaGamePadLoader';
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('charset', 'UTF-8');
-    script.append(`(${String(monkey)})(window.ZenzaWatch);`);
-    document.head.append(script);
+    monkey((window as unknown as { ZenzaWatch: GamepadZenzaWatch }).ZenzaWatch);
   };
-
-  //@require ZenzaDetector
   await ZenzaDetector.detect();
   loadMonkey();
 })(globalThis ? globalThis.window : window);

@@ -32,13 +32,20 @@ export async function attach(target: CdpTarget): Promise<CdpSession> {
 
 function fromSocket(ws: WebSocket): CdpSession {
   let id = 0;
-  const pending = new Map<number, (v: unknown) => void>();
+  const pending = new Map<
+    number,
+    { resolve: (v: unknown) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }
+  >();
   const handlers = new Set<(method: string, params: Record<string, unknown>) => void>();
   const send = (method: string, params: Record<string, unknown> = {}): Promise<unknown> => {
     id += 1;
     const cur = id;
-    return new Promise((resolve) => {
-      pending.set(cur, resolve);
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        pending.delete(cur);
+        reject(new Error(`CDP timeout: ${method}`));
+      }, 15000);
+      pending.set(cur, { resolve, reject, timer });
       ws.send(JSON.stringify({ id: cur, method, params }));
     });
   };
@@ -48,9 +55,15 @@ function fromSocket(ws: WebSocket): CdpSession {
       result?: unknown;
       method?: string;
       params?: Record<string, unknown>;
+      error?: { message: string };
     };
     if (msg.id !== undefined) {
-      pending.get(msg.id)?.(msg.result);
+      const request = pending.get(msg.id);
+      if (request) {
+        clearTimeout(request.timer);
+        if (msg.error) request.reject(new Error(msg.error.message));
+        else request.resolve(msg.result);
+      }
       pending.delete(msg.id);
       return;
     }
@@ -59,6 +72,13 @@ function fromSocket(ws: WebSocket): CdpSession {
         h(msg.method, msg.params ?? {});
       }
     }
+  });
+  ws.addEventListener('close', () => {
+    for (const request of pending.values()) {
+      clearTimeout(request.timer);
+      request.reject(new Error('CDP connection closed'));
+    }
+    pending.clear();
   });
   return {
     send,
@@ -86,14 +106,18 @@ export async function attachBrowser(): Promise<CdpSession> {
 export async function evaluate(session: CdpSession, expression: string): Promise<unknown> {
   const res = (await session.send('Runtime.evaluate', { expression, returnByValue: true })) as {
     result?: { value?: unknown };
+    exceptionDetails?: { text: string; exception?: { description?: string } };
   };
+  if (res.exceptionDetails) throw new Error(res.exceptionDetails.exception?.description ?? res.exceptionDetails.text);
   return res.result?.value;
 }
 
 export async function evaluateAsync(session: CdpSession, expression: string): Promise<unknown> {
   const res = (await session.send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })) as {
     result?: { value?: unknown };
+    exceptionDetails?: { text: string; exception?: { description?: string } };
   };
+  if (res.exceptionDetails) throw new Error(res.exceptionDetails.exception?.description ?? res.exceptionDetails.text);
   return res.result?.value;
 }
 

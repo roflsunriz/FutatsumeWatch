@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { CONSTANT } from './constant';
 import { Emitter } from './baselib';
 import { Config } from './Config';
@@ -49,18 +50,14 @@ export interface UtilTable {
   StyleSwitcher: { update(...args: unknown[]): unknown };
 }
 
-const { navigator, location } = browser.window as UtilBrowserWindow;
 const window = browser.window as UtilBrowserWindow;
-const document = browser.document as Document;
-const history = window.history;
 let console: Console | Record<string, (...args: unknown[]) => void> = window.console;
 
 Object.assign(window, {
   ZenzaWatch,
 });
 
-const NicoVideoApi = {};
-const util = {} as UtilTable;
+const util = ZenzaWatch.util as UtilTable;
 
 //===BEGIN===
 //@require reg

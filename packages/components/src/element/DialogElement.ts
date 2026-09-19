@@ -2,7 +2,7 @@ import { BaseCommandElement } from './BaseCommandElement.js';
 import { textUtil } from '../../../lib/src/text/textUtil';
 import { cssUtil } from '../../../lib/src/css/css';
 
-import type { TemplateResult } from '../../../../node_modules/lit/html.js';
+import type { TemplateResult } from 'lit/html.js';
 import type { CommandDetail, ElementEvents, LitModule, PropsMap, StateMap } from './BaseCommandElement.js';
 
 const dll: { list?: LitModule } = {};

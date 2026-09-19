@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { uq } from '../../../lib/src/uQuery';
 import { textUtil } from '../../../lib/src/text/textUtil';
 import { cssUtil } from '../../../lib/src/css/css';

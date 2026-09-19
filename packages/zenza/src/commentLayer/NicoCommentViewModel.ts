@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import { SlotLayoutWorker } from './SlotLayoutWorker';
 import { NicoChatGroupViewModel } from './NicoChatGroupViewModel';

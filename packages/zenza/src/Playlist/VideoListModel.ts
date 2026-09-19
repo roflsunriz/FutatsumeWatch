@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import { bounce, throttle } from '../../../lib/src/infra/bounce';
 import { VideoListItem } from './VideoListItem';

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { nicoUtil } from '../../../lib/src/nico/nicoUtil';
 import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 
@@ -19,7 +20,7 @@ interface HistoryDialog {
   on(name: string, handler: (...args: unknown[]) => void): void;
 }
 
-const NicoVideoApi: { pushHistory?: (path: string, title: string) => void } = {};
+import { NicoVideoApi } from '../../../lib/src/nico/NicoVideoApi';
 
 //===BEGIN===
 /**

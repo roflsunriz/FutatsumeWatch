@@ -1,20 +1,3 @@
-// ==UserScript==
-// @name        Masked Watch
-// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
-// @description 動画上のテキストや顔を検出してコメントを透過する
-// @match       *://www.nicovideo.jp/*
-// @match       *://live.nicovideo.jp/*
-// @match       *://anime.nicovideo.jp/*
-// @match       *://embed.nicovideo.jp/watch/*
-// @match       *://sp.nicovideo.jp/watch/*
-// @exclude     *://ads*.nicovideo.jp/*
-// @exclude     *://www.nicovideo.jp/favicon.ico*
-// @exclude     *://www.nicovideo.jp/robots.txt*
-// @version     0.0.1
-// @grant       none
-// @author      roflsunriz
-// @license     public domain
-// ==/UserScript==
 import { css } from '../packages/lib/src/css/css';
 import { throttle } from '../packages/lib/src/infra/bounce';
 
@@ -98,8 +81,6 @@ interface MaskedWatchCss {
 
   const monkey = (PRODUCT: string): void => {
     'use strict';
-    //@version
-    //@environment
     let ZenzaWatch: MaskedWatchZenza | null = null;
 
     const DEFAULT_CONFIG: MaskedWatchConfig = {
@@ -173,8 +154,6 @@ interval: ${config.interval}        // マスクの更新間隔
       const url = URL.createObjectURL(blob);
       return new Worker(url, options);
     };
-    //@require throttle
-    //@require css
 
     const 業務 = function (self: MaskedWatchWorkerSelf): void {
       let fastMode!: boolean, faceDetection!: boolean, textDetection!: boolean, debug!: boolean, enabled!: boolean;
@@ -903,15 +882,7 @@ interval: ${config.interval}        // マスクの更新間隔
   };
 
   const loadGm = (): void => {
-    const script = document.createElement('script');
-    script.id = `${PRODUCT}Loader`;
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('charset', 'UTF-8');
-    script.append(`
-    (() => {
-      (${monkey.toString()})("${PRODUCT}");
-    })();`);
-    (document.head || document.documentElement).append(script);
+    monkey(PRODUCT);
   };
 
   loadGm();

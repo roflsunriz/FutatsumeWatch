@@ -1,15 +1,3 @@
-// ==UserScript==
-// @name           uQuery
-// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
-// @description    コンソールのデバッグ補助ツール(開発者用)
-// @match          *://*/*
-// @grant          none
-// @author         roflsunriz
-// @version        0.0.1
-// @run-at         document-start
-// @license        public domain
-// @noframes
-// ==/UserScript==
 import { bounce } from '../packages/lib/src/infra/bounce';
 
 interface UQueryArray {
@@ -82,9 +70,9 @@ interface UQueryUtil {
   [key: string]: unknown;
 }
 
-declare const AntiPrototypeJs: { (): Promise<unknown> };
-declare const uQuery: UQueryStatic;
-//@require ../packages/lib/src/infra/AntiPrototype-js.js
+import { AntiPrototypeJs } from '../packages/lib/src/infra/AntiPrototype-js';
+import { uQuery as nativeUQuery } from '../packages/lib/src/uQuery';
+const uQuery = nativeUQuery as unknown as UQueryStatic;
 void AntiPrototypeJs().then(() => {
   // Promise.resolve().then(() => {
   const PRODUCT = 'uQuery';
@@ -98,11 +86,6 @@ void AntiPrototypeJs().then(() => {
   //   console[k] = window.console[k].bind(window.console);
   // }
   // console.log = window.console.log.bind(window.console, '%c[LOG]', 'background: cyan');
-  //@version
-  //@environment
-  //@require ../packages/lib/src/Emitter.js
-  //@require bounce
-  //@require ../packages/lib/src/uQuery.js
 
   const $: UQueryStatic = (util.$ = uQuery);
   uQuery.fn.uQuery = VER;

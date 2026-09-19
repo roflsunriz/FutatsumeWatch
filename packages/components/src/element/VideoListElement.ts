@@ -4,7 +4,7 @@ import { util } from '../util/util.js';
 import { VideoSearchFormElement } from './VideoSearchFormElement';
 import { defineElement } from '../../../lib/src/dom/defineElement';
 
-import type { TemplateResult } from '../../../../node_modules/lit/html.js';
+import type { TemplateResult } from 'lit/html.js';
 import type { NicoQuery, VideoItemData } from '../../../lib/src/nico/NicoQuery';
 import type { CommandDetail, ElementEvents, PropsMap, StateMap } from './BaseCommandElement.js';
 

@@ -1,26 +1,4 @@
-// ==UserScript==
-// @name        HeatSync
-// @namespace   https://github.com/roflsunriz/FutatsumeWatch/
-// @description コメントの少ないところだけ自動で早送りする、忙しい人のためのFutatsumeWatch拡張
-// @match       *://www.nicovideo.jp/*
-// @match       *://ext.nicovideo.jp/
-// @match       *://ext.nicovideo.jp/#*
-// @match       *://ch.nicovideo.jp/*
-// @match       *://com.nicovideo.jp/*
-// @match       *://commons.nicovideo.jp/*
-// @match       *://dic.nicovideo.jp/*
-// @exclude     *://ads*.nicovideo.jp/*
-// @exclude     *://www.upload.nicovideo.jp/*
-// @exclude     *://www.nicovideo.jp/watch/*?edit=*
-// @exclude     *://ch.nicovideo.jp/tool/*
-// @exclude     *://flapi.nicovideo.jp/*
-// @exclude     *://dic.nicovideo.jp/p/*
-// @version     0.0.1
-// @grant       none
-// @author      roflsunriz
-// @license     public domain
-// @noframes
-// ==/UserScript==
+import _ from 'lodash';
 import { Emitter } from '../packages/lib/src/Emitter';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
 import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
@@ -126,8 +104,6 @@ interface HeatsyncShadowHost extends Element {
     };
     const product: HeatsyncProduct = { debug: { _const: CONSTANT } };
     (window as unknown as Record<string, unknown>)[PRODUCT] = product;
-
-    //@require Emitter
     const { util } = (function (): { util: HeatsyncUtil; Emitter: unknown } {
       const util = {} as HeatsyncUtil;
 
@@ -278,8 +254,6 @@ interface HeatsyncShadowHost extends Element {
       return { util, Emitter };
     })();
     product.util = util;
-
-    //@require ZenzaDetector
 
     const broadcast: { send(packet?: unknown): void } = (() => {
       if (!window.BroadcastChannel) {
@@ -1288,12 +1262,5 @@ interface HeatsyncShadowHost extends Element {
     init();
   };
 
-  (() => {
-    const script = document.createElement('script');
-    script.id = `${PRODUCT}Loader`;
-    script.setAttribute('type', 'text/javascript');
-    script.setAttribute('charset', 'UTF-8');
-    script.appendChild(document.createTextNode('(' + String(monkey) + ')("' + PRODUCT + '");'));
-    document.body.appendChild(script);
-  })();
+  monkey(PRODUCT);
 })();

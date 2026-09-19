@@ -96,7 +96,7 @@ async function start(headed: boolean): Promise<void> {
     'powershell',
     '-NoProfile',
     '-Command',
-    `$p = Start-Process -FilePath "${CHROME_PATH}" -ArgumentList @(${psArgs}) -PassThru; $p.Id`,
+    `$p = Start-Process -FilePath "${CHROME_PATH}" -ArgumentList @(${psArgs}) ${headed ? '' : '-WindowStyle Hidden'} -PassThru; $p.Id`,
   ]);
   if (launch.exitCode !== 0) {
     throw new Error(`Chrome の起動に失敗しました: ${launch.stderr.toString().slice(0, 300)}`);

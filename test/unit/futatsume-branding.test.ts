@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
-import { DEV_USERSCRIPT_FILE, STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/version';
+import { STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/version';
 
 describe('FutatsumeWatch改名', () => {
   it('製品定数が新名称で旧名称を保持する', () => {
@@ -12,11 +12,10 @@ describe('FutatsumeWatch改名', () => {
 
   it('版管理が新生成物を指す', () => {
     expect(STABLE_USERSCRIPT_FILE).toBe('dist/FutatsumeWatch.user.js');
-    expect(DEV_USERSCRIPT_FILE).toBe('dist/FutatsumeWatch-dev.user.js');
   });
 
   it('生成物のUserScriptヘッダが新名称・新リポジトリを指す', () => {
-    for (const file of [STABLE_USERSCRIPT_FILE, DEV_USERSCRIPT_FILE]) {
+    for (const file of [STABLE_USERSCRIPT_FILE]) {
       expect(fs.existsSync(file)).toBe(true);
       const header = fs.readFileSync(file, 'utf8').slice(0, 8000);
       expect(header).toContain('==UserScript==');
@@ -28,21 +27,10 @@ describe('FutatsumeWatch改名', () => {
     }
   });
 
-  it('関連スクリプトのメタデータが新リポジトリに寄っている', () => {
-    const files = [
-      'dist/FutatsumeHLS.user.js',
-      'dist/FutatsumeGamePad.user.js',
-      'dist/FutatsumeBlogPartsButton.user.js',
-      'dist/FutatsumeAdvancedSettings.user.js',
-      'dist/MylistPocket.user.js',
-      'dist/MaskedWatch.user.js',
-    ];
-    for (const file of files) {
-      expect(fs.existsSync(file)).toBe(true);
-      const header = fs.readFileSync(file, 'utf8').slice(0, 6000);
-      expect(header).toContain('==UserScript==');
-      expect(header).toContain('https://github.com/roflsunriz/FutatsumeWatch/');
-    }
+  it('配布物を自己完結した単一ファイルにする', () => {
+    expect(fs.readdirSync('./dist')).toEqual(['FutatsumeWatch.user.js']);
+    const source = fs.readFileSync(STABLE_USERSCRIPT_FILE, 'utf8');
+    expect(source).not.toMatch(/^\/\/\s*@require\s/m);
   });
 
   it('旧 dist が残っていない', () => {

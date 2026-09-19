@@ -1,4 +1,6 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
+import { global } from '../../../../src/FutatsumeWatchIndex';
 import { bounce } from '../../../lib/src/infra/bounce';
 import { cssUtil } from '../../../lib/src/css/css';
 import { uq } from '../../../lib/src/uQuery';

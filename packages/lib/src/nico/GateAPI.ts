@@ -3,6 +3,8 @@ import { ThumbInfoCacheDb } from './ThumbInfoCacheDb';
 import { parseThumbInfo } from './parseThumbInfo';
 import { WatchInfoCacheDb } from './WatchInfoCacheDb';
 import type { ThumbInfoData } from './parseThumbInfo';
+import { IndexedDbStorage } from '../infra/IndexedDbStorage';
+import type { StoreMeta } from '../infra/IndexedDbStorage';
 
 interface ZenzaLibShape {
   dimport?: unknown;
@@ -43,7 +45,7 @@ interface GateMessageParams {
   sec?: number;
   name?: string;
   ver?: number;
-  stores?: unknown;
+  stores?: StoreMeta[];
   command?: string;
   [key: string]: unknown;
 }
@@ -77,7 +79,7 @@ interface BridgeDbParams {
   params?: {
     name?: string;
     ver?: number;
-    stores?: unknown;
+    stores?: StoreMeta[];
     storeName?: string;
     transfer?: unknown;
     data?: { key?: string; index?: string; timeout?: number; expireTime?: number };
@@ -89,11 +91,8 @@ const LEGACY_PRODUCT = 'ZenzaWatch';
 //===BEGIN===
 
 const GateAPI = (() => {
-  const zenzaLib = ((window as unknown as { ZenzaLib?: ZenzaLibShape }).ZenzaLib || {}) as ZenzaLibShape;
-  const { dimport, Handler, PromiseHandler, Emitter, EmitterInitFunc, workerUtil, parseThumbInfo } = zenzaLib;
   //@require gate
   const { post, parseUrl, xFetch, uFetch, init } = (gate as unknown as () => GateBridge)();
-  const { IndexedDbStorage } = (window as unknown as { ZenzaLib?: ZenzaLibShape }).ZenzaLib!;
   //@require ThumbInfoCacheDb
   const thumbInfo = async () => {
     const { port, TOKEN } = init({ prefix: `thumbInfo${PRODUCT}Loader`, type: 'thumbInfo' });
@@ -260,9 +259,10 @@ const GateAPI = (() => {
       const { command } = params;
       if (command === 'open') {
         const { name, ver, stores } = params.params!;
-        const opened: unknown = await IndexedDbStorage!.open({ name, ver, stores });
-        const db = dbMap[name as string] || (opened as BridgeDbApi);
-        dbMap[name as string] = db;
+        if (typeof name !== 'string' || !name) throw new Error('データベース名がありません');
+        const opened: unknown = await IndexedDbStorage.open({ name, ver, stores });
+        const db = dbMap[name] || (opened as BridgeDbApi);
+        dbMap[name] = db;
         return post({ status: 'ok', command: 'bridge-db-result', params: { name, ver } }, { sessionId });
       }
       const { name, storeName, transfer, data } = params.params!;

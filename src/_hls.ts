@@ -1,33 +1,6 @@
-// ==UserScript==
-// @name           FutatsumeWatch HLS Support
-// @namespace      https://github.com/roflsunriz/FutatsumeWatch/
-// @description    FutatsumeWatchをHLSに対応させる
-// @match          *://www.nicovideo.jp/*
-// @match          *://blog.nicovideo.jp/*
-// @match          *://ch.nicovideo.jp/*
-// @match          *://com.nicovideo.jp/*
-// @match          *://commons.nicovideo.jp/*
-// @match          *://dic.nicovideo.jp/*
-// @match          *://ex.nicovideo.jp/*
-// @match          *://info.nicovideo.jp/*
-// @match          *://uad.nicovideo.jp/*
-// @match          *://*.nicovideo.jp/smile*
-// @match          *://site.nicovideo.jp/*
-// @match          *://anime.nicovideo.jp/*
-// @match          https://www.upload.nicovideo.jp/niconico-garage/video/*
-// @exclude        *://ads.nicovideo.jp/*
-// @exclude        *://www.nicovideo.jp/watch/*?edit=*
-// @exclude        *://ch.nicovideo.jp/tool/*
-// @exclude        *://flapi.nicovideo.jp/*
-// @exclude        *://dic.nicovideo.jp/p/*
-// @grant          none
-// @author         roflsunriz
-// @version        0.0.1
-// @noframes
-// @require        https://cdn.jsdelivr.net/npm/hls.js@latest
-// @run-at         document-start
-// ==/UserScript==
-
+import HlsRuntime from 'hls.js';
+const Hls = HlsRuntime as unknown as HlsStatic;
+import { html, render } from 'lit/html.js';
 import { AntiPrototypeJs } from '../packages/lib/src/infra/AntiPrototype-js';
 import { Emitter } from '../packages/lib/src/Emitter';
 import type { EmitterCallback, AnyEmitter } from '../packages/lib/src/Emitter';
@@ -143,15 +116,10 @@ interface HlsKeyloaderState {
   decrypturl?: string;
 }
 
-const MODULES = `
-const ZenzaHLSmodules = {ErrorEvent, MediaError, HTMLDialogElement: window.HTMLDialogElement || HTMLDivElement, DOMException};
-`;
 // hls.js@latest だと再生が始まらない動画がたまにある。 0.8.9ならok
 
-//@require AntiPrototypeJs
-void AntiPrototypeJs();
-
-void AntiPrototypeJs().then(() => {
+export async function initializeHls(): Promise<void> {
+  await AntiPrototypeJs();
   const PRODUCT = 'ZenzaWatchHLS';
   const monkey = (
     PRODUCT: string,
@@ -167,8 +135,6 @@ void AntiPrototypeJs().then(() => {
     console.log(`%c${PRODUCT} v:%s`, 'background: cyan;', VER);
 
     console.time('ZenzaWatch HLS');
-    //@require Emitter
-    //@require workerUtil
 
     const DEFAULT_CONFIG: Record<string, HlsConfigValue> = {
       // hls.js 以外のパラメータ
@@ -428,7 +394,7 @@ void AntiPrototypeJs().then(() => {
         declare static _instance: IndexDBStorage | undefined;
         declare static db: IDBDatabase | null;
         declare isBusy: boolean;
-        static get name(): string {
+        static get dbName(): string {
           return 'zenza_hls';
         }
         static get ver(): number {
@@ -455,12 +421,12 @@ void AntiPrototypeJs().then(() => {
             return Promise.resolve(this.db);
           }
           return new Promise<IDBDatabase>((resolve, reject) => {
-            const req = indexedDB.open(this.name, this.ver);
+            const req = indexedDB.open(this.dbName, this.ver);
             req.onupgradeneeded = (e: IDBVersionChangeEvent): void => {
               const db = (e.target as IDBOpenDBRequest).result;
 
-              if (db.objectStoreNames.contains(this.name)) {
-                db.deleteObjectStore(this.name);
+              if (db.objectStoreNames.contains(this.dbName)) {
+                db.deleteObjectStore(this.dbName);
               }
 
               const [meta] = this.storeNames;
@@ -958,6 +924,7 @@ void AntiPrototypeJs().then(() => {
             cache: 'force-cache',
             signal: abc.signal,
           };
+          const requestStart = performance.now();
           const request = new Request(url, params);
           debounceTimeout();
           let res!: Response;
@@ -977,7 +944,9 @@ void AntiPrototypeJs().then(() => {
           if (!res.ok) {
             return;
           }
+          const responseStart = performance.now();
           const data = await res.arrayBuffer();
+          const responseEnd = performance.now();
           debounceTimeout.cancel();
 
           const buffer = data.slice();
@@ -987,17 +956,23 @@ void AntiPrototypeJs().then(() => {
               hash,
               videoId,
               meta: {
-                contentLength: (buffer as unknown as { length: number }).length,
+                contentLength: buffer.byteLength,
                 sn,
                 resp: { url },
                 level,
-                total: (buffer as unknown as { length: number }).length,
-                /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- 束縛なし参照の既知の潜在バグのため */
-                // @ts-expect-error 束縛なし参照の既知の潜在バグ（AGENTS.md 記録済み、別タスクで修正する）
-                stats,
-                // @ts-expect-error 束縛なし参照の既知の潜在バグ（stats と同一起源、別タスクで修正する）
-                url: context.url,
-                /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+                total: buffer.byteLength,
+                stats: {
+                  aborted: false,
+                  loaded: buffer.byteLength,
+                  total: buffer.byteLength,
+                  retry: 0,
+                  chunkCount: 1,
+                  bwEstimate: 0,
+                  loading: { start: requestStart, first: responseStart, end: responseEnd },
+                  parsing: { start: 0, end: 0 },
+                  buffering: { start: 0, first: 0, end: 0 },
+                },
+                url,
               },
             },
             buffer
@@ -1928,10 +1903,10 @@ void AntiPrototypeJs().then(() => {
         // console.info('load hls.js from', s.src);
         (document.head || document.documentElement).append(s);
       } else {
-        console.info('hls.js ready:', (window as unknown as { Hls?: HlsStatic }).Hls!.version);
+        console.info('hls.js ready:', Hls.version);
       }
       return ZenzaVideoElement;
-    })({ Hls: (window as unknown as { Hls?: HlsStatic }).Hls as HlsStatic, throttle });
+    })({ Hls, throttle });
 
     interface HlsDebugPropDef {
       name: string;
@@ -1946,7 +1921,7 @@ void AntiPrototypeJs().then(() => {
     }
     interface HlsDebugTemplates {
       html: (strings: TemplateStringsArray, ...values: Array<unknown>) => unknown;
-      render: (node: unknown, target: Element | ShadowRoot) => void;
+      render: (node: unknown, target: HTMLElement | ShadowRoot) => void;
     }
     const initDebugElements = (config: Record<string, unknown>, { html, render }: HlsDebugTemplates): unknown => {
       if (!HTMLDialogElement || !window.customElements) {
@@ -2677,7 +2652,7 @@ void AntiPrototypeJs().then(() => {
     }
     interface HlsDebugModule {
       html: (strings: TemplateStringsArray, ...values: Array<unknown>) => unknown;
-      render: (node: unknown, target: Element | ShadowRoot) => void;
+      render: (node: unknown, target: HTMLElement | ShadowRoot) => void;
     }
     const ZenzaDetector: { initialize(): void; detect(timing?: string): Promise<HlsLocalZenzaWatch> } = (() => {
       let ZenzaWatch: HlsLocalZenzaWatch | null = null;
@@ -2743,11 +2718,15 @@ void AntiPrototypeJs().then(() => {
           }`,
           { className: 'ZenzaHLS' }
         );
-        render(div, container);
+        const mount = document.createElement('span');
+        container.append(mount);
+        render(div, mount);
       });
       void ZenzaWatch.emitter.promise('videoContextMenu.addonMenuReady.list').then(({ container }) => {
         const li = html`<li class="command" data-command="toggleHLSDebug">HLS設定</li>`;
-        render(li, container);
+        const mount = document.createElement('li');
+        container.append(mount);
+        render(li, mount);
       });
 
       ZenzaWatch.emitter.once('command-toggleHLSDebug', () => {
@@ -2893,10 +2872,7 @@ void AntiPrototypeJs().then(() => {
           return ZenzaWatch;
         })
         .then((ZenzaWatch: HlsLocalZenzaWatch) => {
-          void Promise.all([dimport('https://esm.run/lit@2.0.2/html.js')]).then((mods: Array<unknown>) => {
-            const { html, render } = mods[0] as HlsDebugModule;
-            initDebug({ hlsConfig, html, render, ZenzaWatch });
-          });
+          initDebug({ hlsConfig, html, render, ZenzaWatch });
           console.timeEnd('ZenzaWatch HLS');
         });
     };
@@ -2904,46 +2880,10 @@ void AntiPrototypeJs().then(() => {
     init();
   };
 
-  try {
-    if (Hls) {
-      console.log('hls.js@%s required', Hls.version);
-      (window as unknown as { Hls?: HlsStatic }).Hls = Hls;
-    } else if (window && !(window as unknown as { Hls?: HlsStatic }).Hls) {
-      const hlsjs = document.createElement('script');
-      hlsjs.id = 'HLSJS_Loader';
-      hlsjs.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-      hlsjs.onerror = (e) => {
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <h2>* ZenzaWatch HLS *</h2>
-          <a href="${hlsjs.src}" target="_blank">${hlsjs.src}</a> の読み込みに失敗しました。<br>
-          他のアドオン等でブロックされている可能性があります。`;
-        div.onclick = () => {
-          div.remove();
-        };
-        Object.assign(div.style, {
-          position: 'fixed',
-          zIndex: '100000',
-          bottom: '32px',
-          left: '32px',
-          padding: '8px',
-          background: 'rgba(153, 0, 0, 0.8)',
-          color: '#fff',
-          fontWeight: 'bold',
-        });
-        document.documentElement.append(div);
-      };
-      document.documentElement.append(hlsjs);
-    }
-  } catch (e) {
-    console.warn('ZenzaHLS: ', e);
-  }
-  const script = document.createElement('script');
-  script.id = 'ZenzaWatchHLSLoader';
-  script.setAttribute('charset', 'UTF-8');
-  script.append(`
-    ${MODULES}
-    (${String(monkey)})('${PRODUCT}', ZenzaHLSmodules);
-  `);
-  document.documentElement.append(script);
-});
+  monkey(PRODUCT, {
+    ErrorEvent,
+    MediaError,
+    HTMLDialogElement: window.HTMLDialogElement || HTMLDivElement,
+    DOMException,
+  });
+}

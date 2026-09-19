@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import { NicoChatFilter } from './NicoChatFilter';
 import type { NicoChatFilterParams } from './NicoChatFilter';

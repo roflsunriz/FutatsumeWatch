@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { VideoListView } from './VideoListView';
 import type { PlayListModel } from './PlayListModel';
 import { Emitter } from '../../../lib/src/Emitter';

@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
 import { textUtil } from '../../../lib/src/text/textUtil';
 import { Config } from '../../../../src/Config';

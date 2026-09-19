@@ -10,23 +10,9 @@ test/fixtures
 # 注釈行の追加時は手で prettier 準拠を保つ）
 packages/components/mock
 
-# 段階移行の例外: 既存 .js はファイル単位の TS 変換時に整形する。
-# .ts へ変換したファイルは自動で prettier 準拠が必須になる。
-# *.js は全階層の .js に効く。TS 変換で .js が消えれば自動で対象外になる。
-src/**/*.js
-packages/**/*.js
-test/**/*.js
-*.js
-!eslint.config.mjs
-
 # 意図的に壊れた HTML フィクスチャ等（パーサーが読めない検証用データ）
 sample
 **/*.html
-
-# 旧ビルド資産（Bun 移行時に削除予定）
-.babelrc
-.eslintrc
-packages/components/.babelrc
 
 # dev用外部取得物（TM本体・Chrome for Testing。dev-setup.ts が取得・検証する）
 /dev-extensions

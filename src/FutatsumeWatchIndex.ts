@@ -2,6 +2,9 @@ import { Emitter, Handler } from './baselib';
 import { Config } from './Config';
 import type { ConfigStore } from './Config';
 import { dll } from '../packages/components/src/dll';
+import { CONSTANT } from './constant';
+import { NICORU } from './nicoru-icon';
+import { VERSION } from './version';
 
 export interface FutatsumeWatchEmitter {
   on(event: string, listener: (...args: unknown[]) => void): unknown;
@@ -74,8 +77,8 @@ const FutatsumeWatch: FutatsumeWatchRoot = {
   emitter: new (Emitter as unknown as new () => FutatsumeWatchEmitter)(),
   ready: false,
   state: {},
-  version: '1.0.0',
-  ENV: 'DEV',
+  version: VERSION,
+  ENV: 'STABLE',
 };
 // 旧連携（MylistPocket・外部スクリプト・window.ZenzaWatch参照）のため別名を維持する。
 export const ZenzaWatch: FutatsumeWatchRoot = FutatsumeWatch;
@@ -85,14 +88,20 @@ const global = {
   external: FutatsumeWatch.external,
   PRODUCT,
   TOKEN,
+  CONSTANT,
+  NICORU,
+  notify: (message: unknown) =>
+    (FutatsumeWatch.external.execCommand as (command: string, value: unknown) => unknown)('notify', message),
+  alert: (message: unknown) =>
+    (FutatsumeWatch.external.execCommand as (command: string, value: unknown) => unknown)('alert', message),
   config: Config,
   api: FutatsumeWatch.api,
-  innerWidth: 100,
-  innerHeight: 100,
+  innerWidth: window.innerWidth,
+  innerHeight: window.innerHeight,
   dll,
 };
 const Navi = Object.assign({}, FutatsumeWatch);
-const ENV = 'dev';
-const VER = '2.0.0';
+const ENV = 'STABLE';
+const VER = VERSION;
 
 export { FutatsumeWatch, Navi, TOKEN, global, ENV, VER, dll };

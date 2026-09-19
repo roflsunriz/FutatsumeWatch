@@ -27,11 +27,9 @@ const PlayListSession = ((storage: Storage) => {
         storage.setItem(KEY, json);
       } catch (e) {
         window.console.error(e);
-        const name = (e as { name?: unknown }).name;
-        if (name === 'QuotaExceededError' || name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-          storage.clear();
-          storage.setItem(KEY, json);
-        }
+        // 他機能やサイトのデータを消して空きを作ってはいけない。
+        lastJson = '';
+        throw e;
       }
     },
     restore(): unknown {
