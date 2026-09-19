@@ -39,6 +39,11 @@ try {
     'キーワード検索で版・準備完了・結果ボタンを表示'
   );
   await shot(page, 'entry-search.png');
+  await until(
+    page,
+    `!document.body.querySelector('[data-futatsume-entry]') && [...document.querySelectorAll('[data-futatsume-video]')].every(b=>!b.textContent.trim() && !!b.querySelector('svg') && !!b.getAttribute('aria-label'))`,
+    '検索結果はアイコンのみで右下ポップアップがない'
+  );
   await clickVisible(page, '[data-futatsume-video="sm9"]');
   await until(
     page,
@@ -64,6 +69,12 @@ try {
     '通常の動画リンクから視聴ページへ移っても起動ボタンを表示'
   );
   await until(page, `window.__fwEntryDocument===performance.timeOrigin`, '再読み込みしないページ内遷移を確認');
+  await until(
+    page,
+    `(()=>{const b=document.querySelector('[data-futatsume-open]');return !b.textContent.trim() && !!b.querySelector('svg') && !!b.parentElement.querySelector('h1') && !!b.nextElementSibling?.querySelector('a[data-anchor-area="video_information"]') && !document.body.querySelector('[data-futatsume-entry]');})()`,
+    '視聴アイコンはタイトルと投稿者の間にありポップアップがない'
+  );
+  await evaluate(page, `document.querySelector('[data-futatsume-open]').scrollIntoView({block:'center'})`);
   await shot(page, 'entry-watch.png');
   await clickVisible(page, '[data-futatsume-open]');
   await until(
@@ -74,7 +85,7 @@ try {
   await page.send('Page.navigateToHistoryEntry', { entryId: searchEntry.id });
   await until(
     page,
-    `location.pathname.startsWith('/tag/') && !!document.querySelector('[data-futatsume-video="sm9"]:not(:disabled)') && document.querySelector('[data-futatsume-open]').hidden`,
+    `location.pathname.startsWith('/tag/') && !!document.querySelector('[data-futatsume-video="sm9"]:not(:disabled)') && !document.querySelector('[data-futatsume-open]')`,
     '戻る操作で検索ページの導線を復元'
   );
   await clickVisible(page, '[data-futatsume-video="sm9"]');

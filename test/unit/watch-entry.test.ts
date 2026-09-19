@@ -43,17 +43,24 @@ afterEach(() => {
 const flush = async (): Promise<void> => {
   await Bun.sleep(20);
 };
+const watchHeader =
+  '<section><div id="info-row"><div><h1>動画タイトル</h1></div><div id="owner"><a data-anchor-area="video_information" href="/user/4">投稿者</a></div></div><div>タグ</div></section>';
 
 describe('初めて使う人の起動導線', () => {
-  it('初期化前から状態を表示し、失敗しても無言で消えない', () => {
+  it('ポップアップを作らず、アイコンの操作状態と説明を保持する', () => {
     history.replaceState(null, '', '/watch/sm9');
+    document.body.innerHTML = watchHeader;
     ui = installWatchEntry();
     expect(document.querySelector('[data-futatsume-entry]')?.getAttribute('data-state')).toBe('starting');
     expect(document.querySelector<HTMLButtonElement>('[data-futatsume-open]')?.disabled).toBe(true);
     ui.fail('読み込み失敗');
     expect(document.querySelector('[data-futatsume-entry]')?.getAttribute('data-state')).toBe('failed');
-    expect(document.querySelector<HTMLButtonElement>('[data-futatsume-reload]')?.hidden).toBe(false);
-    expect(document.querySelector('[data-futatsume-entry]')?.textContent).toContain('読み込み失敗');
+    expect(document.querySelector('[data-futatsume-open]')?.getAttribute('aria-label')).toContain('読み込み失敗');
+    expect(document.querySelector('[data-futatsume-open]')?.textContent).toBe('');
+    expect(document.body.querySelector('[data-futatsume-entry]')).toBeNull();
+    expect(document.querySelector('#info-row')?.children[1] ?? null).toBe(
+      document.querySelector('[data-futatsume-open]')
+    );
   });
   it('検索結果のテキストリンクに操作ボタンを加え、現在の動画IDを開く', async () => {
     document.body.innerHTML =
@@ -62,6 +69,8 @@ describe('初めて使う人の起動導線', () => {
     ui = installWatchEntry();
     ui.ready(open);
     expect(document.querySelectorAll('[data-futatsume-video]').length).toBe(1);
+    expect(document.querySelector('[data-futatsume-video]')?.textContent).toBe('');
+    expect(document.body.querySelector('[data-futatsume-entry]')).toBeNull();
     document.querySelector<HTMLButtonElement>('[data-futatsume-video]')!.click();
     expect(open).toHaveBeenLastCalledWith('sm9');
     document.querySelector('#title')!.setAttribute('href', '/watch/so123');
@@ -75,14 +84,15 @@ describe('初めて使う人の起動導線', () => {
     document.body.innerHTML = '<a href="/watch/sm9">動画タイトル</a>';
     ui = installWatchEntry();
     ui.ready(() => {});
-    expect(document.querySelector<HTMLButtonElement>('[data-futatsume-open]')?.hidden).toBe(true);
+    expect(document.querySelector('[data-futatsume-open]')).toBeNull();
     history.pushState(null, '', '/watch/sm9');
+    document.body.insertAdjacentHTML('beforeend', watchHeader);
     await flush();
     expect(document.querySelector<HTMLButtonElement>('[data-futatsume-open]')?.hidden).toBe(false);
     expect(document.querySelectorAll('[data-futatsume-video]').length).toBe(0);
     history.replaceState(null, '', '/tag/test');
     await flush();
-    expect(document.querySelector<HTMLButtonElement>('[data-futatsume-open]')?.hidden).toBe(true);
+    expect(document.querySelector('[data-futatsume-open]')).toBeNull();
     expect(document.querySelectorAll('[data-futatsume-video]').length).toBe(1);
   });
   it('検索結果の差替えに追従し重複ボタンを作らない', async () => {

@@ -77,10 +77,15 @@ try {
     }
     const session = await attach(ask);
     try {
-      const clicked = (await evaluate(
-        session,
-        `(() => { const b = [...document.querySelectorAll('input.button.install')].find(x => !x.disabled); if (!b) return 'not-found'; b.click(); return 'clicked'; })()`
-      )) as string;
+      let clicked = 'not-found';
+      const deadline = Date.now() + 10000;
+      while (clicked !== 'clicked' && Date.now() < deadline) {
+        clicked = (await evaluate(
+          session,
+          `(() => { const b = [...document.querySelectorAll('input.button.install')].find(x => !x.disabled); if (!b) return 'not-found'; b.click(); return 'clicked'; })()`
+        )) as string;
+        if (clicked !== 'clicked') await Bun.sleep(250);
+      }
       if (clicked !== 'clicked') {
         throw new Error('承認ボタンが見つかりませんでした');
       }

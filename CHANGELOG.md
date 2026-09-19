@@ -13,6 +13,8 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ### Changed
 
+- 視聴ページの起動ボタンをタイトルと投稿者プロフィールの間へ移し、検索結果とともに四角形を二つ重ねたアイコンだけに統一した。右下の起動ポップアップは削除した（0.0.3）。
+
 - 製品、テスト、ビルド補助をTypeScriptへ移行し、strict・any禁止・allowJs:false・allowUmdGlobalAccess:falseで検査する構成にした。
 - Bunから実行するVite＋vite-plugin-monkeyへ移行し、旧連結器を介さずimport依存から配布物を生成するようにした。
 - 個別スクリプトを何本も導入する必要がないよう、HLS、GamePad、詳細設定、MylistPocket、MaskedWatch、HeatSync、CapTube、ブログパーツ、MylistFilter、uQueryをFutatsumeWatch.user.jsに同梱した。distはこの1件のみとする。

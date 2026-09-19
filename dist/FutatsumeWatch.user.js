@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.2
+// @version      0.0.3
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。視聴ページ右下・検索結果のFWで再生ボタンから起動。再生・コメント・プレイリストを操作できます。ページ内遷移と導入確認を修正。
+// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。再生・コメント・プレイリストを操作できます。起動ボタンをアイコンに統一しポップアップを削除。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -76,7 +76,7 @@ System.register("./___monkey.entry.js", [],(function(exports,module){'use strict
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
-var VERSION = exports("V","0.0.2");
+var VERSION = exports("V","0.0.3");
 function watchIdFromUrl(value, base = location.href) {
 	try {
 		const url = new URL(value, base);
@@ -85,50 +85,87 @@ function watchIdFromUrl(value, base = location.href) {
 		return null;
 	}
 }
+function findWatchEntrySlot(doc) {
+	const headings = [...doc.querySelectorAll("h1")].filter((heading) => !heading.closest("#zenzaVideoPlayerDialog"));
+	for (const heading of headings) {
+		let row = heading.parentElement;
+		for (let depth = 0; row && depth < 4; depth++, row = row.parentElement) {
+			const owner = [...row.querySelectorAll("a[data-anchor-area=\"video_information\"][href]")].find((link) => {
+				try {
+					const url = new URL(link.href, doc.baseURI);
+					return url.hostname === "www.nicovideo.jp" && /^\/(user|channel)\//.test(url.pathname) || url.hostname === "ch.nicovideo.jp";
+				} catch {
+					return false;
+				}
+			});
+			if (!owner) continue;
+			const titlePart = [...row.children].find((child) => child.contains(heading));
+			const ownerPart = [...row.children].find((child) => child.contains(owner));
+			if (titlePart && ownerPart && titlePart !== ownerPart) return {
+				parent: row,
+				before: ownerPart
+			};
+		}
+	}
+	return null;
+}
+function createIconButton() {
+	const button = document.createElement("button");
+	button.type = "button";
+	button.dataset.futatsumeLaunch = "";
+	const ns = "http://www.w3.org/2000/svg";
+	const svg = document.createElementNS(ns, "svg");
+	svg.setAttribute("viewBox", "0 0 24 24");
+	svg.setAttribute("aria-hidden", "true");
+	svg.setAttribute("focusable", "false");
+	for (const offset of [3, 8]) {
+		const rect = document.createElementNS(ns, "rect");
+		for (const [name, value] of Object.entries({
+			x: String(offset),
+			y: String(offset),
+			width: "13",
+			height: "13",
+			rx: "1",
+			fill: "var(--fw-launch-background)",
+			stroke: "currentColor",
+			"stroke-width": "1.8"
+		})) rect.setAttribute(name, value);
+		svg.append(rect);
+	}
+	button.append(svg);
+	return button;
+}
 function installWatchEntry() {
 	const words = navigator.language.startsWith("ja") ? {
+		watch: "FutatsumeWatchで再生",
 		loading: "プレイヤーを準備しています…",
-		ready: "再生できます",
-		watch: "この動画をFutatsumeWatchで再生",
-		search: "動画タイトル横の「FWで再生」を押してください。",
-		action: "FWで再生",
-		reload: "再読み込み",
-		failed: "起動できませんでした。再読み込みしても直らない場合は、この表示を添えてお知らせください。"
+		failed: "起動できませんでした。ページを再読み込みしてください。"
 	} : {
+		watch: "Play in FutatsumeWatch",
 		loading: "Preparing the player…",
-		ready: "Ready to play",
-		watch: "Play this video in FutatsumeWatch",
-		search: "Choose “Play with FW” beside a video title.",
-		action: "Play with FW",
-		reload: "Reload",
-		failed: "The player could not start. Reload the page; if this continues, report the message below."
+		failed: "The player could not start. Please reload the page."
 	};
 	let openVideo;
 	let state = "starting";
+	let failure = "";
 	let scheduled;
 	const mounted = /* @__PURE__ */ new Map();
-	const panel = document.createElement("aside");
-	panel.dataset.futatsumeEntry = "";
-	panel.dataset.futatsumeVersion = VERSION;
-	panel.dataset.state = state;
-	panel.setAttribute("aria-label", "FutatsumeWatch");
-	const title = document.createElement("strong");
-	title.textContent = `FutatsumeWatch ${VERSION}`;
-	const status = document.createElement("span");
-	status.setAttribute("role", "status");
-	status.textContent = words.loading;
-	const hint = document.createElement("p");
-	const button = document.createElement("button");
-	button.type = "button";
+	const marker = document.createElement("meta");
+	marker.dataset.futatsumeEntry = "";
+	marker.dataset.futatsumeVersion = VERSION;
+	marker.dataset.state = state;
+	const button = createIconButton();
 	button.dataset.futatsumeOpen = "";
-	button.textContent = words.watch;
-	button.disabled = true;
-	const reload = document.createElement("button");
-	reload.type = "button";
-	reload.dataset.futatsumeReload = "";
-	reload.textContent = words.reload;
-	reload.hidden = true;
-	reload.addEventListener("click", () => location.reload());
+	const describe = (control, label) => {
+		const title = state === "starting" ? `${label} — ${words.loading}` : state === "failed" ? `${words.failed} ${failure}` : label;
+		if (control.title !== title) {
+			control.title = title;
+			control.setAttribute("aria-label", title);
+		}
+		control.disabled = state !== "ready";
+		control.dataset.state = state;
+		control.setAttribute("aria-busy", String(state === "starting"));
+	};
 	const open = (id) => {
 		if (!openVideo || state !== "ready") return;
 		document.querySelectorAll("video").forEach((video) => {
@@ -136,34 +173,34 @@ function installWatchEntry() {
 		});
 		openVideo(id);
 	};
-	button.addEventListener("click", () => {
+	button.addEventListener("click", (event) => {
+		event.stopPropagation();
 		const id = watchIdFromUrl(location.href);
 		if (id) open(id);
 	});
-	panel.append(title, status, hint, button, reload);
 	const style = document.createElement("style");
 	style.textContent = `
-    [data-futatsume-entry]{position:fixed;right:12px;bottom:12px;z-index:99999;box-sizing:border-box;width:300px;max-width:calc(100vw - 24px);padding:12px;border:1px solid #4acac0;border-radius:8px;background:#153b39;color:#fff;font:14px/1.5 sans-serif;box-shadow:0 3px 14px #0005;text-align:left}
-    [data-futatsume-entry]>strong,[data-futatsume-entry]>[role=status]{display:block}
-    [data-futatsume-entry]>[role=status]{font-size:12px;color:#b7ebe4}
-    [data-futatsume-entry]>p{margin:6px 0;overflow-wrap:anywhere}
-    [data-futatsume-entry] button,[data-futatsume-video]{box-sizing:border-box;border:1px solid #33877e;border-radius:5px;background:#e9fff9;color:#123e38;font:600 13px/1.4 sans-serif;cursor:pointer;padding:6px 10px}
-    [data-futatsume-entry] button:disabled,[data-futatsume-video]:disabled{opacity:.6;cursor:wait}
-    [data-futatsume-entry] [hidden]{display:none}
-    [data-futatsume-video]{display:inline-block;margin:4px 6px 4px 0;position:relative;z-index:2;vertical-align:middle;max-width:100%}
-    body.showNicoVideoPlayerDialog [data-futatsume-entry]{display:none}
+    [data-futatsume-launch]{--fw-launch-background:#262626;box-sizing:border-box;display:inline-grid;place-items:center;flex:0 0 auto;width:30px;height:30px;padding:4px;border:1px solid #707070;border-radius:5px;background:var(--fw-launch-background);color:#eee;cursor:pointer;vertical-align:middle}
+    [data-futatsume-launch]>svg{width:22px;height:22px;pointer-events:none}
+    [data-futatsume-launch]:hover{--fw-launch-background:#3a3a3a;border-color:#ddd}
+    [data-futatsume-launch]:focus-visible{outline:2px solid #40b8e8;outline-offset:2px}
+    [data-futatsume-launch]:disabled{opacity:.55;cursor:wait}
+    [data-futatsume-launch][data-state=failed]{border-color:#e66;cursor:help}
+    [data-futatsume-open]{width:40px;height:40px;padding:8px;align-self:center;margin-inline:auto}
+    [data-futatsume-video]{margin:4px 6px 4px 0;position:relative;z-index:2}
+    @media(max-width:700px){[data-futatsume-open]{width:32px;height:32px;padding:4px;margin-inline:6px}}
   `;
-	document.head.append(style);
-	document.body.append(panel);
+	document.head.append(marker, style);
 	const update = () => {
 		scheduled = void 0;
-		if (!panel.isConnected) document.body.append(panel);
 		const isWatch = watchIdFromUrl(location.href) !== null;
-		button.hidden = !isWatch;
-		if (state !== "failed") {
-			const message = isWatch ? "" : words.search;
-			if (hint.textContent !== message) hint.textContent = message;
-		}
+		if (isWatch) {
+			const slot = findWatchEntrySlot(document);
+			if (slot) {
+				if (button.parentElement !== slot.parent || button.nextElementSibling !== slot.before) slot.parent.insertBefore(button, slot.before);
+			} else button.remove();
+			describe(button, words.watch);
+		} else button.remove();
 		for (const [link, control] of mounted) {
 			const id = watchIdFromUrl(link.href);
 			if (!link.isConnected || !id || isWatch || link.closest("#zenzaVideoPlayerDialog")) {
@@ -174,24 +211,17 @@ function installWatchEntry() {
 		if (isWatch) return;
 		for (const link of document.querySelectorAll("a[href*=\"/watch/\"]")) {
 			const id = watchIdFromUrl(link.href);
-			if (!id || !link.textContent?.trim() || link.querySelector("img") || link.closest("#zenzaVideoPlayerDialog, #mylistPocket-popup, [data-futatsume-entry]")) continue;
+			if (!id || !link.textContent?.trim() || link.querySelector("img") || link.closest("#zenzaVideoPlayerDialog,#mylistPocket-popup")) continue;
 			const existing = mounted.get(link);
 			const label = `${words.watch}: ${link.textContent.trim()}`;
 			if (existing?.isConnected) {
-				if (existing.title !== label) {
-					existing.title = label;
-					existing.setAttribute("aria-label", label);
-				}
+				describe(existing, label);
 				continue;
 			}
 			existing?.remove();
-			const control = document.createElement("button");
-			control.type = "button";
+			const control = createIconButton();
 			control.dataset.futatsumeVideo = id;
-			control.textContent = words.action;
-			control.title = label;
-			control.setAttribute("aria-label", label);
-			control.disabled = state !== "ready";
+			describe(control, label);
 			control.addEventListener("click", (event) => {
 				event.preventDefault();
 				event.stopPropagation();
@@ -212,8 +242,7 @@ function installWatchEntry() {
 		attributes: true,
 		attributeFilter: ["href"]
 	});
-	const push = history.pushState.bind(history);
-	const replace = history.replaceState.bind(history);
+	const push = history.pushState.bind(history), replace = history.replaceState.bind(history);
 	const pushWrapper = (data, unused, url) => {
 		push(data, unused, url);
 		schedule();
@@ -230,20 +259,14 @@ function installWatchEntry() {
 		ready(callback) {
 			openVideo = callback;
 			state = "ready";
-			panel.dataset.state = state;
-			status.textContent = words.ready;
-			button.disabled = false;
-			for (const control of mounted.values()) control.disabled = false;
+			marker.dataset.state = state;
 			update();
 		},
 		fail(message) {
+			failure = message;
 			state = "failed";
-			panel.dataset.state = state;
-			status.textContent = words.failed;
-			hint.textContent = message;
-			button.disabled = true;
-			reload.hidden = false;
-			for (const control of mounted.values()) control.disabled = true;
+			marker.dataset.state = state;
+			update();
 		},
 		dispose() {
 			observer.disconnect();
@@ -253,7 +276,8 @@ function installWatchEntry() {
 			if (history.replaceState === replaceWrapper) history.replaceState = replace;
 			for (const control of mounted.values()) control.remove();
 			mounted.clear();
-			panel.remove();
+			button.remove();
+			marker.remove();
 			style.remove();
 		}
 	};
@@ -267,11 +291,11 @@ async function start() {
 	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-jebuqcwt-DUJB-s5T.js');
+	if (window === window.top) await module.import('./_uquery-0797-8a2-DKVi14VM.js');
 	const { Config } = await module.import('./Config-BA-Z-GaL-CZCLPk6c.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-BH7JC5pj-DoHasCpp.js');
+		await module.import('./_captube-BFpOu75--wP98jkin.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
@@ -283,27 +307,27 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-DjgKf85A-BTJfTjXz.js');
+		await module.import('./_shape-BMb5yCkW-DsNF9vVG.js');
 		return;
 	}
-	const { startPlayer, openVideo } = await module.import('./runtime-BJd8B3XE-D-Up-A0W.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-EAM27IuQ-DgeAvtBA.js');
 	await startPlayer();
 	entry?.ready(openVideo);
 	if (window === window.top) {
 		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-zB7j3Iot-Bfuq3pOf.js');
-		await module.import('./_pocket-DVXtc9Ws-D-D3xe5w.js');
+		await module.import('./_pocket-ATawe6TV-Dpjl_kkZ.js');
 		await module.import('./_gamepad-CFTL9_xv-BV6P7JJt.js');
 		await module.import('./_heatsync-DgM7kU8Q-Dypiasdv.js');
-		await module.import('./_shape-DjgKf85A-BTJfTjXz.js');
-		await module.import('./_setting-bUfkigiX-Bg9l7Kq-.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-CfsHROq1-v6y-MyLj.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-DVXtc9Ws-D-D3xe5w.js');
+		await module.import('./_shape-BMb5yCkW-DsNF9vVG.js');
+		await module.import('./_setting-C4ImGhZJ-DHhnoLTk.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-LAbuWGDX-BJt1zEM0.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-ATawe6TV-Dpjl_kkZ.js');
 }
 start().catch((error) => {
 	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-jebuqcwt-DUJB-s5T.js", ['./___monkey.entry.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){var uQuery = uQuery$1;
+System.register("./_uquery-0797-8a2-DKVi14VM.js", ['./___monkey.entry.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){var uQuery = uQuery$1;
 AntiPrototypeJs().then(() => {
 	const PRODUCT = "uQuery";
 	const util = {};
@@ -311,7 +335,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.2";
+	uQuery.fn.uQuery = "0.0.3";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -552,7 +576,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.2
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.3
   `, `
     font-size: 8px;
     font-family:
@@ -562,7 +586,7 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-BH7JC5pj-DoHasCpp.js", ['./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){(() => {
+System.register("./_captube-BFpOu75--wP98jkin.js", ['./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){(() => {
 	const PRODUCT = "CapTube";
 	let previewContainer = null, meterContainer = null;
 	const DataUrlConv = (() => {
@@ -1001,7 +1025,7 @@ System.register("./_blog-CWTfF_hF-BtS6yyug.js", [],(function(){'use strict';retu
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-DjgKf85A-BTJfTjXz.js", ['./css-BZGoPVKg-BAtHmOgL.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/**
+System.register("./_shape-BMb5yCkW-DsNF9vVG.js", ['./css-QMOlyvk3-BAtHmOgL.js','./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(){'use strict';var css;return{setters:[function(module){css=module.a;},null,null,null,null,null],execute:(function(){/**
 * @typedf BoundingBox
 * @property {number} x
 * @property {number} y
@@ -1661,14 +1685,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.2`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.3`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-BJd8B3XE-D-Up-A0W.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js','./MylistApiLoader-UxYIYRAV-DGaEVKh0.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
+System.register("./runtime-EAM27IuQ-DgeAvtBA.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js','./MylistApiLoader-viYWpMNq-CQnJlTC1.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$4,CONSTANT,PRODUCT$1,css,NICORU,x,D,html_exports,require_lodash,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$4=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -65802,7 +65826,7 @@ System.register("./modernLazyload-zB7j3Iot-Bfuq3pOf.js", [],(function(){'use str
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-DVXtc9Ws-D-D3xe5w.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistApiLoader-UxYIYRAV-DGaEVKh0.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_pocket-ATawe6TV-Dpjl_kkZ.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./MylistApiLoader-viYWpMNq-CQnJlTC1.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 AntiPrototypeJs().then(() => {
 	const PRODUCT = "MylistPocket";
 	const monkey = (PRODUCT) => {
@@ -69198,7 +69222,7 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-UxYIYRAV-DGaEVKh0.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);var PRODUCT$1 = "FutatsumeWatch";
+System.register("./MylistApiLoader-viYWpMNq-CQnJlTC1.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./workerUtil-DSB24T8w-CeW7BdGX.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./jquery-CJc4kJ3v-BAibxNtt.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);var PRODUCT$1 = "FutatsumeWatch";
 var gate = exports("g",() => {
 	const post = function(body, { type, token, sessionId, origin } = {}) {
 		sessionId = sessionId || "";
@@ -73743,7 +73767,7 @@ System.register("./_heatsync-DgM7kU8Q-Dypiasdv.js", ['./rolldown-runtime-DzKC14H
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-bUfkigiX-Bg9l7Kq-.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./css-BZGoPVKg-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./___monkey.entry.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
+System.register("./_setting-C4ImGhZJ-DHhnoLTk.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./Config-BA-Z-GaL-CZCLPk6c.js','./css-QMOlyvk3-BAtHmOgL.js','./lodash-BCVqxvO1-NnjNIe24.js','./ZenzaDetector-BGQKq7Yw-6CsQz3eg.js','./uQuery-Dj4-zXlk-0zQGXk8v.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js','./___monkey.entry.js','./MylistPocketDetector-CU-2RlW8-sWZeL7dN.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 ((window) => {
 	const monkey = async (PRODUCT) => {
 		const _ = import_lodash.default;
@@ -89479,7 +89503,7 @@ System.register("./lodash-BCVqxvO1-NnjNIe24.js", ['./rolldown-runtime-DzKC14H2-B
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-CfsHROq1-v6y-MyLj.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./bounce-DKboHjjE-C9F5WYFP.js','./css-BZGoPVKg-BAtHmOgL.js','./jquery-CJc4kJ3v-BAibxNtt.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
+System.register("./_my4-LAbuWGDX-BJt1zEM0.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./bounce-DKboHjjE-C9F5WYFP.js','./css-QMOlyvk3-BAtHmOgL.js','./jquery-CJc4kJ3v-BAibxNtt.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 ((window) => {
 	const { html } = html_exports;
 	const $ = import_jquery.default;
@@ -94325,7 +94349,7 @@ System.register("./jquery-CJc4kJ3v-BAibxNtt.js", ['./rolldown-runtime-DzKC14H2-B
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-BZGoPVKg-BAtHmOgL.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/**
+System.register("./css-QMOlyvk3-BAtHmOgL.js", ['./rolldown-runtime-DzKC14H2-BpoohWw6.js','./___monkey.entry.js','./Config-BA-Z-GaL-CZCLPk6c.js','./Emitter-DK5U5Km7-CqZ3w4gB.js','./bounce-DKboHjjE-C9F5WYFP.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/**
 * @license
 * Copyright 2017 Google LLC
 * SPDX-License-Identifier: BSD-3-Clause
