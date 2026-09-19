@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
 import { isBlockedUrl } from '../fixtures/cdp/network-policy';
 import { installOfflineScene, type OfflineSession } from '../fixtures/cdp/offline';
-import { matchFixture, type CdpScene } from '../fixtures/cdp/scene';
+import { getResponseBodyText, matchFixture, type CdpScene } from '../fixtures/cdp/scene';
 
 const loadScene = (name: string): CdpScene => {
   const raw = fs.readFileSync(`./test/fixtures/cdp/scenes/${name}`, 'utf8');
@@ -86,6 +86,50 @@ describe('CDPオフラインフィクスチャ', () => {
       expect(media).toContain('#EXT-X-ENDLIST');
     } finally {
       session?.restore();
+    }
+  });
+});
+
+describe('CDP実測シーン（watch-sm9-cdp）', () => {
+  it('主要エントリが署名なしの正規化URLで解決できる', async () => {
+    const scene = loadScene('watch-sm9-cdp.json');
+    expect(scene.format).toBe('futatsume-cdp-scene/v1');
+    expect(scene.watchId).toBe('sm9');
+    expect(scene.domSnapshot).toMatchObject({ watchId: 'sm9', hasVideo: true });
+    let session: OfflineSession | null = null;
+    try {
+      session = installOfflineScene(scene);
+      const html = await (await fetch('https://www.nicovideo.jp/watch/sm9')).text();
+      expect(html).toContain('豪血寺一族');
+      const hlsRights: unknown = await (
+        await fetch('https://nvapi.nicovideo.jp/v1/watch/sm9/access-rights/hls', { method: 'POST' })
+      ).json();
+      expect(hlsRights).toBeDefined();
+      const variant = await (
+        await fetch('https://delivery.domand.nicovideo.jp/hlsbid/[SESSION]/playlists/variants/7c0fdedb8342ad73.m3u8')
+      ).text();
+      expect(variant).toContain('#EXTM3U');
+    } finally {
+      session?.restore();
+    }
+  });
+
+  it('コメント取得のbodyがJSONとして妥当で複数件を含む', () => {
+    const scene = loadScene('watch-sm9-cdp.json');
+    const hit = matchFixture(scene, 'POST', 'https://public.nvcomment.nicovideo.jp/v1/threads');
+    expect(hit).not.toBeNull();
+    const parsed = JSON.parse(getResponseBodyText(hit!)) as {
+      data?: { threads?: Array<{ comments?: unknown[] }> };
+    };
+    const count = parsed.data?.threads?.flatMap((t) => t.comments ?? []).length ?? 0;
+    expect(count).toBeGreaterThan(100);
+  });
+
+  it('署名クエリや環境依存ホストを含まない', () => {
+    const scene = loadScene('watch-sm9-cdp.json');
+    for (const e of scene.network) {
+      expect(e.request.url).not.toContain('nicocachenl.test');
+      expect(e.request.url).not.toMatch(/[?&](Signature|Policy|Key-Pair-Id|session|actionTrackId)=/);
     }
   });
 });

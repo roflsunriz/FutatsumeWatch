@@ -100,4 +100,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `build.js` の出力と `src/_*.ts` の `==UserScript==` を新リポジトリ（`https://github.com/roflsunriz/FutatsumeWatch/`・`downloadURL .../raw/main/dist/...`）へ寄せた。`dist/Zenza*.user.js` 6件は削除し `FutatsumeWatch.user.js` 系へ置換した。`package.json` の `main` は `src/FutatsumeWatchIndex.ts` を指す。
 - CDP基盤は `test/fixtures/cdp/`（`network-policy.ts`・`scene.ts`・`offline.ts`・`scenes/watch-basic-sm9.json`・`scenes/hls-playback-sm9.json`）と採取雛形 `scripts/cdp-capture.ts` で構成する。実ページ採取は `chrome-debug.ps1` 起動後の手動実行が前提で、現行シーンは最小再現に留める。`installOfflineScene` は未登録・広告系を例外にして外部へ出さない。
 - 製品コードを直接 import するテストは `window` 前提の依存（`Observable.ts` 等）を引くため、改名固定は原文照合に留め静的 import を避けること（`test/unit/futatsume-branding.test.ts`）。
+- 実ページのメディア配信は環境の NicoCache 系プロキシ（`nicocachenl.test`）経由になる場合がある。採取時は `nicocachenl.test`・映像セグメント（`.cmfv`・`playback-sessions/*/files/`）・静的資産（JS/CSS/フォント/画像）を除外し、`nvapi`・コメント・`m3u8` プレイリストに絞って curated 化すること（2026-09-19 実測、Chrome headless 153、sm9、生235件→17件）。
+- `nvapi` の `access-rights` とコメント取得（`public.nvcomment`）は POST である。オフライン照合のテストは実測メソッドに合わせること（GET では `matchFixture` が当たらない）。
+- コメント取得の body 打ち切りは完全なコメント単位で行い、末尾に `]}]}}` を補って JSON 妥当に修復すること。中途半端な切断は後のパース系テストを壊す。
 - `bun run format` は改名前に既存2件（`packages/lib/src/css/css.ts`・`src/Config.ts`）で非準拠だった。改名で触れた `.ts` は `prettier --write` で準拠化した。`test/fixtures` と `packages/components/mock` は `.prettierignore` の対象外・対象を維持する。

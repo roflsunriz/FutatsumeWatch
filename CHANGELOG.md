@@ -15,7 +15,8 @@
 - `src`・`packages`・`test` の全ソースを TypeScript 化し（`any` ゼロ、strict 維持）、`bun:test` へ移行した退行防止テスト群を追加した（103件 passing）
 - テスト環境 `test/setup.ts`（`bun test --preload`）を追加し、ブラウザー由来グローバル（`localStorage`・`location`・`_`・`CSS`・`console.nicoru`）の最小実装を与えた（製品コード側は不変）
 - CDP記録再生のオフライン基盤を追加し、不要通信の遮断と必要通信の固定を可能にした（`test/fixtures/cdp/network-policy.ts`・`scene.ts`・`offline.ts`、採取雛形 `scripts/cdp-capture.ts`、初期シーン `watch-basic-sm9.json`・`hls-playback-sm9.json`）
-- 機能別テストにオフライン解決と改名退行防止を追加した（`test/unit/cdp-offline.test.ts`・`test/unit/futatsume-branding.test.ts`、113件 passing）
+- 機能別テストにオフライン解決と改名退行防止を追加した（`test/unit/cdp-offline.test.ts`・`test/unit/futatsume-branding.test.ts`、116件 passing）
+- CDP実測シーン `test/fixtures/cdp/scenes/watch-sm9-cdp.json` を追加し、sm9 の watch HTML・`nvapi`・コメント186件・HLSプレイリスト3件を署名除去のうえ固定した（静的資産・映像セグメント・環境依存は除外）
 
 ### Changed
 
