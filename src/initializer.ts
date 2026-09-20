@@ -1,25 +1,25 @@
-import { FutatsumeWatch, global } from './FutatsumeWatchIndex';
+import { FutatsumeWatch, global } from './futatsume-watch-index';
 import { Config, PlayerSession, util, WatchPageHistory } from './util';
-import type { ConfigStore } from './Config';
-import { NicoVideoPlayerDialog, PlayerConfig, PlayerState } from './NicoVideoPlayerDialog';
-import { initializeGinzaSlayer } from './GinzaSlayer';
-import type { GinzaSlayerQuery } from './GinzaSlayer';
+import type { ConfigStore } from './config';
+import { NicoVideoPlayerDialog, PlayerConfig, PlayerState } from './nico-video-player-dialog';
+import { initializeGinzaSlayer } from './ginza-slayer';
+import type { GinzaSlayerQuery } from './ginza-slayer';
 import { CONSTANT } from './constant';
-import { CustomElements } from '../packages/futatsume/src/parts/CustomElements';
-import { RootDispatcher } from './RootDispatcher';
-import { BroadcastEmitter } from '../packages/lib/src/message/messageUtil';
-import { HoverMenu } from '../packages/futatsume/src/menu/HoverMenu';
-import { replaceRedirectLinks } from '../packages/futatsume/src/init/replaceRedirectLinks';
+import { CustomElements } from '../packages/futatsume/src/parts/custom-elements';
+import { RootDispatcher } from './root-dispatcher';
+import { BroadcastEmitter } from '../packages/lib/src/message/message-util';
+import { HoverMenu } from '../packages/futatsume/src/menu/hover-menu';
+import { replaceRedirectLinks } from '../packages/futatsume/src/init/replace-redirect-links';
 import { cssUtil } from '../packages/lib/src/css/css';
-import { ThumbInfoLoader } from '../packages/lib/src/nico/ThumbInfoLoader';
-import { StoryboardWorker } from '../packages/futatsume/src/storyboard/StoryboardWorker';
-import { VideoSessionWorker } from '../packages/lib/src/nico/VideoSessionWorker';
-import { StoryboardCacheDb } from '../packages/lib/src/nico/StoryboardCacheDb';
-import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
-import { domEvent } from '../packages/lib/src/dom/domEvent';
-import { uq } from '../packages/lib/src/uQuery';
-// import {domUtil} from '../packages/lib/src/dom/domUtil';
-import { textUtil } from '../packages/lib/src/text/textUtil';
+import { ThumbInfoLoader } from '../packages/lib/src/nico/thumb-info-loader';
+import { StoryboardWorker } from '../packages/futatsume/src/storyboard/storyboard-worker';
+import { VideoSessionWorker } from '../packages/lib/src/nico/video-session-worker';
+import { StoryboardCacheDb } from '../packages/lib/src/nico/storyboard-cache-db';
+import { WatchInfoCacheDb } from '../packages/lib/src/nico/watch-info-cache-db';
+import { domEvent } from '../packages/lib/src/dom/dom-event';
+import { uq } from '../packages/lib/src/u-query';
+// import {domUtil} from '../packages/lib/src/dom/dom-util';
+import { textUtil } from '../packages/lib/src/text/text-util';
 
 export interface InitializerDialog {
   on(event: string, listener: (command: string, param?: unknown) => unknown): unknown;
@@ -81,13 +81,13 @@ interface InitializerMylistApiLoader {
   removeDeflistItem(watchId: string): Promise<unknown>;
 }
 
-import { PlayListSession as PlaylistSession } from '../packages/futatsume/src/Playlist/PlayListSession';
+import { PlayListSession as PlaylistSession } from '../packages/futatsume/src/Playlist/playlist-session';
 const START_PAGE_QUERY = location.search.slice(1);
 
 //===BEGIN===
 
 const { initialize } = ((): { initialize: () => Promise<void> } => {
-  //@require HoverMenu
+  //@require hover-menu
   // GINZAを置き換えるべきか？の判定
   const overrideGinza = async (dialog: InitializerDialog, query: GinzaSlayerQuery): Promise<void> => {
     // GINZAで視聴のリンクできた場合はスキップ
@@ -202,7 +202,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
     ]).then(() => console.timeEnd('init Workers'));
   };
 
-  //@require replaceRedirectLinks
+  //@require replace-redirect-links
 
   const initialize = async function (): Promise<void> {
     console.log('%cinitialize FutatsumeWatch...', 'background: lightgreen; ');

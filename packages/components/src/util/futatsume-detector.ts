@@ -1,4 +1,4 @@
-import { MylistPocketDetector } from '../../../futatsume/src/init/MylistPocketDetector';
+import { MylistPocketDetector } from '../../../futatsume/src/init/mylist-pocket-detector';
 
 interface FutatsumeWatchLike {
   ready?: unknown;

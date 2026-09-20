@@ -1,4 +1,4 @@
-import { AntiPrototypeJs } from '../packages/lib/src/infra/AntiPrototype-js';
+import { AntiPrototypeJs } from '../packages/lib/src/infra/anti-prototype-js';
 import { installWatchEntry } from './watch-entry';
 import type { WatchEntry } from './watch-entry';
 import { migrateSharedStorage } from './config-migration';
@@ -17,36 +17,36 @@ async function start(): Promise<void> {
   await AntiPrototypeJs();
   migrateSharedStorage(localStorage, sessionStorage);
   Object.assign(console, { nicoru: console.log.bind(console) });
-  if (window === window.top) await import('./_uquery');
-  const { Config } = await import('./Config');
+  if (window === window.top) await import('./u-query');
+  const { Config } = await import('./config');
   await Config.promise('restore');
   if (location.hostname === 'www.youtube.com' || location.hostname === 'youtube.com') {
-    await import('./_captube');
+    await import('./captube');
     return;
   }
   if (location.hostname === 'ext.nicovideo.jp' && location.pathname.startsWith('/thumb/')) {
-    await import('./_blog');
+    await import('./blog');
     return;
   }
   if (['live.nicovideo.jp', 'embed.nicovideo.jp', 'sp.nicovideo.jp'].includes(location.hostname)) {
-    await import('./_shape');
+    await import('./shape');
     return;
   }
   const { startPlayer, openVideo } = await import('./runtime');
   await startPlayer();
   entry?.ready(openVideo);
   if (window === window.top) {
-    if (location.hostname === 'www.nicovideo.jp') await import('../packages/lib/src/nico/modernLazyload');
-    await import('./_pocket');
-    await import('./_gamepad');
-    await import('./_heatsync');
-    await import('./_shape');
-    await import('./_setting');
+    if (location.hostname === 'www.nicovideo.jp') await import('../packages/lib/src/nico/modern-lazyload');
+    await import('./pocket');
+    await import('./gamepad');
+    await import('./heatsync');
+    await import('./shape');
+    await import('./setting');
     if (location.hostname === 'www.nicovideo.jp' && location.pathname.startsWith('/my/mylist')) {
-      await import('./_my4');
+      await import('./my4');
     }
   } else if (window.name.startsWith('thumbInfoMylistPocket')) {
-    await import('./_pocket');
+    await import('./pocket');
   }
 }
 

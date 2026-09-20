@@ -22,6 +22,8 @@ UIを変更した場合は、専用ブラウザに対して`bun run dev:verify:u
 
 ## 公開前
 
+ソースファイルを改名するときはケバブケースにそろえ、静的/動的import・テストデータ・文書の参照も更新します。Windowsの大文字小文字だけの改名は、一時名を経由した`git mv`で記録してください。型検査に加えてGit上のファイル名も確認し、`bun run build`で配布物を再生成します。lintはファイル名の規則も検査します。
+
 名称移行後の連携先は`window.FutatsumeWatch`、初期化イベントは`BeforeFutatsumeWatchInitialize` / `FutatsumeWatchInitialize`です。DOMの`zenza` / `zen`接頭辞は`futatsume`へ、GamePadのコマンドは`toggleFutatsumeGamePadConfig`へ変わります。旧名を使う外部連携も同時に更新してください。lintは警告を含めて0件を必須にします。
 
 設定の移行元キーは`src/config-migration.ts`だけで管理します。旧設定ファイルのTube設定名も読み込み時に変換します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。配布物は`bun run build`で再生成します。

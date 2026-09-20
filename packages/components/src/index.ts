@@ -1,19 +1,19 @@
-import { BaseCommandElement } from './element/BaseCommandElement';
-import { VideoItemElement } from './element/VideoItemElement';
-import { VideoSeriesLabel } from './element/VideoSeriesLabel';
-import './element/NoWebComponent';
-import { RangeBarElement } from './element/RangeBarElement';
-import { DialogElement } from './element/DialogElement';
-import { SettingPanelElement } from './element/SettingPanelElement';
+import { BaseCommandElement } from './element/base-command-element';
+import { VideoItemElement } from './element/video-item-element';
+import { VideoSeriesLabel } from './element/video-series-label';
+import './element/no-web-component';
+import { RangeBarElement } from './element/range-bar-element';
+import { DialogElement } from './element/dialog-element';
+import { SettingPanelElement } from './element/setting-panel-element';
 
 //===BEGIN===
-//@require ./element/BaseCommandElement.js
-//@require ./element/VideoItemElement.js
-//@require ./element/VideoSeriesLabel.js
-//@require ./element/NoWebComponent.js
-//@require ./element/RangeBarElement.js
-//@require ./element/DialogElement.js
-//@require ./element/SettingPanelElement.js
+//@require ./element/base-command-element.js
+//@require ./element/video-item-element.js
+//@require ./element/video-series-label.js
+//@require ./element/no-web-component.js
+//@require ./element/range-bar-element.js
+//@require ./element/dialog-element.js
+//@require ./element/setting-panel-element.js
 
 const components = (() => {
   if (self.customElements) {

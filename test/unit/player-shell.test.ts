@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { ABRepeat } from '../../src/player-shell';
 import { shellText } from '../../src/player-shell-view';
-import { VideoListItem } from '../../packages/futatsume/src/Playlist/VideoListItem';
+import { VideoListItem } from '../../packages/futatsume/src/Playlist/video-list-item';
 
 describe('AB repeat', () => {
   test('AとBを指定した区間だけを繰り返し、3回目で解除する', () => {

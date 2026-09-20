@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { objUtil } from '../../packages/lib/src/infra/objUtil';
+import { objUtil } from '../../packages/lib/src/infra/obj-util';
 
 describe('objUtil.isObject', () => {
   it('オブジェクトだけ真を返す', () => {

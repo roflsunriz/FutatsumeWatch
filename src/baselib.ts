@@ -2,7 +2,7 @@
 
 //===BEGIN===
 
-import { Emitter, Handler } from '../packages/lib/src/Emitter';
+import { Emitter, Handler } from '../packages/lib/src/emitter';
 //===BEGIN===
 //===END===
 export { Emitter, Handler };

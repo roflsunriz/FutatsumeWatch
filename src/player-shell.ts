@@ -1,5 +1,5 @@
-import type { ConfigStore } from './Config';
-import type { PlayerState } from './State';
+import type { ConfigStore } from './config';
+import type { PlayerState } from './state';
 import { VERSION } from './version';
 import { configureSettingsNavigation } from '../packages/components/src/settings-dialog';
 import { shellButton, shellIcon, shellText } from './player-shell-view';

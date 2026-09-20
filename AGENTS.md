@@ -134,7 +134,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 不要ファイル整理（2026-09-20、0.0.9）
 
-- 未使用判定はTypeScriptのモジュール解決で`.js`指定から`.ts`への解決も確認する。`components/src/index.ts`と`util/util.ts`、`LikeApi.ts`は現行製品から参照される。単純な拡張子一致やファイル名検索だけで削除しない。
+- 未使用判定はTypeScriptのモジュール解決で`.js`指定から`.ts`への解決も確認する。`components/src/index.ts`と`util/util.ts`、`like-api.ts`は現行製品から参照される。単純な拡張子一致やファイル名検索だけで削除しない。
 - 旧`test/browser`のイベント検証は`test/unit/uquery.test.ts`へ移した。DOMは同じイベント・関数のリスナーを共有するため、uQueryの名前空間を一つ解除しても別の登録が残る間は実リスナーを消さない。`sample/`は旧コメントアートの比較資料で、実行済みのテストと混同しない。
 - `v<version>`タグでは`.github/workflows/ci.yml`が品質検証後にCHANGELOGの対象版と配布物をリリースへ掲載する。mainの通常プッシュではリリースしない。
 - 既定の`minify: true`はWorker内で`ReferenceError: e/t is not defined`を生み再生を止めた。`rolldownOptions.output.minify`で`mangle:false`・`compress:false`・`codegen.removeWhitespace:true`を指定し、名前と関数構造を保持する。変更時は実配布物の再生・Worker・保存HTMLを再検証する。
@@ -146,3 +146,8 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - GamePadの公開オブジェクトはプレイヤーを開いてから設定される。起動前の移行確認では保存キーを確認し、操作は起動後に検証する。`dev:verify:migration`は隔離コンテキストで移行とHLSエラー種別を検証する。
 - lintは`--max-warnings 0`・未使用宣言error。継承・公開契約に必要な未使用引数だけ意図を明示し、未使用の代入を外す際は初期化や入力検証の副作用を残す。
 - Bun 1.4.0の`install --lockfile-only --ignore-scripts`は`--force`付きでも既存lockfileのルートnameを更新しなかった。今回だけルートnameをpackage.jsonへ合わせ、依存解決情報を変えず`--frozen-lockfile`で整合性を確認する。
+
+## ソースファイル名
+
+- 製品・テスト・開発スクリプトのファイル名は小文字のケバブケースを使う。`.test.ts`・`.d.ts`・`.config.mts`の接尾辞は維持する。ESLintの`file-naming/kebab-case`で違反をエラーにする。
+- 改名では静的/動的import、`.js`指定から`.ts`へ解決する参照、ファイル読み込み、文書のパスを更新する。Windowsで大文字小文字だけを変える際は一時名を経由した`git mv`でGitにも新しい綴りを記録する。識別子・公開API名と配布物`dist/FutatsumeWatch.user.js`の購読先はファイル名規則とは分ける。

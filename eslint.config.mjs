@@ -2,6 +2,30 @@ import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import { basename } from 'node:path';
+
+const fileNaming = {
+  rules: {
+    'kebab-case': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: { invalid: 'ソースファイル名はケバブケースにしてください: {{name}}' },
+      },
+      create(context) {
+        return {
+          Program(node) {
+            const name = basename(context.filename);
+            // .test.ts、.d.ts、.config.mtsなどの役割を示す接尾辞も許可する。
+            if (!/^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[a-z0-9]+(?:-[a-z0-9]+)*)*$/.test(name)) {
+              context.report({ node, messageId: 'invalid', data: { name } });
+            }
+          },
+        };
+      },
+    },
+  },
+};
 
 // 旧 .eslintrc / .eslintrc.js で宣言されていた実行環境を引き継ぐ。
 // （ブラウザ拡張＝ユーザースクリプト、Node ビルド、mocha テスト）
@@ -44,6 +68,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
+    plugins: { 'file-naming': fileNaming },
     languageOptions: {
       globals: legacyGlobals,
       parserOptions: {
@@ -51,6 +76,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      'file-naming/kebab-case': 'error',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',

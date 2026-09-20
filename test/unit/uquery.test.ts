@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test';
-import { uQuery } from '../../packages/lib/src/uQuery';
+import { uQuery } from '../../packages/lib/src/u-query';
 
 beforeEach(() => {
   Object.assign(globalThis, {

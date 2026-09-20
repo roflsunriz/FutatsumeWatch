@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { Emitter, Handler } from '../../packages/lib/src/Emitter';
+import { Emitter, Handler } from '../../packages/lib/src/emitter';
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 

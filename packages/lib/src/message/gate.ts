@@ -34,7 +34,7 @@ interface GateInitParams {
 
 const PRODUCT = 'FutatsumeWatch';
 
-import { workerUtil } from '../infra/workerUtil';
+import { workerUtil } from '../infra/worker-util';
 /*
 post = {
   id: 'PRODUCT',

@@ -55,7 +55,7 @@ interface CssUtil {
 }
 
 // const PRODUCT = 'Futatsume';
-import { global } from '../../../../src/FutatsumeWatchIndex';
+import { global } from '../../../../src/futatsume-watch-index';
 import { throttle } from '../infra/bounce';
 //===BEGIN===
 /**

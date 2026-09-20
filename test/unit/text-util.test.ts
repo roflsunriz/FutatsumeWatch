@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { textUtil } from '../../packages/lib/src/text/textUtil';
+import { textUtil } from '../../packages/lib/src/text/text-util';
 
 describe('textUtil.secToTime', () => {
   it('秒を mm:ss 形式にする', () => {

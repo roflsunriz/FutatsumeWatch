@@ -1,0 +1,4302 @@
+import _ from 'lodash';
+import { gate } from '../packages/lib/src/message/gate';
+import { nicoUtil } from '../packages/lib/src/nico/nico-util';
+import { netUtil } from '../packages/lib/src/infra/net-util';
+import { textUtil } from '../packages/lib/src/text/text-util';
+import { workerUtil } from '../packages/lib/src/infra/worker-util';
+import { css } from '../packages/lib/src/css/css';
+import { Emitter } from '../packages/lib/src/emitter';
+import { AntiPrototypeJs } from '../packages/lib/src/infra/anti-prototype-js';
+import { CrossDomainGate } from '../packages/lib/src/infra/cross-domain-gate';
+import { DataStorage } from '../packages/lib/src/infra/data-storage';
+import { parseThumbInfo } from '../packages/lib/src/nico/parse-thumb-info';
+import { ThumbInfoCacheDb } from '../packages/lib/src/nico/thumb-info-cache-db';
+import { MylistApiLoader } from '../packages/lib/src/nico/mylist-api-loader';
+import { bounce } from '../packages/lib/src/infra/bounce';
+import type { EmitterCallback } from '../packages/lib/src/emitter';
+import type { BounceCallback } from '../packages/lib/src/infra/bounce';
+import type { ThumbInfoOk, ThumbInfoData, ThumbOwnerInfo } from '../packages/lib/src/nico/parse-thumb-info';
+interface ThumbOwnerWithLocale extends ThumbOwnerInfo {
+  localeName?: string;
+}
+type PocketThumbInfo = ThumbInfoData & { fromCache?: boolean };
+interface PocketVideoOwner {
+  type: string;
+  id: string;
+  linkId: string;
+  name: string;
+  icon: string;
+}
+interface PocketVideoTag {
+  text: string;
+  isLocked: boolean;
+}
+interface PocketVideoInfo {
+  status: string;
+  videoId: string;
+  watchId: string;
+  videoTitle: string | null;
+  videoThumbnail: string;
+  uploadDate: string | Date;
+  duration: string;
+  viewCounter: number;
+  mylistCounter: number;
+  commentCounter: number;
+  description: string | null;
+  lastResBody: string | null;
+  isChannel: boolean;
+  ownerId: string;
+  ownerName: string;
+  ownerIcon: string;
+  tags: PocketVideoTag[];
+  owner?: PocketVideoOwner;
+}
+interface MatchCheckerInit {
+  word?: string;
+  tag?: string;
+  owner?: string;
+}
+interface MatchTargetData {
+  tagList: (string | { text: string })[];
+  owner: { type: string; id: string };
+  title: string;
+  description: string;
+}
+interface QueueInfoData {
+  status?: unknown;
+  code?: unknown;
+  thumbnail?: string;
+  title?: string;
+  id?: string;
+}
+interface NgItemCallbackData {
+  watchId: string;
+  info: QueueInfoData;
+  isNg: boolean | undefined;
+  isFav: boolean | undefined;
+}
+type NgItemCallback = (item: HTMLElement, data: NgItemCallbackData) => unknown;
+interface NgObserveParams {
+  query: string;
+  container: Element | Element[] | null;
+  closest?: string;
+  subtree?: boolean;
+  callback?: NgItemCallback;
+}
+interface NgInitDomParams {
+  intersectionObserver: IntersectionObserver;
+  query: string;
+  closest?: string | null;
+  container?: Element | Element[] | null;
+  subtree?: boolean;
+}
+interface PocketConfigNamespace {
+  props: Record<string, unknown>;
+  on(event: string, listener: (...args: never[]) => void): unknown;
+  onkey(key: string, listener: (value: unknown) => void): unknown;
+  setValue(key: string, value: unknown): unknown;
+  getValue(key: string): unknown;
+  refresh(): unknown;
+}
+interface PocketRootProps {
+  mylist: { enableAutoComment: boolean };
+  nicoad: { hide: boolean };
+  responsive: { matrix: boolean };
+  [key: string]: unknown;
+}
+interface PocketDataStorage {
+  props: PocketRootProps;
+  namespace(name: string): PocketConfigNamespace;
+  promise(name: string): Promise<unknown>;
+  on(event: string, listener: (...args: never[]) => void): unknown;
+  refresh(all?: boolean): unknown;
+}
+interface PocketBroadcast {
+  postMessage(...args: unknown[]): void;
+}
+interface PocketUtil {
+  mixin(self: Record<string, (...args: never[]) => unknown>, o: Record<string, (...args: never[]) => unknown>): void;
+  attachShadowDom(params: { host: Element; tpl: HTMLTemplateElement; mode?: string }): ShadowRoot;
+  httpLink(html: string): string;
+  getSleepPromise(sleepTime: number, label?: string): (result: unknown) => Promise<unknown>;
+  isFirefox(): boolean;
+  getThumbnailUrlByVideoId(videoId: string): string | null;
+  hasLargeThumbnail(videoId: string): boolean;
+  escapeHtml(text: string): string;
+  escapeRegs(text: string): string;
+  emitter: InstanceType<typeof Emitter>;
+  isLogin(): boolean;
+  getWatchId(href: string): string | null;
+  getPageLanguage(): string;
+  addStyle(styles: string, option?: unknown): unknown;
+  [key: string]: unknown;
+}
+type PocketStorage = Storage & Record<string, string | undefined>;
+interface CacheItemData {
+  expiredAt: unknown;
+  data: unknown;
+}
+interface FutatsumeExternalApi {
+  sendOrExecCommand(name: string, param: unknown): unknown;
+  execCommand(name: string, param: unknown): unknown;
+  sendOrOpen(param: unknown): unknown;
+  open(param: unknown): unknown;
+  playlist: { insert(param: unknown): unknown; add(param: unknown): unknown };
+  deflistAdd(params: unknown): unknown;
+  deflistRemove(params: unknown): unknown;
+}
+interface FutatsumeLike {
+  emitter: InstanceType<typeof Emitter>;
+  ready?: unknown;
+  config: { getValue(key: string): unknown; setValue(key: string, value: unknown): void };
+  external: FutatsumeExternalApi;
+}
+interface PocketExternal {
+  info(watchId: string): unknown;
+  load(watchId: string): unknown;
+  getFavStatus(watchId: string): unknown;
+  observe(params: NgObserveParams): unknown;
+  hide(): void;
+}
+interface MylistPocketApi {
+  debug: Record<string, unknown>;
+  util: PocketUtil;
+  emitter: InstanceType<typeof Emitter>;
+  broadcast: PocketBroadcast | undefined;
+  config: PocketDataStorage;
+  external: PocketExternal;
+  isReady?: boolean;
+}
+interface PocketWindow {
+  MylistPocket: MylistPocketApi;
+  MylistPocketLib: { workerUtil: typeof workerUtil };
+  FutatsumeWatch?: FutatsumeLike;
+}
+interface GateApi {
+  post(data: unknown, opts: { sessionId: unknown }): void;
+  parseUrl(url: string): { hostname: string; pathname: string };
+  uFetch(params: unknown, sessionId?: unknown): Promise<{ text(): Promise<string> }>;
+  init(opts: { prefix: string; type: string }): { port: MessagePort; TOKEN: string | null };
+}
+interface CrossDomainGateApi {
+  fetch(resource: string, options?: unknown): Promise<ThumbInfoData>;
+}
+interface ThumbGateOptions {
+  expireTime?: number;
+  credentials?: unknown;
+  [key: string]: unknown;
+}
+interface ThumbGateParams {
+  url: string;
+  options?: ThumbGateOptions;
+}
+interface ThumbGateBody {
+  command: string;
+  params: ThumbGateParams;
+}
+interface ThumbGateMessage {
+  body: ThumbGateBody;
+  sessionId: unknown;
+  token: unknown;
+}
+interface PocketWindowMessage {
+  id?: unknown;
+  body?: unknown;
+  type?: unknown;
+}
+interface PocketCommandResult {
+  message?: string;
+}
+type PocketDispatcher = (command: string, param: string | { value: string }, src?: unknown) => unknown;
+void AntiPrototypeJs().then(() => {
+  const PRODUCT = 'MylistPocket';
+
+  const monkey = (PRODUCT: string) => {
+    const console = window.console;
+    const { workerUtil } = (window as unknown as PocketWindow).MylistPocketLib;
+    //const $ = window.jQuery;
+    console.log(
+      `%c${PRODUCT}`,
+      'font-family: "Apple LiGothic"; padding: 4px; background: red; color: white; font-size: 150%;'
+    );
+
+    const CONSTANT = {
+      BASE_Z_INDEX: 100000,
+    };
+    const MylistPocket = { debug: {} } as unknown as MylistPocketApi;
+    (window as unknown as PocketWindow).MylistPocket = MylistPocket;
+
+    const protocol = location.protocol;
+
+    const __css__ = `
+      a[href*='watch/'] > g-img {
+        position: inherit;
+      }
+
+      .mylistPocketHoverMenu {
+        display: none;
+        opacity: 0.8;
+        position: absolute;
+        z-index: ${CONSTANT.BASE_Z_INDEX + 100000};
+        font-size: 8pt;
+        padding: 0;
+        line-height: 26px;
+        font-weight: bold;
+        text-align: center;
+        transition: box-shadow 0.2s ease, opacity 0.4s ease, padding 0.2s ease;
+        user-select: none;
+      }
+
+      .mylistPocketHoverMenu.is-busy {
+        opacity: 0 !important;
+        pointer-events: none;
+      }
+        .mylistPocketHoverMenu.is-otherDomain .wwwOnly {
+          display: none;
+        }
+        .mylistPocketHoverMenu.is-otherDomain:not(.is-futatsumeReady) .wwwFutatsumeOnly {
+          display: none;
+        }
+        .mylistPocketHoverMenu .futatsumeMenu {
+          display: none;
+        }
+        .mylistPocketHoverMenu.is-futatsumeReady .futatsumeMenu {
+          display: inline-block;
+        }
+
+
+      .mylistPocketButton {
+        /*font-family: Menlo;*/
+        display: block;
+        font-weight: bolder;
+        cursor: pointer;
+        width: 32px;
+        height: 26px;
+        background: #ccc;
+        color: black;
+        cursor: pointer;
+        box-shadow: 1px 1px 1px #000;
+        transition:
+          0.1s box-shadow ease,
+          0.1s transform ease;
+        font-size: 16px;
+        line-height: 24px;
+        -webkit-user-select: none;
+        -moz-use-select: none;
+        user-select: none;
+        outline: none;
+      }
+
+      .mylistPocketButton:hover {
+        transform: scale(1.2);
+        box-shadow: 4px 4px 5px #000;
+      }
+
+      .mylistPocketButton:active {
+        transform: scale(1.0);
+        box-shadow: none;
+        transition: none;
+      }
+
+      .is-deflistUpdating .mylistPocketButton.deflist-add::after,
+      .is-deflistSuccess  .mylistPocketButton.deflist-add::after,
+      .is-deflistFail     .mylistPocketButton.deflist-add::after,
+      .mylistPocketButton:hover::after, #mylistPocket-poupup [tooltip] {
+        content: attr(tooltip);
+        position: absolute;
+        /*top:  0px;
+        left: 50%;*/
+        top:  50%;
+        right: -8px;
+        padding: 2px 4px;
+        white-space: nowrap;
+        font-size: 12px;
+        color: #fff;
+        background: #333;
+        transform: translate3d(-50%, -120%, 0);
+        transform: translate3d(100%, -50%, 0);
+        pointer-events: none;
+      }
+
+      .is-deflistUpdating .mylistPocketButton.deflist-add {
+        cursor: wait;
+        opacity: 0.9;
+        transform: scale(1.0);
+        box-shadow: none;
+        transition: none;
+        background: #888;
+        border-style: inset;
+      }
+      .is-deflistSuccess .mylistPocketButton.deflist-add,
+      .is-deflistFail    .mylistPocketButton.deflist-add {
+        transform: scale(1.0);
+        box-shadow: none;
+        transition: none;
+      }
+      .is-deflistSuccess  .mylistPocketButton.deflist-add::after {
+        content: attr(data-result);
+        background: #393;
+      }
+      .is-deflistFail     .mylistPocketButton.deflist-add::after {
+        content: attr(data-result);
+        background: #933;
+      }
+      .is-deflistUpdating .mylistPocketButton.deflist-add::after {
+        content: '更新中';
+        background: #333;
+      }
+
+      .mylistPocketButton + .mylistPocketButton {
+        margin-top: 4px;
+      }
+
+      .mylistPocketHoverMenu:hover {
+        font-weibht: bolder;
+        opacity: 1;
+      }
+
+      .mylistPocketHoverMenu:active {
+      }
+
+      .mylistPocketHoverMenu.is-show {
+        display: block;
+      }
+
+      #mylistPocket-popup {
+        display: none;
+        perspective: 800px;
+      }
+      #mylistPocket-popup.is-firefox {
+        /*perspective: none !important;*/
+        position: fixed;
+        transform: translate3d(-50%, -50%, 0);
+        opacity: 0;
+        transition: 0.3s opacity ease;
+        top: -9999px; left: -9999px;
+      }
+
+      #mylistPocket-popup.show {
+        display: block;
+      }
+      #mylistPocket-popup.is-firefox.show {
+        top: 50%;
+        left: 50%;
+        opacity: 1;
+      }
+
+
+      #mylistPocket-popup .owner-icon {
+        width: 64px;
+        height: 64px;
+        transform-origin: center;
+        transform-origin: center;
+        transition:
+          0.2s transform ease,
+          0.2s box-shadow ease
+        ;
+      }
+      #mylistPocket-popup .owner-icon:hover {
+      }
+
+      #mylistPocket-popup .description a {
+        color: #ffff00 !important;
+        text-decoration: none !important;
+        font-weight: normal !important;
+        display: inline-block;
+      }
+      #mylistPocket-popup .description a.watch {
+        position: relative;
+        display: block;
+        backface-visibility: hidden;
+      }
+
+      #mylistPocket-popup .description a[data-title]:hover::after {
+        content: attr(data-title);
+        position: absolute;
+        top: -16px;
+        left: 0;
+        word-break: break-all;
+        line-height: 12px;
+        padding: 4px;
+        font-size: 12px;
+        color: #333;
+        background: #ffc;
+        opacity: 0.8;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      #mylistPocket-popup .description a:visited {
+        color: #ffff99 !important;
+      }
+      #mylistPocket-popup .description button {
+        /*font-family: Menlo;*/
+        font-size: 16px;
+        font-weight: bolder;
+        margin: 4px 8px;
+        padding: 4px 8px;
+        cursor: pointer;
+        border-radius: 0;
+        background: #333;
+        color: #ccc;
+        border: solid 2px #ccc;
+        outline: none;
+      }
+      #mylistPocket-popup .description button:hover {
+        transform: translate(-2px,-2px);
+        box-shadow: 2px 2px 2px #000;
+        background: #666;
+        transition:
+          0.2s transform ease,
+          0.2s box-shadow ease
+          ;
+      }
+      #mylistPocket-popup .description button:active {
+        transform: none;
+        box-shadow: none;
+        transition: none;
+      }
+      #mylistPocket-popup .description button:active::hover {
+        opacity: 0;
+      }
+
+      #mylistPocket-popup .watch {
+        display: block;
+        position: relative;
+        line-height: 60px;
+        box-sizing: border-box;
+        padding: 4px 16px;;
+        min-height: 60px;
+        width: 280px;
+        margin: 8px 10px;
+        background: #444;
+        border-radius: 4px;
+      }
+
+      #mylistPocket-popup .watch:hover {
+        background: #446;
+      }
+
+      #mylistPocket-popup .videoThumbnail {
+        position: absolute;
+        right: 16px;
+        height: 60px;
+        transform-origin: center;
+        transition:
+          0.2s transform ease,
+          0.2s box-shadow ease
+        ;
+      }
+      #mylistPocket-popup .videoThumbnail:hover {
+        transform: scale(2);
+        box-shadow: 0 0 8px #888;
+        transition:
+          0.2s transform ease 0.5s,
+          0.2s box-shadow ease 0.5s
+        ;
+      }
+
+
+    .futatsumePlayerContainer.is-error   #mylistPocket-popup,
+    .futatsumePlayerContainer.is-loading #mylistPocket-popup,
+    .futatsumePlayerContainer.error   #mylistPocket-popup,
+    .futatsumePlayerContainer.loading #mylistPocket-popup {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mylistPocketHoverMenu.is-guest .is-need-login {
+      display: none !important;
+    }
+
+      .xDomainLoaderFrame {
+        position: fixed;
+        left: -100%;
+        top: -100%;
+        width: 64px;
+        height: 64px;
+        opacity: 0;
+        border: 0;
+      }
+
+      body.BaseLayout {
+        margin-top: 0 !important;
+      }
+      ${
+        location.host === 'www.niovideo.jp'
+          ? `
+      #siteHeader {
+        position: sticky;
+        left: 0 !important;
+        will-change: transform;
+      }
+
+      body.nofix #siteHeader {
+        position: static;
+      }
+
+      .RankingMainContainer-header {
+        position: sticky;
+        top: 36px;
+        z-index: 1000;
+        background:
+          linear-gradient(to bottom,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.7),
+            rgba(255, 255, 255, 1.0),
+            rgba(255, 255, 255, 0.8),
+            rgba(232, 232, 255, 0)
+          );
+      }
+      .nofix .RankingMainContainer-header {
+        top: 0;
+      }
+
+      .RankingBaseItem {
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: 1px solid silver;
+        pointer-events: none;
+        user-select: none;
+        display: grid;
+      }
+        .RankingBaseItem .Card-link {
+          display: grid;
+          grid-template-rows: 108px auto;
+        }
+          .RankingBaseItem .Card-media {
+            position: static;
+            pointer-events: auto;
+          }
+            .VideoThumbnail {
+              border-radius: 0 !important;
+            }
+          .RankingBaseItem .Card-title {
+            pointer-events: auto;
+            user-select: auto;
+            height: auto;
+            max-height: 49px;
+            -webkit-line-clamp: unset;
+
+          }
+          .RankingBaseItem .Card-secondary {
+            width: 100%;
+            user-select: none;
+            pointer-events: none;
+            align-self: end;
+            overflow: hidden;
+
+          }
+
+      [data-nicoad-grade=gold] .Thumbnail.VideoThumbnail {
+        background: #f7e01c;
+      }
+      [data-nicoad-grade=silver] .Thumbnail.VideoThumbnail {
+        background: #dfeaec;
+      }
+
+      .MatrixRanking-body.GlobalHeader#siteHeader #siteHeaderInner {
+        width: 1232px;
+      }
+
+      .MatrixRanking-body .RankingRowRank {
+        line-height: 48px;
+        height: 48px;
+        pointer-events: none;
+        user-select: none;
+      }
+      .MatrixRanking-body .RankingMatrixVideosRow {
+        width: ${1232 + 64}px;
+        margin-left: ${-64}px;
+      }
+      .MatrixRanking-body .RankingRowRank {
+        position: sticky;
+        left: -8px;
+        z-index: 100;
+        transform: none;
+        padding-right: 16px;
+        width: 64px;
+        overflow: visible;
+        text-align: right;
+        mix-blend-mode: difference;
+        text-shadow:
+           1px  1px 0 #fff,
+           1px -1px 0 #fff,
+          -1px  1px 0 #fff,
+          -1px -1px 0 #fff;
+
+              }
+      `
+          : ''
+      }
+    `.trim();
+
+    const nicoadHideCss = `
+      .nicoadVideoItemWrapper {
+        display: none;
+      }
+      [aria-label="nicovideo-content"] > div > div > div:nth-of-type(2) > div:nth-of-type(2) > div {
+        > a:is([data-anchor-page="tag"], [data-anchor-page="search"]):has(div:is(.c_serviceColor\\.nicoadGold, .c_serviceColor\\.nicoadGray)) {
+          display: none;
+        }
+      }
+      [aria-label="nicovideo-content"] > div > section > div:nth-of-type(2) {
+        > div > div:first-of-type > div:nth-of-type(2) > div:has(a[data-anchor-page="ranking_genre"]),
+        > div > div:has(a[data-anchor-page="ranking_custom"]) {
+          &:has(div:is(.c_serviceColor\\.nicoadGold, .c_serviceColor\\.nicoadGray)) {
+            display: none;
+          }
+        }
+      }
+    `.trim();
+
+    const responsiveCss = `
+      [aria-label="nicovideo-content"]:has([data-anchor-page="ranking_custom"]) > section > div {
+        min-width: unset;
+      }
+    `.trim();
+
+    const hideTagCss = (tagName: string) =>
+      `
+      [aria-label="nicovideo-content"] > div > section > div:nth-of-type(2) > div > div:last-of-type > div:first-of-type:has(a[data-anchor-page="ranking_genre"]):has(a[data-anchor-href^="/ranking/genre/"][data-anchor-href$="?tag=${encodeURIComponent(tagName.trim())}"]) > div:nth-of-type(2) {
+        display: none;
+      }
+    `.trim();
+
+    const __tpl__ = `
+      <div class="mylistPocketHoverMenu scalingUI futatsume-family">
+        <button class="mylistPocketButton command deflist-add wwwFutatsumeOnly is-need-login" data-command="deflist"
+          tooltip="とりあえずマイリスト">&#x271A;</button>
+        <button class="mylistPocketButton command info" data-command="info"
+          tooltip="動画情報を表示">？</button>
+        <button class="mylistPocketButton command playlist-queue futatsumeMenu" data-command="playlist-queue"
+          tooltip="FutatsumeWatchのプレイリストに追加">▶</button>
+      </div>
+      </div>
+
+      <div id="mylistPocket-popup" class="futatsume-family">
+        <span slot="video-title">【実況】どんぐりころころの大冒険 Part1(最終回)</span>
+        <a href="/watch/sm9" slot="watch-link"></a>
+        <img slot="video-thumbnail" data-type="image">
+        <a slot="owner-page-link" href="https://www.nicovideo.jp/user/1234" class="owner-page-link target-change" data-type="link" rel="noopener"><img slot="owner-icon" class="owner-icon" src="https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank_s.jpg" data-type="image"></img></a>
+
+        <span slot="upload-date"     data-type="date">1970/01/01 00:00</span>
+        <span slot="view-counter"    data-type="int">12,345</span>
+        <span slot="mylist-counter"  data-type="int">6,789</span>
+        <span slot="comment-counter" data-type="int">2,525</span>
+
+        <span slot="duration" class="duration">1:23</span>
+
+        <span slot="owner-id">1234</span>
+        <span slot="locale-owner-name">ほげほげ</span>
+
+        <div slot="error-description"></div>
+        <div class="description" slot="description" data-type="html"></div>
+        <span slot="last-res-body"></span>
+
+      </div>
+
+      <template id="mylistPocket-popup-template">
+        <style>
+
+          :host(#mylistPocket-popup) {
+            position: fixed;
+            z-index: 10000000;
+            transform: translate3d(-50%, -50%, 0);
+            opacity: 0;
+            transition: 0.3s opacity ease;
+            top: -9999px; left: -9999px;
+          }
+
+          :host(#mylistPocket-popup.show) {
+            top: 50%;
+            left: 50%;
+            opacity: 1;
+            pointer-events: auto;
+          }
+
+          .root.is-otherDomain .wwwOnly {
+            display: none;
+          }
+          .root.is-otherDomain:not(.is-futatsumeReady) .wwwFutatsumeOnly {
+            display: none;
+          }
+
+          * {
+            box-sizing: border-box;
+            font-kerning: none;
+          }
+
+          a {
+            color: #ffff00;
+            font-weight: bold;
+            display: inline-block;
+          }
+
+          a:visited {
+            color: #ffff99;
+          }
+
+          button {
+            font-size: 14px;
+            padding: 8px 8px;
+            cursor: pointer;
+            border-radius: 0;
+            margin: 0;
+            background: #333;
+            color: #ccc;
+            border: solid 2px #ccc;
+            outline: none;
+            line-height: 20px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+          }
+          button:hover {
+            transform: translate(-4px,-4px);
+            box-shadow: 4px 4px 4px #000;
+            background: #666;
+            transition:
+              0.2s transform ease,
+              0.2s box-shadow ease
+              ;
+          }
+
+          button.is-updating {
+            cursor: wait;
+          }
+          button.is-active,
+          button:active {
+            transform: none;
+            box-shadow: none;
+            transition: none;
+          }
+          button.is-active::after,
+          button:active::after {
+            opacity: 0;
+          }
+
+
+          [tooltip] {
+            position: relative;
+          }
+
+          .is-deflistUpdating .deflist-add::after,
+          .is-deflistSuccess  .deflist-add::after,
+          .is-deflistFail     .deflist-add::after,
+          [tooltip]:hover::after {
+            content: attr(tooltip);
+            position: absolute;
+            top:  0px;
+            left: 50%;
+            padding: 2px 4px;
+            white-space: nowrap;
+            font-size: 14px;
+            color: #fff;
+            background: #333;
+            transform: translate3d(-50%, -120%, 0);
+            pointer-events: none;
+
+          }
+
+
+          .root {
+            text-align: left;
+            outline-offset: 8px;
+            border: 12px solid rgba(32, 32, 32, 0);
+            border-radius: 20px;
+            padding: 8px 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: #ccc;
+            box-shadow: 0 0 16px #000;
+            transition:
+              0.6s -webkit-clip-path ease,
+              0.6s clip-path ease,
+              0.5s transform ease;
+              /*0.4s border-radius ease-out 0.4s,
+              0.4s height ease-out 0.4s*/
+            ;
+          }
+
+          .root * {
+          }
+
+          .root.show {
+            opacity: 1;
+            pointer-events: auto !important;
+          }
+
+          .root.is-loading,
+          .root.is-loading.is-ok,
+          .root.is-loading.is-fail {
+            text-align: center;
+            position: relative;
+            width: 190px;
+            height: 190px;
+            padding: 32px;
+            opacity: 0.8;
+            cursor: wait;
+            border-radius: 100%;
+            clip-path: circle(100px at center) !important;
+            transition: none;
+            outline: none;
+            transform: none !important;
+          }
+          .root.is-firefox {
+          }
+          .root.is-loading > * {
+            pointer-events: none;
+          }
+
+          .root.is-setting {
+            transform: rotateX(180deg);
+          }
+
+          .root.is-setting > *:not(.setting-panel) {
+            pointer-events: none;
+            z-index: 1;
+          }
+
+          .root:not(.is-setting) > .setting-panel {
+            pointer-events: none;
+          }
+
+          .root.is-setting > .setting-panel {
+            display: block;
+            opacity: 1;
+            pointer-events: auto;
+          }
+
+          .root.is-loading         .loading-inner,
+          .root.is-loading.is-ok   .loading-inner,
+          .root.is-loading.is-fail .loading-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate3d(-50%, -50%, 0);
+          }
+
+          .loading-inner .spinner {
+            font-size: 64px;
+            display: inline-block;
+            animation-name: spin;
+            animation-iteration-count: infinite;
+            animation-duration: 3s;
+            animation-timing-function: linear;
+          }
+
+          @keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(1800deg); }
+          }
+
+
+
+          .root.is-ok {
+            width: 800px;
+            /*clip-path: circle(800px at center);*/
+          }
+
+          .root.is-ok.noclip {
+            clip-path: none;
+          }
+
+          .root.is-fail {
+            font-size: 120%;
+            white-space: nowrap;
+            text-align: center;
+            padding: 16px;
+          }
+
+          .root.is-loading>*:not(.loading-now),
+          .root.is-loading.is-ok>*:not(.loading-now),
+          .root.is-loading.is-fail>*:not(.loading-now),
+          .root.is-fail:not(.is-loading)>*:not(.error-info),
+          .root.is-ok:not(.is-loading)>*:not(.video-detail):not(.setting-panel) {
+            display: none !important;
+          }
+
+          .root.is-loading>.loading-now,
+          .root.is-fail>.error-info,
+          .root.is-ok>.video-detail {
+            display: block;
+          }
+
+          .header {
+            padding: 8px 8px 8px;
+            font-size: 12px;
+          }
+            .upload-date {
+              margin-right: 8px;
+            }
+            .counter span + span {
+              margin-left: 8px;
+            }
+            .video-title {
+              font-weight: bolder;
+              font-size: 22px;
+              margin-bottom: 4px;
+            }
+
+            .close-button {
+              position: absolute;
+              right: 0;
+              top: 0;
+              transition: 0.2s background ease, 0.2s border-color ease;
+              cursor: pointer;
+              width: 48px;
+              height: 48px;
+              font-size: 28px;
+              line-height: 36px;
+              text-align: center;
+              user-select: none;
+              border: 6px solid rgba(80, 80, 80, 0.5);
+              border-color: transparent;
+              border-radius: 0 16px 0 0;
+            }
+            .close-button:hover {
+              background: #333;
+              /*border-color: rgba(0, 0, 0, 0.9);*/
+              /*transform: translate(-50%, -50%) scale(2.5);*/
+            }
+            .close-button:active {
+              /*transform: translate(-50%, -50%) scale(2) rotate(360deg);*/
+              box-shadow: none;
+              transition: none;
+            }
+
+            .is-setting .close-button {
+              display: none;
+            }
+
+
+
+
+          .main {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5) inset;
+          }
+
+          .main-left {
+            width: 360px;
+            padding: 8px;
+            z-index: 100;
+          }
+            .video-thumbnail-container {
+              position: relative;
+              width: 360px;
+              height: 270px;
+              background: #000;
+              /*box-shadow: 2px 2px 4px #000;*/
+            }
+            .video-thumbnail-container ::slotted(img) {
+              width: 360px !important;
+              height: 270px !important;
+              object-fit: contain;
+            }
+
+            .video-thumbnail-container .duration {
+              position: absolute;
+              display: inline-block;
+              right: 0;
+              bottom: 0;
+              font-size: 14px;
+              background: #000;
+              color: #fff;
+              padding: 2px 4px;
+            }
+            .video-thumbnail-container:hover .duration {
+              display: none;
+            }
+
+
+          .main-right {
+            position: relative;
+            padding: 0;
+            flex-grow: 1;
+            font-size: 14px;
+          }
+
+            ::slotted(.owner-page-link) {
+              display: inline-block;
+              vertical-align: middle;
+            }
+
+            .owner-page-link img {
+              border: 1px solid #333;
+              border-radius: 3px;
+            }
+
+            .video-info {
+              /*background: rgba(0, 0, 0, 0.2);*/
+              max-height: 282px;
+              overflow-x: hidden;
+              overflow-y: scroll;
+              overscroll-behavior: contain;
+            }
+
+            *::-webkit-scrollbar,
+            .video-info::-webkit-scrollbar {
+              background: rgba(34, 34, 34, 0.5);
+            }
+
+            *::-webkit-scrollbar-thumb,
+            .video-info::-webkit-scrollbar-thumb {
+              border-radius: 0;
+              background: #666;
+            }
+
+            *::-webkit-scrollbar-button,
+            .video-info::-webkit-scrollbar-button {
+              background: #666;
+              display: none;
+            }
+
+            *::scrollbar,
+            .video-info::scrollbar {
+              background: #222;
+            }
+
+            *::scrollbar-thumb,
+            .video-info::scrollbar-thumb {
+              border-radius: 0;
+              background: #666;
+            }
+
+            *::scrollbar-button,
+            .video-info::scrollbar-button {
+              background: #666;
+              display: none;
+            }
+
+            .scrollable {
+              overscroll-behavior: contain;
+            }
+
+            .owner-info {
+              margin: 16px;
+              display: table;
+            }
+
+              .owner-info * {
+                vertical-align: middle;
+                word-break: break-all;
+              }
+
+              .owner-info>* {
+                display: table-cell !important;
+              }
+
+              .owner-name {
+                display: inline-block;
+                padding: 8px;
+                font-size: 18px;
+              }
+              .owner-info.is-favorited {
+                font-weight: bolder;
+                color: orange;
+              }
+
+              .owner-info.is-ng {
+                color: #888;
+                text-decoration: line-through;
+              }
+
+              .is-channel .owner-name::before {
+                content: 'CH';
+                margin: 0 4px;
+                background: #999;
+                color: #333;
+                padding: 2px 4px;
+                border: 1px solid;
+              }
+
+              .locale-owner-name::after {
+                content: ' さん';
+              }
+
+              .owner-info .add-ng-button,
+              .owner-info .add-fav-button {
+                visibility: hidden;
+                pointer-events: none;
+              }
+              .is-ng-enable .owner-info:hover .add-ng-button,
+              .is-ng-enable .owner-info:hover .add-fav-button {
+                visibility: visible;
+                pointer-events: auto;
+              }
+
+            .description {
+              word-break: break-all;
+              line-height: 1.5;
+              padding: 0 16px 8px;
+            }
+
+            .description:first-letter {
+              font-size: 24px;
+            }
+
+            .last-res-body {
+              margin: 16px 16px 0;
+              border: 1px solid #ccc;
+              padding: 4px;
+              border-radius: 4px;
+              word-break: break-all;
+              font-size: 12px;
+              min-height: 24px;
+            }
+
+
+          .footer {
+            padding: 8px;
+            backface-visibility: hidden;
+          }
+
+            .pocket-button {
+              cusror: pointer;
+            }
+
+            .pocket-button:active {
+            }
+
+
+            .video-tags {
+              display: block;
+            }
+
+              .tag-container {
+                display: inline-block;
+                position: relative;
+                padding: 4px 8px;
+                border: 1px solid #888;
+                border-radius: 4px;
+                margin: 0 20px 4px 0;
+              }
+              .tag-container .tag {
+                display: inline-block;
+                font-size: 14px;
+                color: #ccc;
+                text-decoration: none;
+                cursor: pointer;
+              }
+              .tag-container .tag.channel-search {
+                margin-left: 8px;
+                color: #ccc !important;
+                padding: 0 8px;
+              }
+              .tag-container:hover .tag {
+                color: #fff !important;
+              }
+              .tag-container.is-favorited .tag {
+                font-weight: bolder;
+                color: orange !important;
+              }
+              .tag-container.is-ng .tag {
+                text-decoration: line-through;
+                color: #888 !important;
+              }
+              .futatsumePlayerContainer .tagItemMenu {
+                margin: 0 8px;
+              }
+
+
+              .tag-container       .add-ng-button,
+              .tag-container       .add-fav-button {
+                position: absolute !important;
+                visibility: hidden;
+                pointer-events: none;
+              }
+              .is-ng-enable .tag-container:hover .add-ng-button,
+              .is-ng-enable .tag-container:hover .add-fav-button {
+                visibility: visible;
+                pointer-events: auto;
+                width: 24px;
+                height: 24px;
+                line-height: 24px;
+                font-size: 24px;
+                vertical-align: bottom;
+                display: inline-block;
+              }
+              .is-ng-enable .tag-container:hover .add-ng-button {
+                right: -16px;
+              }
+              .is-ng-enable .tag-container:hover .add-fav-button {
+                left: -16px;
+              }
+
+            .footer-menu {
+              position: absolute;
+              right: 0px;
+              bottom: 0px;
+              transform: translate3d(0, 120%, 0);
+              opacity: 1;
+              transition:
+                0.4s opacity ease 0.4s,
+                0.4s transform ease 0.4s;
+            }
+
+            .is-setting .video-detail .footer-menu {
+              transform: translate3d(0, 0, 0);
+              opacity: 0;
+            }
+
+              .footer-menu button {
+                min-width: 70px;
+              }
+
+              .regular-menu {
+                display: inline-block;
+                background: rgba(0, 0, 0, 0.7);
+                position: relative;
+                border-radius: 8px;
+                padding: 12px 16px;
+                box-shadow: 0 0 16px #000;
+              }
+
+              .is-deflistUpdating .deflist-add {
+                cursor: wait;
+                opacity: 0.9;
+                transform: scale(1.0);
+                box-shadow: none;
+                transition: none;
+              }
+              .is-deflistSuccess .deflist-add,
+              .is-deflistFail    .deflist-add {
+                transform: scale(1.0);
+                box-shadow: none;
+                transition: none;
+              }
+              .is-deflistSuccess  .deflist-add::after {
+                content: attr(data-result);
+                background: #393;
+              }
+              .is-deflistFail     .deflist-add::after {
+                content: attr(data-result);
+                background: #933;
+              }
+              .is-deflistUpdating .deflist-add::after {
+                content: '更新中';
+                background: #333;
+              }
+
+              .futatsume-menu {
+                display: none;
+              }
+
+              .is-futatsumeReady .futatsume-menu {
+                display: inline-block;
+                background: rgba(0, 0, 0, 0.7);
+                margin-left: 32px;
+                position: relative;
+                border-radius: 8px;
+                padding: 12px 16px;
+                box-shadow: 0 0 16px #000;
+              }
+
+              .is-futatsumeReady .futatsume-menu::after {
+                content: 'FutatsumeWatch';
+                position: absolute;
+                left: 50%;
+                bottom: 10px;
+                padding: 2px 8px;
+                transform: translate(-50%, 100%);
+                pointer-events: none;
+                font-weith: bolder;
+                background: rgba(0, 0, 0, 0.7);
+                pointer-events: none;
+                border-radius: 4px;
+                white-space: nowrap;
+              }
+
+              .setting-menu {
+                display: inline-block;
+                background: rgba(0, 0, 0, 0.7);
+                margin-left: 32px;
+                position: relative;
+                border-radius: 8px;
+                padding: 12px 16px;
+                box-shadow: 0 0 16px #000;
+              }
+
+          .toggle-setting-button {
+            font-size: 32px;
+            border-radius: 100%;
+            border: 12px solid #333;
+            cursor: pointer;
+            background: rgba(32, 32, 32, 1);
+            transition:
+              0.2s transform ease
+              ;
+          }
+
+          .toggle-setting-button:hover {
+            transform: scale(1.2);
+            box-shadow: none;
+            background: rgba(32, 32, 32, 1);
+            background: transparent;
+          }
+
+          .toggle-setting-button:active {
+            transform: scale(1.0);
+          }
+
+          .mylist-comment-link {
+            cursor: pointer;
+          }
+
+          .setting-panel {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 8px 12px;
+            z-index: 10000;
+            background: rgba(50, 50, 64, 0.9);
+            border-radius: 16px;
+            color: #ccc;
+            /*-webkit-user-select: none;
+            user-select: none;*/
+            transform: rotateX(180deg);
+            transition: 0.25s opacity ease 0.25s;
+          }
+          .is-setting .setting-panel {
+            transition: 0.25s opacity ease;
+          }
+            .setting-panel-main {
+              width: 100%;
+              height: 100%;
+              overflow-y: scroll;
+              overflow-x: hidden;
+            }
+
+            .root:not(.is-setting) .setting-panel .footer-menu {
+              transform: translate3d(0, 0, 0);
+              opacity: 0;
+            }
+
+            .root.is-setting       .setting-panel .footer-menu {
+              right:  -12px;
+              bottom: -12px;
+              transform: translate3d(0, 120%, 0);
+              opacity: 1;
+              transition:
+                opacity 0.4s ease 0.4s,
+                transform 0.4s ease 0.4s;
+            }
+
+
+            .close-setting-menu {
+              display: inline-block;
+              background: rgba(0, 0, 0, 0.7);
+              margin-left: 32px;
+              position: relative;
+              border-radius: 8px;
+              padding: 12px 16px;
+              box-shadow: 0 0 16px #000;
+            }
+
+            .setting-label {
+              display: inline-block;
+              line-height: 24px;
+              padding: 8px;
+            }
+
+            .setting-label:hover {
+              text-shadow: 0 0 4px #996;
+            }
+
+            .setting-label * {
+              cursor: pointer;
+            }
+
+            .setting-label input[type=checkbox] {
+              transform: scale(2);
+              margin: 8px;
+              vertical-align: middle;
+            }
+
+            .setting-label input + span {
+              font-size: 16px;
+            }
+
+            .setting-label input:checked + span {
+            }
+
+
+            .setting-fav,
+            .setting-ng-textarea,
+            .setting-fav-textarea {
+              display: none;
+            }
+
+            .is-ng-enable .setting-fav {
+              display: block;
+            }
+            .is-ng-enable .setting-ng-textarea,
+            .is-ng-enable .setting-fav-textarea {
+              display: flex;
+            }
+
+              .setting-ng-text-column,
+              .setting-fav-text-column {
+                flex: 1;
+                position: relative;
+                padding: 8px;
+              }
+
+                .setting-ng-text-column textarea,
+                .setting-fav-text-column textarea {
+                  width: 100%;
+                  height: 150px;
+                  background: transparent;
+                  color: #ccc;
+                }
+
+            .setting-ng-label {
+              display: none;
+            }
+
+            .is-ng-enable .setting-ng-label {
+              display: inline-block;
+            }
+
+
+          .add-ng-button,
+          .add-fav-button {
+            display: none;
+          }
+
+          .is-ng-enable .add-ng-button,
+          .is-ng-enable .add-fav-button {
+            display: inline-block;
+            position: relative;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            font-size: 28px;
+            padding: 0;
+            margin: 0;
+            /*border-radius: 100%;*/
+            border: none;
+            text-align: center;
+            color: red;
+            font-weight: bolder;
+            cursor: pointer;
+            background: transparent;
+            box-shadow: none;
+            transition:
+              0.2s transform ease,
+              0.2s text-shadow ease;
+          }
+          .is-ng-enable .add-fav-button {
+            color: orange;
+          }
+          .is-ng-enable .add-ng-button:hover,
+          .is-ng-enable .add-fav-button:hover {
+            transform: scale(1.2);
+            text-shadow: 2px 2px 4px black;
+          }
+          .is-ng-enable .add-ng-button:active,
+          .is-ng-enable .add-fav-button:active {
+            transform: scale(1.0);
+            text-shadow: 0   0   2px black;
+          }
+          .is-ng-enable .add-ng-button:hover::after,
+          .is-ng-enable .add-fav-button:hover::after {
+            content: 'NG登録';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -80%);
+            font-size: 12px;
+            line-height: 12px;
+            white-space: nowrap;
+            background: rgba(192, 192, 192, 0.8);
+            color: #000;
+            opacity: 0.9;
+            padding: 2px 4px;
+            text-shadow: none;
+            font-weight: normal;
+            pointer-evnets: none !important;
+          }
+          .is-ng-enable .is-ng .add-ng-button:hover::after,
+          .is-ng-enable .is-ng .add-fav-button:hover::after {
+            content: 'NG解除';
+          }
+          .is-ng-enable .add-fav-button:hover::after {
+            content: '強調登録';
+          }
+          .is-ng-enable .is-favorited .add-fav-button:hover::after {
+            content: '強調解除';
+          }
+          .is-ng-enable .add-ng-button:active:hover::after,
+          .is-ng-enable .add-fav-button:active:hover::after {
+            display: none;
+          }
+
+       </style>
+        <div class="popup root">
+          <div class="loading-now">
+            <div class="loading-inner">
+              <span class="spinner">&#8987;</span>
+            </div>
+          </div>
+          <div class="error-info">
+            <slot name="error-description"></slot>
+          </div>
+          <div class="video-detail">
+            <div class="header">
+              <div class="video-title"><slot name="video-title"></slot></div>
+
+              <span class="upload-date">投稿: <slot name="upload-date"/></span>
+              <span class="counter">
+                <span class="view-counter">再生: <slot name="view-counter"/></span>
+                <span class="comment-counter">コメント: <slot name="comment-counter"/></span>
+                <span class="mylist-counter command2" data-command="mylist-comment-open">マイリスト:
+                  <span class="mylist-comment-link command" data-command="mylist-comment-open">&#x274F;</span>
+                  <slot name="mylist-counter"/>
+                </span>
+              </span>
+              <div class="close-button command" data-command="close" tooltip="閉じる">
+                &#x2716;
+              </div>
+            </div>
+
+            <div class="main">
+
+              <div class=" main-left">
+                <div class="video-thumbnail-container">
+                  <slot name="video-thumbnail"></slot>
+                  <span class="duration"><slot name="duration"></slot></slot>
+                </div>
+              </div>
+
+              <div class="video-info main-right scrollable">
+
+                <div class="owner-info">
+                  <slot name="owner-page-link"></slot>
+                  <span class="owner-name"><slot name="locale-owner-name"></slot>
+                  <button class="add-fav-button command" data-command="toggle-fav-owner">★</button>
+                  <button class="add-ng-button command" data-command="toggle-ng-owner">&#x2716;</button>
+                  </span>
+                </div>
+
+                <div class="description">
+                  <slot name="description"></slot>
+                </div>
+
+                <div class="last-res-body">
+                  <slot name="last-res-body"></slot>
+                </div>
+
+
+              </div>
+
+            </div>
+
+            <div class="footer">
+              <div class="video-tags">
+                <slot name="tag"></slot>
+              </div>
+            </div>
+            <div class="footer-menu scalingUI">
+              <div class="regular-menu">
+                <button
+                  class="mylistPocketButton deflist-add pocket-button command command-watch-id wwwFutatsumeOnly"
+                  data-command="deflist-add"
+                  tooltip="とりあえずマイリスト"
+                >とり</button>
+                <button
+                  class="pocket-button command command-watch-id"
+                  data-command="mylist-window"
+                  tooltip="マイリスト"
+                >マイ</button>
+                <button
+                  class="pocket-button command command-watch-id"
+                  data-command="open-mylist-open"
+                  tooltip="公開マイリスト"
+                >公開</button>
+                 <button
+                  class="pocket-button command command-video-id"
+                  data-command="twitter-hash-open"
+                  tooltip="Twitterの反応"
+                >#Twitter</button>
+              </div>
+
+
+              <div class="futatsume-menu">
+                <button
+                  class="pocket-button command command-watch-id"
+                  data-command="futatsume-open-now"
+                  tooltip="FutatsumeWatchで開く"
+                >Futatsume</button>
+                <button
+                  class="pocket-button command command-watch-id"
+                  data-command="playlist-inert"
+                  tooltip="プレイリスト(次に再生)"
+                >playlist</button>
+                <button
+                  class="pocket-button command command-watch-id"
+                  data-command="playlist-queue"
+                  tooltip="プレイリスト(末尾に追加)"
+                >▶</button>
+              </div>
+
+              <div class="setting-menu">
+                <button
+                  class="pocket-button command"
+                  data-command="toggle-setting"
+                >設 定</button>
+              </div>
+
+            </div>
+          </div>
+          <div class="setting-panel">
+
+            <div class="setting-panel-main scrollable">
+              <h2>MylistPocket 設定</h2>
+              <label class="setting-label">
+                <input
+                  type="checkbox"
+                  class="setting-form"
+                  data-config-name="openNewWindow"
+                >
+                <span>タグやリンクを新しいタブで開く (次回から反映)</span>
+              </label>
+
+              <label class="setting-label">
+                <input
+                  type="checkbox"
+                  class="setting-form"
+                  data-config-name="enableAutoComment"
+                  data-config-namespace="mylist"
+                >
+                <span>マイリストコメントに投稿者名を入れる</span>
+              </label>
+
+              <label class="setting-label">
+                <input
+                  type="checkbox"
+                  class="setting-form"
+                  data-config-name="responsive.matrix"
+                  data-config-namespace=""
+                >
+                <span>カスタムランキングのサムネイルを画面幅に合わせて小さくする</span>
+              </label>
+
+              <h2>NG設定(リロード後に反映)</h2>
+              <label class="setting-label">
+                <input
+                  type="checkbox"
+                  class="setting-form"
+                  data-config-name="enable"
+                  data-config-namespace="ng"
+                >
+                <span>簡易NG＆強調機能を使う</span>
+              </label>
+
+              <label class="setting-label">
+                <input
+                  type="checkbox"
+                  class="setting-form"
+                  data-config-name="hide"
+                  data-config-namespace="nicoad"
+                >
+                <span>検索結果やランキングのニコニ広告を消す</span>
+              </label>
+
+              <label class="setting-label wwwOnly wwwFutatsumeOnly setting-ng-label">
+                <input
+                  type="checkbox"
+                  class="setting-form"
+                  data-config-name="syncFutatsume"
+                  data-config-namespace="ng"
+                >
+                <span>NGタグ・投稿者をFutatsumeWatchにも反映する</span>
+              </label>
+
+              <div class="setting-ng-textarea setting-ng">
+                <div class="setting-ng-text-column">
+                  投稿者ID
+                  <textarea
+                    class="setting-form"
+                    data-config-name="owner"
+                    data-config-namespace="ng"
+                  ></textarea>
+                </div>
+                <div class="setting-ng-text-column">
+                  タグ
+                  <textarea
+                    class="setting-form"
+                    data-config-name="tag"
+                    data-config-namespace="ng"
+                  ></textarea>
+                </div>
+                <div class="setting-ng-text-column">
+                  タイトル・説明文
+                  <textarea
+                    class="setting-form"
+                    data-config-name="word"
+                    data-config-namespace="ng"
+                  ></textarea>
+                </div>
+               </div>
+              <h2 class="setting-fav">強調表示設定</h2>
+              <div class="setting-fav-textarea setting-fav">
+                <div class="setting-fav-text-column">
+                  投稿者ID
+                  <textarea
+                    class="setting-form"
+                    data-config-name="owner"
+                    data-config-namespace="fav"
+                  ></textarea>
+                </div>
+                <div class="setting-fav-text-column">
+                  タグ
+                  <textarea
+                    class="setting-form"
+                    data-config-name="tag"
+                    data-config-namespace="fav"
+                  ></textarea>
+                </div>
+                <div class="setting-fav-text-column">
+                  タイトル・説明文
+                  <textarea
+                    class="setting-form"
+                    data-config-name="word"
+                    data-config-namespace="fav"
+                  ></textarea>
+                </div>
+               </div>
+
+             </div>
+
+            <div class="footer-menu">
+              <div class="close-setting-menu">
+                <button
+                  class="pocket-button command"
+                  data-command="toggle-setting"
+                >戻 る</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </template>
+    `.trim();
+
+    const __ng_css__ = `
+      /* [data-decoration-video-id] ランキング  .item 検索 */
+
+      [data-decoration-video-id]:has(.is-ng-rejected) {
+        pointer-events: none;
+
+        > * {
+          display: none;
+        }
+
+        &::before {
+          background-color: var(--colors-layer-surface-low-em);
+          border-radius: var(--radii-m);
+          box-sizing: content-box;
+
+          @media (prefers-color-scheme: light) {
+            content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w_x6 h_x6 fill_icon.baseDisabled"><path fill="hsl(0 0% 70%)" fill-rule="evenodd" d="M20.21 5.81H14.4l2.38-2.24a.83.83 0 0 0 .05-1.17.8.8 0 0 0-1.16-.04L12 5.81 8.33 2.36a.8.8 0 0 0-1.16.04c-.3.34-.28.86.05 1.17L9.6 5.8H3.8C2.8 5.81 2 6.61 2 7.6v10.7c0 1 .8 1.8 1.79 1.8h2.26l1.35 1.56c.23.26.6.26.82 0l1.35-1.57h4.86l1.35 1.57c.23.26.6.26.82 0l1.35-1.57h2.26c1 0 1.79-.8 1.79-1.78V7.6c0-.99-.8-1.79-1.79-1.79" clip-rule="evenodd"></path></svg>');
+          }
+          @media (prefers-color-scheme: dark) {
+            content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w_x6 h_x6 fill_icon.baseDisabled"><path fill="hsl(0 0% 40%)" fill-rule="evenodd" d="M20.21 5.81H14.4l2.38-2.24a.83.83 0 0 0 .05-1.17.8.8 0 0 0-1.16-.04L12 5.81 8.33 2.36a.8.8 0 0 0-1.16.04c-.3.34-.28.86.05 1.17L9.6 5.8H3.8C2.8 5.81 2 6.61 2 7.6v10.7c0 1 .8 1.8 1.79 1.8h2.26l1.35 1.56c.23.26.6.26.82 0l1.35-1.57h4.86l1.35 1.57c.23.26.6.26.82 0l1.35-1.57h2.26c1 0 1.79-.8 1.79-1.78V7.6c0-.99-.8-1.79-1.79-1.79" clip-rule="evenodd"></path></svg>');
+          }
+        }
+
+        &::after {
+          content: 'Hide by MylistPocket';
+          font-weight: var(--font-weights-bold);
+          font-size: var(--font-sizes-base);
+          color: var(--colors-text-on-layer-low-em);
+        }
+
+        &:is([data-anchor-page="ranking_custom"], .cq-t_inline-size[data-anchor-page="tag"], .cq-t_inline-size[data-anchor-page="search"]) {
+          flex-direction: column;
+          height: 100%;
+
+          div:has(> &) {
+            height: 100%;
+          }
+
+          &::before {
+            width: calc(100%/4);
+            height: calc(100%/4);
+            padding: calc((100% * 5 / 16) / 2) calc((100% * 3 / 4) / 2);
+          }
+        }
+
+        &:is([data-anchor-page="ranking_genre"], [data-anchor-page="tag"]:not(.cq-t_inline-size), [data-anchor-page="search"]:not(.cq-t_inline-size)) {
+          &:has(.w_thumbnail\\.l)::before {
+            width: var(--sizes-x6);
+            height: var(--sizes-x6);
+            padding: calc((var(--sizes-thumbnail-l) * 9 / 16 - var(--sizes-x6)) / 2) calc((var(--sizes-thumbnail-l) - var(--sizes-x6)) / 2);
+          }
+          &:has(.w_thumbnail\\.2xl)::before {
+            width: var(--sizes-x8);
+            height: var(--sizes-x8);
+            padding: calc((var(--sizes-thumbnail-2xl) * 9 / 16 - var(--sizes-x8)) / 2) calc((var(--sizes-thumbnail-2xl) - var(--sizes-x8)) / 2);
+          }
+        }
+      }
+
+      [data-decoration-video-id]:has(.is-ng-wait),
+      .item.is-ng-wait {
+        outline: 1px dotted rgba(192, 192, 192, 0.8);
+      }
+
+      [data-decoration-video-id]:has(.is-ng-queue),
+      .item.is-ng-queue {
+        outline: 2px dotted rgba(192, 192, 192, 0.8);
+      }
+
+      [data-decoration-video-id]:has(.is-ng-current),
+      .item.is-ng-current {
+        outline: 3px dotted rgba(128, 225, 128, 0.8);
+      }
+
+      [data-decoration-video-id]:has(.is-ng-resolved),
+      .item.is-ng-resolved {
+        outline: 0px solid green;
+      }
+
+      [data-decoration-video-id]:has(.is-fav-favorited),
+      .item.is-fav-favorited {
+        outline: 3px dotted orange;
+        outline-offset: 3px;
+      }
+      .item.videoRanking.is-fav-favorited {
+        outline-offset: -3px;
+      }
+
+      [data-decoration-video-id]:has(.is-ng-rejected),
+      .item.is-ng-rejected {
+        outline: none;
+      }
+
+      .VideoItem.NC-VideoCard.is-ng-rejected,
+      .VideoItem.VideoCard.is-ng-rejected {
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+      }
+
+      .VideoItem .VideoItem-postDate {
+        line-height: 16px;
+        vertical-align: top;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .item.is-ng-rejected,
+      .NicorepoTimelineItem.is-ng-rejected {
+        display: none;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      body.is-ng-disable .is-ng-rejected {
+        outline: none;
+        display: block !important;
+        pointer-events: auto;
+        opacity: 0.5;
+        visibility: visible;
+      }
+
+      /* チャンネル検索 */
+        #search .item.is-ng-rejected {
+          display: none;
+        }
+    `;
+
+    // TODO: ライブラリ化
+    const util: PocketUtil = (MylistPocket.util = (() => {
+      const util = {} as unknown as PocketUtil;
+
+      util.mixin = function (
+        self: Record<string, (...args: never[]) => unknown>,
+        o: Record<string, (...args: never[]) => unknown>
+      ) {
+        Object.keys(o).forEach((f) => {
+          if (!_.isFunction(o[f])) {
+            return;
+          }
+          if (_.isFunction(self[f])) {
+            return;
+          }
+          self[f] = o[f].bind(o);
+        });
+      };
+      util.attachShadowDom = function ({
+        host,
+        tpl,
+        mode = 'open',
+      }: {
+        host: Element;
+        tpl: HTMLTemplateElement;
+        mode?: ShadowRootMode;
+      }): ShadowRoot {
+        const root = host.attachShadow
+          ? host.attachShadow({ mode })
+          : (host as unknown as { createShadowRoot: () => ShadowRoot }).createShadowRoot();
+        const node = document.importNode(tpl.content, true);
+        root.appendChild(node);
+        return root;
+      };
+      util.httpLink = function (html: string): string {
+        const links: Record<string, string | RegExpMatchArray> = {};
+        let keyCount = 0;
+        const getTmpKey = function () {
+          return ` <!--${keyCount++}--> `;
+        };
+        html = html.replace(/@([a-zA-Z0-9_]+)/g, (g, id) => {
+          const tmpKey = getTmpKey();
+          links[tmpKey] =
+            ` <a href="https://twitter.com/${id}" class="twitterLink" rel="noopener" target="_blank">@${id}</a> `;
+          return tmpKey;
+        });
+
+        html = html.replace(
+          /(https?:\/\/seiga\.nicovideo\.jp\/seiga\/)?im(\d+)/g,
+          ' <a href="//seiga.nicovideo.jp/seiga/im$2" class="seigaLink" rel="noopener" target="_blank">$1im$2</a> '
+        );
+        html = html.replace(
+          /(https?:\/\/com\.nicovideo\.jp\/community\/)?co(\d+)/g,
+          ' <a href="//com.nicovideo.jp/community/co$2" class="communityLink" rel="noopener" target="_blank">$1co$2</a> '
+        );
+        html = html.replace(
+          /(https?:\/\/www\.nicovideo\.jp\/)?(watch|shorts|mylist|series|user)\/(\d+)/g,
+          ' <a href="https://www.nicovideo.jp/$2/$3" rel="noopener" class="videoLink target-change">$1$2/$3</a> '
+        );
+        html = html.replace(
+          /(https?:\/\/www\.nicovideo\.jp\/watch\/)?(sm|nm|so|ss)(\d+)/g,
+          ' <a href="https://www.nicovideo.jp/watch/$2$3" rel="noopener" class="videoLink target-change">$1$2$3</a> '
+        );
+        html = html.replace(
+          /(https?:\/\/www\.nicovideo\.jp\/shorts\/)?ss(\d+)/g,
+          ' <a href="https://www.nicovideo.jp/shorts/ss$2" rel="noopener" class="videoLink target-change">$1ss$2</a> '
+        );
+
+        const linkmatch = /<a.*?<\/a>/;
+        let n: RegExpExecArray | null;
+        html = html.split('<br />').join(' <br /> ');
+        while ((n = linkmatch.exec(html)) !== null) {
+          const tmpKey = getTmpKey();
+          links[tmpKey] = n;
+          html = html.replace(n as unknown as string, tmpKey);
+        }
+
+        html = html.replace(/\((https?:\/\/[\x21-\x3b\x3d-\x7e]+)\)/gi, '( $1 )');
+        html = html.replace(/(https?:\/\/[\x21-\x3b\x3d-\x7e]+)http/gi, '$1 http');
+        html = html.replace(
+          /(https?:\/\/[\x21-\x3b\x3d-\x7e]+)/gi,
+          '<a href="$1" rel="noopener" target="_blank" class="otherSite">$1</a>'
+        );
+        Object.keys(links).forEach((tmpKey) => {
+          html = html.replace(tmpKey, links[tmpKey] as string);
+        });
+
+        html = html.split(' <br /> ').join('<br />');
+        return html;
+      };
+
+      util.getSleepPromise = function (sleepTime: number): (result: unknown) => Promise<unknown> {
+        return function (result: unknown): Promise<unknown> {
+          return new Promise((resolve) => {
+            window.setTimeout(() => {
+              return resolve(result);
+            }, sleepTime);
+          });
+        };
+      };
+
+      util.isFirefox = () => navigator.userAgent.toLowerCase().indexOf('firefox') >= 0;
+
+      return util;
+    })());
+    Object.assign(util, css);
+    Object.assign(util, workerUtil);
+    Object.assign(util, nicoUtil);
+    Object.assign(util, netUtil);
+    Object.assign(util, textUtil);
+
+    MylistPocket.emitter = util.emitter = new Emitter();
+
+    const FutatsumeDetector = (function () {
+      let isReady = false;
+      let Futatsume: FutatsumeLike | null = null;
+      const emitter = new Emitter();
+
+      const initialize = function (): void {
+        const onFutatsumeReady = (): void => {
+          isReady = true;
+          Futatsume = (window as unknown as PocketWindow).FutatsumeWatch!;
+
+          Futatsume.emitter.on('hideHover', () => {
+            util.emitter.emit('hideHover');
+          });
+
+          Futatsume.emitter.on('csrfToken', ((token: string) => {
+            util.emitter.emit('csrfToken', token);
+          }) as unknown as EmitterCallback);
+
+          const popup = document.getElementById('mylistPocket-popup');
+          const defaultContainer = document.getElementById('mylistPocketDomContainer')!;
+          defaultContainer.classList.add('futatsume-family');
+          let futatsumeContainer: Element | null;
+          Futatsume.emitter.on('fullScreenStatusChange', ((isFull: boolean) => {
+            if (isFull) {
+              if (!futatsumeContainer) {
+                futatsumeContainer = document.querySelector('.futatsumePlayerContainer');
+              }
+              futatsumeContainer!.appendChild(popup!);
+            } else {
+              defaultContainer.appendChild(popup!);
+            }
+          }) as unknown as EmitterCallback);
+          emitter.emit('ready', Futatsume);
+        };
+
+        if (
+          (window as unknown as PocketWindow).FutatsumeWatch &&
+          (window as unknown as PocketWindow).FutatsumeWatch!.ready
+        ) {
+          window.console.log('FutatsumeWatch is Ready');
+          onFutatsumeReady();
+        } else {
+          document.body.addEventListener('FutatsumeWatchInitialize', function () {
+            window.console.log('FutatsumeWatchInitialize MylistPocket');
+            onFutatsumeReady();
+          });
+        }
+      };
+
+      const detect = function (): Promise<FutatsumeLike | null> {
+        return new Promise((res) => {
+          if (isReady) {
+            return res(Futatsume);
+          }
+          emitter.on('ready', () => {
+            res(Futatsume);
+          });
+        });
+      };
+
+      return {
+        initialize: initialize,
+        detect: detect,
+      };
+    })();
+
+    const config = (() => {
+      const DEFAULT_CONFIG = {
+        debug: false,
+
+        'videoInfo.openNewWindow': false,
+        'mylist.enableAutoComment': true, // マイリストコメントに投稿者を入れる
+
+        'responsive.matrix': false,
+
+        'nicoad.hide': false,
+
+        'ng.enable': false,
+        'ng.owner': '',
+        'ng.word': '',
+        'ng.tag': '',
+        'ng.syncFutatsume': false,
+
+        'fav.owner': '',
+        'fav.word': '',
+        'fav.tag': '',
+      };
+      return new DataStorage(DEFAULT_CONFIG, {
+        prefix: `${PRODUCT}_config`,
+        ignoreExportKeys: [],
+        readonly: !location || location.host !== 'www.nicovideo.jp',
+        storage: localStorage,
+      });
+    })() as unknown as PocketDataStorage;
+
+    MylistPocket.broadcast = (function (config: PocketDataStorage): PocketBroadcast | undefined {
+      if (!window.BroadcastChannel) {
+        return;
+      }
+      const broadcastChannel = new window.BroadcastChannel(PRODUCT);
+
+      const onBroadcastMessage = (e: MessageEvent): void => {
+        const data = e.data as { type?: unknown };
+        switch (data.type) {
+          case 'config-update':
+            config.refresh(true);
+            break;
+        }
+      };
+
+      broadcastChannel.addEventListener('message', onBroadcastMessage);
+
+      return {
+        postMessage: (...args: [unknown]): void => {
+          broadcastChannel.postMessage(...args);
+        },
+      };
+    })(config);
+    config.on('update', (key: string, value: unknown): void => {
+      if (!Object.prototype.hasOwnProperty.call(config.props, key)) {
+        return;
+      }
+      MylistPocket.broadcast!.postMessage({ type: 'config-update', key, value, storage: 'local' });
+    });
+
+    MylistPocket.config = config;
+
+    const CacheStorage = (function () {
+      const PREFIX = PRODUCT + '_cache_';
+
+      class CacheStorage {
+        _storage: PocketStorage;
+        _memory: Record<string, unknown>;
+        constructor(storage: PocketStorage, gc: boolean = false) {
+          this._storage = storage;
+          this._memory = {};
+          if (gc) {
+            this.gc();
+          }
+          Object.keys(storage).forEach((key) => {
+            if (key.indexOf(PREFIX) === 0) {
+              this._memory[key] = storage[key];
+            }
+          });
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises -- debounce化関数の戻り値は呼び元が無視するため許容する
+          this.gc = bounce.time(this.gc.bind(this) as unknown as BounceCallback, 100);
+        }
+
+        gc(now: number = -1): void {
+          const storage = this._storage;
+          now = now >= 0 ? now : Date.now();
+          Object.keys(storage).forEach((key) => {
+            if (key.indexOf(PREFIX) === 0) {
+              let item: CacheItemData | null = null;
+              try {
+                item = JSON.parse(storage[key] as string) as CacheItemData;
+              } catch {
+                storage.removeItem(key);
+              }
+              //console.info(
+              //  `${index}, key: ${key}, expiredAt: ${new Date(item.expiredAt).toLocaleString()}, now: ${new Date(now).toLocaleString()}`);
+              if (item!.expiredAt === '' || (item!.expiredAt as number) > now) {
+                //console.info('not expired: ', key);
+                return;
+              }
+              //console.info('cache expired: ', key, item.expiredAt);
+              storage.removeItem(key);
+            }
+          });
+        }
+
+        setItem(key: string, data: unknown, expireTime?: number): void {
+          key = PREFIX + key;
+          const expiredAt = typeof expireTime === 'number' ? Date.now() + expireTime : '';
+
+          const cacheData = {
+            data: data,
+            type: typeof data,
+            expiredAt: expiredAt,
+          };
+
+          this._memory[key] = cacheData;
+          try {
+            this._storage[key] = JSON.stringify(cacheData);
+            this.gc();
+          } catch (e) {
+            if (
+              (e as { name?: unknown }).name === 'QuotaExceededError' ||
+              (e as { name?: unknown }).name === 'NS_ERROR_DOM_QUOTA_REACHED'
+            ) {
+              this.gc(0);
+            }
+          }
+        }
+
+        getItem(key: string): unknown {
+          key = PREFIX + key;
+          if (!(Object.prototype.hasOwnProperty.call(this._storage, key) || this._storage[key] !== undefined)) {
+            return null;
+          }
+          let item: CacheItemData | null;
+          try {
+            item = JSON.parse(this._storage[key] as string) as CacheItemData;
+          } catch {
+            delete this._memory[key];
+            this._storage.removeItem(key);
+            return null;
+          }
+
+          if (item.expiredAt === '' || (item.expiredAt as number) > Date.now()) {
+            return item.data;
+          }
+          return null;
+        }
+
+        removeItem(key: string): void {
+          if (Object.prototype.hasOwnProperty.call(this._memory, key)) {
+            delete this._memory[key];
+          }
+          key = PREFIX + key;
+          if (Object.prototype.hasOwnProperty.call(this._storage, key) || this._storage[key] !== undefined) {
+            this._storage.removeItem(key);
+          }
+        }
+
+        clear(): void {
+          const storage = this._storage;
+          this._memory = {};
+          Object.keys(storage).forEach((v) => {
+            if (v.indexOf(PREFIX) === 0) {
+              storage.removeItem(v);
+            }
+          });
+        }
+      }
+      return CacheStorage;
+    })();
+    MylistPocket.debug.sessionCache = new CacheStorage(sessionStorage, true);
+    MylistPocket.debug.localCache = new CacheStorage(localStorage, true);
+
+    const WindowMessageEmitter = (function () {
+      const emitter = new Emitter();
+      const knownSource: unknown[] = [];
+
+      const onMessage = (event: MessageEvent): void => {
+        if (
+          _.indexOf(knownSource, event.source) < 0 //&&
+          //event.origin !== location.protocol + '//ext.nicovideo.jp'
+        ) {
+          return;
+        }
+
+        try {
+          const data = JSON.parse(event.data as string) as PocketWindowMessage;
+          if (data.id !== PRODUCT) {
+            return;
+          }
+
+          emitter.emit('onMessage', data.body, data.type);
+        } catch (e) {
+          console.log('%cMylistPocket.Error: window.onMessage  - ', 'color: red; background: yellow', e, event);
+          console.log('%corigin: ', 'background: yellow;', event.origin);
+          console.log('%cdata: ', 'background: yellow;', event.data);
+          console.trace();
+        }
+      };
+
+      (emitter as unknown as { addKnownSource(win: Window | null): void }).addKnownSource = (
+        win: Window | null
+      ): void => {
+        knownSource.push(win);
+      };
+
+      window.addEventListener('message', onMessage);
+
+      return emitter;
+    })();
+
+    const CsrfTokenLoader = (() => {
+      const cacheStorage = new CacheStorage(location.host === 'www.nicovideo.jp' ? localStorage : sessionStorage);
+      const TIMEOUT = 10 * 1000;
+      const CACHE_EXPIRE_TIME = 60 * 30 * 1000;
+
+      class CsrfTokenLoader {
+        static load(): Promise<unknown> {
+          return new Promise((resolve, reject) => {
+            const cache = cacheStorage.getItem('csrfToken');
+            if (cacheStorage.getItem('csrfToken')) {
+              return resolve(cache);
+            }
+
+            const timeoutTimer = window.setTimeout(() => {
+              reject(new Error('timeout'));
+            }, TIMEOUT);
+
+            void CsrfTokenLoader._getToken().then((token) => {
+              window.clearTimeout(timeoutTimer);
+              CsrfTokenLoader.saveToCache(token);
+              resolve(token);
+            });
+          });
+        }
+
+        static saveToCache(token: unknown): void {
+          cacheStorage.setItem('csrfToken', token, CACHE_EXPIRE_TIME);
+        }
+
+        static _getToken(): Promise<string> {
+          const url = 'https://www.nicovideo.jp/mylist_add/video/sm9';
+          const tokenReg = /NicoAPI\.token *= *["']([a-z0-9-]+)["'];/;
+          let m: RegExpExecArray | null;
+          return fetch(url, { credentials: 'include', _format: 'text' } as RequestInit)
+            .then((res) => res.text())
+            .then((result) => {
+              if ((m = tokenReg.exec(result))) {
+                const token = m[1]!;
+                return Promise.resolve(token);
+              } else {
+                return Promise.reject(new Error('token parse error'));
+              }
+            });
+        }
+      }
+
+      util.emitter.on('csrfToken', ((token: string) => {
+        CsrfTokenLoader.saveToCache(token);
+      }) as unknown as EmitterCallback);
+
+      return CsrfTokenLoader;
+    })();
+
+    MylistPocket.debug.CsrfTokenLoader = CsrfTokenLoader;
+
+    const ThumbInfoLoader = (() => {
+      const BASE_URL = 'https://ext.nicovideo.jp/';
+      const MESSAGE_ORIGIN = 'https://ext.nicovideo.jp/';
+      const CACHE_EXPIRE_TIME = 60 * 60 * 1000;
+      //const CACHE_EXPIRE_TIME = 60 * 1000;
+      let gate: CrossDomainGateApi | null = null;
+      const cacheStorage = new CacheStorage(sessionStorage, true);
+      const failedResult: Record<string, unknown> = {};
+
+      class ThumbInfoLoader {
+        _emitter: InstanceType<typeof Emitter>;
+        constructor() {
+          this._emitter = new Emitter();
+
+          gate = new (
+            CrossDomainGate as unknown as new (params: {
+              baseUrl: string;
+              origin: string;
+              type: string;
+              messager: unknown;
+            }) => CrossDomainGateApi
+          )({
+            baseUrl: BASE_URL,
+            origin: MESSAGE_ORIGIN,
+            type: 'thumbInfo',
+            messager: WindowMessageEmitter,
+          });
+        }
+
+        _onMessage(data: { message: unknown }, type: string): void {
+          if (type !== 'videoInfoLoader') {
+            return;
+          }
+          const info = data.message;
+
+          (this as unknown as InstanceType<typeof Emitter>).emit('load', info, 'THUMB_WATCH');
+        }
+
+        _parseXml(xmlText: string): ThumbInfoData {
+          return parseThumbInfo(xmlText);
+        }
+
+        async load(watchId: string, options?: Record<string, unknown>): Promise<PocketThumbInfo> {
+          const cacheKey = `thumbInfo_${watchId}`;
+          const cache = cacheStorage.getItem(cacheKey);
+
+          if (failedResult[`${watchId}`]) {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 拒否理由のペイロード（呼び元が data/watchId を読む）のため Error 化しない
+            return Promise.reject({ data: failedResult[`${watchId}`], watchId });
+          }
+          if (cache) {
+            return cache as PocketThumbInfo;
+          }
+
+          const thumbInfo = (await gate!
+            .fetch(`${BASE_URL}api/getthumbinfo/${watchId}`, options)
+            .catch((e: { message?: unknown }) => {
+              return { status: 'fail', message: e.message || `gate.fetch('${watchId}') failed` };
+            })) as unknown as PocketThumbInfo;
+          thumbInfo.fromCache = !!cache;
+          if (thumbInfo.status !== 'ok') {
+            failedResult[`${watchId}`] = thumbInfo;
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 拒否理由のペイロード（呼び元が status/message を読む）のため Error 化しない
+            return Promise.reject(thumbInfo);
+          }
+          cacheStorage.setItem(cacheKey, thumbInfo, CACHE_EXPIRE_TIME);
+          return thumbInfo;
+        }
+      }
+
+      const loader = new ThumbInfoLoader();
+      return {
+        load: (watchId: string, options?: Record<string, unknown>): Promise<PocketThumbInfo> =>
+          loader.load(watchId, options),
+        loadOwnerInfo: async (watchId: string): Promise<ThumbOwnerWithLocale | Record<string, never>> => {
+          const info = await loader.load(watchId);
+          const owner: ThumbOwnerWithLocale | undefined = (info as ThumbInfoOk).owner;
+          if (!owner) {
+            return {};
+          }
+
+          const lang = util.getPageLanguage();
+          const prefix = owner.type === 'user' ? '投稿者: ' : '提供: ';
+          const suffix = owner.type === 'user' && lang.startsWith('ja') ? ' さん' : '';
+          owner.linkId = owner.id ? (owner.type === 'user' ? `user/${owner.id}` : `ch${owner.id}`) : '';
+          owner.localeName = `${prefix}${owner.name}${suffix}`;
+          return owner;
+        },
+      };
+    })();
+
+    MylistPocket.debug.ThumbInfoLoader = ThumbInfoLoader;
+
+    class HoverMenu extends Emitter {
+      _view!: HTMLElement;
+      _x!: number;
+      _y!: number;
+      _watchId!: string;
+      _hoverElement!: Element | null;
+      _isFutatsumeReady?: boolean;
+      _deflistButton!: HTMLElement;
+      _isBusy?: boolean;
+      constructor() {
+        super();
+        this._init();
+      }
+
+      _init(): void {
+        this._view = document.querySelector('.mylistPocketHoverMenu') as unknown as HTMLElement;
+
+        this._view.addEventListener(location.host.includes('google') ? 'mouseup' : 'click', this._onClick.bind(this));
+        this._view.addEventListener('mousedown', (e) => this._onMousedown(e));
+        this._view.addEventListener('contextmenu', this._onContextMenu.bind(this));
+
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises -- debounce化関数の戻り値は呼び元が無視するため許容する
+        this._onHoverEnd = bounce.time(this._onHoverEnd.bind(this) as unknown as BounceCallback, 500);
+        document.body.addEventListener('mouseover', this._onHover.bind(this), { passive: true });
+        document.body.addEventListener('mouseout', this._onMouseout.bind(this), { passive: true });
+        document.body.addEventListener('mouseover', (e) => this._onHoverEnd(e), { passive: true });
+        document.body.addEventListener(
+          'click',
+          () => {
+            this.hide();
+          },
+          { passive: true }
+        );
+
+        util.emitter.on('hideHover', () => this.hide());
+
+        this._x = this._y = 0;
+
+        void FutatsumeDetector.detect().then((FutatsumeWatch: unknown) => {
+          this._isFutatsumeReady = true;
+          this.addClass('is-futatsumeReady');
+          (FutatsumeWatch as FutatsumeLike).emitter.on(
+            'DialogPlayerOpen',
+            bounce.time(() => {
+              this.hide();
+            }, 1000)
+          );
+        });
+
+        this.toggleClass('is-otherDomain', location.host !== 'www.nicovideo.jp');
+        this.toggleClass('is-guest', !util.isLogin());
+        this._deflistButton = this._view.querySelector('.mylistPocketButton.deflist-add') as unknown as HTMLElement;
+        MylistPocket.debug.hoverMenu = this._view;
+      }
+
+      toggleClass(className: string, v?: boolean): void {
+        className.split(/ +/).forEach((c) => {
+          this._view.classList.toggle(c, v);
+        });
+      }
+
+      addClass(className: string): void {
+        this.toggleClass(className, true);
+      }
+      removeClass(className: string): void {
+        this.toggleClass(className, false);
+      }
+
+      hide(): void {
+        this.removeClass('is-show');
+      }
+
+      show(): void {
+        this.addClass('is-show');
+      }
+
+      moveTo(x: number, y: number): void {
+        this._x = x;
+        this._y = y;
+        this._view.style.left = x + 'px';
+        this._view.style.top = y + 'px';
+      }
+
+      _onClick(e: Event): void {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      _onContextMenu(e: Event): void {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      _onMousedown(e: MouseEvent): void {
+        const watchId = this._watchId;
+        const target = (e.target instanceof Element && e.target.classList.contains('command')
+          ? e.target
+          : e.target instanceof Element
+            ? e.target.closest('.command')
+            : null) as unknown as HTMLElement;
+        const command = target.getAttribute('data-command');
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (command === 'info') {
+          this._videoInfo(watchId);
+          this.hide();
+        } else if (command === 'playlist-queue') {
+          this.emit('playlist-queue', watchId, this);
+        } else {
+          if (e.button !== 0 || e.shiftKey) {
+            this._deflistRemove(watchId);
+          } else {
+            this._deflist(watchId);
+          }
+        }
+      }
+
+      _videoInfo(watchId: string): void {
+        this.emit('info', watchId || this._watchId, this);
+      }
+
+      _deflist(watchId: string): void {
+        this.emit('deflist-add', watchId || this._watchId, this);
+      }
+
+      _deflistRemove(watchId: string): void {
+        this.emit('deflist-remove', watchId || this._watchId, this);
+      }
+
+      _onHover(e: Event): void {
+        const target = this._isTargetElement(e);
+        if (!target) {
+          return;
+        }
+
+        this._hoverElement = target;
+      }
+
+      _onHoverEnd(e: Event): void {
+        const target = (e.target instanceof Element && e.target.tagName === 'A'
+          ? e.target
+          : e.target instanceof Element
+            ? e.target.closest('a')
+            : null) as unknown as HTMLElement | null;
+        if (!target || this._hoverElement !== target) {
+          return;
+        }
+        const href = target.getAttribute('data-href') || target.getAttribute('href');
+        const watchId = target.dataset.nicoVideoId || util.getWatchId(href as string);
+        const offset = target.getBoundingClientRect();
+        //const bodyOffset = document.body.getBoundingClientRect();
+        const scrollTop = document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+        const left = offset.left + scrollLeft;
+        const top = offset.top + scrollTop;
+        const host = (target as unknown as HTMLAnchorElement).hostname;
+        if (host !== 'www.nicovideo.jp' && host !== 'nico.ms' && host !== 'sp.nicovideo.jp') {
+          return;
+        }
+
+        if (target.classList.contains('noHoverMenu')) {
+          return;
+        }
+        if (!watchId || !watchId.match(/^[a-z0-9]+$/)) {
+          return;
+        }
+        if (watchId.indexOf('lv') === 0) {
+          return;
+        }
+
+        this._watchId = watchId;
+        this.show();
+        this.moveTo(
+          left + target.offsetWidth - this._view.offsetWidth / 2,
+          top + target.offsetHeight / 2 - this._view.offsetHeight / 2
+        );
+      }
+
+      _onMouseout(e: Event): void {
+        const target = this._isTargetElement(e);
+        if (!target) {
+          return;
+        }
+
+        if (this._hoverElement === e.target) {
+          this._hoverElement = null;
+        }
+      }
+
+      _isTargetElement(e: Event): Element | false {
+        const target = (e.target instanceof Element && e.target.tagName === 'A'
+          ? e.target
+          : e.target instanceof Element
+            ? e.target.closest('a')
+            : null) as unknown as HTMLElement | null;
+        if (!target) {
+          return false;
+        }
+        const href = (target as unknown as HTMLAnchorElement).href || '';
+        if (!/((watch|shorts)\/[a-z0-9]+|nico\.ms\/[a-z0-9]+)/.test(href)) {
+          return false;
+        }
+        return target;
+      }
+
+      set isBusy(v: boolean) {
+        this._isBusy = v;
+        this.toggleClass('is-busy', v);
+      }
+
+      get isBusy(): boolean {
+        return !!this._isBusy;
+      }
+
+      notifyBeginDeflistUpdate(): void {
+        this.addClass('is-deflistUpdating');
+      }
+
+      notifyEndDeflistUpdate(result: PocketCommandResult): void {
+        this.addClass('is-deflistSuccess');
+        window.setTimeout(() => {
+          this.removeClass('is-deflistSuccess');
+        }, 3000);
+
+        this._deflistButton.setAttribute('data-result', result.message || '登録しました');
+        this.removeClass('is-deflistUpdating');
+      }
+
+      notifyFailDeflistUpdate(result: PocketCommandResult): void {
+        this.addClass('is-deflistFail');
+        window.setTimeout(() => {
+          this.removeClass('is-deflistFail');
+        }, 3000);
+
+        this._deflistButton.setAttribute('data-result', result.message || '登録失敗');
+        this.removeClass('is-deflistUpdating');
+      }
+    }
+
+    class VideoInfoView extends Emitter {
+      _host!: Element;
+      _tpl!: HTMLTemplateElement;
+      _slot!: Record<string, Element>;
+      _baseConfig!: PocketDataStorage;
+      _config!: PocketConfigNamespace;
+      _mylistConfig!: PocketConfigNamespace;
+      _ngConfig!: PocketConfigNamespace;
+      _favConfig!: PocketConfigNamespace;
+      _nicoadConfig!: PocketConfigNamespace;
+      _ngChecker!: NgChecker;
+      _favChecker!: MatchChecker;
+      _shadowRoot!: ShadowRoot;
+      _rootDom!: Element;
+      _hostDom!: Element;
+      _videoInfoArea!: HTMLElement;
+      _deflistButton!: HTMLElement;
+      _videoInfo!: PocketVideoInfo;
+      _isInitialized?: boolean;
+      _isFutatsumeReady?: boolean;
+      _boundOnBodyMouseDown!: (e: Event) => void;
+      constructor({ host, tpl }: { host: Element; tpl: HTMLTemplateElement }) {
+        super();
+        this._host = host;
+        this._tpl = tpl;
+        this._slot = {};
+
+        this._baseConfig = config;
+        this._config = config.namespace('videoInfo');
+        this._mylistConfig = config.namespace('mylist');
+        const ngConfig = (this._ngConfig = config.namespace('ng'));
+        const favConfig = (this._favConfig = config.namespace('fav'));
+        this._nicoadConfig = config.namespace('nicoad');
+
+        const { ngChecker, favChecker } = initNgChecker({ ngConfig, favConfig });
+        this._ngChecker = ngChecker;
+        this._favChecker = favChecker;
+      }
+
+      _initialize(): void {
+        if (this._isInitialized) {
+          return;
+        }
+        const host = this._host;
+        const tpl = this._tpl;
+
+        this._shadowRoot = util.attachShadowDom({ host, tpl });
+        Array.prototype.forEach.call(this._host.querySelectorAll('*'), (elm: Element) => {
+          //this._host.querySelectorAll('*').forEach((elm) => {
+          const slot = elm.getAttribute('slot');
+          if (!slot) {
+            return;
+          }
+          //const type = elm.getAttribute('data-type') || 'string';
+          this._slot[slot] = elm;
+        });
+
+        this._rootDom = this._shadowRoot.querySelector('.root')!;
+        this._hostDom = this._host;
+
+        this._rootDom.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+        });
+        this._shadowRoot.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+        });
+        this._rootDom.querySelector('.setting-panel-main')!.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+
+        this._initSettingPanel();
+
+        const updateNgEnable = (v: unknown): void => {
+          this.toggleClass('is-ng-enable', v as boolean);
+        };
+        updateNgEnable(this._ngConfig.props.enable);
+        this._ngConfig.onkey('enable', updateNgEnable);
+
+        this._rootDom.addEventListener('click', this._onClick.bind(this));
+
+        this._boundOnBodyMouseDown = this._onBodyMouseDown.bind(this);
+
+        MylistPocket.debug.view = this;
+
+        util.emitter.on('hideHover', () => {
+          this.hide();
+        });
+
+        const debUpdateFavNg = bounce.time(this._updateFavNg.bind(this), 100) as unknown as (...args: never[]) => void;
+        this._ngConfig.on('update', debUpdateFavNg);
+        this._favConfig.on('update', debUpdateFavNg);
+        //this._mylistConfig.on('update', debUpdateFavNg);
+
+        void FutatsumeDetector.detect().then(() => {
+          this._isFutatsumeReady = true;
+          this.addClass('is-futatsumeReady');
+          (window as unknown as PocketWindow).FutatsumeWatch!.emitter.on(
+            'DialogPlayerOpen',
+            bounce.time(() => {
+              this.hide();
+            }, 1000)
+          );
+        });
+
+        this._videoInfoArea = this._rootDom.querySelector('.video-info') as unknown as HTMLElement;
+        this._deflistButton = this._rootDom.querySelector('.mylistPocketButton.deflist-add') as unknown as HTMLElement;
+
+        this.toggleClass('is-otherDomain', location.host !== 'www.nicovideo.jp');
+        this.toggleClass('is-firefox', util.isFirefox());
+
+        MylistPocket.external.observe({
+          query: 'a.videoLink',
+          container: this._hostDom.querySelector('.description'),
+        });
+
+        this._isInitialized = true;
+      }
+
+      _initSettingPanel(): void {
+        const onSettingFormChange = this._onSettingFormChange.bind(this);
+
+        const refresh = (): void => {
+          Array.from(this._rootDom.querySelectorAll('.setting-form')).forEach((elm) => {
+            const name = elm.getAttribute('data-config-name');
+            if (!name) {
+              return;
+            }
+            const namespace = elm.getAttribute('data-config-namespace') || '';
+            let config: { props: Record<string, unknown> };
+            switch (namespace) {
+              case 'ng':
+                config = this._ngConfig;
+                break;
+              case 'fav':
+                config = this._favConfig;
+                break;
+              case 'mylist':
+                config = this._mylistConfig;
+                break;
+              case 'nicoad':
+                config = this._nicoadConfig;
+                break;
+              default:
+                config = this._baseConfig;
+            }
+            const tagName = elm.tagName.toLowerCase().toLowerCase();
+            if (tagName === 'input') {
+              const type = ((elm as unknown as HTMLInputElement).type || '').toLowerCase();
+              switch (type) {
+                case 'checkbox':
+                  (elm as unknown as HTMLInputElement).checked = !!config.props[name];
+                  break;
+                default:
+                  (elm as unknown as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = config.props[
+                    name
+                  ] as string;
+                  break;
+              }
+            } else if (tagName === 'select' || tagName === 'textarea') {
+              (elm as unknown as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = config.props[
+                name
+              ] as string;
+            }
+
+            elm.removeEventListener('change', onSettingFormChange);
+            elm.addEventListener('change', onSettingFormChange);
+          });
+        };
+
+        const onUpdate = bounce.time(refresh, 100) as unknown as (...args: never[]) => void;
+
+        const syncFutatsume = bounce.time((): void => {
+          if (!this._ngConfig.props.syncFutatsume || !this._isFutatsumeReady) {
+            return;
+          }
+          (window as unknown as PocketWindow).FutatsumeWatch!.config.setValue(
+            'videoTagFilter',
+            this._ngConfig.props.tag
+          );
+          (window as unknown as PocketWindow).FutatsumeWatch!.config.setValue(
+            'videoOwnerFilter',
+            this._ngConfig.props.owner
+          );
+        }, 1000) as unknown as (...args: never[]) => void;
+
+        refresh();
+
+        this._config.on('update', onUpdate);
+        this._favConfig.on('update', onUpdate);
+        this._ngConfig.on('update', (): void => {
+          onUpdate();
+          syncFutatsume();
+        });
+      }
+
+      _onSettingFormChange(e: Event): void {
+        const elm = e.target as unknown as HTMLElement;
+        const name = elm.getAttribute('data-config-name');
+        if (!name) {
+          return;
+        }
+        const namespace = elm.getAttribute('data-config-namespace') || '';
+        let config: { props: Record<string, unknown> };
+        switch (namespace) {
+          case 'ng':
+            config = this._ngConfig;
+            break;
+          case 'fav':
+            config = this._favConfig;
+            break;
+          case 'mylist':
+            config = this._mylistConfig;
+            break;
+          case 'nicoad':
+            config = this._nicoadConfig;
+            break;
+          default:
+            config = this._baseConfig;
+        }
+        const tagName = elm.tagName.toLowerCase().toLowerCase();
+        if (tagName === 'input') {
+          const type = ((elm as unknown as HTMLInputElement).type || '').toLowerCase();
+          switch (type) {
+            case 'checkbox':
+              config.props[name] = (elm as unknown as HTMLInputElement).checked;
+              break;
+            default:
+              config.props[name] = (elm as unknown as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+              break;
+          }
+        } else if (tagName === 'select' || tagName === 'textarea') {
+          config.props[name] = (elm as unknown as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value;
+        }
+      }
+
+      toggleClass(className: string, v?: boolean): void {
+        className.split(/ +/).forEach((c) => {
+          this._rootDom.classList.toggle(c, v);
+          this._hostDom.classList.toggle(c, v);
+        });
+      }
+
+      addClass(className: string): void {
+        this.toggleClass(className, true);
+      }
+      removeClass(className: string): void {
+        this.toggleClass(className, false);
+      }
+
+      bind(videoInfo: PocketVideoInfo): void {
+        this._videoInfo = videoInfo;
+        if (videoInfo.status === 'ok') {
+          this._bindSuccess(videoInfo);
+        } else {
+          this._bindFail(videoInfo);
+        }
+        window.setTimeout(() => {
+          this.removeClass('is-loading');
+        }, 0);
+      }
+
+      _onClick(e: Event): void {
+        const t = e.target as unknown as Element;
+        const elm = t.classList.contains('command') ? t : (e.target as unknown as Element).closest('.command');
+        if (!elm) {
+          return;
+        }
+
+        // 簡易 throttle
+        if (elm.classList.contains('is-active')) {
+          return;
+        }
+        elm.classList.add('is-active');
+        window.setTimeout(() => {
+          elm.classList.remove('is-active');
+        }, 500);
+
+        e.preventDefault();
+        e.stopPropagation();
+        const command = elm.getAttribute('data-command');
+        const param = elm.getAttribute('data-param');
+        switch (command) {
+          case 'toggle-setting':
+            this.toggleSettingPanel();
+            break;
+          case 'add-ng-tag':
+          case 'add-fav-tag':
+          case 'toggle-ng-tag':
+          case 'toggle-fav-tag':
+            {
+              const tag = elm.getAttribute('data-tag') || '';
+              if (!tag) {
+                break;
+              }
+              this.emit(
+                'command',
+                command,
+                {
+                  watchId: this._videoInfo.watchId,
+                  value: tag,
+                },
+                this
+              );
+            }
+            break;
+          case 'add-ng-owner':
+          case 'add-fav-owner':
+          case 'toggle-ng-owner':
+          case 'toggle-fav-owner':
+            {
+              const owner =
+                (this._videoInfo.isChannel ? 'ch' : '') + this._videoInfo.ownerId + '#' + this._videoInfo.ownerName;
+              this.emit(
+                'command',
+                command,
+                {
+                  watchId: this._videoInfo.watchId,
+                  value: owner,
+                },
+                this
+              );
+            }
+            break;
+          case 'mylist-comment-open':
+            this.emit('command', command, this._videoInfo.watchId);
+            break;
+          case 'close':
+            this.hide();
+            break;
+          default:
+            this.emit('command', command, param, this);
+        }
+      }
+
+      _updateFavNg(): void {
+        if (!this._isInitialized) {
+          return;
+        }
+        if (!this._videoInfo || this._videoInfo.status !== 'ok') {
+          return;
+        }
+
+        const videoInfo = this._videoInfo;
+        const ownerInfo = this._rootDom.querySelector('.owner-info')!;
+        ownerInfo.classList.toggle(
+          'is-favorited',
+          this._favChecker.isMatchOwner(videoInfo.owner as { type: string; id: string })
+        );
+        ownerInfo.classList.toggle(
+          'is-ng',
+          this._ngChecker.isMatchOwner(videoInfo.owner as { type: string; id: string })
+        );
+
+        Array.prototype.forEach.call(this._rootDom.querySelectorAll('.tag-container'), (elm: Element) => {
+          const tag = elm.getAttribute('data-tag');
+          elm.classList.toggle('is-favorited', this._favChecker.isMatchTag(tag as string));
+          elm.classList.toggle('is-ng', this._ngChecker.isMatchTag(tag as string));
+        });
+      }
+
+      toggleSettingPanel(): void {
+        this.toggleClass('is-setting');
+      }
+
+      _onBodyMouseDown(): void {
+        document.body.removeEventListener('mousedown', this._boundOnBodyMouseDown);
+        this.hide();
+      }
+
+      reset(): void {
+        this._initialize();
+        window.setTimeout(() => {
+          this._videoInfoArea.scrollTop = 0;
+        }, 0);
+        this.removeClass('noclip');
+        this.addClass('is-loading');
+      }
+
+      show(): void {
+        this.addClass('show');
+        document.body.addEventListener('mousedown', this._boundOnBodyMouseDown);
+      }
+
+      hide() {
+        this._videoInfoArea.scrollTop = 0;
+        this.removeClass('show is-ok is-fail noclip is-setting');
+      }
+
+      _bindSuccess(videoInfo: PocketVideoInfo): void {
+        const toCamel = (p: string): string => {
+          return p.replace(/-./g, (s) => {
+            return s.charAt(1).toUpperCase();
+          });
+        };
+
+        Object.keys(this._slot).forEach((key) => {
+          const camelKey = toCamel(key);
+          const data = (videoInfo as unknown as Record<string, unknown>)[camelKey];
+
+          const elm = this._slot[key]!;
+          const type = elm.getAttribute('data-type') || 'string';
+          switch (type) {
+            case 'html':
+              this._createDescription(elm, data as string);
+              break;
+            case 'int':
+              {
+                const i = parseInt(data as string, 10);
+                elm.textContent = `${i.toLocaleString ? i.toLocaleString() : i}`;
+              }
+              break;
+            case 'link':
+              (elm as unknown as HTMLAnchorElement).href = data as string;
+              break;
+            case 'image':
+              (elm as unknown as HTMLImageElement).src = (data as string).replace('http:', 'https:');
+              break;
+            case 'date':
+              elm.textContent = (data as { toLocaleString(): string }).toLocaleString();
+              break;
+            default:
+              elm.textContent = data as string;
+          }
+        });
+
+        const df = document.createDocumentFragment();
+        //Array.prototype.forEach.call(this._host.querySelectorAll('.tag'), t => { t.remove(); });
+        videoInfo.tags.forEach((tag) => {
+          df.appendChild(this._createTagSlot(tag, videoInfo));
+        });
+        const videoTags = this._rootDom.querySelector('.video-tags')!;
+        videoTags.innerHTML = '';
+        videoTags.appendChild(df);
+
+        Array.prototype.forEach.call(this._rootDom.querySelectorAll('.command-watch-id'), (elm: Element) => {
+          elm.setAttribute('data-param', videoInfo.watchId);
+        });
+        Array.prototype.forEach.call(this._rootDom.querySelectorAll('.command-video-id'), (elm: Element) => {
+          elm.setAttribute('data-param', videoInfo.videoId);
+        });
+
+        const target = this._config.props.openNewWindow ? '_blank' : '_self';
+        Array.prototype.forEach.call(this._host.querySelectorAll('.target-change'), (elm: Element) => {
+          (elm as unknown as HTMLAnchorElement).target = target;
+          (elm as unknown as HTMLAnchorElement).rel = 'noopener';
+        });
+
+        this._updateFavNg();
+
+        this.toggleClass('is-channel', videoInfo.isChannel);
+        this.addClass('is-ok');
+        this.removeClass('is-fail');
+        window.setTimeout(() => {
+          this.addClass('noclip');
+        }, 800);
+      }
+
+      _createDescription(elm: Element, data: string): void {
+        (elm as unknown as HTMLElement).innerHTML = util.httpLink(data);
+        const watchReg = /(watch|shorts)\/([a-z0-9]+)/;
+        const isFutatsumeReady = this._isFutatsumeReady;
+        //if (util.isFirefox()) { return; }
+        Array.from(elm.querySelectorAll('.videoLink[href*="watch/"],.videoLink[href*="shorts/"]')).forEach((link) => {
+          const href = link.getAttribute('href');
+          if (!watchReg.test(href as string)) {
+            return;
+          }
+          const watchId = RegExp.$2;
+          if (isFutatsumeReady) {
+            link.classList.add('noHoverMenu');
+            link.classList.add('command');
+            link.setAttribute('data-command', 'futatsume-open');
+            link.setAttribute('data-param', watchId);
+          }
+          const label = document.createElement('span');
+          label.className = 'label';
+          label.textContent = link.textContent;
+          link.textContent = '';
+          link.append(label);
+
+          const btn = document.createElement('button');
+          btn.innerHTML = '？';
+          btn.className = 'command command-button noHoverMenu';
+          btn.setAttribute('slot', 'command-button');
+          btn.setAttribute('tooltip', '動画情報');
+          btn.setAttribute('data-command', 'info');
+          btn.setAttribute('data-param', watchId);
+          link.appendChild(btn);
+
+          const img = document.createElement('img');
+          img.className = 'videoThumbnail preview';
+          img.src = 'https://nicovideo.cdn.nimg.jp/uni/img/common/video_deleted.jpg'; //(thumbnail || '').replace(/^http:/, '');
+          link.classList.add('popupThumbnail');
+          link.appendChild(img);
+
+          (link as unknown as HTMLElement).dataset.videoId = watchId;
+          link.classList.add('watch');
+        });
+      }
+
+      _bindFail(videoInfo: PocketVideoInfo): void {
+        this._slot['error-description']!.textContent = `動画情報の取得に失敗しました (${videoInfo.description})`;
+        this.addClass('is-fail');
+        this.removeClass('is-ok');
+      }
+
+      _createTagSlot(tag: PocketVideoTag, { isChannel }: PocketVideoInfo): Element {
+        const text = util.escapeHtml(tag.text);
+        const lock = tag.isLocked ? 'is-locked' : '';
+        const span = document.createElement('span');
+
+        const a = document.createElement('a');
+        const target = this._config.props.openNewWindow ? '_blank' : '_self';
+        a.textContent = tag.text;
+        a.className = `tag ${lock}`;
+        a.target = target;
+        a.rel = 'noopener';
+        a.href = `https://www.nicovideo.jp/tag/${encodeURIComponent(text)}`;
+        span.appendChild(a);
+
+        if (isChannel) {
+          const ch = document.createElement('a');
+          const target = this._config.props.openNewWindow ? '_blank' : '_self';
+          ch.textContent = '[ch]';
+          ch.className = `tag ${lock} channel-search`;
+          ch.target = target;
+          ch.rel = 'noopener';
+          ch.title = 'チャンネル検索';
+          //ch.href      = `http://ch.nicovideo.jp/search/${encodeURIComponent(text)}?channel_id=ch${ownerId}&type=video&mode=t`;
+          ch.href = `https://ch.nicovideo.jp/search/${encodeURIComponent(text)}?type=video&mode=t`;
+          span.appendChild(ch);
+        }
+
+        const fav = document.createElement('button');
+        fav.className = 'add-fav-button command';
+        fav.setAttribute('data-command', 'toggle-fav-tag');
+        fav.setAttribute('data-tag', tag.text);
+        fav.innerHTML = '★'; //'&#8416;'; // &#x2716;
+        span.appendChild(fav);
+
+        const bt = document.createElement('button');
+        bt.className = 'add-ng-button command';
+        bt.setAttribute('data-command', 'toggle-ng-tag');
+        bt.setAttribute('data-tag', tag.text);
+        bt.innerHTML = '&#x2716;'; //'&#8416;'; // &#x2716;
+        span.appendChild(bt);
+
+        const menu = `<futatsume-tag-item-menu
+          class="tagItemMenu"
+          data-text="${encodeURIComponent(text)}"
+          data-has-nicodic="0"
+        ></futatsume-tag-item-menu>`;
+        span.insertAdjacentHTML('afterbegin', menu);
+
+        span.className = 'tag-container';
+        span.setAttribute('data-tag', tag.text);
+        span.slot = 'tag';
+        return span;
+      }
+
+      notifyBeginDeflistUpdate(): void {
+        this.addClass('is-deflistUpdating');
+      }
+
+      notifyEndDeflistUpdate(result: PocketCommandResult): void {
+        this.addClass('is-deflistSuccess');
+        window.setTimeout(() => {
+          this.removeClass('is-deflistSuccess');
+        }, 3000);
+
+        this._deflistButton.setAttribute('data-result', result.message || '登録しました');
+        this.removeClass('is-deflistUpdating');
+      }
+
+      notifyFailDeflistUpdate(result: PocketCommandResult): void {
+        this.addClass('is-deflistFail');
+        window.setTimeout(() => {
+          this.removeClass('is-deflistFail');
+        }, 3000);
+
+        this._deflistButton.setAttribute('data-result', result.message || '登録失敗');
+        this.removeClass('is-deflistUpdating');
+      }
+    }
+
+    class VideoInfo {
+      _rawData!: PocketVideoInfo;
+      static createByThumbInfo(thumbInfo: ThumbInfoOk): VideoInfo {
+        let thumbnail = thumbInfo.thumbnail;
+        if (util.hasLargeThumbnail(thumbInfo.videoId)) {
+          thumbnail = thumbnail.replace(/\.[ML]$/, undefined as unknown as string) + '.L';
+        }
+        const owner: { id?: string; name?: string; icon?: string } = thumbInfo.owner || {};
+        const isChannel = thumbInfo.isChannel;
+        const rawData: PocketVideoInfo = {
+          status: thumbInfo.status,
+          videoId: thumbInfo.id,
+          watchId: thumbInfo.v,
+          videoTitle: thumbInfo.title,
+          videoThumbnail: thumbnail,
+          uploadDate: thumbInfo.postedAt,
+          duration: textUtil.secToTime(thumbInfo.duration),
+          viewCounter: thumbInfo.viewCount,
+          mylistCounter: thumbInfo.mylistCount,
+          commentCounter: thumbInfo.commentCount,
+          description: thumbInfo.description,
+          lastResBody: thumbInfo.lastResBody,
+          isChannel,
+          ownerId: owner.id as string,
+          ownerName: owner.name as string,
+          ownerIcon: owner.icon as string,
+          tags: thumbInfo.tagList.map((tag) => {
+            return { text: tag.text as string, isLocked: tag.lock };
+          }),
+        };
+
+        return new VideoInfo(rawData);
+      }
+
+      constructor(rawData: PocketVideoInfo) {
+        this._rawData = rawData;
+      }
+
+      get status() {
+        return this._rawData.status;
+      }
+      get videoId() {
+        return this._rawData.videoId;
+      }
+      get watchId() {
+        return this._rawData.watchId;
+      }
+      get originalVideoId() {
+        return !this.isChannel && this.videoId !== this.watchId ? this.videoId : '';
+      }
+      get videoTitle() {
+        return this._rawData.videoTitle;
+      }
+      get videoThumbnail() {
+        return this._rawData.videoThumbnail;
+      }
+      get description() {
+        return this._rawData.description;
+      }
+      get duration() {
+        return this._rawData.duration;
+      }
+      get owner() {
+        return {
+          type: this.isChannel ? 'channel' : 'user',
+          id: this.ownerId,
+          linkId: this.ownerId ? (this.isChannel ? `ch${this.ownerId}` : `user/${this.ownerId}`) : 'xx',
+          name: this.ownerName,
+          icon: this.ownerIcon,
+        };
+      }
+
+      get ownerPageLink() {
+        const ownerId = this.ownerId;
+        if (this.isChannel) {
+          return `${protocol}//ch.nicovideo.jp/ch${ownerId}`;
+        } else {
+          return `${protocol}//www.nicovideo.jp/user/${ownerId}`;
+        }
+      }
+      get ownerIcon() {
+        return this._rawData.ownerIcon;
+      }
+      get ownerName() {
+        return this._rawData.ownerName;
+      }
+      get localeOwnerName() {
+        if (this.isChannel) {
+          return this.ownerName;
+        } else {
+          // TODO: 言語依存
+          return this.ownerName + ' さん';
+        }
+      }
+      get ownerId() {
+        return this._rawData.ownerId;
+      }
+      get isChannel() {
+        return this._rawData.isChannel;
+      }
+      get uploadDate() {
+        return new Date(this._rawData.uploadDate);
+      }
+
+      get viewCounter() {
+        return this._rawData.viewCounter;
+      }
+      get mylistCounter() {
+        return this._rawData.mylistCounter;
+      }
+      get commentCounter() {
+        return this._rawData.commentCounter;
+      }
+
+      get lastResBody() {
+        return this._rawData.lastResBody;
+      }
+      get tags() {
+        return this._rawData.tags;
+      }
+    }
+
+    const deflistAdd = (watchId: string): Promise<unknown> => {
+      const enableAutoComment = config.props.mylist.enableAutoComment;
+      if (location.host === 'www.nicovideo.jp') {
+        return (() => {
+          if (!enableAutoComment) {
+            return Promise.resolve({});
+          }
+          return ThumbInfoLoader.load(watchId);
+        })().then((info) => {
+          const thumb = info as ThumbInfoOk;
+          const originalVideoId = thumb.originalVideoId ? `元動画: ${thumb.originalVideoId}` : '';
+          const description = enableAutoComment
+            ? `投稿者: ${thumb.owner!.name} ${thumb.owner!.linkId} ${originalVideoId}`
+            : '';
+          return MylistApiLoader.addDeflistItem(watchId, description);
+        });
+      }
+
+      let futatsume: FutatsumeLike;
+      let token: unknown;
+      return FutatsumeDetector.detect()
+        .then((z) => {
+          futatsume = z as FutatsumeLike;
+        })
+        .then(() => {
+          return CsrfTokenLoader.load().then(
+            (t) => {
+              token = t;
+            },
+            () => {
+              return Promise.resolve();
+            }
+          );
+        })
+        .then(() => {
+          if (!enableAutoComment) {
+            return {};
+          }
+          return ThumbInfoLoader.load(watchId);
+        })
+        .then((info) => {
+          if (!enableAutoComment) {
+            return futatsume.external.deflistAdd({ watchId, token });
+          }
+
+          const thumb = info as ThumbInfoOk;
+          const originalVideoId = thumb.originalVideoId ? `元動画: ${thumb.originalVideoId}` : '';
+          const description = enableAutoComment
+            ? `投稿者: ${thumb.owner!.name} ${thumb.owner!.linkId} ${originalVideoId}`
+            : '';
+          return futatsume.external.deflistAdd({ watchId, description, token });
+        });
+    };
+
+    const deflistRemove = (watchId: string): Promise<unknown> => {
+      if (location.host === 'www.nicovideo.jp') {
+        return MylistApiLoader.removeDeflistItem(watchId);
+      }
+
+      let futatsume: FutatsumeLike;
+      let token: unknown;
+      return FutatsumeDetector.detect()
+        .then((z) => {
+          futatsume = z as FutatsumeLike;
+        })
+        .then(() => {
+          return CsrfTokenLoader.load().then(
+            (t) => {
+              token = t;
+            },
+            () => {
+              return Promise.resolve();
+            }
+          );
+        })
+        .then(() => {
+          return futatsume.external.deflistRemove({ watchId, token });
+        });
+    };
+
+    class MatchChecker {
+      _tag!: string[];
+      _word!: RegExp | null;
+      _userId!: number[];
+      _channelId!: number[];
+      constructor({ word = '', tag = '', owner = '' }: MatchCheckerInit) {
+        this.init({ word, tag, owner });
+      }
+
+      init({ word = '', tag = '', owner = '' }: MatchCheckerInit): void {
+        this._tag = [];
+        tag.split(/[\r\n]+/).forEach((t) => {
+          if (t) {
+            this._tag.push(t.trim());
+          }
+        });
+        this._tag = _.uniq(this._tag);
+
+        let wordTmp: string[] = [];
+        this._word = null;
+        word.split(/[\r\n]+/).forEach((w) => {
+          if (w) {
+            wordTmp.push(util.escapeRegs(w.trim()));
+          }
+        });
+        wordTmp = _.uniq(wordTmp);
+        if (wordTmp.length > 0) {
+          this._word = new RegExp('(' + wordTmp.join('|') + ')', 'i');
+        }
+
+        this._userId = [];
+        this._channelId = [];
+        owner.split(/[\r\n]+/).forEach((o) => {
+          if (typeof o === 'string') {
+            const id = o.split('#')[0]!.trim();
+            if (id.startsWith('ch')) {
+              this._channelId.push(parseInt(id.substring(2)));
+            } else {
+              this._userId.push(parseInt(id));
+            }
+          }
+        });
+        this._userId = _.uniq(this._userId);
+        this._channelId = _.uniq(this._channelId);
+      }
+
+      isMatch(data: MatchTargetData): boolean | undefined {
+        if (this._isMatchTag(data.tagList)) {
+          return true;
+        }
+        if (this._isMatchOwner(data.owner)) {
+          return true;
+        }
+        if (this._isMatchWord({ title: data.title, description: data.description })) {
+          return true;
+        }
+      }
+
+      _isMatchTag(tagList: (string | { text: string })[] = []): boolean {
+        if (this._tag.length < 1) {
+          return false;
+        }
+
+        const tagTmp: string[] = [];
+        tagList.forEach((t: string | { text: string }) => {
+          if (t) {
+            tagTmp.push(util.escapeRegs(typeof t === 'string' ? t.trim() : t.text.trim()));
+          }
+        });
+        const tagReg = new RegExp(' (' + tagTmp.join('|') + ') ', 'i');
+        const _tag = ' ' + this._tag.join(' ') + ' ';
+        return tagReg.test(_tag);
+      }
+
+      _isMatchOwner(owner: { type: string; id: string }): boolean {
+        const _id = owner.type === 'user' ? this._userId : this._channelId;
+        return _id.includes(parseInt(owner.id, 10));
+      }
+
+      _isMatchWord({ title, description }: { title: string; description: string }): boolean {
+        if (!this._word) {
+          return false;
+        }
+        return this._word.test(title) || this._word.test(description);
+      }
+
+      isMatchTag(tag: string | { text: string }): boolean {
+        return this._isMatchTag([tag]);
+      }
+
+      isMatchOwner(owner: { type: string; id: string }): boolean {
+        return this._isMatchOwner(owner);
+      }
+    }
+
+    class NgChecker extends MatchChecker {
+      isNg(data: MatchTargetData): boolean | undefined {
+        return super.isMatch(data);
+      }
+    }
+
+    const initDom = (): void => {
+      util.addStyle(__css__);
+      const f = document.createElement('div');
+      f.id = 'mylistPocketDomContainer';
+      f.innerHTML = __tpl__;
+      document.body.appendChild(f);
+    };
+
+    const initFutatsumeBridge = (): void => {
+      FutatsumeDetector.initialize();
+    };
+
+    const createVideoInfoView = (): VideoInfoView => {
+      const host = document.getElementById('mylistPocket-popup')!;
+      const tpl = document.getElementById('mylistPocket-popup-template') as unknown as HTMLTemplateElement;
+      const vv = new VideoInfoView({ host, tpl });
+      return vv;
+    };
+
+    const createVideoInfoLoader = (vv: VideoInfoView): ((watchId: string) => Promise<unknown>) => {
+      const onVideoInfoLoad = (thumbInfo: PocketThumbInfo): void => {
+        const vi = VideoInfo.createByThumbInfo(thumbInfo as ThumbInfoOk);
+        vv.bind(vi);
+      };
+
+      const onVideoInfoFail = (): Promise<void> => {
+        vv.bind({ status: 'fail', description: '通信失敗' } as unknown as PocketVideoInfo);
+        return Promise.resolve();
+      };
+
+      return (watchId: string): Promise<unknown> => {
+        vv.reset();
+        vv.show();
+        return ThumbInfoLoader.load(watchId, { expireTime: 60 * 60 * 1000 }).then(onVideoInfoLoad, onVideoInfoFail);
+      };
+    };
+
+    const createCommandDispatcher = ({ infoView }: { infoView: VideoInfoView }): PocketDispatcher => {
+      const info = createVideoInfoLoader(infoView);
+
+      const ngConfig = config.namespace('ng');
+      const favConfig = config.namespace('fav');
+      const { ngChecker, favChecker } = initNgChecker({ ngConfig, favConfig });
+
+      const toggleFavNg = (command: string, param: { value: string; watchId?: string }): void => {
+        const parts = command.split('-') as [string, string, string];
+        let cmd = parts[0];
+        const namespace = parts[1];
+        const key = parts[2];
+        const _config = namespace === 'fav' ? favConfig : ngConfig;
+        _config.refresh();
+        const value = param.value.trim();
+        let ngs = (_config.props[key] as string).trim().split(/[\r\n]/);
+        const isContain = ngs.includes(value);
+
+        if (isContain || cmd === 'remove') {
+          ngs = ngs.filter((line) => {
+            if (line === value) {
+              window.console.info('%c-%s:%s', 'background: cyan', key, value);
+            }
+            return line !== value;
+          });
+          cmd = 'remove';
+        } else if (!isContain || cmd === 'add') {
+          ngs.push(value);
+          window.console.info('%c+%s:%s', 'background: cyan', key, value);
+          cmd = 'add';
+        }
+
+        ngs = _.uniq(ngs);
+
+        _config.props[key] = ngs.join('\n').trim();
+
+        const className = namespace === 'fav' ? 'is-fav-favorited' : 'is-ng-rejected';
+        Array.prototype.forEach.call(
+          document.querySelectorAll(`*[data-watch-id=${param.watchId}]`),
+          (item: Element) => {
+            item.classList.toggle(className, cmd === 'add');
+          }
+        );
+      };
+
+      return (command: string, param: string | { value: string }, src?: unknown): unknown => {
+        switch (command) {
+          case 'info':
+            return info(param as string);
+          case 'load':
+            return QueueLoader.load(param as string);
+          case 'fav-status':
+            return QueueLoader.load(param as string).then((result) => {
+              const res = result as QueueInfoData | null;
+              if (!res || res.status === 'fail' || res.code === 'DELETED') {
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 拒否理由のペイロード（呼び元が status/result を読む）のため Error 化しない
+                return Promise.reject({ status: 'unknown', result: res });
+              }
+              if (ngChecker.isMatch(res as unknown as MatchTargetData)) {
+                return { status: 'ng', result: res };
+              }
+              if (favChecker.isMatch(res as unknown as MatchTargetData)) {
+                return { status: 'favorite', result: res };
+              }
+              return { status: 'default', result: res };
+            });
+          case 'mylist-window':
+            window.open(
+              protocol + '//www.nicovideo.jp/mylist_add/video/' + (param as string),
+              'nicomylistadd',
+              'width=500, height=400, menubar=no, scrollbars=no'
+            );
+            break;
+          case 'twitter-hash-open':
+            window.open('https://twitter.com/hashtag/' + (param as string) + '?src=hash');
+            break;
+          case 'open-mylist-open':
+            window.open(protocol + '//www.nicovideo.jp/openlist/' + (param as string));
+            break;
+          case 'mylist-comment-open':
+            window.open(protocol + '//www.nicovideo.jp/mylistcomment/video/' + (param as string));
+            break;
+          case 'futatsume-open-now':
+            if (
+              (window as unknown as PocketWindow).FutatsumeWatch!.config &&
+              (window as unknown as PocketWindow).FutatsumeWatch!.config.getValue('enableSingleton')
+            ) {
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.sendOrExecCommand('openNow', param);
+            } else {
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.execCommand('openNow', param);
+            }
+            break;
+          case 'futatsume-open':
+            if ((window as unknown as PocketWindow).FutatsumeWatch!.config.getValue('enableSingleton')) {
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.sendOrOpen(param);
+            } else {
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.open(param);
+            }
+            break;
+          case 'playlist-inert':
+            (window as unknown as PocketWindow).FutatsumeWatch!.external.playlist.insert(param);
+            break;
+          case 'playlist-queue':
+            (window as unknown as PocketWindow).FutatsumeWatch!.external.playlist.add(param);
+            break;
+          case 'deflist-add':
+            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate();
+
+            return deflistAdd(param as string)
+              .then(util.getSleepPromise(1000, 'deflist-add'))
+              .then(
+                (result) => {
+                  (src as HoverMenu | VideoInfoView).notifyEndDeflistUpdate(result as PocketCommandResult);
+                },
+                (err: unknown) => {
+                  console.error('deflist-add-result', err);
+                  (src as HoverMenu | VideoInfoView).notifyFailDeflistUpdate(err as PocketCommandResult);
+                }
+              );
+          case 'deflist-remove':
+            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate();
+
+            return deflistRemove(param as string)
+              .then(util.getSleepPromise(1000, 'deflist-remove'))
+              .then(
+                () => {
+                  (src as HoverMenu | VideoInfoView).notifyEndDeflistUpdate({ message: '削除しました' });
+                },
+                (err: unknown) => {
+                  console.error('deflist-remove-result', err);
+                  (src as HoverMenu | VideoInfoView).notifyFailDeflistUpdate(err as PocketCommandResult);
+                }
+              );
+          case 'add-ng-word':
+          case 'add-ng-tag':
+          case 'add-ng-owner':
+          case 'add-fav-word':
+          case 'add-fav-tag':
+          case 'add-fav-owner':
+          case 'remove-ng-word':
+          case 'remove-ng-tag':
+          case 'remove-ng-owner':
+          case 'remove-fav-word':
+          case 'remove-fav-tag':
+          case 'remove-fav-owner':
+          case 'toggle-ng-word':
+          case 'toggle-ng-tag':
+          case 'toggle-ng-owner':
+          case 'toggle-fav-word':
+          case 'toggle-fav-tag':
+          case 'toggle-fav-owner':
+            toggleFavNg(command, param as { value: string; watchId?: string });
+            break;
+        }
+      };
+    };
+
+    const initExternal = (dispatcher: PocketDispatcher, hoverMenu: HoverMenu, infoView: VideoInfoView): void => {
+      MylistPocket.external = {
+        info: (watchId: string): unknown => {
+          return dispatcher('info', watchId);
+        },
+        load: (watchId: string): unknown => {
+          return dispatcher('load', watchId, { expireTime: 60 * 60 * 1000 });
+        },
+        getFavStatus: (watchId: string): unknown => {
+          return dispatcher('fav-status', watchId);
+        },
+        observe: (params: NgObserveParams): void => {
+          void initNg(params);
+        },
+        hide: (): void => {
+          hoverMenu.hide();
+          infoView.hide();
+        },
+      };
+
+      MylistPocket.isReady = true;
+
+      const ev = new CustomEvent('MylistPocketInitialized', { detail: { MylistPocket } });
+      document.body.dispatchEvent(ev);
+      // 過去の互換用
+      if (
+        (window as unknown as { jQuery?: (selector: string) => { trigger(event: string, data: unknown): void } }).jQuery
+      ) {
+        (window as unknown as { jQuery: (selector: string) => { trigger(event: string, data: unknown): void } })
+          .jQuery('body')
+          .trigger('MylistPocketReady', MylistPocket);
+      }
+    };
+
+    const QueueLoader = (() => {
+      let lastPromise: Promise<unknown> | null = null;
+      let count = 0;
+      const MAX_LOAD = 6;
+      const promises: Promise<unknown>[] = [];
+
+      const load = function (watchId: string, item?: Element | null): Promise<unknown> {
+        count = (count + 1) % MAX_LOAD;
+        lastPromise = promises[count]!;
+
+        const onLoad = (info: PocketThumbInfo): Promise<unknown> => {
+          if (item) {
+            watchId = (info as ThumbInfoOk).watchId;
+            item.setAttribute('data-watch-id', watchId);
+            item.setAttribute('data-thumb-info', JSON.stringify(info));
+          }
+          const sleepTime = info.fromCache ? 0 : 50;
+          return util.getSleepPromise(sleepTime, 'success-' + watchId)(info);
+        };
+        const onFail = util.getSleepPromise(1000, 'fail-' + watchId);
+
+        if (lastPromise === null) {
+          if (item) {
+            item.classList.add('is-ng-current');
+          }
+          lastPromise = ThumbInfoLoader.load(watchId).then(onLoad, onFail);
+        } else {
+          //lastPromise = Promise.all([lastPromise]).then(() => {
+          lastPromise = Promise.race(promises).then(() => {
+            if (item) {
+              item.classList.add('is-ng-current');
+            }
+            return ThumbInfoLoader.load(watchId).then(onLoad, onFail);
+          });
+        }
+
+        promises[count] = lastPromise;
+        return lastPromise;
+      };
+
+      return {
+        load,
+      };
+    })();
+
+    const waitForDom = (query: string, timeout = 30000): Promise<Element> => {
+      const now = Date.now();
+      return new Promise((ok, ng) => {
+        const poll = (): void => {
+          if (now + timeout <= Date.now()) {
+            ng(new Error('timeout'));
+            return;
+          }
+          const dom = document.querySelector(query);
+          console.log('waitForDom', query, dom, now + timeout, Date.now());
+          if (dom) {
+            ok(dom);
+            return;
+          }
+          window.setTimeout(poll, 1000);
+        };
+        poll();
+      });
+    };
+
+    const getNgEnv = async () => {
+      if (
+        location.host === 'www.nicovideo.jp' &&
+        (location.pathname.startsWith('/tag') || location.pathname.startsWith('/search')) &&
+        (await window.cookieStore.get('new_search'))?.value === 'false'
+      ) {
+        return {
+          query: '.item[data-video-id]:not(.is-ng-wait)',
+          container: Array.from(document.querySelectorAll('.contentBody .videoListInner')),
+          subtree: false,
+        };
+      }
+      if (
+        location.host === 'www.nicovideo.jp' &&
+        (location.pathname.startsWith('/tag') ||
+          location.pathname.startsWith('/search') ||
+          location.pathname.startsWith('/ranking'))
+      ) {
+        await waitForDom('[data-anchor-page="tag"],[data-anchor-page="search"],[data-anchor-page^="ranking_"]');
+        return {
+          query:
+            '[href*="watch/"]:is([data-anchor-page="tag"],[data-anchor-page="search"],[data-anchor-page^="ranking_"]):not(.is-ng-wait)',
+          container: document.querySelector('[aria-label="nicovideo-content"]'),
+          subtree: true,
+        };
+      }
+      if (location.host === 'www.nicovideo.jp' && document.querySelector('#MyPageNicorepoApp, #UserPageNicorepoApp')) {
+        return {
+          query: '.NicorepoTimelineItem:not(.is-ng-wait)',
+          container: document.querySelector('#MyPageNicorepoApp, #UserPageNicorepoApp'),
+        };
+      }
+
+      if (location.host === 'ch.nicovideo.jp' && location.pathname.startsWith('/search')) {
+        return {
+          query: '.item:not(.is-ng-wait)',
+          container: document.querySelector('.site_body'),
+        };
+      }
+
+      if (location.host === 'search.nicovideo.jp') {
+        return {
+          query: '.video:not(.is-ng-wait)',
+          container: document.querySelector('#row-results'),
+        };
+      }
+
+      return { query: null, container: null };
+    };
+
+    const initNgConfig = ():
+      Record<string, never> | { ngConfig: PocketConfigNamespace; favConfig: PocketConfigNamespace } => {
+      const ngConfig = config.namespace('ng');
+      const updateEnable = (v: unknown): void => {
+        document.body.classList.toggle('is-ng-disable', !v);
+      };
+      updateEnable(ngConfig.props.enable);
+      if (!ngConfig.props.enable) {
+        return {};
+      }
+      ngConfig.onkey('enable', updateEnable);
+
+      const favConfig = config.namespace('fav');
+      return { ngConfig, favConfig };
+    };
+
+    const initNgChecker = ({
+      ngConfig,
+      favConfig,
+    }: {
+      ngConfig: PocketConfigNamespace;
+      favConfig: PocketConfigNamespace;
+    }): { ngChecker: NgChecker; favChecker: MatchChecker } => {
+      const ngChecker = new NgChecker({
+        word: ngConfig.props.word as string,
+        tag: ngConfig.props.tag as string,
+        owner: ngConfig.props.owner as string,
+      });
+
+      ngConfig.on(
+        'update',
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises -- debounce化関数の戻り値はemitterが無視するため許容する
+        bounce.time((): void => {
+          ngChecker.init({
+            word: ngConfig.props.word as string,
+            tag: ngConfig.props.tag as string,
+            owner: ngConfig.props.owner as string,
+          });
+        }, 100)
+      );
+
+      const favChecker = new MatchChecker({
+        word: favConfig.props.word as string,
+        tag: favConfig.props.tag as string,
+        owner: favConfig.props.owner as string,
+      });
+
+      favConfig.on(
+        'update',
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises -- debounce化関数の戻り値はemitterが無視するため許容する
+        bounce.time((): void => {
+          favChecker.init({
+            word: favConfig.props.word as string,
+            tag: favConfig.props.tag as string,
+            owner: favConfig.props.owner as string,
+          });
+        }, 100)
+      );
+
+      return { ngChecker, favChecker };
+    };
+
+    const initIntersectionObserver = (onInview: (item: HTMLElement, watchId: string) => void): IntersectionObserver => {
+      const onItemInview = (item: HTMLElement): void => {
+        let watchId = item.dataset.id || item.dataset.videoId || item.dataset.watchId || item.dataset.decorationVideoId;
+        const ignore = (): void => item.classList.add('is-ng-ignore');
+        if (!watchId) {
+          const a = (item instanceof HTMLAnchorElement
+            ? item
+            : item.querySelector('a[href*=\'watch/\'],a[href*="shorts/"]')) as unknown as HTMLAnchorElement | null;
+          let m: RegExpExecArray | null;
+          if (
+            a != null &&
+            a.hostname === 'www.nicovideo.jp' &&
+            (m = /^\/(watch|shorts)\/([a-z0-9]+)/.exec(a.pathname)) !== null
+          ) {
+            watchId = m[2];
+          }
+        }
+
+        if (!watchId) {
+          item.classList.add('.no-watch-id');
+          return ignore();
+        }
+
+        item.classList.add('is-ng-queue');
+        onInview(item, watchId);
+      };
+
+      const intersectionObserver = new window.IntersectionObserver(
+        (entries) => {
+          entries
+            .filter((entry) => entry.isIntersecting)
+            .forEach((entry) => {
+              const item = entry.target;
+              intersectionObserver.unobserve(item);
+              onItemInview(item as unknown as HTMLElement);
+            });
+        },
+        { rootMargin: '400px' }
+      );
+
+      return intersectionObserver;
+    };
+
+    const initNgDom = ({ intersectionObserver, query, closest, container, subtree }: NgInitDomParams): void => {
+      subtree = typeof subtree !== 'boolean' ? false : subtree;
+      if (!container) {
+        return;
+      }
+      util.addStyle(__ng_css__);
+
+      const update = (container?: Element | Document): void => {
+        let items: NodeListOf<Element> | Element[] = (container || document).querySelectorAll(query);
+        if (!items || items.length < 1) {
+          return;
+        }
+        if (closest) {
+          const tmp: Element[] = [];
+          [...items].forEach((item) => {
+            const c = item.closest(closest);
+            if (c && !tmp.includes(c)) {
+              tmp.push(c);
+            }
+          });
+          items = tmp;
+        }
+        if (!items || items.length < 1) {
+          return;
+        }
+        [...items].forEach((item) => {
+          //if (item.offsetLeft < 0) { return; }
+          if (item.classList.contains('is-ng-ignore')) {
+            return;
+          }
+          item.classList.add('is-ng-wait');
+          intersectionObserver.observe(item);
+        });
+      };
+      update();
+
+      const mutationObserver = new MutationObserver((mutations) => {
+        for (const record of mutations) {
+          const container = record.target;
+          if (record.addedNodes && record.addedNodes.length) {
+            update(container as unknown as Element);
+          }
+        }
+      });
+
+      const containers = Array.isArray(container) ? container : [container];
+      containers.forEach((container) => {
+        (container as unknown as HTMLElement).dataset.isWatching = '1';
+        mutationObserver.observe(container, { childList: true, characterData: false, attributes: false, subtree });
+      });
+    };
+
+    const initNg = async (params?: NgObserveParams | null): Promise<PocketConfigNamespace | undefined> => {
+      if (!window.IntersectionObserver) {
+        return;
+      }
+
+      const { query, container, closest, subtree, callback } = params
+        ? params
+        : ((await getNgEnv()) as NgObserveParams);
+
+      if (!query) {
+        return;
+      }
+
+      const { ngConfig, favConfig } = initNgConfig() as {
+        ngConfig: PocketConfigNamespace;
+        favConfig: PocketConfigNamespace;
+      };
+      if (!ngConfig) {
+        return;
+      }
+
+      const { ngChecker, favChecker } = initNgChecker({ ngConfig, favConfig });
+
+      const onItemInview = (item: HTMLElement, watchId: string): void => {
+        const loadLazy = (): void => {
+          const lazyImage = item.querySelector('.jsLazyImage') as unknown as HTMLImageElement | null;
+          if (lazyImage) {
+            const origImage = lazyImage.getAttribute('data-original');
+            if (origImage) {
+              lazyImage.src = origImage;
+              lazyImage.classList.remove('jsLazyImage');
+            }
+          }
+        };
+
+        (QueueLoader.load(watchId, item) as Promise<QueueInfoData | null>).then(
+          (info) => {
+            item.classList.remove('is-ng-current');
+            if (!info || info.status === 'fail' || info.code === 'DELETED') {
+              if (info && info.code !== 'COMMUNITY') {
+                console.error('empty data', watchId, info, info ? info.code : 'unknown');
+              }
+              item.classList.add('is-ng-failed', info ? (info.code as string) : 'is-no-data');
+            } else {
+              if (callback) {
+                return callback(item, {
+                  watchId,
+                  info,
+                  isNg: ngChecker.isNg(info as unknown as MatchTargetData),
+                  isFav: favChecker.isMatch(info as unknown as MatchTargetData),
+                });
+              }
+              item.classList.add(
+                ngChecker.isNg(info as unknown as MatchTargetData) ? 'is-ng-rejected' : 'is-ng-resolved'
+              );
+              if (favChecker.isMatch(info as unknown as MatchTargetData)) {
+                item.classList.add('is-fav-favorited');
+              }
+
+              for (const img of item.querySelectorAll<HTMLImageElement>('img.videoThumbnail.preview')) {
+                img.src = info.thumbnail as string;
+              }
+
+              const label = item.querySelector('.label');
+              item.dataset.title = info.title;
+              // チャンネル動画のリンクを watch/so〜 に置き換える
+              if (!(info.id || '').startsWith('so')) {
+                return;
+              }
+              if (label && item.classList.contains('videoLink')) {
+                label.textContent = info.id as string;
+                item.dataset.param = item.dataset.videoId = info.id as string;
+                (item as unknown as HTMLAnchorElement).href = `https://www.nicovideo.jp/watch/${info.id}`;
+              }
+              for (const a of item.querySelectorAll(`a[href*="watch/${watchId}"]`)) {
+                const href = a.getAttribute('href') as string;
+                a.setAttribute('href', href.replace(/watch\/([0-9]+)/, `watch/${info.id}`).replace(/^http:/, 'https:'));
+              }
+              for (const a of item.querySelectorAll(`a[href*="shorts/${watchId}"]`)) {
+                const href = a.getAttribute('href') as string;
+                a.setAttribute(
+                  'href',
+                  href.replace(/shorts\/([0-9]+)/, `shorts/${info.id}`).replace(/^http:/, 'https:')
+                );
+              }
+            }
+
+            loadLazy();
+          },
+          () => {
+            item.classList.remove('is-ng-current');
+            item.classList.add('is-ng-failed');
+            loadLazy();
+          }
+        );
+      };
+
+      const intersectionObserver = initIntersectionObserver(onItemInview);
+
+      initNgDom({ intersectionObserver, query, container, closest, subtree });
+
+      return ngConfig;
+    };
+
+    const init = async (): Promise<void> => {
+      await config.promise('restore');
+      initDom();
+      initFutatsumeBridge();
+
+      const infoView = createVideoInfoView();
+      const dispatcher = createCommandDispatcher({ infoView });
+
+      infoView.on('command', dispatcher as unknown as EmitterCallback);
+
+      const hoverMenu = new HoverMenu();
+      hoverMenu.on('info', ((watchId: string) => {
+        hoverMenu.isBusy = true;
+
+        void (dispatcher('info', watchId) as Promise<unknown>).then(() => {
+          hoverMenu.isBusy = false;
+        });
+      }) as unknown as EmitterCallback);
+      hoverMenu.on('deflist-add', ((watchId: string, src: unknown) => {
+        dispatcher('deflist-add', watchId, src);
+      }) as unknown as EmitterCallback);
+      hoverMenu.on('deflist-remove', ((watchId: string, src: unknown) => {
+        dispatcher('deflist-remove', watchId, src);
+      }) as unknown as EmitterCallback);
+      hoverMenu.on('playlist-queue', ((watchId: string, src: unknown) => {
+        dispatcher('playlist-queue', watchId, src);
+      }) as unknown as EmitterCallback);
+      MylistPocket.debug.hoverMenu = hoverMenu;
+
+      const ngConfig = await initNg();
+
+      if (config.props.nicoad.hide) {
+        util.addStyle(nicoadHideCss);
+      }
+
+      if (document.querySelector('a[data-anchor-page^="ranking_"]') != null) {
+        for (const tagName of (ngConfig!.props.tag as string).trim().split(/[\r\n]/)) {
+          util.addStyle(hideTagCss(tagName));
+        }
+        if (config.props.responsive.matrix) {
+          util.addStyle(responsiveCss);
+        }
+      }
+
+      initExternal(dispatcher, hoverMenu, infoView);
+    };
+
+    void init();
+  };
+  (window as unknown as PocketWindow).MylistPocketLib = {
+    workerUtil,
+  };
+  const thumbInfoApi = async function (): Promise<void> {
+    const gateApi = (gate as unknown as () => GateApi)();
+    const { port, TOKEN } = gateApi.init({ prefix: `thumbInfo${PRODUCT}`, type: 'thumbInfo' });
+    const db = await ThumbInfoCacheDb.open();
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises -- DOMイベントリスナーの戻り値は無視されるためasyncのままにする
+    port.addEventListener('message', async (e) => {
+      const data: ThumbGateMessage =
+        typeof e.data === 'string' ? (JSON.parse(e.data) as ThumbGateMessage) : (e.data as ThumbGateMessage);
+      const { body, sessionId, token } = data;
+      const { command, params } = body;
+      if (command !== 'fetch') {
+        return;
+      }
+      const p = gateApi.parseUrl(params.url);
+      if (TOKEN !== token || p.hostname !== location.host || !p.pathname.startsWith('/api/getthumbinfo/')) {
+        console.log('invalid msg: ', { origin: e.origin, TOKEN, token, body });
+        return;
+      }
+      params.options = params.options || {};
+
+      const watchId = params.url.split('/').reverse()[0] as string;
+      const expiresAt = Date.now() - (params.options.expireTime || 0);
+      const cache = await db.get(watchId);
+      if (cache && cache.thumbInfo.status === 'ok' && cache.updatedAt > expiresAt) {
+        return gateApi.post({ status: 'ok', command, params: cache.thumbInfo }, { sessionId });
+      }
+
+      delete params.options.credentials;
+      return gateApi
+        .uFetch(params, sessionId)
+        .then((res) => res.text())
+        .then((xmlText) => {
+          let thumbInfo: ThumbInfoData = parseThumbInfo(xmlText);
+          if (thumbInfo.status === 'ok') {
+            db.put(xmlText, thumbInfo);
+          } else if (cache && cache.thumbInfo.status === 'ok') {
+            thumbInfo = cache.thumbInfo;
+          }
+          const result = { status: 'ok', command, params: thumbInfo };
+          gateApi.post(result, { sessionId });
+        })
+        .catch(({ status, message }: { status?: unknown; message?: unknown }) => {
+          if (cache && cache.thumbInfo.status === 'ok') {
+            return gateApi.post({ status: 'ok', command, params: cache.thumbInfo }, { sessionId });
+          }
+          return gateApi.post({ status, message, command }, { sessionId });
+        });
+    });
+  };
+
+  const loadGm = (): void => {
+    monkey(PRODUCT);
+  };
+
+  const host = window.location.host || '';
+  if (host === 'ext.nicovideo.jp' && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) {
+    void thumbInfoApi();
+  } else if (window === top) {
+    loadGm();
+  }
+});

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { NicoChat } from '../../packages/futatsume/src/commentLayer/NicoChat';
-import { NicoScripter, NicoScriptParser } from '../../packages/futatsume/src/commentLayer/NicoScripter';
+import { NicoChat } from '../../packages/futatsume/src/commentLayer/nico-chat';
+import { NicoScripter, NicoScriptParser } from '../../packages/futatsume/src/commentLayer/nico-scripter';
 
 describe('NicoScriptParser.parseParams', () => {
   it('シングルクォートとダブルクォートのエスケープ規則を守る', () => {

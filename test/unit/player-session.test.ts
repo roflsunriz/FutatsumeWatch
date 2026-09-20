@@ -1,6 +1,6 @@
 import { expect, it } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { PlayerSession } from '../../packages/futatsume/src/init/PlayerSession';
+import { PlayerSession } from '../../packages/futatsume/src/init/player-session';
 import { migrateSharedStorage } from '../../src/config-migration';
 
 it('移行した再生状態を一度だけ復元し、旧データは復旧用に保持する', () => {

@@ -5,7 +5,7 @@ import { STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/versio
 describe('FutatsumeWatch改名', () => {
   it('製品定数が現行名称を指す', () => {
     // FutatsumeWatchIndex は window 前提の依存を引くため静的 import せず原文で固定する
-    const src = fs.readFileSync('./src/FutatsumeWatchIndex.ts', 'utf8');
+    const src = fs.readFileSync('./src/futatsume-watch-index.ts', 'utf8');
     expect(src).toContain(`PRODUCT = 'FutatsumeWatch'`);
     expect(src).not.toContain('LEGACY_PRODUCT');
   });

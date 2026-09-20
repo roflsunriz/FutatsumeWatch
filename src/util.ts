@@ -1,39 +1,39 @@
 import _ from 'lodash';
 import { Emitter } from './baselib';
-import { Config } from './Config';
+import { Config } from './config';
 import { browser } from './browser';
-import { FutatsumeWatch } from './FutatsumeWatchIndex';
-import { StyleSwitcher } from '../packages/lib/src/css/StyleSwitcher';
+import { FutatsumeWatch } from './futatsume-watch-index';
+import { StyleSwitcher } from '../packages/lib/src/css/style-switcher';
 import { dimport } from '../packages/lib/src/infra/dimport';
-import { VideoItemObserver } from '../packages/lib/src/nico/VideoItemObserver';
-import { NicoQuery } from '../packages/lib/src/nico/NicoQuery';
-import { uQuery } from '../packages/lib/src/uQuery';
-import { domUtil } from '../packages/lib/src/dom/domUtil';
-import { textUtil } from '../packages/lib/src/text/textUtil';
-import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
-import { netUtil } from '../packages/lib/src/infra/netUtil';
-import { messageUtil } from '../packages/lib/src/message/messageUtil';
+import { VideoItemObserver } from '../packages/lib/src/nico/video-item-observer';
+import { NicoQuery } from '../packages/lib/src/nico/nico-query';
+import { uQuery } from '../packages/lib/src/u-query';
+import { domUtil } from '../packages/lib/src/dom/dom-util';
+import { textUtil } from '../packages/lib/src/text/text-util';
+import { nicoUtil } from '../packages/lib/src/nico/nico-util';
+import { netUtil } from '../packages/lib/src/infra/net-util';
+import { messageUtil } from '../packages/lib/src/message/message-util';
 import { sleep } from '../packages/lib/src/infra/sleep';
 import { bounce } from '../packages/lib/src/infra/bounce';
 import { css } from '../packages/lib/src/css/css';
 import { reg } from '../packages/lib/src/text/reg';
-import { Fullscreen } from '../packages/lib/src/dom/Fullscreen';
-import { PopupMessage } from '../packages/lib/src/ui/PopupMessage';
-import { RequestAnimationFrame } from '../packages/lib/src/infra/RequestAnimationFrame';
+import { Fullscreen } from '../packages/lib/src/dom/fullscreen';
+import { PopupMessage } from '../packages/lib/src/ui/popup-message';
+import { RequestAnimationFrame } from '../packages/lib/src/infra/request-animation-frame';
 import { env } from '../packages/lib/src/infra/env';
-import { Clipboard } from '../packages/lib/src/dom/Clipboard';
-import { createVideoElement } from '../packages/futatsume/src/videoPlayer/createVideoElement';
-import { domEvent } from '../packages/lib/src/dom/domEvent';
-import { VideoCaptureUtil } from '../packages/lib/src/dom/VideoCaptureUtil';
+import { Clipboard } from '../packages/lib/src/dom/clipboard';
+import { createVideoElement } from '../packages/futatsume/src/videoPlayer/create-video-element';
+import { domEvent } from '../packages/lib/src/dom/dom-event';
+import { VideoCaptureUtil } from '../packages/lib/src/dom/video-capture-util';
 import { speech } from '../packages/lib/src/infra/speech';
-import { MylistPocketDetector } from '../packages/futatsume/src/init/MylistPocketDetector';
-import { ShortcutKeyEmitter } from '../packages/futatsume/src/ShortcutKeyEmitter';
-import { PlayerSession } from '../packages/futatsume/src/init/PlayerSession';
-import { WatchPageHistory } from '../packages/futatsume/src/init/WatchPageHistory';
-import { watchResize } from '../packages/lib/src/dom/watchResize';
-import { BaseViewComponent } from '../packages/futatsume/src/parts/BaseViewComponent';
-import { FrameLayer } from '../packages/futatsume/src/parts/FrameLayer';
-import { saveMymemory } from '../packages/futatsume/src/parts/saveMymemory';
+import { MylistPocketDetector } from '../packages/futatsume/src/init/mylist-pocket-detector';
+import { ShortcutKeyEmitter } from '../packages/futatsume/src/shortcut-key-emitter';
+import { PlayerSession } from '../packages/futatsume/src/init/player-session';
+import { WatchPageHistory } from '../packages/futatsume/src/init/watch-page-history';
+import { watchResize } from '../packages/lib/src/dom/watch-resize';
+import { BaseViewComponent } from '../packages/futatsume/src/parts/base-view-component';
+import { FrameLayer } from '../packages/futatsume/src/parts/frame-layer';
+import { saveMymemory } from '../packages/futatsume/src/parts/save-mymemory';
 
 export interface UtilBrowserWindow {
   navigator: Navigator;
@@ -61,7 +61,7 @@ const util = FutatsumeWatch.util as UtilTable;
 //===BEGIN===
 //@require reg
 util.reg = reg;
-//@require PopupMessage
+//@require popup-message
 
 const AsyncEmitter = (() => {
   // 過渡期の措置
@@ -76,7 +76,7 @@ const AsyncEmitter = (() => {
 })();
 (FutatsumeWatch ? FutatsumeWatch.lib : ({} as Record<string, unknown>)).AsyncEmitter = AsyncEmitter;
 
-//@require Fullscreen
+//@require fullscreen
 util.fullscreen = Fullscreen;
 
 const dummyConsole: Record<string, (...args: unknown[]) => void> = {};
@@ -101,38 +101,38 @@ Config.onkey('debug', (v) => (console = v ? window.console : dummyConsole));
 
 //@require css
 Object.assign(util, css);
-//@require textUtil
+//@require text-util
 Object.assign(util, textUtil);
 
-//@require nicoUtil
+//@require nico-util
 Object.assign(util, nicoUtil);
 
-//@require messageUtil
+//@require message-util
 Object.assign(util, messageUtil);
 
-//@require PlayerSession
+//@require player-session
 
-//@require WatchPageHistory
+//@require watch-page-history
 
 //@require env
 Object.assign(util, env);
 
-//@require Clipboard
+//@require clipboard
 util.copyToClipBoard = (Clipboard as unknown as { copyText: unknown }).copyText;
 
-//@require netUtil
+//@require net-util
 Object.assign(util, netUtil);
 
-//@require VideoCaptureUtil
+//@require video-capture-util
 util.videoCapture = (VideoCaptureUtil as unknown as { capture: unknown; capTube: unknown }).capture;
 util.capTube = (VideoCaptureUtil as unknown as { capture: unknown; capTube: unknown }).capTube;
 
-//@require saveMymemory
+//@require save-mymemory
 util.saveMymemory = saveMymemory;
 
 //@require speech
 util.speak = (speech as unknown as { speak: unknown }).speak;
-//@require watchResize
+//@require watch-resize
 util.watchResize = watchResize;
 
 util.sortedLastIndex = (arr: number[], value: number): number => {
@@ -150,10 +150,10 @@ util.sortedLastIndex = (arr: number[], value: number): number => {
   return tail;
 };
 
-//@require createVideoElement
+//@require create-video-element
 util.createVideoElement = createVideoElement;
 
-//@require domEvent
+//@require dom-event
 Object.assign(util, domEvent);
 
 util.defineElement = (domUtil as unknown as { defineElement: unknown }).defineElement;
@@ -161,21 +161,21 @@ util.$ = uQuery;
 util.createDom = (uQuery as unknown as { html: unknown }).html;
 util.isTL = (uQuery as unknown as { isTL: unknown }).isTL;
 
-//@require ShortcutKeyEmitter
+//@require shortcut-key-emitter
 
-//@require RequestAnimationFrame
+//@require request-animation-frame
 util.RequestAnimationFrame = RequestAnimationFrame;
 
-//@require FrameLayer
+//@require frame-layer
 
-//@require MylistPocketDetector
-//@require BaseViewComponent
-//@require StyleSwitcher
+//@require mylist-pocket-detector
+//@require base-view-component
+//@require style-switcher
 util.StyleSwitcher = StyleSwitcher;
 util.dimport = dimport;
-//@require VideoItemObserver
+//@require video-item-observer
 util.VideoItemObserver = VideoItemObserver;
-//@require NicoQuery
+//@require nico-query
 util.NicoQuery = NicoQuery;
 //@require sleep
 util.sleep = sleep;

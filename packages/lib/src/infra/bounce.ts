@@ -29,8 +29,8 @@ interface RafThrottleState {
   id: number;
 }
 
-import { PromiseHandler } from '../Emitter';
-import type { AnyPromiseHandler } from '../Emitter';
+import { PromiseHandler } from '../emitter';
+import type { AnyPromiseHandler } from '../emitter';
 //===BEGIN===
 // let bid = 0;
 const bounce: Bounce = {

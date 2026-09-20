@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { setupNicoDom } from './nico-test-setup';
-import { parseThumbInfo } from '../../packages/lib/src/nico/parseThumbInfo';
+import { parseThumbInfo } from '../../packages/lib/src/nico/parse-thumb-info';
 
 setupNicoDom();
 

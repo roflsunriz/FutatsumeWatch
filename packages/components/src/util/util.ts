@@ -1,9 +1,9 @@
 const util = {} as UtilShape;
-import { NicoQuery, ItemDataConverter } from '../../../lib/src/nico/NicoQuery';
+import { NicoQuery, ItemDataConverter } from '../../../lib/src/nico/nico-query';
 import { dimport } from '../../../lib/src/infra/dimport';
-import { defineElement } from '../../../lib/src/dom/defineElement';
-import { textUtil } from '../../../lib/src/text/textUtil';
-import { uQuery } from '../../../lib/src/uQuery';
+import { defineElement } from '../../../lib/src/dom/define-element';
+import { textUtil } from '../../../lib/src/text/text-util';
+import { uQuery } from '../../../lib/src/u-query';
 // import * as _ from 'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.core.min.js';
 
 import type { DynamicImport } from '../../../lib/src/infra/dimport';

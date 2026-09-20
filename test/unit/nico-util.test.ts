@@ -3,7 +3,7 @@ import { setupNicoDom } from './nico-test-setup';
 
 setupNicoDom();
 
-const { nicoUtil } = await import('../../packages/lib/src/nico/nicoUtil');
+const { nicoUtil } = await import('../../packages/lib/src/nico/nico-util');
 
 describe('nicoUtil.hasLargeThumbnail', () => {
   it('sm16371888以降を大サムネありと判定する', () => {

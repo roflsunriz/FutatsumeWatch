@@ -1,24 +1,24 @@
 import './player-layout.css';
-import { FutatsumeWatch, global } from './FutatsumeWatchIndex';
-import { Config } from './Config';
+import { FutatsumeWatch, global } from './futatsume-watch-index';
+import { Config } from './config';
 import { util } from './util';
 import * as loaders from '../packages/lib/src/nico/loader';
-import { workerUtil } from '../packages/lib/src/infra/workerUtil';
-import { netUtil } from '../packages/lib/src/infra/netUtil';
-import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
-import { StoryboardCacheDb } from '../packages/lib/src/nico/StoryboardCacheDb';
+import { workerUtil } from '../packages/lib/src/infra/worker-util';
+import { netUtil } from '../packages/lib/src/infra/net-util';
+import { WatchInfoCacheDb } from '../packages/lib/src/nico/watch-info-cache-db';
+import { StoryboardCacheDb } from '../packages/lib/src/nico/storyboard-cache-db';
 import { initialize } from './initializer';
 import { components } from '../packages/components/src';
-import { initCssProps } from '../packages/futatsume/src/init/inintCssProps';
+import { initCssProps } from '../packages/futatsume/src/init/init-css-props';
 import { dll } from '../packages/components/src/dll';
-import { GateAPI } from '../packages/lib/src/nico/GateAPI';
-import { initializeHls } from './_hls';
+import { GateAPI } from '../packages/lib/src/nico/gate-api';
+import { initializeHls } from './hls';
 import lodash from 'lodash';
-import { uQuery } from '../packages/lib/src/uQuery';
-import { StoryboardInfoLoader } from '../packages/lib/src/nico/StoryboardInfoLoader';
-import { NicoSearchApiV2Loader } from '../packages/lib/src/nico/VideoSearch';
-import { TextLabel } from '../packages/lib/src/ui/TextLabel';
-import { WindowResizeObserver } from '../packages/lib/src/infra/Observable';
+import { uQuery } from '../packages/lib/src/u-query';
+import { StoryboardInfoLoader } from '../packages/lib/src/nico/storyboard-info-loader';
+import { NicoSearchApiV2Loader } from '../packages/lib/src/nico/video-search';
+import { TextLabel } from '../packages/lib/src/ui/text-label';
+import { WindowResizeObserver } from '../packages/lib/src/infra/observable';
 import { cssUtil } from '../packages/lib/src/css/css';
 
 export function openVideo(watchId: string): unknown {

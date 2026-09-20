@@ -5,7 +5,7 @@
 declare const VER: string;
 declare const ENV: 'DEV' | 'STABLE';
 
-// 同梱hls.jsの最小宣言。src/_hls.ts の利用実態に合わせる。
+// 同梱hls.jsの最小宣言。src/hls.ts の利用実態に合わせる。
 // any 禁止のため unknown ベースとし、利用側で絞り込む。
 interface HlsLevel {
   readonly bitrate?: number;
