@@ -1,31 +1,6 @@
 import { VERSION } from '../src/version';
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 
-export async function confirmAfterNavigation(targetId: string): Promise<void> {
-  const deadline = Date.now() + 8000;
-  while (Date.now() < deadline) {
-    const target = (await listTargets()).find((target) => target.id === targetId);
-    if (!target || !target.url.startsWith('https://www.nicovideo.jp/')) return;
-    const page = await attach(target);
-    try {
-      if (
-        (await evaluate(page, `document.querySelector('[data-futatsume-entry]')?.dataset.futatsumeVersion`)) === VERSION
-      )
-        return;
-    } catch (error) {
-      if (
-        !(error instanceof Error) ||
-        !/CDP connection closed|context.*destroyed|Cannot find context/i.test(error.message)
-      )
-        throw error;
-    } finally {
-      page.close();
-    }
-    await Bun.sleep(200);
-  }
-  throw new Error('開いていたページへの新版の適用を確認できません。ページを再読み込みしてください。');
-}
-
 // マネージャの「有効」表示だけで済ませず、新しい文書への実適用を確認する。
 export async function checkInstallation(): Promise<void> {
   const browser = await attachBrowser();
@@ -69,3 +44,5 @@ export async function checkInstallation(): Promise<void> {
     browser.close();
   }
 }
+
+if (import.meta.main) await checkInstallation();

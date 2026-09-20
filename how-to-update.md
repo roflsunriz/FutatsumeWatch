@@ -10,15 +10,19 @@ BunとGitを用意し、リポジトリ直下で作業します。ブラウザ�
 2. `bun install --frozen-lockfile` で依存を揃えます。
 3. `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test`、`bun audit` を実行します。
 4. `dist` に `FutatsumeWatch.user.js` だけがあることを確認します。ビルドはdist内の旧成果物を整理するため、手作業のファイルを置かないでください。
-5. 初回は `bun run dev:setup`、以降は `bun run dev` で実際に配布物をインストールして検証します。無人実行では `bun scripts/dev-browser.ts start --headless` → `bun run dev:install` → `bun run dev:verify:entry` → `bun run dev:verify` を使います。
-6. `bun run dev:verify:addons` を実行し、別ページ機能も確認します。結果は `dev-assets/verification/` に保存され、Gitには含めません。
+5. 手動検証は`bun run dev`で準備します。不足するChrome/TMの取得、ビルド、headed Chrome起動、スクリプト登録・有効化までを自動化し、その後は利用者が操作します。既存タブは自動再読み込みしません。初回のユーザースクリプト許可は手動で行います。
+6. 自動検証は`bun run test:browser`で別途実行します。ビルド後、手動環境と異なるheadless Chromeですべてのブラウザテストを実行し、成功・失敗時ともに停止します。結果は`dev-assets/verification/`に保存され、Gitには含めません。
 7. `git diff --stat` と生成物の差分を確認します。生成物の手修正は行いません。
 
-UIを変更した場合は、専用ブラウザに対して`bun run dev:verify:ui`も実行します。生成済み配布物を新しいタブへ注入し、中央操作、左右パネル、一般設定の実入力、追加設定への導線、ABリピート、狭幅・低高さ・4Kを確認します。`FUTATSUME_DEV_PORT`で接続先を指定でき、画像と結果は`dev-assets/verification/shell-*`へ保存します。公開コメント投稿やタグ編集の送信は行いません。
+UIだけを確認する場合は`bun run test:browser ui`を実行します。配布物を注入し、中央操作、左右パネル、一般設定の実入力、追加設定への導線、ABリピート、狭幅・低高さ・4Kを確認します。画像と結果は`dev-assets/verification/shell-*`へ保存します。公開コメント投稿やタグ編集の送信は行いません。
 
-設定パネルを変更した場合は`bun run dev:verify:settings`で、6種類すべての背景クリック・Escape・閉じるボタン、入力と保存・再表示、全画面、狭幅・低高さを確認します。保存先は`dev-assets/verification/settings-*`です。設定値は検証用プロファイル内だけで変更し、確認後に元の値へ戻します。
+設定パネルは`bun run test:browser settings`で、6種類すべての背景クリック・Escape・閉じるボタン、入力と保存・再表示、全画面、狭幅・低高さを確認します。保存先は`dev-assets/verification/settings-*`です。設定値は自動テスト用プロファイル内だけで変更し、確認後に元の値へ戻します。
 
 同じ検証で、サイドバーの9カテゴリを巡回し、外枠の位置・幅・高さが変わらないこととキーボード操作を確認します。一般設定の入力DOMの保持は単体テストでも確認します。設定書き出しのダウンロードは捕捉し、利用者の保存先へファイルを作りません。
+
+自動テストは`all`・`entry`・`player`・`ui`・`settings`・`migration`・`addons`を選択できます。手動用は9333と既存ChromeDev、自動用は9334と`dev-assets/browser-tests/profile`です。ランナーは接続先を自動用へ固定し、継承された`FUTATSUME_DEV_PORT`で手動環境へ接続しません。同時実行は拒否します。強制中断後にブラウザが残った場合は`bun run test:browser:stop`で回復します。
+
+TMで登録したスクリプトのページへの適用だけを確認したい場合は、手動環境に対して`bun run dev:check`を明示実行します。これは専用の確認タブを開き、起動マーカーを確認して閉じます。`dev`の導入完了は登録・有効化の確認であり、再生やページへの適用を検証したという意味ではありません。
 
 ## 公開前
 
@@ -28,7 +32,7 @@ UIを変更した場合は、専用ブラウザに対して`bun run dev:verify:u
 
 設定の移行元キーは`src/config-migration.ts`だけで管理します。旧設定ファイルのTube設定名も読み込み時に変換します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。配布物は`bun run build`で再生成します。
 
-名称や保存キーの変更時は`bun run dev:verify:migration`で隔離したブラウザコンテキストへ旧設定フィクスチャを読み込み、初期化イベント・実設定モデル・保存キー・旧データ保持を確認します。接続先はほかの検証と同じ`FUTATSUME_DEV_PORT`を使います。
+名称や保存キーの変更時は`bun run test:browser migration`で隔離したブラウザコンテキストへ旧設定フィクスチャを読み込み、初期化イベント・実設定モデル・保存キー・旧データ保持を確認します。
 
 - プッシュ時は `src/version.ts` と `package.json`、READMEの版を更新します。ユーザースクリプトの版と説明はVite設定から生成します。
 - CHANGELOGのUnreleasedを対象版へ整理し、ユーザースクリプトのdescriptionにも変更要点を反映します。
@@ -45,8 +49,8 @@ UIを変更した場合は、専用ブラウザに対して`bun run dev:verify:u
 
 `comment-overlay`はnpmの公開版を固定して導入し、`bun add --exact comment-overlay@<確認した版>`でpackage.jsonとbun.lockを同時に更新します。GitHubの既定ブランチとnpm版の挙動は同一と仮定せず、インストールした配布物・型定義・LICENSEを確認します。現行の公開型に必要なpaths設定はAGENTS.mdを参照してください。
 
-`bun run build`で配布物と同梱ライセンスを再生成し、`bun run dev:verify`でコメントの画素、重なり、比率、NG、シーク、保存HTML、投稿プレビュー取り消しを確認します。公開サーバーへの投稿は行わず、プレビューをプレイヤー内だけで追加・削除します。
+`bun run test:browser player`で配布物と同梱ライセンスを再生成し、コメントの画素、重なり、比率、NG、シーク、保存HTML、投稿プレビュー取り消しを確認します。公開サーバーへの投稿は行わず、プレビューをプレイヤー内だけで追加・削除します。
 
-操作中の専用Chromeを再利用しない検証では、別のヘッドレスChromeとプロファイルを起動し、`$env:FUTATSUME_DEV_PORT='9334'`などで接続先を指定して`bun run dev:verify --bundle`を実行できます。`--bundle`は生成済み配布物を文書へ注入する検証であり、Tampermonkeyへの登録・権限・更新適用を確認する`dev:install`の代わりにはなりません。ポート指定を解除するときは`Remove-Item Env:FUTATSUME_DEV_PORT`を実行します。
+`test:browser`は自動用のheadless Chromeを準備し、配布物を文書へ注入して検証します。TMの登録・権限を確認する検証とは区別します。低レベルの`bun scripts/dev-verify.ts --bundle`などを直接実行する場合に限り`FUTATSUME_DEV_PORT`で別の接続先を指定できるため、手動操作中のブラウザを指定しないでください。
 
 旧版へ戻す場合も設定を削除せず配布物を差し戻します。旧Flashスロット設定の保存値は新エンジンでは参照せず残すため、旧版へ戻した際に利用できます。

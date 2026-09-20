@@ -44,18 +44,21 @@
     "build": "bun scripts/build.ts",
     "build:dev": "bun scripts/build.ts",
     "test": "bun test --preload ./test/setup.ts",
+    "test:browser": "bun scripts/test-browser.ts",
+    "test:browser:stop": "bun scripts/dev-browser.ts stop --test",
     "dev:server": "bun --bun vite",
     "dev:setup": "bun scripts/dev-setup.ts",
     "dev:browse": "bun scripts/dev-browser.ts start",
     "dev:stop": "bun scripts/dev-browser.ts stop",
     "dev:install": "bun scripts/dev-install.ts",
-    "dev:verify": "bun scripts/dev-verify.ts",
-    "dev:verify:ui": "bun scripts/dev-verify-shell.ts",
-    "dev:verify:settings": "bun scripts/dev-verify-settings.ts",
-    "dev:verify:migration": "bun scripts/dev-verify-migration.ts",
-    "dev": "bun run build && bun scripts/dev-browser.ts start && bun scripts/dev-install.ts && bun scripts/dev-verify-entry.ts && bun scripts/dev-verify.ts",
-    "dev:verify:entry": "bun scripts/dev-verify-entry.ts",
-    "dev:verify:addons": "bun scripts/dev-verify-addons.ts"
+    "dev:check": "bun scripts/dev-check-installation.ts",
+    "dev:verify": "bun scripts/test-browser.ts player",
+    "dev:verify:ui": "bun scripts/test-browser.ts ui",
+    "dev:verify:settings": "bun scripts/test-browser.ts settings",
+    "dev:verify:migration": "bun scripts/test-browser.ts migration",
+    "dev": "bun scripts/dev-setup.ts --if-missing && bun run build && bun scripts/dev-browser.ts start && bun scripts/dev-install.ts",
+    "dev:verify:entry": "bun scripts/test-browser.ts entry",
+    "dev:verify:addons": "bun scripts/test-browser.ts addons"
   },
   "type": "module"
 }

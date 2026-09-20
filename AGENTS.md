@@ -66,9 +66,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 動作検証
 
-- scripts/dev-browser.tsはdev-assetsのChrome for Testingとdev-extensionsのTampermonkeyを使う。9333番ポートと専用ChromeDevプロファイルでchrome-debug.ps1（9222）や実利用Firefoxと分離する。
-- devフローは利用者が操作するため既定headed。無人検証時はstart --headlessを指定する。Bunの子Chromeは親終了に追従するためStart-Processで分離する。停止は専用stateファイルのPIDだけを対象にする。
+- `bun run dev`は不足するChrome/TMの準備、ビルド、headed Chromeの起動、TMへのユーザースクリプト登録・有効化だけを行う。9333番ポートと既存ChromeDevプロファイルを使い、音声はミュートしない。再生テスト・動画ページへの自動遷移・既存タブの再読み込みを追加しない。
+- 自動テストは`bun run test:browser [all|entry|player|ui|settings|migration|addons]`で実行する。9334番ポート・`dev-assets/browser-tests/profile`・別stateファイルのheadless Chromeを起動し、配布物注入で検証してfinallyで停止する。手動用のブラウザや継承されたFUTATSUME_DEV_PORTを使わない。従来のdev:verify系もこのランナーを通る。
+- Bunの子Chromeは親終了に追従するためStart-Processで分離する。停止は各環境のstateファイルのPIDだけを対象にする。同時実行中のテスト用ブラウザは再利用・停止せず失敗する。ブラウザの直接操作用`dev-cdp.ts`はFUTATSUME_DEV_PORT指定を維持する。
 - TM 5.5の初回User Scripts許可は手動。ダッシュボードのinput[type=checkbox]は行選択であり、有効化ではない。.scripttr .enablerと.enabler_enabledで状態を確認する。
+- TMの識別は`dev-tampermonkey.ts`で実行中のmanifest名とruntime URLを照合する。他の拡張にもbackground.jsがあるため、ファイル名だけで拡張IDを選ばない。dev-installは自分で作った導入タブと新規確認画面・ダッシュボードだけを操作し、利用者の空タブや既存確認画面を再利用しない。
 - scripts/dev-verify.tsは実際にインストールした配布物を操作し、ready・HLS時間進行・コメント描画・シーク・設定保存・追加画面・プレイリスト切替を検証する。存在するだけのグローバルを成功条件にしない。
 - コメント描画はdocument.hidden時に止める仕様。ヘッドレスでもPage.bringToFrontで対象タブを可視状態にして確認する。futatsume-videoの実videoはshadow DOM内であるため、通常のquerySelectorAll('video')だけでは検出できない。
 - scripts/dev-verify-addons.tsは隔離コンテキスト・通信遮断・固定HTML・実際にエンコードした映像でCapTubeとブログパーツを検証する。公開サイトの実測とは区別する。
@@ -85,7 +87,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 導線の確認漏れからの修正（2026-09-20）
 
-- 利用者のbun run devで、既存タブの本体未実行を実測した。同じheaded Chromeの新規文書では実行され、既存タブも再読み込みで回復した。拡張の登録タイミングを原因と断定せず、登録/有効化と文書への適用を分けて検証する。dev-installは版情報を持つ起動マーカーを新規文書で確認し、未適用・旧版のニコニコタブを再読み込みする（入力中は保護）。
+- 利用者のbun run devで、既存タブの本体未実行を実測した。同じheaded Chromeの新規文書では実行され、既存タブも再読み込みで回復した。拡張の登録タイミングを原因と断定せず、登録/有効化と文書への適用を分けて検証する。利用者の指定によりdev-installは登録・有効化までとし、起動マーカーの実適用確認は明示実行する`bun run dev:check`へ分離した。既存ページの再読み込みは利用者に任せる。
 - 旧watch-entryはinitialize完了時に一度だけ/watch/を判定していたため、検索→視聴のSPA遷移では入口が作られなかった。0.0.2ではmainの早い段階で状態パネルを作り、リンク・pushState/replaceState/popstateの変化に追従する。検索結果には明示的な再生ボタンを置く。
 - DOMに入口があるだけ、JavaScriptのclick()が成功しただけを可視操作確認と呼ばない。dev-ui.tsで寸法・表示状態・ヒットテストを確認し、Input.dispatchMouseEventでクリックする。NicoCacheのサムネイルプレビュー等が重なる場合も覆われた点を強制クリックしない。
 - scripts/dev-verify-entry.tsはキーワード検索・タグ検索・通常リンクによるSPA遷移・視聴ページの起動・戻る・戻った後の再生を実際の画面操作で検証する。

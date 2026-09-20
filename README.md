@@ -52,19 +52,26 @@ bun run test
 bun audit
 ```
 
-ブラウザ検証用の準備と起動：
+手動検証用のブラウザを起動：
 
 ```powershell
-bun run dev:setup   # 初回のみ
-bun run dev         # ビルド・導入・ページ適用確認・検索/視聴からの実操作検証
-bun run dev:verify:addons # 別ページ機能の通信を遮断した検証
-bun run dev:verify:ui     # 新UIの実操作・左右パネル・設定・画面サイズ検証
-bun run dev:verify:settings # 6種類の設定の開閉・保存・共通デザイン検証
+bun run dev       # 必要な環境の準備・ビルド・headed Chrome起動・TMとスクリプトの導入
+bun run dev:stop  # 手動検証用Chromeを終了
 ```
 
-`bun run dev` は登録・有効化だけで導入成功にせず、ページに埋め込んだ版情報まで確認します。専用Chromeの未適用・旧版のニコニコタブも再読み込みします（入力中のタブは保護します）。検索からの遷移検証だけなら `bun run dev:verify:entry` を実行できます。
+`bun run dev`はTampermonkeyへの登録・有効化までで終了し、表示したブラウザをそのまま操作できます。動画ページへの移動、再生、設定変更、自動テスト、既存タブの再読み込みは行いません。更新前から開いているページは、必要なタイミングで手動で再読み込みしてください。音声を含めて手動検証できるよう、ブラウザの音声はミュートしません。
 
-初回のTampermonkey「ユーザー スクリプトを許可する」は手動で有効化します。`bun scripts/dev-allow-userscripts.ts` で該当画面を開けます。通常のVite開発サーバーは `bun run dev:server` です。
+初回のTampermonkey「ユーザー スクリプトを許可する」は手動で有効化します。`bun scripts/dev-allow-userscripts.ts`で該当画面を開けます。導入後のページへの適用確認が必要な場合だけ`bun run dev:check`を実行してください。通常のVite開発サーバーは`bun run dev:server`です。ブラウザ・TMの取得済みファイルは再利用し、更新したい場合は`bun run dev:setup`を明示実行します。
+
+自動テストは別のコマンドで実行します：
+
+```powershell
+bun run test:browser          # ビルド後、別のheadless Chromeですべてのブラウザテスト
+bun run test:browser player   # 再生・コメント・保存
+bun run test:browser settings # 設定の実入力・保存・復元
+```
+
+対象は`all`（既定）、`entry`、`player`、`ui`、`settings`、`migration`、`addons`から選べます。自動テストは手動用のタブ・設定・プロファイルを共有せず、成功・失敗のどちらでもテスト用Chromeを終了します。強制中断などで残った場合は`bun run test:browser:stop`で停止できます。従来の`dev:verify*`も、この分離した自動テストを呼び出します。
 
 [更新手順](how-to-update.md) / [貢献手順](CONTRIBUTING.md) / [問い合わせ](SUPPORT.md) / [セキュリティ](SECURITY.md)
 

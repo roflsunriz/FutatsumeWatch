@@ -1,5 +1,15 @@
 # 検証記録
 
+## 2026-09-20：手動開発環境と自動テストの分離（未リリース）
+
+- `bun run dev`を実行し、Chrome/TMの不足分の準備、ビルド、headed起動、TMへの登録・有効化までで終了することを確認した。動画ページの起動や自動テストは接続しない。手動用は9333・既存ChromeDevを使い、音声ミュートを外した。ログは`dev-assets/verification/dev-manual-setup.log`。
+- 導入処理から起動マーカー確認と既存ページの再読み込みを除去し、マーカー確認は明示実行する`dev:check`に分離した。9335の隔離headlessプロファイル`dev-assets/install-only-profile`で初回登録・承認・有効化と再登録を実行した。既存の空タブへ保持用の値を置き、再登録後もURLと文書内の値が変わらないことを確認した。ログは`dev-install-fresh.log`・`dev-install-repeat.log`。
+- 初回導入の検証では拡張IDの取り違えでダッシュボードが存在せず停止した。TMの識別をbackground.jsの名前から実際のmanifest名・runtime URLの照合へ変更した後、初回・再登録の両方に成功した。初回の「ユーザー スクリプトを許可する」は引き続き手動操作で、登録成功とページへの実適用を区別する。
+- `bun run test:browser`は9334・`dev-assets/browser-tests/profile`・専用stateのheadless環境で実行する。継承環境へ手動用の`FUTATSUME_DEV_PORT=9333`を設定した状態でも、entry 10・player 55・ui 76・settings 266・migration 12・addons 9の計428項目に成功した。終了後に自動用のstateが消え、手動用headed Chromeが残ることを確認した。ログは`test-browser-all.log`。
+- 意図的に再生検証のURLをabout:blankへ変える異常系で、非ゼロ終了・自動用ブラウザの停止・手動用ブラウザの保持を確認した。実行中の自動用ブラウザへの再起動要求も非ゼロで拒否し、保存済みPIDが変わらないことを確認した。ログは`test-browser-expected-failure.log`・`test-browser-concurrent.log`。使用中の判定をビルドより先へ移した最終の起動順序はaddonsの9項目で再確認した。
+- lintエラー0・警告0、型検査、整形、ビルド、単体160件（1023アサーション）に成功。依存監査は243パッケージ・脆弱性0件。依存追加なし。製品ソースに変更はなく、再生成したdistはGit上の配布物と一致した。
+- README・更新手順・AGENTS・変更履歴を更新し、CI・貢献・サポート・セキュリティ文書との整合性も確認した。既存の未追跡`docs/`は変更・コミットしない。実利用Firefox、他のスクリプトマネージャ、認証操作・実機器入力は今回の検証対象外。
+
 ## 2026-09-20：ソースファイル名のケバブケース統一（未リリース）
 
 - ソース・テスト127件と関連JSONフィクスチャ1件、合計128ファイルを改名した。静的/動的import、`.js`指定の参照、ファイル読み込み、旧依存コメント、文書のパスも更新した。ディレクトリ構成、クラス・公開API名、配布物の購読先は継続する。

@@ -1,19 +1,38 @@
 // 開発用Chromeの起動・停止・状態確認。
 // chrome-debug.ps1（9222）とは競合しないよう、独自プロファイルとポート9333を使う。
 // Tampermonkey（dev-extensions/tampermonkey）を --load-extension で事前導入する。
-// 操作して確かめる用途のため既定は headed で起動し、無人実行時のみ --headless を付ける。
+// 手動用はheaded、自動テスト用(--test)は別ポート・別プロファイルのheadless。
 //
-//   bun scripts/dev-browser.ts start [--headless]
+//   bun scripts/dev-browser.ts start [--test]
 //   bun scripts/dev-browser.ts status
 //   bun scripts/dev-browser.ts stop
 
-const CHROME_PATH = `${import.meta.dir}/../dev-assets/chrome-win64/chrome.exe`;
-const PORT = 9333;
-const DATA_ROOT = `${process.env['USERPROFILE'] as string}\\Documents\\.browser-debug`;
-const PROFILE = `${DATA_ROOT}\\ChromeDev`;
-// chrome-debug.ps1 の chrome-debug-state.json とは別名にし、誤停止を防ぐ。
-const STATE_PATH = `${DATA_ROOT}\\chrome-dev-browser-state.json`;
-const EXT_DIR = `${import.meta.dir}/../dev-extensions/tampermonkey`;
+import { resolve } from 'node:path';
+import { unlink } from 'node:fs/promises';
+
+export function browserEnvironment(testing: boolean) {
+  const dataRoot = testing
+    ? resolve(import.meta.dir, '../dev-assets/browser-tests')
+    : resolve(process.env.USERPROFILE ?? '', 'Documents/.browser-debug');
+  return {
+    port: testing ? 9334 : 9333,
+    profile: resolve(dataRoot, testing ? 'profile' : 'ChromeDev'),
+    statePath: resolve(dataRoot, testing ? 'state.json' : 'chrome-dev-browser-state.json'),
+    chromePath: resolve(import.meta.dir, '../dev-assets/chrome-win64/chrome.exe'),
+    extensionDir: resolve(import.meta.dir, '../dev-extensions/tampermonkey'),
+    headed: !testing,
+  };
+}
+
+const TESTING = Bun.argv.includes('--test');
+const {
+  chromePath: CHROME_PATH,
+  port: PORT,
+  profile: PROFILE,
+  statePath: STATE_PATH,
+  extensionDir: EXT_DIR,
+  headed,
+} = browserEnvironment(TESTING);
 
 interface State {
   pid: number;
@@ -49,7 +68,7 @@ async function readState(): Promise<State | null> {
       return null;
     }
     const pid = (parsed as { pid?: unknown }).pid;
-    if (typeof pid !== 'number') {
+    if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0 || (parsed as { port?: unknown }).port !== PORT) {
       return null;
     }
     return { pid, port: PORT };
@@ -69,10 +88,19 @@ function isPidAlive(pid: number): boolean {
 
 async function start(headed: boolean): Promise<void> {
   if (await isReady()) {
+    if (TESTING) throw new Error('自動テスト用ブラウザは使用中です。実行中のテストが終了してから再実行してください。');
+    const info = (await fetch(`http://127.0.0.1:${PORT}/json/version`).then((res) => res.json())) as {
+      'User-Agent'?: string;
+    };
+    if (info['User-Agent']?.includes('HeadlessChrome')) {
+      throw new Error(
+        '手動検証用ポートでheadlessブラウザが起動中です。bun run dev:stop の後、bun run dev を実行してください。'
+      );
+    }
     console.log(`起動済みです: http://127.0.0.1:${PORT}`);
     return;
   }
-  if (!(await Bun.file(`${EXT_DIR}/manifest.json`).exists())) {
+  if (!TESTING && !(await Bun.file(`${EXT_DIR}/manifest.json`).exists())) {
     throw new Error('拡張機能が展開されていません。先に bun run dev:setup を実行してください');
   }
   const args = [
@@ -82,11 +110,10 @@ async function start(headed: boolean): Promise<void> {
     '--no-default-browser-check',
     '--disable-default-apps',
     '--remote-allow-origins=*',
-    `--load-extension=${EXT_DIR}`,
-    '--mute-audio',
   ];
+  if (!TESTING) args.push(`--load-extension=${EXT_DIR}`);
   if (!headed) {
-    args.push('--headless=new', '--disable-gpu');
+    args.push('--headless=new', '--disable-gpu', '--mute-audio');
   }
   args.push('about:blank');
   // Bun.spawn の子は親終了に追従するため、Start-Process で切り離して起動する。
@@ -107,6 +134,7 @@ async function start(headed: boolean): Promise<void> {
   }
   await Bun.write(STATE_PATH, `${JSON.stringify({ pid, port: PORT })}\n`);
   if (!(await waitReady(15000))) {
+    await stop();
     throw new Error(`DevTools エンドポイントが準備できませんでした (port ${PORT})`);
   }
   console.log(`起動しました: http://127.0.0.1:${PORT} (pid ${pid}, ${headed ? 'headed' : 'headless'})`);
@@ -119,21 +147,18 @@ async function stop(): Promise<void> {
     return;
   }
   if (isPidAlive(state.pid)) {
-    Bun.spawnSync(['taskkill', '/PID', String(state.pid), '/T', '/F']);
+    const killed = Bun.spawnSync(['taskkill', '/PID', String(state.pid), '/T', '/F']);
+    if (killed.exitCode !== 0) throw new Error(`専用ブラウザを停止できませんでした: ${killed.stderr.toString()}`);
   }
-  Bun.spawnSync([
-    'powershell',
-    '-NoProfile',
-    '-Command',
-    `Remove-Item -LiteralPath '${STATE_PATH}' -Force -ErrorAction SilentlyContinue`,
-  ]);
+  await unlink(STATE_PATH);
   console.log('停止しました');
 }
 
 async function main(): Promise<void> {
   const action = Bun.argv[2] ?? 'status';
+  if (Bun.argv.includes('--headless')) throw new Error('無人検証は bun run test:browser を使ってください。');
   if (action === 'start') {
-    await start(!Bun.argv.includes('--headless'));
+    await start(headed);
   } else if (action === 'stop') {
     await stop();
   } else if (action === 'status') {
@@ -143,4 +168,4 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+if (import.meta.main) await main();

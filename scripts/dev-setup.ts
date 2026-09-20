@@ -113,8 +113,11 @@ async function setupChromeForTesting(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  await setupExtension();
-  await setupChromeForTesting();
+  const onlyMissing = Bun.argv.includes('--if-missing');
+  if (!Bun.argv.includes('--chrome-only') && (!onlyMissing || !(await Bun.file(`${EXT_DIR}/manifest.json`).exists()))) {
+    await setupExtension();
+  }
+  if (!onlyMissing || !(await Bun.file(`${CFT_DIR}/chrome.exe`).exists())) await setupChromeForTesting();
 }
 
 await main();
