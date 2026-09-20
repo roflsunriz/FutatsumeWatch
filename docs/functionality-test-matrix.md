@@ -4,6 +4,8 @@
 
 ## 判定と実行
 
+2026-09-21の承認済み実測はP1-01（再生）、P4-07（投稿受理）、P3-04（通常マイリスト追加）を確認した。P4-02（タグ追加）はKEY_EXPIRED、個別項目削除は公式画面停止で未送信。P4-09の投稿後再取得は未実施。新配布物のP4-05はヘッダー不在もオフラインで回帰確認する。公開操作の再試行は追加承認後のみ。詳細は[単発検証記録](live-once-verification.md)を参照。
+
 - 単体・結合: `bun run test`。テスト名に前提・操作・期待結果を記す。
 - 配布物の実操作: `bun run test:browser all --offline`。既存のentry/player/ui/settings/migration/addonsと、新規functionality/library/guardを実行する。
 - 実サイト: `bun run test:browser player --live`等。投稿やタグ変更を扱うfunctionality/libraryはlive指定を拒否する。

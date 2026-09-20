@@ -177,6 +177,13 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - ブラウザ検証は`dev-verify-comment-input.ts`を`test:browser ui`から呼ぶ。専用タブのaddChat境界だけを一時的に置換し、送信成功・失敗を制御する。公開APIへの投稿成功や認証検証とは区別する。IME・重複・文字数境界・投稿不可状態は`test/unit/comment-input-panel.test.ts`で確認する。
 - フォーム内のfocusoutはrelatedTargetで判定する。実Chromeではblur/focusout後のmicrotask時点でもactiveElementがbodyのことがあり、microtaskだけで外へ移動したと判断するとパレットの次ボタンをクリックする前に閉じる。移動先不明時はsetTimeout後に判定する。
 
+## 実認証と単発採取（2026-09-21、未リリース）
+
+- 実視聴ページで初期化時にCommonHeader・server-responseがない例を確認した。ログイン判定をDOMだけで固定しない。`nicoUtil`は現在の要求IDに対応するAPI viewerを優先し、VideoInfoModelの`watchApiData.viewerInfo`から表示へ接続する。guestクラスはplayerContainerではなく外側のdialogにある。切替・closeで状態を破棄する。`verify-authentication.ts`のヘッダー不在シーンで実配布物を確認する。
+- 実通信の「1回」は対象操作1回と関連通信。失敗後の再試行は承認なしで実行しない。`live-write-permit.ts`の許可は送信前に消費し、同種の再登録を拒否する。作成・追加の成功IDだけを削除対象へ束縛する。キー期限切れでも自動で許可を補充しない。
+- 公式マイリスト作成formはname・description・isPublic・defaultSortKey・defaultSortOrderが必要。製品の追加はqueryとformにitemId・descriptionを送る。実測の成功・失敗・後片付けは`docs/live-once-verification.md`を参照する。製品のaddMylistItemには「後で見る」からの除去経路もあるため、採取許可をその副作用へ広げない。
+- 採取を再開すると連番本文名が衝突したため、`live-capture.ts`は採取単位のUUIDを含める。実記録の移動・欠損はindexへ残し、再取得で隠さない。CDPのpostDataEntriesは認証本文のbase64副本なので全体をマスクする。関連GETの明示更新にはOPTIONSも1回必要。広告・アイコン失敗と再生の致命的失敗を分ける。
+
 ## 機能テスト計画の調査と実装（2026-09-20、承認済み）
 
 - `test/fixtures/cdp/offline.ts`はBun内のfetch/XHR差し替え。要求照合はURLの意味あるクエリと本文を比較し、パスだけのフォールバックを撤去した。無視するクエリはフィクスチャ側で明示する。本文未記録は空本文だけに一致する。

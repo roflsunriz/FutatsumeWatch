@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import type { CdpSession } from './dev-cdp';
 import { LiveReadGate, safeUrl, scrub, scrubText, isProductSession } from './live-capture-policy';
 import type { NetworkInitiator } from './live-capture-policy';
+import type { LiveWritePermitGuard } from './live-write-permit';
 
 interface Request {
   url: string;
@@ -26,6 +27,9 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
   const requests = new Map<string, { request: Request; response?: Response; body?: string; failure?: string }>();
   const grants = new Map<string, string>();
   const owners = new Map<string, boolean>();
+  let targetWatchId = 'sm9';
+  const capturePart = crypto.randomUUID().slice(0, 8);
+  let writeGuard: LiveWritePermitGuard | undefined;
   let sequence = 0,
     allowed = 0,
     blocked = 0,
@@ -92,15 +96,42 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
       return;
     }
     if (!sid || !sessions.has(sid)) return;
+    if (method === 'Page.javascriptDialogOpening' || method === 'Page.javascriptDialogClosed')
+      record('dialog', { event: method, targetId: sessions.get(sid)?.targetId, ...params });
     const key = `${sid}:${String(params.requestId)}`;
     if (method === 'Fetch.requestPaused') {
       const request = params.request as Request;
       const networkId = typeof params.networkId === 'string' ? params.networkId : key;
       const range = Object.entries(request.headers).find(([name]) => name.toLowerCase() === 'range')?.[1] ?? '';
+      const header = (key: string) =>
+        Object.entries(request.headers).find(([name]) => name.toLowerCase() === key)?.[1] ?? '';
+      const variant =
+        request.method === 'OPTIONS'
+          ? [
+              header('access-control-request-method'),
+              header('access-control-request-headers')
+                .toLowerCase()
+                .split(',')
+                .map((s) => s.trim())
+                .sort()
+                .join(','),
+            ].join(':')
+          : range;
       const already = grants.get(networkId) === request.url;
-      const reason = already
+      let reason = already
         ? null
-        : gate.decide(request.method, request.url, request.postData, range, owners.get(networkId) === true);
+        : gate.decide(request.method, request.url, request.postData, variant, owners.get(networkId) === true);
+      if (reason === 'write-not-authorized' && writeGuard) {
+        const decision = writeGuard.decide({
+          method: request.method,
+          url: request.url,
+          postData: request.postData,
+          contentType: header('content-type'),
+        });
+        record('write-decision', decision);
+        if (decision.action === 'allow-write') reason = null;
+        else if (decision.action === 'deny') reason = 'write-' + decision.reason;
+      }
       if (reason) {
         blocked++;
         record('blocked', { reason, networkId, request });
@@ -125,15 +156,16 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
       const entry = requests.get(key);
       if (entry) entry.response = response;
       record('response', { captureId: key, response });
-      if (response.status >= 400 && /\/watch\/sm9|\/access-rights\/hls|\/v1\/threads|\.m3u8(?:\?|$)/.test(response.url))
-        gate.closed = true;
+      if (response.status >= 400 && gate.stopForFailure(response.url, `HTTP ${response.status}`))
+        record('capture-sealed', { cause: 'critical-http-failure', url: response.url, status: response.status });
     }
     if (method === 'Network.loadingFailed') {
       const failure = String(params.errorText);
       const entry = requests.get(key);
       if (entry) entry.failure = failure;
       record('failure', { captureId: key, ...params });
-      if (grants.has(String(params.requestId)) && !failure.includes('ERR_BLOCKED_BY_CLIENT')) gate.closed = true;
+      if (grants.has(String(params.requestId)) && entry && gate.stopForFailure(entry.request.url, failure))
+        record('capture-sealed', { cause: 'critical-network-failure', url: entry.request.url, error: failure });
       // A refused request is never permitted again; do not perform recovery here.
     }
     if (method === 'Network.loadingFinished') {
@@ -160,7 +192,7 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
             const text =
               /json|text|javascript|xml|mpegurl/i.test(entry.response!.mimeType) ||
               /\.(?:m3u8|js|css)(?:\?|$)/.test(entry.request.url);
-            const name = `body-${index}.${text ? 'txt' : 'bin'}`;
+            const name = `body-${capturePart}-${index}.${text ? 'txt' : 'bin'}`;
             writeFileSync(resolve(directory, name), text ? scrubText(bytes.toString('utf8')) : bytes);
             entry.body = name;
             record('body', { captureId: key, file: name, bytes: bytes.length, sanitized: text });
@@ -179,6 +211,41 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
     filter: [{ type: 'page' }, { exclude: true }],
   });
   return {
+    restoreReadHistory(history: Request[]) {
+      for (const request of history) {
+        const header = (key: string) =>
+          Object.entries(request.headers ?? {}).find(([name]) => name.toLowerCase() === key)?.[1] ?? '';
+        const variant =
+          request.method === 'OPTIONS'
+            ? [
+                header('access-control-request-method'),
+                header('access-control-request-headers')
+                  .toLowerCase()
+                  .split(',')
+                  .map((s) => s.trim())
+                  .sort()
+                  .join(','),
+              ].join(':')
+            : header('range');
+        const reason = gate.decide(request.method, request.url, request.postData, variant, true);
+        if (reason === 'write-not-authorized') throw Error('書込み済みsessionはこの復帰経路で再開できません');
+      }
+      record('read-history-restored', { observations: history.length });
+    },
+    configureWrites(guard: LiveWritePermitGuard) {
+      if (writeGuard) throw Error('書込みguardは置換できません');
+      writeGuard = guard;
+      record('write-guard-configured', {});
+    },
+    setWatchId(watchId: string) {
+      gate.setWatchId(watchId);
+      targetWatchId = watchId;
+      record('target-watch', { watchId });
+    },
+    allowReadRefresh(url: string) {
+      gate.allowReadRefresh(url);
+      record('verification-read', { url });
+    },
     async page(targetId: string): Promise<CdpSession> {
       const deadline = Date.now() + 10000;
       while (!ready.has(targetId) && Date.now() < deadline) await Bun.sleep(20);
@@ -208,10 +275,11 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
         blocked,
         errors,
         bodyBytes,
+        writes: writeGuard?.status() ?? [],
         requests: [...requests].map(([key, value]) => ({ key, ...(scrub(value) as object) })),
         retryPolicy: 'each method+canonical URL+body+range at most once',
         transport: 'native Chrome network; captured before requests; dedicated context',
-        targetUrl: safeUrl('https://www.nicovideo.jp/watch/sm9'),
+        targetUrl: safeUrl(`https://www.nicovideo.jp/watch/${targetWatchId}`),
       };
     },
   };

@@ -8,6 +8,8 @@ BunとGitを用意し、リポジトリ直下で作業します。ブラウザ�
 
 実サイトへの通信回数を制限する検証では、通常の`--live`スイートをそのまま実行しません。[1操作だけの採取手順](docs/live-once-verification.md)に従い、開始前に監視と再試行遮断を用意します。失敗後に新しい試行IDで再実行するには利用者の追加承認が必要です。
 
+公開操作は対象と内容を承認済みの場合だけ、専用の本人ログイン済み環境と使い切り許可で実施します。キー期限切れや画面停止でも自動再送しません。2026-09-21に再生・投稿受理・通常マイリスト追加を確認しましたが、タグ成功・個別削除・投稿再取得等は未確認です。ログイン判定を変更した場合は`bun run test:browser functionality --offline`のヘッダー不在シーンも通します。
+
 1. `git status --short` で他の未コミット変更を確認します。
 2. `bun install --frozen-lockfile` で依存を揃えます。
 3. `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test`、`bun audit` を実行します。
