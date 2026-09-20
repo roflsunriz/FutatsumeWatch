@@ -124,3 +124,9 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `bun run dev:verify:settings`は配布物注入による実入力検証。各設定の開閉・保存と復元・全画面・複数寸法を確認し、結果と画像を`dev-assets/verification/settings-*`へ残す。機器の入力や検出APIの実機能検証とは区別する。
 - 自動再生など一部の設定は`PlayerConfig.wrapKey`で視聴ページ用の`:ginza`へ解決される。保存検証は`getStorageKey(getNativeKey(key))`で実際のキーを調べ、nullを「変更前と違う」だけで保存成功にしない。
 - `dev-verify.ts`のWorker監視は終了時に新規購読を止め、発行済みのRuntime.enable要求を待ってからauto-attachを解除する。解除を先にすると購読対象sessionが消え、製品操作が成功しても検証自身がNo sessionエラーになる。
+
+## 設定サイドバー（2026-09-20、0.0.7）
+
+- 設定画面の内側は960×720pxを基本とし、小さい画面だけ利用可能な幅・高さへ収める。Shadow DOM内と通常DOM内のパネルで外枠寸法をそろえるため、共通テーマでbox-sizingを明示する。本文とサイドバーは別々にスクロールする。
+- 一般設定の`data-settings-section`を持つ4区画は同じDOMを保持してhiddenを切り替える。ほかの5設定への移動は`configureSettingsNavigation`から既存の開閉処理へ接続する。タブ・区画の識別は表示文言に依存させない。
+- Generalのコマンド付きボタンのclick処理はformに置く。共通ダイアログがclickの外部伝播を止めるため、外側の#rootへ置くと設定書き出しなどのコマンドが届かない。書き出し検証ではダウンロードを捕捉し、生成JSONと現在の設定を比較する。

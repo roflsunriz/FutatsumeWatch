@@ -35,6 +35,36 @@ afterEach(() => {
     dialog.element.remove();
   }
 });
+
+describe('設定サイドバー', () => {
+  test('一般設定のタブは一つだけ表示し、入力した値とDOMを保持する', () => {
+    const { modal, root } = create();
+    const body = root.querySelector('.fw-modal-body')!;
+    body.innerHTML =
+      '<section data-settings-section="player"><input value="draft"></section><section data-settings-section="comments"><input value="comment"></section><section data-settings-section="filters"></section><section data-settings-section="data"></section>';
+    modal.open();
+    const input = root.querySelector<HTMLInputElement>('[data-settings-section="player"] input')!;
+    input.value = '入力中';
+    root.querySelector<HTMLButtonElement>('[data-settings-tab="comments"]')!.click();
+    expect(root.querySelector<HTMLElement>('[data-settings-section="player"]')!.hidden).toBe(true);
+    expect(root.querySelector<HTMLElement>('[data-settings-section="comments"]')!.hidden).toBe(false);
+    expect(root.querySelectorAll('[role="tab"][aria-selected="true"]').length).toBe(1);
+    root.querySelector<HTMLButtonElement>('[data-settings-tab="player"]')!.click();
+    expect(root.querySelector('[data-settings-section="player"] input')).toBe(input);
+    expect(input.value).toBe('入力中');
+    expect(root.open).toBe(true);
+  });
+  test('上下キーで一般設定のカテゴリを切り替える', () => {
+    const { modal, root } = create();
+    modal.open();
+    const player = root.querySelector<HTMLButtonElement>('[data-settings-tab="player"]')!;
+    player.click();
+    player.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+    expect(root.querySelector('[data-settings-tab="comments"]')!.getAttribute('aria-selected')).toBe('true');
+    expect(root.querySelector('[data-settings-tab="comments"]')!.getAttribute('tabindex')).toBe('0');
+    root.querySelector<HTMLButtonElement>('[data-settings-tab="player"]')!.click();
+  });
+});
 describe('共通設定ダイアログ', () => {
   test('入力と内容のクリックを保ち、背景で一度だけ閉じる', () => {
     const { modal, root, closes } = create();

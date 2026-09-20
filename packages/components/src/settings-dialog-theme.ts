@@ -12,9 +12,10 @@ dialog.fw-settings-dialog[data-fw-settings]:not([open]) { display: none; }
 dialog.fw-settings-dialog[data-fw-settings][open] { display: grid; place-items: center; }
 dialog.fw-settings-dialog[data-fw-settings]::before { content: none; display: none; }
 dialog.fw-settings-dialog[data-fw-settings]::backdrop { background: #060a1280; backdrop-filter: blur(12px); }
+dialog.fw-settings-dialog[data-fw-settings] * { box-sizing: border-box; }
 dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
   display: flex; flex-direction: column; position: relative; min-width: 0; min-height: 0;
-  width: min(760px, 100%); max-width: 100%; max-height: 100%; padding: 0;
+  width: min(960px, 100%); height: min(720px, 100%); max-width: 100%; max-height: 100%; padding: 0;
   margin: 0; background: #131923; color: #f1f4f9; border: 1px solid #ffffff26;
   border-radius: 14px; box-shadow: 0 24px 80px #0008; overflow: hidden;
 }
@@ -25,13 +26,17 @@ dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
 }
 [data-fw-settings] .fw-modal-heading h2 { margin: 0; padding: 0; background: transparent; color: inherit; font: 600 18px/1.5 system-ui, sans-serif; text-shadow: none; }
 [data-fw-settings] .fw-modal-content .fw-modal-close { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; width: 44px; height: 44px; padding: 0; margin: 0; border: 0; border-radius: 8px; background: #253141; color: #f1f4f9; font: 24px/1 system-ui, sans-serif; cursor: pointer; }
-[data-fw-settings] .fw-modal-body { min-height: 0; overflow: auto; overflow-wrap: anywhere; overscroll-behavior: contain; padding: 20px; scrollbar-width: thin; scrollbar-color: #526173 #131923; }
-[data-fw-settings] .fw-modal-body *, [data-fw-settings] .fw-modal-heading * { box-sizing: border-box; }
+[data-fw-settings] .fw-settings-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); flex: 1; min-height: 0; }
+[data-fw-settings] .fw-settings-sidebar { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px; border-right: 1px solid #ffffff20; background: #101721; scrollbar-width: thin; }
+[data-fw-settings] .fw-settings-sidebar button { display: block; width: 100%; min-height: 44px; margin: 0 0 4px; padding: 10px 12px; text-align: start; white-space: normal; overflow-wrap: anywhere; font: inherit; color: #aab4c6; background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
+[data-fw-settings] .fw-settings-sidebar button[aria-selected=true] { background: #203d3b; color: #a7ead9; box-shadow: inset 3px 0 #8ddbc7; }
+[data-fw-settings] .fw-settings-sidebar button[data-settings-tab=advanced] { margin-top: 16px; }
+[data-fw-settings] .fw-settings-sidebar button:disabled { opacity: .4; cursor: default; }
+[data-fw-settings] .fw-modal-body { min-width: 0; min-height: 0; overflow: auto; overflow-wrap: anywhere; overscroll-behavior: contain; padding: 20px; scrollbar-width: thin; scrollbar-color: #526173 #131923; }
+[data-fw-settings] [data-settings-section][hidden] { display: none; }
 [data-fw-settings] .fw-modal-body :is(.title,.setting-heading) { display: none; }
 [data-fw-settings] .fw-modal-body :is(.dialogInner,.settingPanelInner) { margin: 0; padding: 0; height: auto; border: 0; overflow: visible; }
-[data-fw-settings] .fw-modal-body :is(h3,h4,.caption,summary) { color: #f1f4f9; background: #253141; border: 0; border-radius: 8px; text-shadow: none; padding: 10px 12px; font-size: 15px; font-weight: 600; line-height: 1.5; }
-[data-fw-settings] .fw-modal-body summary { cursor: pointer; margin: 0 0 12px; }
-[data-fw-settings] .fw-modal-body details { margin-bottom: 12px; }
+[data-fw-settings] .fw-modal-body :is(h3,h4,.caption) { color: #f1f4f9; background: #253141; border: 0; border-radius: 8px; text-shadow: none; padding: 10px 12px; font-size: 15px; font-weight: 600; line-height: 1.5; }
 [data-fw-settings] .fw-modal-body :is(.control,.config,.speedSelect,.enableSelect,.needFocusSelect,.deviceIndex,.minDuration,.ignoreTags) { margin: 0 0 12px; padding: 12px; border-radius: 8px; background: #1a2431; color: #f1f4f9; }
 [data-fw-settings] .fw-modal-body :is(.speedSelect,.deviceIndex,.minDuration) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
 [data-fw-settings] .fw-modal-body label { max-width: 100%; padding: 6px; margin: 0; border: 0; border-radius: 6px; line-height: 1.7; white-space: normal; cursor: pointer; }
@@ -47,9 +52,13 @@ dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
 [data-fw-settings] .fw-modal-content button:hover { background: #33445a; }
 [data-fw-settings] .fw-modal-content :focus-visible { outline: 2px solid #8ddbc7; outline-offset: 2px; }
 [data-fw-settings] .fw-modal-body :is(.closeButtonContainer,.buttomContainer) { text-align: right; }
+[data-fw-settings] .fw-modal-body .import-config-file-select-label { background: #253141; color: #f1f4f9; border: 1px solid #ffffff20; border-radius: 8px; }
 @media (max-width: 480px) {
   dialog.fw-settings-dialog[data-fw-settings] { padding: 12px; }
   [data-fw-settings] .fw-modal-heading { padding: 10px 12px; }
+  [data-fw-settings] .fw-settings-layout { grid-template-columns: 104px minmax(0, 1fr); }
+  [data-fw-settings] .fw-settings-sidebar { padding: 8px 4px; }
+  [data-fw-settings] .fw-settings-sidebar button { padding: 8px; font-size: 12px; }
   [data-fw-settings] .fw-modal-body { padding: 12px; }
   [data-fw-settings] .fw-modal-body :is(.control,.config,.speedSelect) { padding: 8px; }
   [data-fw-settings] .fw-modal-body :is(input[type=text],textarea) { width: 100%; }

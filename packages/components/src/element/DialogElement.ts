@@ -33,9 +33,11 @@ class DialogElement extends BaseCommandElement {
   ): Promise<TemplateResult> {
     const { html } = await this.importLit();
     const contents = state.isOpen ? await this.getContentsTemplate(html, state, props, events) : null;
-    return html`<div id="root" @click=${events.onClick}>
+    return html`<div id="root">
       <dialog class="dialog">
-        <form @change=${events.onChange} @keydown=${events.onKeyDown} @keyup=${events.onKeyUp}>${contents}</form>
+        <form @click=${events.onClick} @change=${events.onChange} @keydown=${events.onKeyDown} @keyup=${events.onKeyUp}>
+          ${contents}
+        </form>
       </dialog>
     </div>`;
   }

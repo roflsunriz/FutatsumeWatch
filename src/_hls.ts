@@ -2093,9 +2093,6 @@ export async function initializeHls(): Promise<void> {
               .details {
                 padding-left: 16px;
               }
-              .summary {
-                outline: 0;
-              }
               .detailsText {
                 color: #666;
               }
@@ -2106,10 +2103,9 @@ export async function initializeHls(): Promise<void> {
                 <span class="labelText">${props.name}<content></content></span>
               </label>
               <slot></slot>
-              <details class="details">
-                <summary class="summary">詳細</summary>
+              <aside class="details">
                 <div class="detailsText"></div>
-              </details>
+              </aside>
             </div>
           `;
         }
@@ -2220,9 +2216,6 @@ export async function initializeHls(): Promise<void> {
               .details {
                 padding-left: 16px;
               }
-              .summary {
-                outline: 0;
-              }
               .detailsText {
                 color: #666;
               }
@@ -2233,10 +2226,9 @@ export async function initializeHls(): Promise<void> {
                 <span class="labelText">${props.name}<content></content></span>
                 <output class="current-value"></output>
               </label>
-              <details class="details">
-                <summary class="summary">詳細</summary>
+              <aside class="details">
                 <div class="detailsText"></div>
-              </details>
+              </aside>
             </div>`;
         }
 

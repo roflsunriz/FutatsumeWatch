@@ -1,6 +1,7 @@
 import type { ConfigStore } from './Config';
 import type { PlayerState } from './State';
 import { VERSION } from './version';
+import { configureSettingsNavigation } from '../packages/components/src/settings-dialog';
 import { shellButton, shellIcon, shellText } from './player-shell-view';
 
 interface ShellPlayer {
@@ -60,6 +61,20 @@ export class PlayerShell {
     private readonly command: (name: string, param?: string | number) => void,
     private readonly generalSettings: () => void
   ) {
+    configureSettingsNavigation((panel) => {
+      if (panel === 'general') this.generalSettings();
+      else if (panel === 'advanced')
+        this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
+      else if (panel === 'masked')
+        this.container
+          .querySelector('maskedwatch-toggle-button')
+          ?.shadowRoot?.querySelector<HTMLElement>('.root')
+          ?.click();
+      else
+        this.command(
+          { hls: 'toggleHLSDebug', gamepad: 'toggleZenzaGamePadConfig', heatsync: 'toggleHeatSyncDialog' }[panel]
+        );
+    });
     container.classList.add('fw-player');
     this.info = this.require('.zenzaWatchVideoInfoPanel');
     this.info.id = 'fw-details';

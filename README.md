@@ -4,7 +4,7 @@
 
 ## インストールと使い方
 
-配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（ローカル開発版 **0.0.6**。公開リンクへの反映はプッシュ後です）。
+配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（ローカル開発版 **0.0.7**。公開リンクへの反映はプッシュ後です）。
 
 Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。今回の実動作確認はTampermonkeyで実施しています。Violentmonkey・Greasemonkeyは未検証です。
 
@@ -15,7 +15,9 @@ Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録�
 5. 左上のメニューから一般設定、詳細設定、画質、HLS、MaskedWatch、GamePad、HeatSyncを開きます。右上の紙に「i」のアイコンから動画情報・関連動画・コメント・プレイリストを開きます。背景クリックまたはEscapeでパネルを閉じます。
 6. 下部でリピート、ABリピート、速度、音量、コメント表示、全画面を操作します。最下部のシークバーにはコメントの盛り上がりを表示します。ABリピートは1回目で開始A、2回目で終了B、3回目で解除します。通常リピートとABリピートはボタンで切り替えます。動画切替・プレイヤー終了でもAB指定が解除されます。
 
-一般設定・詳細設定・HLS・MaskedWatch・GamePad・HeatSyncは、同じ配色と操作の設定パネルで開きます。背景をぼかし、背景クリック・右上の×・Escapeで閉じられます。パネル内の操作では閉じず、全画面再生中も利用できます。HLSの保存ボタンなど、各設定の保存方法は従来どおりです。
+設定画面は960×720pxを基本とした固定サイズです。左サイドバーでプレイヤー、コメント・フォント、NG・フィルター、設定の入出力、詳細設定、HLS、MaskedWatch、GamePad、HeatSyncを切り替えます。一般設定の折りたたみはなく、本文だけをスクロールできます。小さい画面では画面内に収まる寸法へ縮めます。
+
+背景をぼかし、背景クリック・右上の×・Escapeで閉じられます。パネル内の操作では閉じず、全画面再生中も利用できます。タブは上下キーでも切り替えられます。HLSの保存ボタンなど、各設定の保存方法は従来どおりです。
 
 ボタンの説明・準備状態は、マウスを重ねたときのツールチップと読み上げ用ラベルで確認できます。起動に失敗した場合はページを再読み込みしてください。アイコンが出ない場合は、マネージャで有効になっていることも確認してください。ZenzaWatchの操作を知っている必要はありません。
 

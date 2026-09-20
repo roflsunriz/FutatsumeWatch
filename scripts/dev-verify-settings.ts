@@ -1,4 +1,4 @@
-import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
+import { attach, attachBrowser, evaluate, evaluateAsync, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
 
@@ -48,6 +48,86 @@ async function open(session: CdpSession, name: string, action: string): Promise<
 async function capture(session: CdpSession, name: string): Promise<void> {
   const shot = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
   await Bun.write(new URL(`settings-${name}.png`, output), Buffer.from(shot.data, 'base64'));
+}
+async function verifyTabs(session: CdpSession, width: number): Promise<void> {
+  await open(session, 'general', 'general');
+  const frame = await evaluate(
+    session,
+    `${panel('general')}.querySelector('.fw-modal-content').getBoundingClientRect().toJSON()`
+  );
+  let current = 'general';
+  for (const [tab, next] of [
+    ['player', 'general'],
+    ['comments', 'general'],
+    ['filters', 'general'],
+    ['data', 'general'],
+    ['advanced', 'advanced'],
+    ['hls', 'hls'],
+    ['masked', 'masked'],
+    ['gamepad', 'gamepad'],
+    ['heatsync', 'heatsync'],
+    ['player', 'general'],
+  ]) {
+    await clickInside(session, current, `[data-settings-tab="${tab}"]`);
+    current = next!;
+    await check(
+      session,
+      `${panel(current)}?.open && ${panel(current)}.querySelector('[data-settings-tab="${tab}"]').getAttribute('aria-selected')==='true'`,
+      `${width}px: サイドバーで${tab}へ切替`
+    );
+    await check(
+      session,
+      `(()=>{const a=${JSON.stringify(frame)},b=${panel(current)}.querySelector('.fw-modal-content').getBoundingClientRect();return ['x','y','width','height'].every(k=>Math.abs(a[k]-b[k])<1)})()`,
+      `${width}px: ${tab}でも外枠の位置と寸法を維持`
+    );
+    if (current === 'general')
+      await check(
+        session,
+        `${panel(current)}.querySelectorAll('[data-settings-section]:not([hidden])').length===1 && !${panel(current)}.querySelector('[data-settings-section="${tab}"]').hidden`,
+        `${width}px: ${tab}だけ表示`
+      );
+    await capture(session, `tabs-${tab}-${width}`);
+  }
+  await session.send('Input.dispatchKeyEvent', {
+    type: 'keyDown',
+    key: 'ArrowDown',
+    code: 'ArrowDown',
+    windowsVirtualKeyCode: 40,
+  });
+  await session.send('Input.dispatchKeyEvent', {
+    type: 'keyUp',
+    key: 'ArrowDown',
+    code: 'ArrowDown',
+    windowsVirtualKeyCode: 40,
+  });
+  await check(
+    session,
+    `${panel('general')}.querySelector('[data-settings-tab="comments"]').getAttribute('aria-selected')==='true'`,
+    `${width}px: キーボードでカテゴリ切替`
+  );
+  if (width === 1280) {
+    await clickInside(session, 'general', '[data-settings-tab="data"]');
+    await evaluate(
+      session,
+      `window.__settingsAnchorClick=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download.endsWith('.config.json')){window.__settingsExportUrl=this.href;return;}return window.__settingsAnchorClick.call(this);}`
+    );
+    try {
+      await clickInside(session, 'general', '.export-config-button');
+      await check(session, `!!window.__settingsExportUrl`, '入出力タブから設定書き出しを操作（ダウンロードは捕捉）');
+      const valid = await evaluateAsync(
+        session,
+        `fetch(window.__settingsExportUrl).then(r=>r.text()).then(text=>JSON.stringify(JSON.parse(text))===JSON.stringify(JSON.parse(window.FutatsumeWatch.config.exportJson())))`
+      );
+      if (!valid) throw Error('設定書き出しの内容が一致しません');
+      checks.push('設定書き出しのJSONが保存設定に一致');
+    } finally {
+      await evaluate(
+        session,
+        `HTMLAnchorElement.prototype.click=window.__settingsAnchorClick;URL.revokeObjectURL(window.__settingsExportUrl);delete window.__settingsExportUrl;delete window.__settingsAnchorClick;`
+      );
+    }
+  }
+  await mouse(session, 3, 3);
 }
 async function main(): Promise<void> {
   const browser = await attachBrowser();
@@ -99,6 +179,11 @@ async function main(): Promise<void> {
         `${name}: 共通配色と背景ブラー`
       );
       await capture(session, `${name}-1280`);
+      await check(
+        session,
+        `!window.__settingsQuery('details',${panel(name)})`,
+        `${name}: 設定内にアコーディオンがない`
+      );
       await clickInside(session, name, '.fw-modal-heading h2');
       await check(session, `${panel(name)}.open`, `${name}: パネル内クリックでは閉じない`);
       await mouse(session, 3, 3);
@@ -129,6 +214,7 @@ async function main(): Promise<void> {
       await clickInside(session, name, '[data-settings-close]');
       await check(session, `!${panel(name)}.open`, `${name}: 共通の閉じるボタン`);
     }
+    await verifyTabs(session, 1280);
     for (const [name, action, selector, storage] of [
       ['general', 'general', '[data-setting-name="autoPlay"]', 'FutatsumeWatch_autoPlay'],
       [
@@ -142,7 +228,7 @@ async function main(): Promise<void> {
       ['heatsync', 'toggleHeatSyncDialog', '[data-config-name="turbo.enabled"]', 'HeatSync_config_turbo.enabled'],
     ] as const) {
       await open(session, name, action);
-      if (name === 'general') await clickInside(session, name, '.player-setting summary');
+      if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
       const checked = `window.__settingsQuery(${JSON.stringify(selector)},${panel(name)}).checked`;
       const before = await evaluate(session, checked);
       const storageKey =
@@ -161,7 +247,7 @@ async function main(): Promise<void> {
       );
       await mouse(session, 3, 3);
       await open(session, name, action);
-      if (name === 'general') await clickInside(session, name, '.player-setting summary');
+      if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
       await check(session, `${checked}===${String(!before)}`, `${name}: 再表示後の保存値`);
       await clickInside(session, name, selector);
       if (name === 'hls') await clickInside(session, name, 'button[data-command="save"]');
@@ -211,6 +297,7 @@ async function main(): Promise<void> {
         await mouse(session, 3, 3);
         await check(session, `!${panel(name)}.open`, `${name}: ${width}×${height}で背景から閉じる`);
       }
+      if (width === 390) await verifyTabs(session, width);
     }
     await open(session, 'heatsync', 'toggleHeatSyncDialog');
     await evaluate(session, `window.FutatsumeWatch.external.execCommand('close')`);

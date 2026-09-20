@@ -209,7 +209,7 @@ async function main(): Promise<void> {
       '左メニューから一般設定を開く'
     );
     await screenshot(session, 'general');
-    await deepClick(session, '.player-setting summary');
+    await deepClick(session, '[data-fw-settings="general"] [data-settings-tab="player"]');
     const oldAutoPlay = await evaluate(session, `${root}.config.props.autoPlay`);
     await deepClick(session, '[data-setting-name="autoPlay"]');
     await check(

@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.6
+// @version      0.0.7
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。6種類の設定画面を共通デザインに統一し、背景ぼかし・背景クリック・Escapeで閉じる操作に対応。
+// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。設定の折りたたみを廃止し、固定サイズの画面と左サイドバータブへ変更。背景クリック・Escapeで閉じられます。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -100,7 +100,7 @@ var AntiPrototypeJs = exports("A",function() {
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
-var VERSION = exports("V","0.0.6");
+var VERSION = exports("V","0.0.7");
 function watchIdFromUrl(value, base = location.href) {
 	try {
 		const url = new URL(value, base);
@@ -315,11 +315,11 @@ async function start() {
 	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-DgFt5t4L-CWcWkcfG.js');
+	if (window === window.top) await module.import('./_uquery-BQkVQL8Z-BXr_dI0K.js');
 	const { Config } = await module.import('./Config-CesmpQk0-pkxmxyww.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-cBNsN1PE-CaCO7bZm.js');
+		await module.import('./_captube-75Ss8bZf-DMjYK81A.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
@@ -331,27 +331,27 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-DPlh8nn3-qV58ftXG.js');
+		await module.import('./_shape-CX8UaIhw-ChAGDuT3.js');
 		return;
 	}
-	const { startPlayer, openVideo } = await module.import('./runtime-B4WciZPF-CgsMvaq6.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-B35iFzCt-DRyuRwJb.js');
 	await startPlayer();
 	entry?.ready(openVideo);
 	if (window === window.top) {
 		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-ByBNGgi5-BrQvFfLx.js');
-		await module.import('./_pocket-7wrDjPLy-DNZZS9XB.js');
-		await module.import('./_gamepad-Dpcs16C5-DAymtUGG.js');
-		await module.import('./_heatsync--0fWPnJL-DHEqU7cb.js');
-		await module.import('./_shape-DPlh8nn3-qV58ftXG.js');
-		await module.import('./_setting-DtHVlQTP-DRc50p8H.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-yBXbFqoG-CaGmIUbr.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-7wrDjPLy-DNZZS9XB.js');
+		await module.import('./_pocket-CmRlesV6-BiNCtnZm.js');
+		await module.import('./_gamepad-BH7f8F2c-BoQgjo4h.js');
+		await module.import('./_heatsync-CUkIqjSe-DjMTDAMW.js');
+		await module.import('./_shape-CX8UaIhw-ChAGDuT3.js');
+		await module.import('./_setting-DUIwAYtE-DQ5nu0GJ.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-5cOgBr5H-DBsRelXL.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-CmRlesV6-BiNCtnZm.js');
 }
 start().catch((error) => {
 	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-DgFt5t4L-CWcWkcfG.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
+System.register("./_uquery-BQkVQL8Z-BXr_dI0K.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -383,7 +383,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.6";
+	uQuery.fn.uQuery = "0.0.7";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -624,7 +624,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.6
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.7
   `, `
     font-size: 8px;
     font-family:
@@ -634,7 +634,7 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-cBNsN1PE-CaCO7bZm.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_captube-75Ss8bZf-DMjYK81A.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1121,7 +1121,7 @@ SOFTWARE.
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-DPlh8nn3-qV58ftXG.js", ['./css-BKbZXBIT-CdKClobQ.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css,SettingsDialog;return{setters:[function(module){css=module.a;},function(module){SettingsDialog=module.S;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_shape-CX8UaIhw-ChAGDuT3.js", ['./css-ammxpeFn-CdKClobQ.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css,SettingsDialog;return{setters:[function(module){css=module.a;},function(module){SettingsDialog=module.S;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1805,14 +1805,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.6`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.7`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-B4WciZPF-CgsMvaq6.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-BFM6ajV7-vOJkaJOH.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$3,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,closeSettingsDialog,SettingsDialog,SETTINGS_FIELD_THEME,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$3=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){closeSettingsDialog=module.c;SettingsDialog=module.S;SETTINGS_FIELD_THEME=module.a;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
+System.register("./runtime-B35iFzCt-DRyuRwJb.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-COyNPLxQ-B0qEEGcU.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$3,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,closeSettingsDialog,SettingsDialog,SETTINGS_FIELD_THEME,configureSettingsNavigation,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$3=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){closeSettingsDialog=module.c;SettingsDialog=module.S;SETTINGS_FIELD_THEME=module.a;configureSettingsNavigation=module.b;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -23967,6 +23967,16 @@ var PlayerShell = class {
 		this.focusReturn = null;
 		this.keyboardFocus = false;
 		this.pointerDown = false;
+		configureSettingsNavigation((panel) => {
+			if (panel === "general") this.generalSettings();
+			else if (panel === "advanced") this.container.querySelector("[data-command=\"toggleAdvancedSettings\"]")?.click();
+			else if (panel === "masked") this.container.querySelector("maskedwatch-toggle-button")?.shadowRoot?.querySelector(".root")?.click();
+			else this.command({
+				hls: "toggleHLSDebug",
+				gamepad: "toggleZenzaGamePadConfig",
+				heatsync: "toggleHeatSyncDialog"
+			}[panel]);
+		});
 		container.classList.add("fw-player");
 		this.info = this.require(".zenzaWatchVideoInfoPanel");
 		this.info.id = "fw-details";
@@ -30533,9 +30543,11 @@ var DialogElement = class extends BaseCommandElement {
 	static async getTemplate(state = {}, props = {}, events = {}) {
 		const { html } = await this.importLit();
 		const contents = state.isOpen ? await this.getContentsTemplate(html, state, props, events) : null;
-		return html`<div id="root" @click=${events.onClick}>
+		return html`<div id="root">
       <dialog class="dialog">
-        <form @change=${events.onChange} @keydown=${events.onKeyDown} @keyup=${events.onKeyUp}>${contents}</form>
+        <form @click=${events.onClick} @change=${events.onChange} @keydown=${events.onKeyDown} @keyup=${events.onKeyUp}>
+          ${contents}
+        </form>
       </dialog>
     </div>`;
 	}
@@ -30605,8 +30617,7 @@ var { SettingPanelElement } = (() => {
 		}
 		static getPlayerSettingMenu(html, conf) {
 			return html`
-        <details class="player-setting">
-        <summary>プレイヤーの設定</summary>
+        <section class="player-setting" data-settings-section="player">
         <div class="control">
           <label>
             <input type="checkbox" class="checkbox"
@@ -30779,13 +30790,12 @@ var { SettingPanelElement } = (() => {
             <small>※ 一部レイアウトが崩れます</small>
           </label>
         </div>
-      </div>
+      </section>
       `;
 		}
 		static getCommentSettingMenu(html, conf) {
 			return html`
-        <details class="comment-setting">
-          <summary>コメント・フォントの設定</summary>
+        <section class="comment-setting" data-settings-section="comments">
           <div class="control">
             <label>
               <input
@@ -30963,7 +30973,7 @@ var { SettingPanelElement } = (() => {
               ドカベン <s>(飽きたら消します)</s>
             </label>
           </div>
-        </details>
+        </section>
       `;
 		}
 		static getFilterSettingMenu(html, conf) {
@@ -30980,8 +30990,7 @@ var { SettingPanelElement } = (() => {
             color: currentcolor;
           }
         </style>
-        <details class="filter-setting">
-          <summary>NG・フィルタ設定</summary>
+        <section class="filter-setting" data-settings-section="filters">
           <div class="control">
             <label>
               <input type="checkbox" class="checkbox" data-setting-name="enableFilter" ?checked=${conf.enableFilter} />
@@ -31181,7 +31190,7 @@ var { SettingPanelElement } = (() => {
               <textarea class="filterEdit" data-setting-name="userIdFilter" data-type="array">${userId}</textarea>
             </label>
           </div>
-        </details>
+        </section>
       `;
 		}
 		static getContentsTemplate(html, state = {}, props = {}, events = {}) {
@@ -31265,20 +31274,20 @@ var { SettingPanelElement } = (() => {
           ${this.getPlayerSettingMenu(html, conf)} ${this.getCommentSettingMenu(html, conf)}
           ${this.getFilterSettingMenu(html, conf)}
 
-          <details>
-            <summary>設定のインポート・エクスポート</summary>
+          <section data-settings-section="data">
             <div class="import-export">
               <button class="export-config-button" data-command="export-config">ファイルに保存</button>
               <input
                 type="file"
                 @change=${events.onImportFileSelect}
                 class="import-config-file-select"
+                aria-label="ファイルから読み込む"
                 accept=".json"
                 data-command="nop"
               />
               <div class="import-config-file-select-label">ファイルから読み込む</div>
             </div>
-          </details>
+          </section>
         </div>
       `);
 		}
@@ -31297,7 +31306,7 @@ var { SettingPanelElement } = (() => {
 			this.state.revision = this.state.revision + 1;
 		}
 		onUIEvent(e) {
-			if (e.target.closest("label, input, select, textarea") || e.target.tagName === "SUMMARY") {
+			if (e.target.closest("label, input, select, textarea")) {
 				e.stopPropagation();
 				return;
 			}
@@ -65223,9 +65232,6 @@ async function initializeHls() {
               .details {
                 padding-left: 16px;
               }
-              .summary {
-                outline: 0;
-              }
               .detailsText {
                 color: #666;
               }
@@ -65236,10 +65242,9 @@ async function initializeHls() {
                 <span class="labelText">${props.name}<content></content></span>
               </label>
               <slot></slot>
-              <details class="details">
-                <summary class="summary">詳細</summary>
+              <aside class="details">
                 <div class="detailsText"></div>
-              </details>
+              </aside>
             </div>
           `;
 				}
@@ -65357,9 +65362,6 @@ async function initializeHls() {
               .details {
                 padding-left: 16px;
               }
-              .summary {
-                outline: 0;
-              }
               .detailsText {
                 color: #666;
               }
@@ -65370,10 +65372,9 @@ async function initializeHls() {
                 <span class="labelText">${props.name}<content></content></span>
                 <output class="current-value"></output>
               </label>
-              <details class="details">
-                <summary class="summary">詳細</summary>
+              <aside class="details">
                 <div class="detailsText"></div>
-              </details>
+              </aside>
             </div>`;
 				}
 				set value(v) {
@@ -66060,7 +66061,7 @@ SOFTWARE.
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-7wrDjPLy-DNZZS9XB.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-BFM6ajV7-vOJkaJOH.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
+System.register("./_pocket-CmRlesV6-BiNCtnZm.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-COyNPLxQ-B0qEEGcU.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -69480,7 +69481,7 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-BFM6ajV7-vOJkaJOH.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
+System.register("./MylistApiLoader-COyNPLxQ-B0qEEGcU.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -71873,7 +71874,7 @@ var workerUtil = exports("w",(() => {
 	};
 	return workerUtil;
 })());})}}));
-System.register("./_gamepad-Dpcs16C5-DAymtUGG.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,require_lodash,require_jquery,SettingsDialog,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
+System.register("./_gamepad-BH7f8F2c-BoQgjo4h.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,require_lodash,require_jquery,SettingsDialog,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -73201,7 +73202,7 @@ var import_jquery = /* @__PURE__ */ __toESM(require_jquery());
 	await ZenzaDetector.detect();
 	loadMonkey();
 })(globalThis ? globalThis.window : window);})}}));
-System.register("./_heatsync--0fWPnJL-DHEqU7cb.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Emitter,require_lodash,SettingsDialog,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){Emitter=module.E;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
+System.register("./_heatsync-CUkIqjSe-DjMTDAMW.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Emitter,require_lodash,SettingsDialog,ZenzaDetector;return{setters:[function(module){__toESM=module.a;},function(module){Emitter=module.E;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -74119,7 +74120,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-DtHVlQTP-DRc50p8H.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-BKbZXBIT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-DNHVARbw-Cpw0WW-a.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,SettingsDialog,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
+System.register("./_setting-DUIwAYtE-DQ5nu0GJ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,SettingsDialog,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -75360,7 +75361,7 @@ var MylistPocketDetector = exports("M",(() => {
 	});
 	return { detect: () => promise };
 })());})}}));
-System.register("./settings-dialog-DNHVARbw-Cpw0WW-a.js", [],(function(exports){'use strict';return{execute:(function(){exports("c",closeSettingsDialog);/*!
+System.register("./settings-dialog-caHHZLpM-CS1lY6d5.js", [],(function(exports){'use strict';return{execute:(function(){exports({b:configureSettingsNavigation,c:closeSettingsDialog});/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -75398,9 +75399,10 @@ dialog.fw-settings-dialog[data-fw-settings]:not([open]) { display: none; }
 dialog.fw-settings-dialog[data-fw-settings][open] { display: grid; place-items: center; }
 dialog.fw-settings-dialog[data-fw-settings]::before { content: none; display: none; }
 dialog.fw-settings-dialog[data-fw-settings]::backdrop { background: #060a1280; backdrop-filter: blur(12px); }
+dialog.fw-settings-dialog[data-fw-settings] * { box-sizing: border-box; }
 dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
   display: flex; flex-direction: column; position: relative; min-width: 0; min-height: 0;
-  width: min(760px, 100%); max-width: 100%; max-height: 100%; padding: 0;
+  width: min(960px, 100%); height: min(720px, 100%); max-width: 100%; max-height: 100%; padding: 0;
   margin: 0; background: #131923; color: #f1f4f9; border: 1px solid #ffffff26;
   border-radius: 14px; box-shadow: 0 24px 80px #0008; overflow: hidden;
 }
@@ -75411,13 +75413,17 @@ dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
 }
 [data-fw-settings] .fw-modal-heading h2 { margin: 0; padding: 0; background: transparent; color: inherit; font: 600 18px/1.5 system-ui, sans-serif; text-shadow: none; }
 [data-fw-settings] .fw-modal-content .fw-modal-close { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; width: 44px; height: 44px; padding: 0; margin: 0; border: 0; border-radius: 8px; background: #253141; color: #f1f4f9; font: 24px/1 system-ui, sans-serif; cursor: pointer; }
-[data-fw-settings] .fw-modal-body { min-height: 0; overflow: auto; overflow-wrap: anywhere; overscroll-behavior: contain; padding: 20px; scrollbar-width: thin; scrollbar-color: #526173 #131923; }
-[data-fw-settings] .fw-modal-body *, [data-fw-settings] .fw-modal-heading * { box-sizing: border-box; }
+[data-fw-settings] .fw-settings-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); flex: 1; min-height: 0; }
+[data-fw-settings] .fw-settings-sidebar { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 12px; border-right: 1px solid #ffffff20; background: #101721; scrollbar-width: thin; }
+[data-fw-settings] .fw-settings-sidebar button { display: block; width: 100%; min-height: 44px; margin: 0 0 4px; padding: 10px 12px; text-align: start; white-space: normal; overflow-wrap: anywhere; font: inherit; color: #aab4c6; background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
+[data-fw-settings] .fw-settings-sidebar button[aria-selected=true] { background: #203d3b; color: #a7ead9; box-shadow: inset 3px 0 #8ddbc7; }
+[data-fw-settings] .fw-settings-sidebar button[data-settings-tab=advanced] { margin-top: 16px; }
+[data-fw-settings] .fw-settings-sidebar button:disabled { opacity: .4; cursor: default; }
+[data-fw-settings] .fw-modal-body { min-width: 0; min-height: 0; overflow: auto; overflow-wrap: anywhere; overscroll-behavior: contain; padding: 20px; scrollbar-width: thin; scrollbar-color: #526173 #131923; }
+[data-fw-settings] [data-settings-section][hidden] { display: none; }
 [data-fw-settings] .fw-modal-body :is(.title,.setting-heading) { display: none; }
 [data-fw-settings] .fw-modal-body :is(.dialogInner,.settingPanelInner) { margin: 0; padding: 0; height: auto; border: 0; overflow: visible; }
-[data-fw-settings] .fw-modal-body :is(h3,h4,.caption,summary) { color: #f1f4f9; background: #253141; border: 0; border-radius: 8px; text-shadow: none; padding: 10px 12px; font-size: 15px; font-weight: 600; line-height: 1.5; }
-[data-fw-settings] .fw-modal-body summary { cursor: pointer; margin: 0 0 12px; }
-[data-fw-settings] .fw-modal-body details { margin-bottom: 12px; }
+[data-fw-settings] .fw-modal-body :is(h3,h4,.caption) { color: #f1f4f9; background: #253141; border: 0; border-radius: 8px; text-shadow: none; padding: 10px 12px; font-size: 15px; font-weight: 600; line-height: 1.5; }
 [data-fw-settings] .fw-modal-body :is(.control,.config,.speedSelect,.enableSelect,.needFocusSelect,.deviceIndex,.minDuration,.ignoreTags) { margin: 0 0 12px; padding: 12px; border-radius: 8px; background: #1a2431; color: #f1f4f9; }
 [data-fw-settings] .fw-modal-body :is(.speedSelect,.deviceIndex,.minDuration) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
 [data-fw-settings] .fw-modal-body label { max-width: 100%; padding: 6px; margin: 0; border: 0; border-radius: 6px; line-height: 1.7; white-space: normal; cursor: pointer; }
@@ -75433,9 +75439,13 @@ dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
 [data-fw-settings] .fw-modal-content button:hover { background: #33445a; }
 [data-fw-settings] .fw-modal-content :focus-visible { outline: 2px solid #8ddbc7; outline-offset: 2px; }
 [data-fw-settings] .fw-modal-body :is(.closeButtonContainer,.buttomContainer) { text-align: right; }
+[data-fw-settings] .fw-modal-body .import-config-file-select-label { background: #253141; color: #f1f4f9; border: 1px solid #ffffff20; border-radius: 8px; }
 @media (max-width: 480px) {
   dialog.fw-settings-dialog[data-fw-settings] { padding: 12px; }
   [data-fw-settings] .fw-modal-heading { padding: 10px 12px; }
+  [data-fw-settings] .fw-settings-layout { grid-template-columns: 104px minmax(0, 1fr); }
+  [data-fw-settings] .fw-settings-sidebar { padding: 8px 4px; }
+  [data-fw-settings] .fw-settings-sidebar button { padding: 8px; font-size: 12px; }
   [data-fw-settings] .fw-modal-body { padding: 12px; }
   [data-fw-settings] .fw-modal-body :is(.control,.config,.speedSelect) { padding: 8px; }
   [data-fw-settings] .fw-modal-body :is(input[type=text],textarea) { width: 100%; }
@@ -75457,9 +75467,38 @@ var SETTINGS_FIELD_THEME = exports("a",`
 .root input[type=checkbox] { transform: none; width: 18px; height: 18px; }
 .root :focus-visible { outline: 2px solid #8ddbc7; }
 `);
+var tabs = [
+	"player",
+	"comments",
+	"filters",
+	"data",
+	"advanced",
+	"hls",
+	"masked",
+	"gamepad",
+	"heatsync"
+];
+var isGeneralSection = (tab) => [
+	"player",
+	"comments",
+	"filters",
+	"data"
+].includes(tab);
+var navigation = {
+	section: "player",
+	focusTab: false
+};
+function configureSettingsNavigation(open) {
+	navigation.open = open;
+}
 var labels = {
 	ja: {
 		general: "一般設定",
+		player: "プレイヤー",
+		comments: "コメント・フォント",
+		filters: "NG・フィルター",
+		data: "設定の入出力",
+		navigation: "設定カテゴリ",
 		advanced: "詳細設定",
 		hls: "HLS",
 		masked: "MaskedWatch",
@@ -75469,6 +75508,11 @@ var labels = {
 	},
 	en: {
 		general: "General settings",
+		player: "Player",
+		comments: "Comments & fonts",
+		filters: "Filters",
+		data: "Import & export",
+		navigation: "Settings categories",
 		advanced: "Advanced settings",
 		hls: "HLS",
 		masked: "MaskedWatch",
@@ -75485,6 +75529,7 @@ function closeSettingsDialog() {
 var SettingsDialog = exports("S",class {
 	constructor(element, name, onClose) {
 		this.element = element;
+		this.name = name;
 		this.onClose = onClose;
 		this.active = false;
 		this.outsidePress = false;
@@ -75503,9 +75548,41 @@ var SettingsDialog = exports("S",class {
 		}
 		this.content = document.createElement("div");
 		this.content.className = "fw-modal-content";
-		const body = document.createElement("div");
+		const body = this.body = document.createElement("div");
 		body.className = "fw-modal-body";
+		body.id = `fw-settings-body-${name}`;
 		body.append(...element.childNodes);
+		const layout = document.createElement("div");
+		layout.className = "fw-settings-layout";
+		this.sidebar = document.createElement("nav");
+		this.sidebar.className = "fw-settings-sidebar";
+		this.sidebar.setAttribute("role", "tablist");
+		this.sidebar.setAttribute("aria-orientation", "vertical");
+		this.sidebar.setAttribute("aria-label", text.navigation);
+		for (const tab of tabs) {
+			const button = document.createElement("button");
+			button.type = "button";
+			button.dataset.settingsTab = tab;
+			button.id = `fw-settings-tab-${name}-${tab}`;
+			button.setAttribute("role", "tab");
+			button.textContent = text[tab];
+			button.addEventListener("click", () => this.selectTab(tab));
+			button.addEventListener("keydown", (event) => {
+				const direction = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+				let index = tabs.indexOf(tab);
+				if (direction) index = (index + direction + tabs.length) % tabs.length;
+				else if (event.key === "Home") index = 0;
+				else if (event.key === "End") index = tabs.length - 1;
+				else return;
+				event.preventDefault();
+				event.stopPropagation();
+				const next = this.sidebar.querySelector(`[data-settings-tab="${tabs[index]}"]`);
+				next?.focus();
+				next?.click();
+			});
+			this.sidebar.append(button);
+		}
+		layout.append(this.sidebar, body);
 		const header = document.createElement("header");
 		header.className = "fw-modal-heading";
 		const title = document.createElement("h2");
@@ -75522,7 +75599,7 @@ var SettingsDialog = exports("S",class {
 			this.close();
 		});
 		header.append(title, close);
-		this.content.append(header, body);
+		this.content.append(header, layout);
 		element.append(this.content);
 		element.addEventListener("pointerdown", (event) => {
 			this.outsidePress = event.target === element;
@@ -75555,11 +75632,49 @@ var SettingsDialog = exports("S",class {
 		});
 	}
 	open() {
+		this.syncTabs();
 		if (this.element.open) return;
 		if (activeSettings.dialog && activeSettings.dialog !== this) activeSettings.dialog.close();
 		this.element.showModal();
 		this.active = true;
 		activeSettings.dialog = this;
+		if (navigation.focusTab) {
+			navigation.focusTab = false;
+			this.sidebar.querySelector("[aria-selected=\"true\"]")?.focus();
+		}
+	}
+	selectTab(tab) {
+		if (isGeneralSection(tab)) {
+			navigation.section = tab;
+			if (this.name === "general") {
+				this.syncTabs();
+				this.body.scrollTop = 0;
+				return;
+			}
+		} else if (this.name === tab) return;
+		navigation.focusTab = true;
+		navigation.open?.(isGeneralSection(tab) ? "general" : tab);
+	}
+	syncTabs() {
+		const selected = this.name === "general" ? navigation.section : this.name;
+		for (const button of this.sidebar.querySelectorAll("[data-settings-tab]")) {
+			const tab = button.dataset.settingsTab;
+			const active = tab === selected;
+			button.setAttribute("aria-selected", String(active));
+			button.tabIndex = active ? 0 : -1;
+			button.disabled = !navigation.open && (this.name !== "general" || !isGeneralSection(tab)) && !active;
+			button.setAttribute("aria-controls", this.name === "general" && isGeneralSection(tab) ? `fw-settings-section-${tab}` : this.body.id);
+		}
+		const sections = this.body.querySelectorAll("[data-settings-section]");
+		this.body.setAttribute("role", sections.length ? "presentation" : "tabpanel");
+		if (!sections.length) this.body.setAttribute("aria-labelledby", `fw-settings-tab-${this.name}-${selected}`);
+		for (const section of sections) {
+			const tab = section.dataset.settingsSection;
+			section.id = `fw-settings-section-${tab}`;
+			section.setAttribute("role", "tabpanel");
+			section.setAttribute("aria-labelledby", `fw-settings-tab-general-${tab}`);
+			section.hidden = tab !== selected;
+		}
 	}
 	close() {
 		if (this.element.open) this.element.close();
@@ -90186,7 +90301,7 @@ var require_lodash = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-yBXbFqoG-CaGmIUbr.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-BKbZXBIT-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
+System.register("./_my4-5cOgBr5H-DBsRelXL.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-ammxpeFn-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -95080,7 +95195,7 @@ var require_jquery = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-BKbZXBIT-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
+System.register("./css-ammxpeFn-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors

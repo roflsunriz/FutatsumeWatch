@@ -94,8 +94,7 @@ const { SettingPanelElement } = (() => {
 
     static getPlayerSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {
       return html`
-        <details class="player-setting">
-        <summary>プレイヤーの設定</summary>
+        <section class="player-setting" data-settings-section="player">
         <div class="control">
           <label>
             <input type="checkbox" class="checkbox"
@@ -268,13 +267,12 @@ const { SettingPanelElement } = (() => {
             <small>※ 一部レイアウトが崩れます</small>
           </label>
         </div>
-      </div>
+      </section>
       `;
     }
     static getCommentSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {
       return html`
-        <details class="comment-setting">
-          <summary>コメント・フォントの設定</summary>
+        <section class="comment-setting" data-settings-section="comments">
           <div class="control">
             <label>
               <input
@@ -452,7 +450,7 @@ const { SettingPanelElement } = (() => {
               ドカベン <s>(飽きたら消します)</s>
             </label>
           </div>
-        </details>
+        </section>
       `;
     }
     static getFilterSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {
@@ -469,8 +467,7 @@ const { SettingPanelElement } = (() => {
             color: currentcolor;
           }
         </style>
-        <details class="filter-setting">
-          <summary>NG・フィルタ設定</summary>
+        <section class="filter-setting" data-settings-section="filters">
           <div class="control">
             <label>
               <input type="checkbox" class="checkbox" data-setting-name="enableFilter" ?checked=${conf.enableFilter} />
@@ -670,7 +667,7 @@ const { SettingPanelElement } = (() => {
               <textarea class="filterEdit" data-setting-name="userIdFilter" data-type="array">${userId}</textarea>
             </label>
           </div>
-        </details>
+        </section>
       `;
     }
 
@@ -760,20 +757,20 @@ const { SettingPanelElement } = (() => {
           ${this.getPlayerSettingMenu(html, conf)} ${this.getCommentSettingMenu(html, conf)}
           ${this.getFilterSettingMenu(html, conf)}
 
-          <details>
-            <summary>設定のインポート・エクスポート</summary>
+          <section data-settings-section="data">
             <div class="import-export">
               <button class="export-config-button" data-command="export-config">ファイルに保存</button>
               <input
                 type="file"
                 @change=${events.onImportFileSelect}
                 class="import-config-file-select"
+                aria-label="ファイルから読み込む"
                 accept=".json"
                 data-command="nop"
               />
               <div class="import-config-file-select-label">ファイルから読み込む</div>
             </div>
-          </details>
+          </section>
         </div>
       `);
     }
@@ -797,7 +794,7 @@ const { SettingPanelElement } = (() => {
     onUIEvent(e: Event): boolean | undefined {
       // console.nicoru('target', e.target.closest('label, input, select, textarea'), e.target);
       const target = (e.target as Element).closest('label, input, select, textarea');
-      if (target || (e.target as Element).tagName === 'SUMMARY') {
+      if (target) {
         e.stopPropagation();
         return;
       }
