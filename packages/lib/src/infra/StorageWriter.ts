@@ -14,7 +14,6 @@ import { workerUtil } from './workerUtil';
 const StorageWriter = (() => {
   const func = function (self: WorkerSelf) {
     self.onmessage = ({
-      command,
       params,
     }: {
       command: unknown;

@@ -1,23 +1,8 @@
 import { gate } from '../message/gate';
 import { ThumbInfoCacheDb } from './ThumbInfoCacheDb';
 import { parseThumbInfo } from './parseThumbInfo';
-import { WatchInfoCacheDb } from './WatchInfoCacheDb';
-import type { ThumbInfoData } from './parseThumbInfo';
 import { IndexedDbStorage } from '../infra/IndexedDbStorage';
 import type { StoreMeta } from '../infra/IndexedDbStorage';
-
-interface ZenzaLibShape {
-  dimport?: unknown;
-  Handler?: unknown;
-  PromiseHandler?: unknown;
-  Emitter?: unknown;
-  EmitterInitFunc?: unknown;
-  workerUtil?: unknown;
-  parseThumbInfo: (xmlText: string) => ThumbInfoData;
-  IndexedDbStorage?: {
-    open: (info: unknown) => Promise<unknown>;
-  };
-}
 
 interface GateBridge {
   post: (body: unknown, options?: { sessionId?: string }) => void;
@@ -87,7 +72,6 @@ interface BridgeDbParams {
 }
 
 const PRODUCT = 'FutatsumeWatch';
-const LEGACY_PRODUCT = 'ZenzaWatch';
 //===BEGIN===
 
 const GateAPI = (() => {
@@ -147,7 +131,7 @@ const GateAPI = (() => {
   const nicovideo = () => {
     const { port, type, TOKEN, PID } = init({ prefix: `nicovideoApi${PRODUCT}Loader`, type: 'nicovideoApi' });
     // if (!isWhiteHost(origin) &&
-    //   localStorage.ZenzaWatch_allowOtherDomain !== 'true') {
+    //   localStorage.FutatsumeWatch_allowOtherDomain !== 'true') {
     //   console.log('disable bridge', origin);
     //   return;
     // }
@@ -168,7 +152,7 @@ const GateAPI = (() => {
       }
     };
 
-    const PREFIX = PRODUCT || LEGACY_PRODUCT;
+    const PREFIX = PRODUCT;
 
     // const kvs = dimport('std:kv-storage')
     //   .then(({StorageArea}) => new StorageArea(PREFIX)).catch(() => null);
@@ -202,7 +186,7 @@ const GateAPI = (() => {
       post({ status: 'ok', command, params: config }, { sessionId });
     };
 
-    const saveConfig = (params: GateMessageParams, _sessionId?: string) => {
+    const saveConfig = (params: GateMessageParams) => {
       if (!params.key) {
         return;
       }
@@ -337,7 +321,7 @@ const GateAPI = (() => {
           case 'dumpConfig':
             return dumpConfig(params, sessionId);
           case 'saveConfig':
-            return saveConfig(params, sessionId);
+            return saveConfig(params);
           case 'pushHistory':
             return pushHistory(params as { path: string; title?: string });
           case 'bridge-db':

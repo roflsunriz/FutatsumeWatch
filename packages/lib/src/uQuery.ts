@@ -202,7 +202,7 @@ const uQuery = (() => {
       for (const [task, ...args] of taskList) {
         try {
           task(...args);
-        } catch (err) {
+        } catch {
           console.warn('RafCaller task fail', { task, args });
         }
       }
@@ -485,7 +485,7 @@ const uQuery = (() => {
               key = toCamel(key);
               (style as unknown as Record<string, unknown>)[key] = value;
             }
-          } catch (err) {
+          } catch {
             console.warn('uQuery.css fail', { key, val, isNumber });
           }
         }
@@ -647,7 +647,7 @@ const uQuery = (() => {
       const attr = (found as Element).getAttribute(key);
       try {
         return JSON.parse(attr as string);
-      } catch (e) {
+      } catch {
         return attr;
       }
     }

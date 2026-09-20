@@ -1,3 +1,4 @@
+import { migrateAddonConfig } from './config-migration';
 import lodash from 'lodash';
 import jquery from 'jquery';
 import { SettingsDialog } from '../packages/components/src/settings-dialog';
@@ -10,7 +11,7 @@ import { SettingsDialog } from '../packages/components/src/settings-dialog';
 // 8bitdo FC30系
 // Joy-Con L R
 
-import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
+import { FutatsumeDetector } from '../packages/components/src/util/futatsume-detector';
 
 // 型宣言のみを置く（transpile で除去され、生成物には含まれない）。
 // ランタイムコードへの変更は、型注釈・as キャスト・declare フィールドに留める。
@@ -29,7 +30,7 @@ interface GamepadConfig extends GamepadEmitter {
   get(key: string, refresh?: boolean): GamepadConfigValue;
   set(key: string, value?: GamepadConfigValue): void;
 }
-interface GamepadZenzaWatch {
+interface GamepadFutatsumeWatch {
   lib: {
     _: { noop(...args: Array<never>): void };
     $: unknown;
@@ -40,12 +41,9 @@ interface GamepadZenzaWatch {
   config: { getValue(key: string): string };
   external: { execCommand(command: string, param?: unknown): void };
   emitter: GamepadEmitter;
-  ZenzaGamePad?: unknown;
+  FutatsumeGamePad?: unknown;
 }
-interface GamepadWindow {
-  _: { noop(...args: Array<never>): void };
-  jQuery: unknown;
-}
+
 interface GamepadConsole {
   log(...args: Array<unknown>): void;
   error(...args: Array<unknown>): void;
@@ -92,7 +90,7 @@ interface GamepadConfigElements {
 interface GamepadShadowHost extends Element {
   createShadowRoot(): ShadowRoot;
 }
-interface ZenzaGamePadAddon extends GamepadEmitter {
+interface FutatsumeGamePadAddon extends GamepadEmitter {
   startDetect(): void;
   startPolling(): void;
   stopPolling(): void;
@@ -108,13 +106,13 @@ interface ActiveGamepad {
 }
 
 void (async (window: Window & typeof globalThis): Promise<void> => {
-  const monkey = (ZenzaWatch: GamepadZenzaWatch): void => {
+  const monkey = (FutatsumeWatch: GamepadFutatsumeWatch): void => {
     if (!window.navigator.getGamepads) {
       window.console.log('%cGamepad APIがサポートされていません', 'background: red; color: yellow;');
       return;
     }
 
-    const PRODUCT = 'ZenzaGamePad';
+    const PRODUCT = 'FutatsumeGamePad';
     const CONSTANT = {
       BASE_Z_INDEX: 150000,
     };
@@ -174,10 +172,12 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
     const _ = lodash;
     const $ = jquery;
-    const util = ZenzaWatch.util;
-    const Emitter: GamepadEmitterClass = ZenzaWatch.modules ? ZenzaWatch.modules.Emitter : ZenzaWatch.lib.AsyncEmitter;
+    const util = FutatsumeWatch.util;
+    const Emitter: GamepadEmitterClass = FutatsumeWatch.modules
+      ? FutatsumeWatch.modules.Emitter
+      : FutatsumeWatch.lib.AsyncEmitter;
 
-    let isZenzaWatchOpen = false;
+    let isFutatsumeWatchOpen = false;
 
     const debugMode = !true;
 
@@ -197,13 +197,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     let isMetaButtonDown = false;
 
     const getVideo = (): HTMLVideoElement | null => {
-      return document.querySelector('.zenzaWatchVideoElement');
-    };
-
-    const video = {
-      get duration(): number {
-        return (getVideo() as HTMLVideoElement).duration;
-      },
+      return document.querySelector('.futatsumeWatchVideoElement');
     };
 
     const Config = (() => {
@@ -217,6 +211,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         deviceIndex: 0,
       };
 
+      migrateAddonConfig(localStorage, 'gamepad', Object.keys(defaultConfig));
       const config: Record<string, GamepadConfigValue> = {};
 
       emitter.refresh = (emitChange = false) => {
@@ -450,9 +445,9 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       constructor({ parentNode }: BaseViewParams) {
         super({
           parentNode,
-          name: 'ZenzaGamePadConfigPanel',
+          name: 'FutatsumeGamePadConfigPanel',
           shadow: ConfigPanel.__shadow__,
-          template: '<div class="ZenzaGamePadConfigPanelContainer zen-family"></div>',
+          template: '<div class="FutatsumeGamePadConfigPanelContainer futatsume-family"></div>',
           css: '',
         });
         this._state = {
@@ -537,7 +532,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
     ConfigPanel.__shadow__ = `
       <style>
-        .ZenzaGamePadConfigPanel {
+        .FutatsumeGamePadConfigPanel {
           display: none;
           position: fixed;
           z-index: ${CONSTANT.BASE_Z_INDEX};
@@ -556,17 +551,17 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           margin: 0;
           pointer-events: auto !important;
         }
-        .ZenzaGamePadConfigPanel[open] {
+        .FutatsumeGamePadConfigPanel[open] {
           display: block;
           opacity: 1;
         }
 
-        .ZenzaGamePadConfigPanel.is-Open {
+        .FutatsumeGamePadConfigPanel.is-Open {
           display: block;
           opacity: 0;
         }
 
-        .ZenzaGamePadConfigPanel.is-Open.is-Visible {
+        .FutatsumeGamePadConfigPanel.is-Open.is-Visible {
           opacity: 1;
         }
 
@@ -603,17 +598,17 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           margin-right: 16px;
         }
 
-        .ZenzaGamePadConfigPanel>div {
+        .FutatsumeGamePadConfigPanel>div {
           padding: 8px;
         }
       </style>
-      <dialog class="root ZenzaGamePadConfigPanel zen-family">
-        <p class="title">†ZenzaGamePad†</p>
+      <dialog class="root FutatsumeGamePadConfigPanel futatsume-family">
+        <p class="title">†FutatsumeGamePad†</p>
 
         <div class="enableSelect">
           <label>
             <input type="checkbox" data-config-name="enabled" data-type="bool">
-            ZenzaGamePadを有効にする
+            FutatsumeGamePadを有効にする
           </label>
         </div>
 
@@ -652,9 +647,9 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       constructor({ parentNode }: BaseViewParams) {
         super({
           parentNode,
-          name: 'ZenzaGamePadToggleButton',
+          name: 'FutatsumeGamePadToggleButton',
           shadow: ToggleButton.__shadow__,
-          template: '<div class="ZenzaGamePadToggleButtonContainer"></div>',
+          template: '<div class="FutatsumeGamePadToggleButtonContainer"></div>',
           css: '',
         });
 
@@ -733,18 +728,18 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         }
 
       </style>
-      <div class="heatSyncSwitch controlButton root command" data-command="toggleZenzaGamePadConfig">
-        <div class="controlButtonInner" title="ZenzaGamePad">&#x1F3AE;</div>
-        <div class="tooltip">ZenzaGamePad</div>
+      <div class="heatSyncSwitch controlButton root command" data-command="toggleFutatsumeGamePadConfig">
+        <div class="controlButtonInner" title="FutatsumeGamePad">&#x1F3AE;</div>
+        <div class="tooltip">FutatsumeGamePad</div>
       </div>
     `.trim();
 
-    const execCommand = (command: string, param?: unknown): void => ZenzaWatch.external.execCommand(command, param);
+    const execCommand = (command: string, param?: unknown): void => FutatsumeWatch.external.execCommand(command, param);
 
     const speedUp = (): void => {
       // TODO:
       // configを直接参照するのはお行儀が悪いのでexternalのインターフェースをつける
-      const current = parseFloat(ZenzaWatch.config.getValue('playbackRate'));
+      const current = parseFloat(FutatsumeWatch.config.getValue('playbackRate'));
       window.console.log('speedUp', current);
       execCommand('playbackRate', Math.floor(Math.min(current + 0.1, 3) * 10) / 10);
     };
@@ -752,7 +747,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     const speedDown = (): void => {
       // TODO:
       // configを直接参照するのはお行儀が悪いのでexternalのインターフェースをつける
-      const current = parseFloat(ZenzaWatch.config.getValue('playbackRate'));
+      const current = parseFloat(FutatsumeWatch.config.getValue('playbackRate'));
       window.console.log('speedDown', current);
       execCommand('playbackRate', Math.floor(Math.max(current - 0.1, 0.1) * 10) / 10);
     };
@@ -784,12 +779,12 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     };
 
     const onButtonDown = (button: number, deviceId: string): void => {
-      if (!isZenzaWatchOpen) {
+      if (!isFutatsumeWatchOpen) {
         return;
       }
       if (deviceId.match(/Vendor: 04b4 Product: 010a/i)) {
         //USB Gamepad (Vendor: 04b4 Product: 010a)"
-        return onButtonDownSaturn(button, deviceId);
+        return onButtonDownSaturn(button);
       } else if (deviceId.match(/Vendor: (3810|05a0|1235|1002)/i)) {
         // FC30なのにみんなVendor違うってどういうことだよ
         // 8Bitdo FC30 Pro (Vendor: 1002 Product: 9000)
@@ -868,7 +863,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       }
     };
 
-    const onButtonDownSaturn = (button: number, deviceId: string): void => {
+    const onButtonDownSaturn = (button: number): void => {
       switch (button) {
         case 0: // A
           isPauseButtonDown = true;
@@ -1032,12 +1027,12 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     };
 
     const onButtonUp = (button: number, deviceId: string): void => {
-      if (!isZenzaWatchOpen) {
+      if (!isFutatsumeWatchOpen) {
         return;
       }
       if (deviceId.match(/Vendor: 04b4 Product: 010a/i)) {
         //USB Gamepad (Vendor: 04b4 Product: 010a)"
-        return onButtonUpSaturn(button, deviceId);
+        return onButtonUpSaturn(button);
       } else if (deviceId.match(/Vendor: (3810|05a0|1235|1002)/i)) {
         // 8Bitdo FC30 Pro (Vendor: 1002 Product: 9000)
         return onButtonUpFC30(button, deviceId);
@@ -1058,7 +1053,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       }
     };
 
-    const onButtonUpSaturn = (button: number, deviceId: string): void => {
+    const onButtonUpSaturn = (button: number): void => {
       switch (button) {
         case 0: // A
           isPauseButtonDown = false;
@@ -1149,7 +1144,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     };
 
     const onButtonRepeat = (button: number, deviceId: string): void => {
-      if (!isZenzaWatchOpen) {
+      if (!isFutatsumeWatchOpen) {
         return;
       }
 
@@ -1226,7 +1221,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     };
 
     const onAxisChange = (axis: number, value: number, deviceId: string): void => {
-      if (!isZenzaWatchOpen) {
+      if (!isFutatsumeWatchOpen) {
         return;
       }
       if (Math.abs(value) < 0.1) {
@@ -1282,7 +1277,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
     };
 
     const onAxisRepeat = (axis: number, value: number, deviceId: string): void => {
-      if (!isZenzaWatchOpen) {
+      if (!isFutatsumeWatchOpen) {
         return;
       }
       if (Math.abs(value) < 0.1) {
@@ -1328,7 +1323,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       }
     };
 
-    const onPovChange = (pov: string, deviceId: string): void => {
+    const onPovChange = (pov: string): void => {
       switch (pov) {
         case 'UP':
           if (isMetaButtonDown) {
@@ -1627,10 +1622,12 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       return GamePad;
     })(Emitter);
 
-    const ZenzaGamePad = (($, PollingTimer, GamePadModel) => {
+    const FutatsumeGamePad = (($, PollingTimer, GamePadModel) => {
       let activeGamepad: ActiveGamepad | null = null;
       let pollingTimer: PollingTimer | null = null;
-      const ZenzaGamePad = (ZenzaWatch.modules ? new ZenzaWatch.modules.Emitter() : new Emitter()) as ZenzaGamePadAddon;
+      const FutatsumeGamePad = (
+        FutatsumeWatch.modules ? new FutatsumeWatch.modules.Emitter() : new Emitter()
+      ) as FutatsumeGamePadAddon;
 
       const padIndex = (Config.get('deviceIndex') as number) * 1;
 
@@ -1664,7 +1661,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         const gamepad = new GamePadModel(pad);
         activeGamepad = gamepad;
 
-        const self = ZenzaGamePad;
+        const self = FutatsumeGamePad;
         const onButtonDown = (number: number): void => {
           self.emit('onButtonDown', number, gamepad.deviceIndex);
         };
@@ -1715,7 +1712,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           console.log('%cgamepad connected id:"%s"', 'background: lightblue;', e.gamepad.id);
           detectGamepad();
         } else {
-          ZenzaGamePad.emit('onDeviceDisconnect', activeGamepad!.getDeviceIndex());
+          FutatsumeGamePad.emit('onDeviceDisconnect', activeGamepad!.getDeviceIndex());
           if (activeGamepad) {
             activeGamepad.release();
           }
@@ -1757,25 +1754,25 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         window.setTimeout(detectGamepad, 1000);
       };
 
-      ZenzaGamePad.startDetect = () => {
+      FutatsumeGamePad.startDetect = () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        ZenzaGamePad.startDetect = _.noop;
+        FutatsumeGamePad.startDetect = _.noop;
         initializeTimer();
         initializeGamepadConnectEvent();
       };
 
-      ZenzaGamePad.startPolling = () => {
+      FutatsumeGamePad.startPolling = () => {
         if (pollingTimer) {
           pollingTimer.start();
         }
       };
-      ZenzaGamePad.stopPolling = () => {
+      FutatsumeGamePad.stopPolling = () => {
         if (pollingTimer) {
           pollingTimer.pause();
         }
       };
 
-      return ZenzaGamePad;
+      return FutatsumeGamePad;
     })($, PollingTimer, GamePadModel);
 
     let hasInitGamePad = false;
@@ -1787,7 +1784,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
       let isActivated = false;
       let isDetected = false;
-      let deviceId: string, deviceIndex: number;
+      let deviceId: string;
       const notifyDetect = (): void => {
         if (!document.hasFocus() || isDetected) {
           return;
@@ -1842,14 +1839,14 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         if (!isActivated) {
           return;
         }
-        onPovChange(pov, deviceId);
+        onPovChange(pov);
       };
 
       const _onPovRepeat = (pov: string): void => {
         if (!isActivated) {
           return;
         }
-        onPovRepeat(pov, deviceId);
+        onPovRepeat(pov);
       };
 
       let hasBound = false;
@@ -1859,61 +1856,63 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         }
         hasBound = true;
 
-        ZenzaGamePad.on('onButtonDown', _onButtonDown);
-        ZenzaGamePad.on('onButtonRepeat', _onButtonRepeat);
-        ZenzaGamePad.on('onButtonUp', _onButtonUp);
-        ZenzaGamePad.on('onAxisChange', _onAxisChange);
-        ZenzaGamePad.on('onAxisRepeat', _onAxisRepeat);
-        ZenzaGamePad.on('onAxisRelease', _onAxisRelease);
-        ZenzaGamePad.on('onPovChange', _onPovChange);
-        ZenzaGamePad.on('onPovRepeat', _onPovRepeat);
+        FutatsumeGamePad.on('onButtonDown', _onButtonDown);
+        FutatsumeGamePad.on('onButtonRepeat', _onButtonRepeat);
+        FutatsumeGamePad.on('onButtonUp', _onButtonUp);
+        FutatsumeGamePad.on('onAxisChange', _onAxisChange);
+        FutatsumeGamePad.on('onAxisRepeat', _onAxisRepeat);
+        FutatsumeGamePad.on('onAxisRelease', _onAxisRelease);
+        FutatsumeGamePad.on('onPovChange', _onPovChange);
+        FutatsumeGamePad.on('onPovRepeat', _onPovRepeat);
       };
 
       const onDeviceConnect = (index: number, id: string): void => {
-        deviceIndex = index;
         deviceId = id;
 
         bindEvents();
       };
 
-      ZenzaGamePad.on('onDeviceConnect', onDeviceConnect);
-      //ZenzaGamePad.on('onDeviceDisConnect', onDeviceDisConnect);
-      ZenzaGamePad.startDetect();
-      (window as unknown as { ZenzaWatch: GamepadZenzaWatch }).ZenzaWatch.ZenzaGamePad = ZenzaGamePad;
+      FutatsumeGamePad.on('onDeviceConnect', onDeviceConnect);
+      //FutatsumeGamePad.on('onDeviceDisConnect', onDeviceDisConnect);
+      FutatsumeGamePad.startDetect();
+      (window as unknown as { FutatsumeWatch: GamepadFutatsumeWatch }).FutatsumeWatch.FutatsumeGamePad =
+        FutatsumeGamePad;
     };
 
-    const onZenzaWatchOpen = (): void => {
-      isZenzaWatchOpen = true;
+    const onFutatsumeWatchOpen = (): void => {
+      isFutatsumeWatchOpen = true;
       initGamePad();
-      ZenzaGamePad.startPolling();
+      FutatsumeGamePad.startPolling();
     };
 
-    const onZenzaWatchClose = (): void => {
-      isZenzaWatchOpen = false;
-      ZenzaGamePad.stopPolling();
+    const onFutatsumeWatchClose = (): void => {
+      isFutatsumeWatchOpen = false;
+      FutatsumeGamePad.stopPolling();
     };
 
     const initialize = async (): Promise<void> => {
-      ZenzaWatch.emitter.on('DialogPlayerOpen', onZenzaWatchOpen);
-      ZenzaWatch.emitter.on('DialogPlayerClose', onZenzaWatchClose);
+      FutatsumeWatch.emitter.on('DialogPlayerOpen', onFutatsumeWatchOpen);
+      FutatsumeWatch.emitter.on('DialogPlayerClose', onFutatsumeWatchClose);
 
       const initButton = (container: Element | null, handler: (command: string, param?: unknown) => void): void => {
-        ZenzaGamePad.configPanel = new ConfigPanel({ parentNode: document.querySelector('#zenzaVideoPlayerDialog') });
+        FutatsumeGamePad.configPanel = new ConfigPanel({
+          parentNode: document.querySelector('#futatsumeVideoPlayerDialog'),
+        });
         const toggleButton = new ToggleButton({ parentNode: container });
         toggleButton.on('command', handler);
         toggleButton.refresh();
       };
-      if (ZenzaWatch.emitter.promise) {
-        const { container, handler } = (await ZenzaWatch.emitter.promise('videoControBar.addonMenuReady')) as {
+      if (FutatsumeWatch.emitter.promise) {
+        const { container, handler } = (await FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady')) as {
           container: Element | null;
           handler: (command: string, param?: unknown) => void;
         };
         initButton(container, handler);
       } else {
-        ZenzaWatch.emitter.on('videoControBar.addonMenuReady', initButton);
+        FutatsumeWatch.emitter.on('videoControBar.addonMenuReady', initButton);
       }
-      ZenzaWatch.emitter.on('command-toggleZenzaGamePadConfig', () => {
-        ZenzaGamePad.configPanel!.toggle();
+      FutatsumeWatch.emitter.on('command-toggleFutatsumeGamePadConfig', () => {
+        FutatsumeGamePad.configPanel!.toggle();
       });
     };
 
@@ -1921,8 +1920,8 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
   };
 
   const loadMonkey = (): void => {
-    monkey((window as unknown as { ZenzaWatch: GamepadZenzaWatch }).ZenzaWatch);
+    monkey((window as unknown as { FutatsumeWatch: GamepadFutatsumeWatch }).FutatsumeWatch);
   };
-  await ZenzaDetector.detect();
+  await FutatsumeDetector.detect();
   loadMonkey();
 })(globalThis ? globalThis.window : window);

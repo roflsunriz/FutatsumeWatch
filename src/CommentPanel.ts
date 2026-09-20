@@ -1,10 +1,10 @@
 import _ from 'lodash';
 import { global } from './FutatsumeWatchIndex';
 import { BaseViewComponent } from './util';
-import { FrameLayer } from '../packages/zenza/src/parts/FrameLayer';
+import { FrameLayer } from '../packages/futatsume/src/parts/FrameLayer';
 import { CONSTANT } from './constant';
 import { Emitter } from './baselib';
-import { bounce, throttle } from '../packages/lib/src/infra/bounce';
+import { throttle } from '../packages/lib/src/infra/bounce';
 import { textUtil } from '../packages/lib/src/text/textUtil';
 import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
 import { css } from '../packages/lib/src/css/css';
@@ -353,9 +353,9 @@ class CommentListView extends Emitter {
     // BounceResult は thenable を返す型だが、戻値は従来どおり破棄する呼び出しのため誤検知として抑制する。
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     this.setScrollTop = throttle.raf(this.setScrollTop.bind(this) as unknown as BounceCallback);
-    void this._initializeView(params, 0);
+    void this._initializeView(params);
   }
-  async _initializeView(params?: CommentListViewParams, _extra?: unknown): Promise<void> {
+  async _initializeView(params?: CommentListViewParams): Promise<void> {
     const html = CommentListView.__tpl__.replace('%CSS%', this._itemCss);
     const frame = (this.frameLayer = new FrameLayer({
       container: params?.container as Element,
@@ -581,7 +581,7 @@ class CommentListView extends Emitter {
     // this.syncScrollTop();
     this._refreshInviewElements();
   }
-  _onScroll(e: Event): void {
+  _onScroll(): void {
     if (!this.hasClass('is-scrolling')) {
       this.addClass('is-scrolling');
     }
@@ -1014,7 +1014,7 @@ CommentListView.__tpl__ = `
 */
 </style>
 <style id="listItemStyle">%CSS%</style>
-<body class="zenzaRoot">
+<body class="futatsumeRoot">
   <div class="itemDetailContainer">
     <div class="resNo"></div>
     <div class="vpos"></div>
@@ -1725,7 +1725,7 @@ class CommentPanelView extends Emitter {
 }
 CommentPanelView.__css__ = `
     :root {
-      --zenza-comment-panel-header-height: 64px;
+      --futatsume-comment-panel-header-height: 64px;
     }
 
     .commentPanel-container {
@@ -1735,7 +1735,7 @@ CommentPanelView.__css__ = `
     }
 
     .commentPanel-header {
-      height: var(--zenza-comment-panel-header-height);
+      height: var(--futatsume-comment-panel-header-height);
       border-bottom: 1px solid #000;
       background: #333;
       color: #ccc;
@@ -1769,7 +1769,7 @@ CommentPanelView.__css__ = `
     }
 
     .commentPanel-frame {
-      height: calc(100% - var(--zenza-comment-panel-header-height));
+      height: calc(100% - var(--futatsume-comment-panel-header-height));
       transition: opacity 0.3s;
     }
 
@@ -1790,7 +1790,7 @@ CommentPanelView.__css__ = `
     .commentPanel-menu-toggle:focus-within {
       pointer-events: none;
     }
-    .commentPanel-menu-toggle:focus-within .zenzaPopupMenu {
+    .commentPanel-menu-toggle:focus-within .futatsumePopupMenu {
       pointer-events: auto;
       visibility: visible;
       opacity: 0.99;
@@ -1827,7 +1827,7 @@ CommentPanelView.__tpl__ = `
 
         <div class="commentPanel-command commentPanel-menu-toggle" tabindex="-1">
           ▼ メニュー
-          <div class="zenzaPopupMenu commentPanel-menu">
+          <div class="futatsumePopupMenu commentPanel-menu">
             <div class="listInner">
             <ul>
               <li class="commentPanel-command" data-command="sortBy" data-param="vpos">
@@ -2350,7 +2350,7 @@ TimeMachineView._shadow_ = `
 TimeMachineView.__tpl__ = '<div class="TimeMachineView"></div>'.trim();
 
 //===END===
-// tb = ZenzaWatch.debug.getFrameBodies().find(b => b.classList.contains('commentList')).querySelector('.timeBar');[...tb.computedStyleMap().entries()].filter(([key, vars]) => key.startsWith('--')).forEach(([key, vars]) => console.log(key, ...vars))
+// tb = FutatsumeWatch.debug.getFrameBodies().find(b => b.classList.contains('commentList')).querySelector('.timeBar');[...tb.computedStyleMap().entries()].filter(([key, vars]) => key.startsWith('--')).forEach(([key, vars]) => console.log(key, ...vars))
 export { CommentPanel };
 
 export type { Uq, UqFactory, UqRaf, ClassListLike };

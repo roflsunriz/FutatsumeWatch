@@ -1,5 +1,5 @@
 import { expect, it } from 'bun:test';
-import { WatchPageHistory } from '../../packages/zenza/src/init/WatchPageHistory';
+import { WatchPageHistory } from '../../packages/futatsume/src/init/WatchPageHistory';
 
 it('戻る操作ではプレイヤーを閉じ、遷移先URLとサイトのhistory.stateを保持する', async () => {
   const descriptors = new Map(

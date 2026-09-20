@@ -139,7 +139,7 @@ const { ThreadLoader } = (() => {
       this._threadKeys = {};
     }
 
-    async getThreadKey(videoId: string, options: ThreadLoadOptions = {}): Promise<ThreadKeyData> {
+    async getThreadKey(videoId: string): Promise<ThreadKeyData> {
       const url = `https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId=${videoId}`;
 
       console.log('getThreadKey url: ', url);
@@ -164,7 +164,7 @@ const { ThreadLoader } = (() => {
       }
     }
 
-    async getPostKey(threadId: string, options: ThreadLoadOptions = {}): Promise<PostKeyData> {
+    async getPostKey(threadId: string): Promise<PostKeyData> {
       const url = `https://nvapi.nicovideo.jp/v1/comment/keys/post?threadId=${threadId}`;
 
       console.log('getPostKey url: ', url);
@@ -188,7 +188,7 @@ const { ThreadLoader } = (() => {
       }
     }
 
-    async _delete(url: URL, body: string, options: ThreadLoadOptions = {}): Promise<void> {
+    async _delete(url: URL, body: string): Promise<void> {
       try {
         const raw: unknown = await (netUtil as unknown as NetUtilLike)
           .fetch(url, {
@@ -213,7 +213,7 @@ const { ThreadLoader } = (() => {
       }
     }
 
-    async _post(url: URL, body: string, options: ThreadLoadOptions = {}): Promise<PostResultData> {
+    async _post(url: URL, body: string): Promise<PostResultData> {
       try {
         const raw: unknown = await (netUtil as unknown as NetUtilLike)
           .fetch(url, {
@@ -249,7 +249,7 @@ const { ThreadLoader } = (() => {
       };
 
       if (options.retrying) {
-        const info = await this.getThreadKey(msgInfo.videoId, options);
+        const info = await this.getThreadKey(msgInfo.videoId);
         console.log('threadKey: ', msgInfo.videoId, info);
         packet.threadKey = info.threadKey;
       }
@@ -358,9 +358,9 @@ const { ThreadLoader } = (() => {
       vpos: number,
       retrying = false
     ): Promise<{ status: string; no?: number; id?: string; message: string; statusCode?: number }> {
-      const { videoId, threadId, language } = msgInfo.threadInfo!;
+      const { videoId, threadId } = msgInfo.threadInfo!;
       const url = new URL(`/v1/threads/${threadId}/comments`, msgInfo.nvComment.server);
-      const { postKey } = await this.getPostKey(threadId as string, { language });
+      const { postKey } = await this.getPostKey(threadId as string);
 
       const packet = JSON.stringify({
         body: text,

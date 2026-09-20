@@ -1,10 +1,9 @@
-import { CONSTANT } from '../../../../src/constant';
 import { css } from '../css/css';
 //===BEGIN===
 
 const PopupMessage = (() => {
   const __css__ = `
-    .zenzaPopupMessage {
+    .futatsumePopupMessage {
       --notify-color: #0c0;
       --alert-color: #c00;
       --shadow-color: #ccc;
@@ -26,19 +25,19 @@ const PopupMessage = (() => {
       pointer-events: none;
       user-select: none;
 
-      animation: zenza-popup-message-animation 5s;
+      animation: futatsume-popup-message-animation 5s;
       animation-fill-mode: forwards;
     }
 
-    .zenzaPopupMessage.notify {
+    .futatsumePopupMessage.notify {
       background: var(--notify-color, #0c0);
     }
 
-    .zenzaPopupMessage.alert {
+    .futatsumePopupMessage.alert {
       background: var(--alert-color, #0c0);
     }
 
-    .zenzaPopupMessage.debug {
+    .futatsumePopupMessage.debug {
       background: #333;
     }
 
@@ -47,7 +46,7 @@ const PopupMessage = (() => {
       position: static !important;
     }
 
-    @keyframes zenza-popup-message-animation {
+    @keyframes futatsume-popup-message-animation {
       0%  { transform: translate3d(0, -100px, 0); opacity: 0; }
       10% { transform: translate3d(0, 0, 0); }
       20% { opacity: 0.8; }
@@ -67,7 +66,7 @@ const PopupMessage = (() => {
 
   const create = (msg: string, className: string, allowHtml = false): HTMLDivElement => {
     const d = document.createElement('div');
-    d.className = `zenzaPopupMessage ${className}`;
+    d.className = `futatsumePopupMessage ${className}`;
     if (allowHtml) {
       d.innerHTML = msg;
     } else {

@@ -52,7 +52,7 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       // transpile 分離方式のため、値 export と型 export の混在は
       // 実行時破綻の原因になる。型は export type / interface で出す。

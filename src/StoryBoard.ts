@@ -1,8 +1,8 @@
-import { StoryboardInfoModel } from '../packages/zenza/src/storyboard/StoryboardInfoModel';
-import { Storyboard } from '../packages/zenza/src/storyboard/Storyboard';
-import { StoryboardView } from '../packages/zenza/src/storyboard/StoryboardView';
-import { SeekBarThumbnail } from '../packages/zenza/src/storyboard/SeekBarThumbnail';
-import { StoryboardWorker } from '../packages/zenza/src/storyboard/StoryboardWorker';
+import { StoryboardInfoModel } from '../packages/futatsume/src/storyboard/StoryboardInfoModel';
+import { Storyboard } from '../packages/futatsume/src/storyboard/Storyboard';
+import { StoryboardView } from '../packages/futatsume/src/storyboard/StoryboardView';
+import { SeekBarThumbnail } from '../packages/futatsume/src/storyboard/SeekBarThumbnail';
+import { StoryboardWorker } from '../packages/futatsume/src/storyboard/StoryboardWorker';
 /* eslint-disable */
 // シークバーのサムネイル関連
 // 動ける間になんとか作り上げよう

@@ -4,7 +4,6 @@ import * as lit from 'lit/html.js';
 // import * as lit from 'https://esm.run/lit';
 // const {html, render} = lit;
 const dll: { lit: typeof lit } = { lit };
-import { util } from '../util/util.js';
 
 import type { TemplateResult } from 'lit/html.js';
 
@@ -233,7 +232,8 @@ class BaseCommandElement extends HTMLElement {
   }
 
   onCommand(e: Event): void {
-    //console.log('on-command', e.detail.command, e.detail.param);
+    // 派生要素で処理するコマンドイベントの引数契約を保つ。
+    void e;
   }
 
   get propset(): PropsMap {

@@ -86,7 +86,6 @@ const AntiPrototypeJs = function (this: AntiPrototypeState): Promise<unknown> {
       f.remove();
       return Promise.resolve(window.PureArray);
     })
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- unknown の reject 値をそのまま記録する（元の挙動）
     .catch((err) => console.error(err)));
 }.bind({ promise: null } as AntiPrototypeState);
 //===END===

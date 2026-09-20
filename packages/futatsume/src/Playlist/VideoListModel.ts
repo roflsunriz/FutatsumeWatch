@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { Emitter } from '../../../lib/src/Emitter';
-import { bounce, throttle } from '../../../lib/src/infra/bounce';
+import { throttle } from '../../../lib/src/infra/bounce';
 import { VideoListItem } from './VideoListItem';
 import type { VideoRawData } from './VideoListItem';
 
@@ -213,7 +213,7 @@ class VideoListModel extends Emitter {
     this.removeByFilter((item) => !items.includes(item));
   }
 
-  onItemUpdate(item: VideoListItem): void {
+  onItemUpdate(): void {
     // this.emit('item-update', item);
     this.onUpdate();
   }

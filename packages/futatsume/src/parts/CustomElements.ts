@@ -82,7 +82,7 @@ CustomElements.initialize = () => {
     }
   }
 
-  window.customElements.define('zenza-playlist-append', PlaylistAppend);
+  window.customElements.define('futatsume-playlist-append', PlaylistAppend);
 
   class SeekbarLabel extends HTMLElement {
     declare _shadow: ShadowRoot;
@@ -212,7 +212,7 @@ CustomElements.initialize = () => {
       }
     }
   }
-  window.customElements.define('zenza-seekbar-label', SeekbarLabel);
+  window.customElements.define('futatsume-seekbar-label', SeekbarLabel);
 };
 
 //===END===

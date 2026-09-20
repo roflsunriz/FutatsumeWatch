@@ -196,8 +196,8 @@ cssUtil.registerProps({
   inherits: true,
 });
 if (window.customElements) {
-  if (!customElements.get('zenza-range-bar')) {
-    window.customElements.define('zenza-range-bar', RangeBarElement);
+  if (!customElements.get('futatsume-range-bar')) {
+    window.customElements.define('futatsume-range-bar', RangeBarElement);
   }
 }
 

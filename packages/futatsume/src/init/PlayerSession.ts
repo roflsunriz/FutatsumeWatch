@@ -26,13 +26,12 @@ const PlayerSession = {
     let ss: Record<string, unknown> = {};
     try {
       const store = this.storage as unknown as PlayingStatusRecord;
-      const data = store[this.KEY] ?? store[LEGACY_PLAYING_STATUS_KEY];
+      const data = store[this.KEY];
       if (!data) {
         return ss;
       }
-      ss = JSON.parse(store[this.KEY] ?? (store[LEGACY_PLAYING_STATUS_KEY] as string)) as Record<string, unknown>;
+      ss = JSON.parse(data) as Record<string, unknown>;
       this.storage.removeItem(this.KEY);
-      this.storage.removeItem(LEGACY_PLAYING_STATUS_KEY);
     } catch (e) {
       window.console.error('PlayserSession restore fail: ', this.KEY, e);
     }
@@ -48,6 +47,5 @@ const PlayerSession = {
   },
 };
 (PlayerSession as unknown as PlayerSessionLike).KEY = `${PRODUCT}_PlayingStatus`;
-const LEGACY_PLAYING_STATUS_KEY = 'ZenzaWatch_PlayingStatus';
 //===END===
 export { PlayerSession };

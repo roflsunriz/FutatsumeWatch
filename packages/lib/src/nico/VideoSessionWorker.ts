@@ -143,7 +143,7 @@ interface DmcStoryboardRaw {
 
 const VideoSessionWorker = (() => {
   const func = function (self: VideoWorkerScope): void {
-    const SMILE_HEART_BEAT_INTERVAL_MS = 10 * 60 * 1000; // 10min
+    // 10min
     const DMC_HEART_BEAT_INTERVAL_MS = 30 * 1000; // 30sec
 
     const SESSION_CLOSE_FAIL_COUNT = 3;
@@ -427,7 +427,10 @@ const VideoSessionWorker = (() => {
         this._heartBeat();
       }
 
-      _onHeartBeatSuccess(_result: { data?: unknown }): void {}
+      _onHeartBeatSuccess(result: { data?: unknown }): void {
+        // サブクラスの応答処理と同じ引数契約を保つ。
+        void result;
+      }
 
       _onHeartBeatFail(): void {
         this._failCount++;

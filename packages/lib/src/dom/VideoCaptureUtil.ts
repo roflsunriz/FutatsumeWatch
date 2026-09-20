@@ -35,10 +35,9 @@ interface VideoCaptureUtilShape {
   capTubeThumbnail: (width?: number, height?: number, type?: string) => void;
 }
 
-import { createVideoElement } from '../../../zenza/src/videoPlayer/createVideoElement';
+import { createVideoElement } from '../../../futatsume/src/videoPlayer/createVideoElement';
 import { sleep } from '../infra/sleep';
-import { CrossDomainGate } from '../infra/CrossDomainGate';
-import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
+
 //===BEGIN===
 
 const VideoCaptureUtil = (() => {
@@ -60,11 +59,6 @@ const VideoCaptureUtil = (() => {
 
   const videoToCanvas = (video: HTMLVideoElement): Promise<{ canvas: HTMLCanvasElement }> => {
     const src = video.src;
-    const sec = video.currentTime;
-    const a = document.createElement('a');
-    a.href = src;
-    const server = a.host;
-    const search = a.search;
 
     if (isCORSReadySrc(src)) {
       return Promise.resolve({ canvas: _toCanvas(video, video.videoWidth, video.videoHeight) });
@@ -92,7 +86,7 @@ const VideoCaptureUtil = (() => {
   ): { canvas: HTMLCanvasElement; img: HTMLImageElement } => {
     const imageW = (height * 16) / 9;
     const imageH = (imageW * 9) / 16;
-    const { svg, data } = htmlToSvg(html);
+    const { svg } = htmlToSvg(html);
 
     const url = window.URL.createObjectURL(svg);
     if (!url) {
@@ -283,7 +277,9 @@ VideoCaptureUtil.capture = function (this: CaptureState, src: string, sec: numbe
 }.bind({});
 
 VideoCaptureUtil.initCapTube = function (this: CapTubeState) {
-  const iframe = document.querySelector<HTMLIFrameElement>('#ZenzaWatchVideoPlayerContainer iframe[title^=YouTube]');
+  const iframe = document.querySelector<HTMLIFrameElement>(
+    '#FutatsumeWatchVideoPlayerContainer iframe[title^=YouTube]'
+  );
   if (!iframe) {
     return null;
   }

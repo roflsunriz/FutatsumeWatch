@@ -90,7 +90,7 @@ const replaceRedirectLinks = async (): Promise<void> => {
         const $shuffle = uqFn
           .html(a.outerHTML)
           .text('シャッフル再生')
-          .addClass('zenzaPlaylistShuffleStart')
+          .addClass('futatsumePlaylistShuffleStart')
           .attr('href', `//www.nicovideo.jp/watch/1470321133?${search}&shuffle=1`)
           .css(css);
 
@@ -128,13 +128,13 @@ const replaceRedirectLinks = async (): Promise<void> => {
     await uqFn.ready(); // DOMContentLoaded
     const createShuffleButton = (continuous: Element) => {
       const shuffle = continuous.cloneNode(true) as HTMLAnchorElement;
-      shuffle.classList.add('zenzaPlaylistShuffleStart');
+      shuffle.classList.add('futatsumePlaylistShuffleStart');
       shuffle.innerText = 'シャッフル再生';
       shuffle.href += '&shuffle=1';
       continuous.after(shuffle);
     };
     const observer = new MutationObserver(() => {
-      const shuffle = document.querySelector('.zenzaPlaylistShuffleStart');
+      const shuffle = document.querySelector('.futatsumePlaylistShuffleStart');
       if (shuffle) {
         return;
       }
@@ -209,7 +209,7 @@ const replaceRedirectLinks = async (): Promise<void> => {
     });
 
     const shuffleButton = autoPlayButton.cloneNode(true) as HTMLAnchorElement;
-    shuffleButton.classList.add('zenzaPlaylistShuffleStart');
+    shuffleButton.classList.add('futatsumePlaylistShuffleStart');
     shuffleButton.href += '&shuffle=1';
     shuffleButton.innerText = 'シャッフル再生';
 
@@ -247,7 +247,7 @@ const replaceRedirectLinks = async (): Promise<void> => {
       const thumbnail = image.src || image.dataset.original || '';
       const m = /smile\?i=([0-9]+)/.exec(thumbnail);
       if (m) {
-        const $a = uqFn('<a class="more zen" rel="noopener" target="_blank">watch</a>')
+        const $a = uqFn('<a class="more futatsume" rel="noopener" target="_blank">watch</a>')
           .css('right', cssUtilLike.px(128))
           .attr('href', `//www.nicovideo.jp/watch/so${m[1]}`);
 

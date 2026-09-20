@@ -54,9 +54,9 @@ interface CssUtil {
   image: (value: string) => unknown;
 }
 
-// const PRODUCT = 'Zenza';
+// const PRODUCT = 'Futatsume';
 import { global } from '../../../../src/FutatsumeWatchIndex';
-import { bounce, throttle } from '../infra/bounce';
+import { throttle } from '../infra/bounce';
 //===BEGIN===
 /**
  * @typedef registerPropertyDefinition

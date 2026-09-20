@@ -1,5 +1,5 @@
-import { ZenzaWatch } from './FutatsumeWatchIndex';
-import { BaseViewComponent } from '../packages/zenza/src/parts/BaseViewComponent';
+import { FutatsumeWatch } from './FutatsumeWatchIndex';
+import { BaseViewComponent } from '../packages/futatsume/src/parts/BaseViewComponent';
 import { TagEditApi } from '../packages/lib/src/nico/TagEditApi';
 import { Config } from './Config';
 import { textUtil } from '../packages/lib/src/text/textUtil';
@@ -115,7 +115,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     });
     v.addEventListener('click', (e: Event) => e.stopPropagation());
 
-    ZenzaWatch.emitter.on('hideHover', () => {
+    FutatsumeWatch.emitter.on('hideHover', () => {
       if (this._state.isEditing) {
         this._endEdit();
       }
@@ -365,11 +365,11 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     const icon = `<img class="dicIcon" src="${src}">`;
 
     const hasNicodic = hasDic ? 1 : 0;
-    return `<zenza-tag-item-menu
+    return `<futatsume-tag-item-menu
         class="tagItemMenu"
         data-text="${encodeURIComponent(text)}"
         data-has-nicodic="${hasNicodic}"
-      ><a target="_blank" class="nicodic" href="${href}">${icon}</a></zenza-tag-item-menu>`;
+      ><a target="_blank" class="nicodic" href="${href}">${icon}</a></futatsume-tag-item-menu>`;
   }
 
   _createDeleteButton(id: string): string {
@@ -396,7 +396,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     const title = 'プレイリストに追加';
     const command = 'tag-search';
     const param = (textUtil as unknown as TagTextUtil).escapeHtml(text);
-    return `<zenza-playlist-append class="playlistAppend" title="${title}" data-command="${command}" data-param="${param}">▶</zenza-playlist-append>`;
+    return `<futatsume-playlist-append class="playlistAppend" title="${title}" data-command="${command}" data-param="${param}">▶</futatsume-playlist-append>`;
   }
 
   _createTag(tag: TagListTagData): string {
@@ -974,7 +974,7 @@ class TagItemMenu extends HTMLElement {
           transform: translateY(-30px);
         }
 
-        :host-context(.zenzaWatchVideoInfoPanelFoot) .menu {
+        :host-context(.futatsumeWatchVideoInfoPanelFoot) .menu {
           position: absolute;
           bottom: 0;
           transform: translateY(8x);
@@ -1054,7 +1054,7 @@ class TagItemMenu extends HTMLElement {
   }
 }
 if (window.customElements) {
-  window.customElements.define('zenza-tag-item-menu', TagItemMenu);
+  window.customElements.define('futatsume-tag-item-menu', TagItemMenu);
 }
 
 //===END===

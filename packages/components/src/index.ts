@@ -17,14 +17,14 @@ import { SettingPanelElement } from './element/SettingPanelElement';
 
 const components = (() => {
   if (self.customElements) {
-    if (!customElements.get('zenza-video-item')) {
-      customElements.define('zenza-video-item', VideoItemElement);
+    if (!customElements.get('futatsume-video-item')) {
+      customElements.define('futatsume-video-item', VideoItemElement);
     }
-    if (!customElements.get('zenza-dialog')) {
-      customElements.define('zenza-dialog', DialogElement);
+    if (!customElements.get('futatsume-dialog')) {
+      customElements.define('futatsume-dialog', DialogElement);
     }
-    if (!customElements.get('zenza-setting-panel')) {
-      customElements.define('zenza-setting-panel', SettingPanelElement);
+    if (!customElements.get('futatsume-setting-panel')) {
+      customElements.define('futatsume-setting-panel', SettingPanelElement);
     }
   }
 

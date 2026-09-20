@@ -54,6 +54,8 @@ class RelatedVideoList extends VideoList {
     watchId: string | null = null,
     videoInfo: RecommendVideoInfo | null = null
   ): Promise<void> {
+    // 呼び出し側の動画情報引数の位置を維持する。
+    void watchId;
     const relatedVideo: VideoRawData[] = [];
     if (videoInfo) {
       relatedVideo.push(VideoListItem.createByVideoInfoModel(videoInfo).serialize());

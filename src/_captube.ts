@@ -53,14 +53,6 @@ export interface CapTubeShotParams {
   let previewContainer: HTMLElement | null = null,
     meterContainer: HTMLElement | null = null;
 
-  const callOnIdle = (func: () => void): void => {
-    if (window.requestIdleCallback) {
-      window.requestIdleCallback(func);
-    } else {
-      setTimeout(func, 0);
-    }
-  };
-
   const DataUrlConv = (() => {
     const func = function (self: CapTubeWorkerSelf): void {
       let canvas: CapTubeCanvas | undefined, ctx: CapTubeCanvasContext | null | undefined;

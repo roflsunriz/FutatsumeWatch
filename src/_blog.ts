@@ -3,7 +3,7 @@ export interface BlogPartsMessage {
   watchId?: string;
 }
 
-((window: Window) => {
+(() => {
   const addStyle = (styles: string, id?: string): HTMLStyleElement => {
     const elm = document.createElement('style');
     elm.type = 'text/css';
@@ -22,7 +22,7 @@ export interface BlogPartsMessage {
       parent.postMessage(
         JSON.stringify({
           // 互換のため冗長
-          id: 'ZenzaWatch',
+          id: 'FutatsumeWatch',
           type,
           token,
           body: {
@@ -45,7 +45,7 @@ export interface BlogPartsMessage {
   };
 
   const __css__ = `
-    #zenzaButton {
+    #futatsumeButton {
       position: fixed;
       left: 0;
       top: 0;
@@ -56,7 +56,7 @@ export interface BlogPartsMessage {
       font-weight: bolder;
       display: none;
     }
-    body:hover #zenzaButton {
+    body:hover #futatsumeButton {
       display: inline-block;
     }
   `.trim();
@@ -72,8 +72,8 @@ export interface BlogPartsMessage {
 
     addStyle(__css__);
     const button = document.createElement('button');
-    button.innerHTML = '<span>Zen</span>';
-    button.id = 'zenzaButton';
+    button.innerHTML = '<span>Futatsume</span>';
+    button.id = 'futatsumeButton';
     document.body.append(button);
     button.onclick = (e) => {
       postMessage('blogParts', {
@@ -84,4 +84,4 @@ export interface BlogPartsMessage {
   };
 
   blogPartsApi();
-})(globalThis ? (globalThis as unknown as { window: Window }).window : window);
+})();

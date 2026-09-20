@@ -1,7 +1,6 @@
 import { IndexedDbStorage } from '../infra/IndexedDbStorage';
 import { parseThumbInfo } from './parseThumbInfo';
 import type { ThumbInfoData } from './parseThumbInfo';
-import { global } from '../../../../src/FutatsumeWatchIndex';
 
 interface IndexedDbOpen {
   open: (info: unknown) => Promise<unknown>;

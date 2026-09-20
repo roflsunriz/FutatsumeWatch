@@ -1,4 +1,4 @@
-import { ZenzaWatch } from '../../../../src/FutatsumeWatchIndex';
+import { FutatsumeWatch } from '../../../../src/FutatsumeWatchIndex';
 
 interface MymemoryPlayer {
   currentTime: number;
@@ -10,21 +10,21 @@ interface MymemoryVideoInfo {
   watchId: string;
 }
 
-interface ZenzaWatchVersionLike {
+interface FutatsumeWatchVersionLike {
   version: string;
   env: string;
 }
 
 //===BEGIN===
 const saveMymemory = (player: MymemoryPlayer, videoInfo: MymemoryVideoInfo): void => {
-  const zenzaWatch = ZenzaWatch as unknown as ZenzaWatchVersionLike;
+  const futatsumeWatch = FutatsumeWatch as unknown as FutatsumeWatchVersionLike;
   const info = `
     <div>
       <h2>${videoInfo.title}</h2>
       <a href="//www.nicovideo.jp/watch/${videoInfo.watchId}?from=${Math.floor(player.currentTime)}">元動画</a><br>
       作成環境: ${navigator.userAgent}<br>
       作成日: ${new Date().toLocaleString()}<br>
-      ZenzaWatch: ver${zenzaWatch.version} (${zenzaWatch.env})<br>
+      FutatsumeWatch: ver${futatsumeWatch.version} (${futatsumeWatch.env})<br>
 
       <button
         onclick="document.body.classList.toggle('debug');return false;">

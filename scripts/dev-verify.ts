@@ -6,7 +6,7 @@ import { verifyCommentOverlay } from './dev-verify-comments';
 const outputDir = new URL('../dev-assets/verification/', import.meta.url);
 const urlIndex = Bun.argv.indexOf('--url');
 const watchUrl = urlIndex >= 0 ? Bun.argv[urlIndex + 1]! : 'https://www.nicovideo.jp/watch/sm9';
-const video = `document.querySelector('#zenzaVideoPlayerDialog zenza-video')`;
+const video = `document.querySelector('#futatsumeVideoPlayerDialog futatsume-video')`;
 const root = 'window.FutatsumeWatch';
 const checks: string[] = [];
 
@@ -25,7 +25,7 @@ async function until(session: CdpSession, expression: string, label: string, tim
 async function click(session: CdpSession, command: string): Promise<void> {
   await evaluate(
     session,
-    `(() => { const e = document.querySelector('#zenzaVideoPlayerDialog [data-command="${command}"]'); if (!e) throw new Error('操作ボタンなし: ${command}'); e.click(); })()`
+    `(() => { const e = document.querySelector('#futatsumeVideoPlayerDialog [data-command="${command}"]'); if (!e) throw new Error('操作ボタンなし: ${command}'); e.click(); })()`
   );
 }
 async function exec(session: CdpSession, command: string, value?: string | number): Promise<void> {
@@ -92,8 +92,8 @@ async function main(): Promise<void> {
     await session.send('Page.bringToFront');
     await until(
       session,
-      `!!${root}?.ready && ${root} === window.ZenzaWatch && !!document.querySelector('#zenzaVideoPlayerDialog')`,
-      `${Bun.argv.includes('--bundle') ? '配布物注入' : 'マネージャ経由'}の初期化・互換名・プレイヤー生成`
+      `!!${root}?.ready && !!document.querySelector('#futatsumeVideoPlayerDialog')`,
+      `${Bun.argv.includes('--bundle') ? '配布物注入' : 'マネージャ経由'}の初期化・プレイヤー生成`
     );
     await until(session, `!!document.querySelector('[data-futatsume-open]')`, '動画ページの再生導線');
     await clickVisible(session, '[data-futatsume-open]');
@@ -125,7 +125,7 @@ async function main(): Promise<void> {
     await until(session, `${root}.debug.nicoCommentPlayer._view._isShow`, 'コメント再表示', 5000);
     await until(
       session,
-      `!!window.MylistPocket?.isReady && !!window.MaskedWatch && !!window.HeatSync && !!${root}.ZenzaGamePad && !!window.uQuery`,
+      `!!window.MylistPocket?.isReady && !!window.MaskedWatch && !!window.HeatSync && !!${root}.FutatsumeGamePad && !!window.uQuery`,
       '追加機能の初期化',
       10000
     );
@@ -134,12 +134,12 @@ async function main(): Promise<void> {
       `window.__fwQuery = function find(selector, root=document) { const found=root.querySelector(selector); if(found) return found; for(const element of root.querySelectorAll('*')) { if(element.shadowRoot) {const found=find(selector,element.shadowRoot);if(found)return found;} } return null; };`
     );
     await click(session, 'toggleAdvancedSettings');
-    await until(session, `!!document.querySelector('.zenzaAdvancedSettingPanel.show')`, '詳細設定を開く', 5000);
+    await until(session, `!!document.querySelector('.futatsumeAdvancedSettingPanel.show')`, '詳細設定を開く', 5000);
     const setting = 'enableFullScreenOnDoubleClick';
     const oldSetting = await evaluate(session, `${root}.config.getValue('${setting}')`);
     await evaluate(
       session,
-      `document.querySelector('.zenzaAdvancedSettingPanel [data-setting-name="${setting}"]').click()`
+      `document.querySelector('.futatsumeAdvancedSettingPanel [data-setting-name="${setting}"]').click()`
     );
     await until(
       session,
@@ -149,17 +149,17 @@ async function main(): Promise<void> {
     );
     await evaluate(
       session,
-      `document.querySelector('.zenzaAdvancedSettingPanel [data-setting-name="${setting}"]').click(); document.querySelector('.zenzaAdvancedSetting-close').click()`
+      `document.querySelector('.futatsumeAdvancedSettingPanel [data-setting-name="${setting}"]').click(); document.querySelector('.futatsumeAdvancedSetting-close').click()`
     );
     await until(
       session,
-      `!document.querySelector('.zenzaAdvancedSettingPanel.show') && ${root}.config.getValue('${setting}') === ${String(oldSetting)}`,
+      `!document.querySelector('.futatsumeAdvancedSettingPanel.show') && ${root}.config.getValue('${setting}') === ${String(oldSetting)}`,
       '詳細設定を復元して閉じる',
       5000
     );
     for (const [command, opened] of [
       ['toggleHLSDebug', `document.querySelector('video-debug-dialog')?.isOpen`],
-      ['toggleZenzaGamePadConfig', `!!window.__fwQuery('.ZenzaGamePadConfigPanel[open]')`],
+      ['toggleFutatsumeGamePadConfig', `!!window.__fwQuery('.FutatsumeGamePadConfigPanel[open]')`],
       ['toggleHeatSyncDialog', `!!window.__fwQuery('.HeatSyncConfigPanel.is-Visible')`],
     ]) {
       await evaluate(session, `window.__fwQuery('[data-command="${command}"]').click()`);
@@ -214,9 +214,9 @@ async function main(): Promise<void> {
       5000
     );
     await click(session, 'settingPanel');
-    await until(session, `!!document.querySelector('zenza-setting-panel')?.state.isOpen`, '本体設定を開く', 5000);
-    await evaluate(session, `document.querySelector('zenza-setting-panel').close()`);
-    await until(session, `!document.querySelector('zenza-setting-panel').state.isOpen`, '本体設定を閉じる', 5000);
+    await until(session, `!!document.querySelector('futatsume-setting-panel')?.state.isOpen`, '本体設定を開く', 5000);
+    await evaluate(session, `document.querySelector('futatsume-setting-panel').close()`);
+    await until(session, `!document.querySelector('futatsume-setting-panel').state.isOpen`, '本体設定を閉じる', 5000);
     for (const [width, height] of [
       [640, 480],
       [390, 844],
@@ -225,7 +225,7 @@ async function main(): Promise<void> {
       await session.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
       await until(
         session,
-        `(()=>{const r=document.querySelector('#zenzaVideoPlayerDialog').getBoundingClientRect();const p=document.querySelector('#zenzaVideoPlayerDialog .zenzaPlayerContainer').getBoundingClientRect();return r.width>0 && r.left>=-1 && r.right<=innerWidth+1 && r.top>=-1 && r.bottom<=innerHeight+1 && p.left>=-1 && p.right<=innerWidth+1;})()`,
+        `(()=>{const r=document.querySelector('#futatsumeVideoPlayerDialog').getBoundingClientRect();const p=document.querySelector('#futatsumeVideoPlayerDialog .futatsumePlayerContainer').getBoundingClientRect();return r.width>0 && r.left>=-1 && r.right<=innerWidth+1 && r.top>=-1 && r.bottom<=innerHeight+1 && p.left>=-1 && p.right<=innerWidth+1;})()`,
         `${width}×${height}でプレイヤーが画面内に収まる`,
         5000
       );

@@ -2,9 +2,6 @@
   動画情報ローダーの既存契約としてプレーンオブジェクトでthrow/rejectする（呼び出し側がreason/watchId/infoで分岐する）。
   Error化すると呼び出し側の分岐が壊れるため、ランタイム同一を優先して維持する。 */
 import { netUtil } from '../infra/netUtil';
-import { textUtil } from '../text/textUtil';
-import { nicoUtil } from '../nico/nicoUtil';
-import { Emitter } from '../Emitter';
 import { CacheStorage } from '../infra/CacheStorage';
 
 interface NetFetchInit {
@@ -241,7 +238,6 @@ const VideoInfoLoader = (function () {
       // waku,
     } = _data;
 
-    const hasLargeThumbnail = nicoUtil.hasLargeThumbnail(videoId);
     const csrfToken = null;
     const watchAuthKey = null;
     threads.forEach((thread) => {

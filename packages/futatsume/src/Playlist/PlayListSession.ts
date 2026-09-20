@@ -1,12 +1,11 @@
 //===BEGIN===
 const PlayListSession = ((storage: Storage) => {
   const KEY = 'FutatsumeWatchPlaylist';
-  const LEGACY_KEY = 'ZenzaWatchPlaylist';
   let lastJson = '';
 
   return {
     isExist() {
-      const data = storage.getItem(KEY) ?? storage.getItem(LEGACY_KEY);
+      const data = storage.getItem(KEY);
       if (!data) {
         return false;
       }
@@ -33,7 +32,7 @@ const PlayListSession = ((storage: Storage) => {
       }
     },
     restore(): unknown {
-      const data = storage.getItem(KEY) ?? storage.getItem(LEGACY_KEY);
+      const data = storage.getItem(KEY);
       if (!data) {
         return null;
       }
@@ -46,7 +45,6 @@ const PlayListSession = ((storage: Storage) => {
     },
   };
 })(sessionStorage);
-const PlaylistSession = PlayListSession;
 
 //===END===
 

@@ -5,7 +5,7 @@ setting.json
 *.bk
 *.lnk
 ./test.js
-ZenzaWatch.user\ *.js
+FutatsumeWatch.user\ *.js
 .DS_Store
 *.lnk
 node_modules/

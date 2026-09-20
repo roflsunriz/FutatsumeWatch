@@ -161,7 +161,7 @@ async function main(): Promise<void> {
       30000
     );
     await clickVisible(session, '[data-futatsume-open]');
-    await check(session, `document.querySelector('zenza-video')?.currentTime>1`, '起動導線から動画再生', 30000);
+    await check(session, `document.querySelector('futatsume-video')?.currentTime>1`, '起動導線から動画再生', 30000);
     await evaluate(
       session,
       `window.__settingsQuery=function find(selector,root=document){const e=root.querySelector(selector);if(e)return e;for(const host of root.querySelectorAll('*')){if(host.shadowRoot){const e=find(selector,host.shadowRoot);if(e)return e;}}return null;}`
@@ -184,7 +184,7 @@ async function main(): Promise<void> {
       await mouse(session, 3, 3);
       await check(
         session,
-        `!${panel(name)}.open && !document.querySelector('zenza-video').paused`,
+        `!${panel(name)}.open && !document.querySelector('futatsume-video').paused`,
         `${name}: 背景クリックで閉じ、動画へクリックを通さない`
       );
       await open(session, name);
@@ -202,7 +202,7 @@ async function main(): Promise<void> {
       });
       await check(
         session,
-        `!${panel(name)}.open && document.querySelector('#zenzaVideoPlayerDialog').classList.contains('is-open')`,
+        `!${panel(name)}.open && document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
         `${name}: Escapeは設定だけを閉じる`
       );
       await open(session, name);
@@ -217,8 +217,8 @@ async function main(): Promise<void> {
         '[data-setting-name="enableFullScreenOnDoubleClick"]',
         'FutatsumeWatch_enableFullScreenOnDoubleClick',
       ],
-      ['hls', 'input[name="capLevelToPlayerSize"]', 'ZenzaWatch_video.hls.capLevelToPlayerSize'],
-      ['gamepad', '[data-config-name="needFocus"]', 'ZenzaGamePad_config_needFocus'],
+      ['hls', 'input[name="capLevelToPlayerSize"]', 'FutatsumeWatch_video.hls.capLevelToPlayerSize'],
+      ['gamepad', '[data-config-name="needFocus"]', 'FutatsumeGamePad_config_needFocus'],
       ['heatsync', '[data-config-name="turbo.enabled"]', 'HeatSync_config_turbo.enabled'],
     ] as const) {
       await open(session, name);
@@ -297,7 +297,7 @@ async function main(): Promise<void> {
     await evaluate(session, `window.FutatsumeWatch.external.execCommand('close')`);
     await check(
       session,
-      `!${panel('heatsync')}.open && !document.querySelector('#zenzaVideoPlayerDialog').classList.contains('is-open')`,
+      `!${panel('heatsync')}.open && !document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
       'プレイヤー終了時に設定と背景も閉じる'
     );
     if (errors.length) throw Error(errors.join('\n'));

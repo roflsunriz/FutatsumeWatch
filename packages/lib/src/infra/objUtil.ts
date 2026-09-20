@@ -12,16 +12,10 @@ interface ObjUtil {
   mapToObj: (map: unknown) => unknown;
 }
 
-import { bounce } from './bounce';
 //===BEGIN===
 const objUtil: ObjUtil = (() => {
   const isObject: IsObject = (e: unknown): e is Record<string | symbol, unknown> => e !== null && e instanceof Object;
-  const PROPS = Symbol('PROPS');
-  const REVISION = Symbol('REVISION');
-  const CHANGED = Symbol('CHANGED');
-  const HAS = Symbol('HAS');
-  const SET = Symbol('SET');
-  const GET = Symbol('GET');
+
   return {
     bridge: (self, target, keys = null) => {
       (keys || Object.getOwnPropertyNames(target.constructor.prototype))

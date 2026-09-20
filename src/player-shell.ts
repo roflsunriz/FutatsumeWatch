@@ -72,11 +72,11 @@ export class PlayerShell {
           ?.click();
       else
         this.command(
-          { hls: 'toggleHLSDebug', gamepad: 'toggleZenzaGamePadConfig', heatsync: 'toggleHeatSyncDialog' }[panel]
+          { hls: 'toggleHLSDebug', gamepad: 'toggleFutatsumeGamePadConfig', heatsync: 'toggleHeatSyncDialog' }[panel]
         );
     });
     container.classList.add('fw-player');
-    this.info = this.require('.zenzaWatchVideoInfoPanel');
+    this.info = this.require('.futatsumeWatchVideoInfoPanel');
     this.info.id = 'fw-details';
     this.info.setAttribute('aria-label', this.text.details);
     this.info.setAttribute('role', 'region');
@@ -137,7 +137,7 @@ export class PlayerShell {
     this.tagStrip = document.createElement('section');
     this.tagStrip.className = 'fw-tags';
     this.tagStrip.setAttribute('aria-label', t.tags);
-    const tags = container.querySelector('.zenzaWatchVideoHeaderPanel .videoTagsContainer');
+    const tags = container.querySelector('.futatsumeWatchVideoHeaderPanel .videoTagsContainer');
     if (tags) this.tagStrip.append(tags);
     this.tagStrip.inert = true;
     container.append(this.controls, this.backdrop, this.tagStrip, this.menu);

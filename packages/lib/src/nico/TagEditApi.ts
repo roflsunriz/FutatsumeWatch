@@ -51,7 +51,7 @@ class TagEditApi {
       });
   }
 
-  async add({ videoId, tag, csrfToken, editKey, ownerLock = 0 }: TagEditLoadParams): Promise<unknown> {
+  async add({ videoId, tag, editKey }: TagEditLoadParams): Promise<unknown> {
     const encodedTag = encodeURIComponent(tag as string);
     const url = `https://nvapi.nicovideo.jp/v2/videos/${videoId}/tags?tag=${encodedTag}`;
     //const url = `/tag_edit/${videoId}/`;
@@ -90,7 +90,7 @@ class TagEditApi {
     //return await this.load(videoId);
   }
 
-  async remove({ videoId, tag = '', id, csrfToken, editKey, ownerLock = 0 }: TagEditLoadParams): Promise<unknown> {
+  async remove({ videoId, tag = '', editKey }: TagEditLoadParams): Promise<unknown> {
     const encodedTag = encodeURIComponent(tag);
     const url = `https://nvapi.nicovideo.jp/v2/videos/${videoId}/tags?tag=${encodedTag}`;
 

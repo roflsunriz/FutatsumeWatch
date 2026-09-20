@@ -10,9 +10,7 @@ import { NicoSearchApiV2Loader } from '../../../lib/src/nico/VideoSearch';
 import { PlayListSession } from './PlayListSession';
 import { VideoListView } from './VideoListView';
 import { PlayListView } from './PlayListView';
-
 import { textUtil } from '../../../lib/src/text/textUtil';
-import { MylistApiLoader } from '../../../lib/src/nico/MylistApiLoader';
 import { global } from '../../../../src/FutatsumeWatchIndex';
 import type { SearchQueryParams } from '../../../lib/src/nico/VideoSearch';
 

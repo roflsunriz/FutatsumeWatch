@@ -1,4 +1,3 @@
-import { util } from '../../../../src/util';
 import { VideoSessionWorker } from './VideoSessionWorker';
 
 interface StoryboardVideoInfo {

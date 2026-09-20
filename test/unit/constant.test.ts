@@ -40,8 +40,8 @@ describe('constant', () => {
 
   it('共通 CSS が変数ブロックと主要クラスを含む', () => {
     expect(CONSTANT.COMMON_CSS).toContain(CONSTANT.BASE_CSS_VARS);
-    expect(CONSTANT.COMMON_CSS).toContain('.ZenButton');
-    expect(CONSTANT.COMMON_CSS).toContain('.zenzaPopupMenu');
+    expect(CONSTANT.COMMON_CSS).toContain('.FutatsumeButton');
+    expect(CONSTANT.COMMON_CSS).toContain('.futatsumePopupMenu');
   });
 
   it('スクロールバー CSS が対象セレクターを含む', () => {

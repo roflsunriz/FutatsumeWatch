@@ -2,7 +2,7 @@ import { CommentRenderer, cloneDefaultSettings } from 'comment-overlay';
 import type { Comment, RendererSettings } from 'comment-overlay';
 import { installCommentDurations } from './comment-overlay-timing';
 import { Config } from './Config';
-import type { NicoComment } from '../packages/zenza/src/commentLayer/NicoComment';
+import type { NicoComment } from '../packages/futatsume/src/commentLayer/NicoComment';
 import { overlayEntry, decorateOverlayComment, commentPresentation } from './comment-overlay-data';
 import { exportCommentHtml, exportCommentXml } from './comment-overlay-export';
 

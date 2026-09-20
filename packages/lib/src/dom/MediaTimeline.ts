@@ -67,21 +67,21 @@ class MediaTimeline {
   }
   initEventMap(): Map<string, (e: Event) => void> {
     const map: Record<string, (e: Event) => void> = {
-      pause: (e) => {
+      pause: () => {
         // console.nicoru('paused', this.paused, this.media.paused, this.currentTime, this.media.currentTime);
         this.paused = true;
         this.currentTime = this.media!.currentTime;
       },
-      play: (e) => {
+      play: () => {
         // console.nicoru('play');
         this.currentTime = this.media!.currentTime;
         this.paused = false;
       },
-      seeked: (e) => {
+      seeked: () => {
         // console.nicoru('seeked');
         this.currentTime = this.media!.currentTime;
       },
-      ratechange: (e) => {
+      ratechange: () => {
         // console.nicoru('ratechange');
         this.playbackRate = this.media!.playbackRate;
         this.currentTime = this.media!.currentTime;

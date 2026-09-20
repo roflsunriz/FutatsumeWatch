@@ -40,13 +40,13 @@ CONSTANT.BASE_CSS_VARS = (() => {
     'hatsune-color': '#039393',
     'enabled-button-color': '#9cf',
   };
-  const dt = new Date().toISOString();
+
   // if (/^\d{4}-(03-09|08-31)/.test(dt)) {
   vars['scrollbar-thumb-color'] = vars['hatsune-color'];
   // }
 
   return (
-    '#zenzaVideoPlayerDialog, .zenzaRoot {\n' +
+    '#futatsumeVideoPlayerDialog, .futatsumeRoot {\n' +
     Object.keys(vars)
       .map((key) => `--${key}:${(vars as Record<string, string>)[key] as string};`)
       .join('\n') +
@@ -67,14 +67,15 @@ CONSTANT.COMMON_CSS = `
     contain: paint;
   }
 
-  .ZenButton {
+  .FutatsumeButton {
     display: none;
     opacity: 0.8;
     position: absolute;
     z-index: ${CONSTANT.BASE_Z_INDEX + 100000};
     cursor: pointer;
     font-size: 8pt;
-    width: 32px;
+    min-width: 32px;
+    width: max-content;
     height: 26px;
     padding: 0;
     line-height: 26px;
@@ -85,26 +86,27 @@ CONSTANT.COMMON_CSS = `
     transform: translate(-50%, -50%);
     contain: layout style;
   }
-  .ZenButton:hover {
+  .FutatsumeButton:hover {
     opacity: 1;
   }
-    .ZenButtonInner {
+    .FutatsumeButtonInner {
+      padding-inline: 8px;
       background: #eee;
       color: #000;
       border: outset 1px;
       box-shadow: 2px 2px rgba(0, 0, 0, 0.8);
     }
-    .ZenButton:active .ZenButtonInner {
+    .FutatsumeButton:active .FutatsumeButtonInner {
       border: inset 1px;
       transition: translate(2px, 2px);
       box-shadow: 0 0 rgba(0, 0, 0, 0.8);
     }
 
-  .ZenButton.show {
+  .FutatsumeButton.show {
     display: inline-block;
   }
 
-  .zenzaPopupMenu {
+  .futatsumePopupMenu {
     display: block;
     position: absolute;
     background: var(--base-bg-color);
@@ -119,18 +121,18 @@ CONSTANT.COMMON_CSS = `
     user-select: none;
   }
 
-  .zenzaPopupMenu:not(.show) {
+  .futatsumePopupMenu:not(.show) {
     transition: none;
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
   }
 
-  .zenzaPopupMenu ul {
+  .futatsumePopupMenu ul {
     padding: 0;
   }
 
-  .zenzaPopupMenu ul > li {
+  .futatsumePopupMenu ul > li {
     position: relative;
     margin: 2px 4px;
     white-space: nowrap;
@@ -139,37 +141,37 @@ CONSTANT.COMMON_CSS = `
     list-style-type: none;
     float: inherit;
   }
-  .zenzaPopupMenu ul > li + li {
+  .futatsumePopupMenu ul > li + li {
     border-top: 1px dotted var(--item-border-color);
   }
 
-  .zenzaPopupMenu ul > li.selected {
+  .futatsumePopupMenu ul > li.selected {
     font-weight: bolder;
   }
 
-  .zenzaPopupMenu ul > li:hover {
+  .futatsumePopupMenu ul > li:hover {
     background: #663;
   }
-  .zenzaPopupMenu ul > li.separator {
+  .futatsumePopupMenu ul > li.separator {
     border: 1px outset;
     height: 2px;
     width: 90%;
   }
-  .zenzaPopupMenu li > span {
+  .futatsumePopupMenu li > span {
     box-sizing: border-box;
     margin-left: 8px;
     display: inline-block;
     cursor: pointer;
   }
-  .zenzaPopupMenu ul > li.selected > span:before {
+  .futatsumePopupMenu ul > li.selected > span:before {
     content: '✔';
     left: 0;
     position: absolute;
   }
-  .zenzaPopupMenu.show {
+  .futatsumePopupMenu.show {
     opacity: 0.8;
   }
-  .zenzaPopupMenu .caption {
+  .futatsumePopupMenu .caption {
     padding: 2px 4px;
     text-align: center;
     margin: 0;
@@ -177,7 +179,7 @@ CONSTANT.COMMON_CSS = `
     background: #666;
     color: #fff;
   }
-  .zenzaPopupMenu .triangle {
+  .futatsumePopupMenu .triangle {
     position: absolute;
     width: 16px;
     height: 16px;
@@ -191,30 +193,30 @@ CONSTANT.COMMON_CSS = `
     transform: translate(-9999px, 0);
   }
 
-  #ZenzaWatchVideoPlayerContainer .atsumori-root {
+  #FutatsumeWatchVideoPlayerContainer .atsumori-root {
     position: absolute;
     z-index: 10;
   }
 
-  #zenzaVideoPlayerDialog.is-guest .forMember {
+  #futatsumeVideoPlayerDialog.is-guest .forMember {
     display: none;
   }
-  #zenzaVideoPlayerDialog .forGuest {
+  #futatsumeVideoPlayerDialog .forGuest {
     display: none;
   }
-  #zenzaVideoPlayerDialog.is-guest .forGuest {
+  #futatsumeVideoPlayerDialog.is-guest .forGuest {
     display: inherit;
   }
 
   .scalingUI {
-    transform: scale(var(--zenza-ui-scale));
+    transform: scale(var(--futatsume-ui-scale));
   }
 `.trim();
 
 CONSTANT.SCROLLBAR_CSS = `
   .videoInfoTab::-webkit-scrollbar,
   #listContainer::-webkit-scrollbar,
-  .zenzaCommentPreview::-webkit-scrollbar,
+  .futatsumeCommentPreview::-webkit-scrollbar,
   .mylistSelectMenuInner::-webkit-scrollbar {
     background: var(--scrollbar-bg-color);
     width: 16px;
@@ -222,7 +224,7 @@ CONSTANT.SCROLLBAR_CSS = `
 
   .videoInfoTab::-webkit-scrollbar-thumb,
   #listContainer::-webkit-scrollbar-thumb,
-  .zenzaCommentPreview::-webkit-scrollbar-thumb,
+  .futatsumeCommentPreview::-webkit-scrollbar-thumb,
   .mylistSelectMenuInner::-webkit-scrollbar-thumb {
     border-radius: 0;
     background: var(--scrollbar-thumb-color);
@@ -231,7 +233,7 @@ CONSTANT.SCROLLBAR_CSS = `
 
   .videoInfoTab::-webkit-scrollbar-button,
   #listContainer::-webkit-scrollbar-button,
-  .zenzaCommentPreview::-webkit-scrollbar-button,
+  .futatsumeCommentPreview::-webkit-scrollbar-button,
   .mylistSelectMenuInner::-webkit-scrollbar-button {
     display: none;
   }

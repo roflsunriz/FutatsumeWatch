@@ -1,5 +1,3 @@
-import { bounce } from '../packages/lib/src/infra/bounce';
-
 interface UQueryArray {
   [index: number]: Element;
   length: number;
@@ -172,7 +170,7 @@ void AntiPrototypeJs().then(() => {
       },
     };
     if (ownKeys) {
-      handler.ownKeys = function (target) {
+      handler.ownKeys = function () {
         return ownKeys();
       };
     }
@@ -398,7 +396,7 @@ void AntiPrototypeJs().then(() => {
         for (const key of Object.keys(localStorage).sort()) {
           try {
             result[key] = JSON.parse(localStorage[key] as string);
-          } catch (e) {
+          } catch {
             result[key] = localStorage[key];
           }
         }
@@ -410,7 +408,7 @@ void AntiPrototypeJs().then(() => {
         for (const key of Object.keys(sessionStorage).sort()) {
           try {
             result[key] = JSON.parse(sessionStorage[key] as string);
-          } catch (e) {
+          } catch {
             result[key] = sessionStorage[key];
           }
         }

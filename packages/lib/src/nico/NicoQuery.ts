@@ -146,8 +146,6 @@ const ItemDataConverter = {
     };
   },
   fromUploadedVideo: (data: FlapiVideoItem): VideoItemData => {
-    const isChannel = data.id.startsWith('so');
-    const isMymemory = /^[0-9]+$/.test(data.id);
     const thumbnail = data.is_middle_thumbnail ? `${data.thumbnail_url}.M` : data.thumbnail_url;
     const [min, sec] = (data.length as string).split(':');
     const postedAt = new Date(data.first_retrieve.replace(/-/g, '/')).toISOString();

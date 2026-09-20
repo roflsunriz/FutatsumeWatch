@@ -1,0 +1,18 @@
+{
+  "local": {
+    "FutatsumeWatch_storageVersion": "1",
+    "FutatsumeWatch_volume": "0.42",
+    "ZenzaWatch_volume": "0.12",
+    "FutatsumeWatch_autoZenTube": "true",
+    "FutatsumeWatch_bestZenTube": "true",
+    "ZenzaWatch_mute": "true",
+    "ZenzaWatch_video.hls.capLevelToPlayerSize": "true",
+    "ZenzaGamePad_config_needFocus": "true",
+    "MylistPocket_config_ng.syncZenza": "true"
+  },
+  "session": {
+    "ZenzaWatch_PlayingStatus": "{\"watchId\":\"sm9\",\"playing\":false,\"currentTime\":12}",
+    "ZenzaWatchPlaylist": "{\"items\":[{\"watchId\":\"sm9\"}]}"
+  },
+  "absentGlobals": ["ZenzaWatch", "ZenzaHLS", "ZenzaAdvancedSettings"]
+}

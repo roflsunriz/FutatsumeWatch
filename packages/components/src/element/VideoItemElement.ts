@@ -92,6 +92,8 @@ const { VideoItemElement, VideoItemProps } = (() => {
       props: typeof VideoItemProps = VideoItemProps,
       events: ElementEvents = {}
     ): Promise<TemplateResult> {
+      // 共通レンダラーの引数順を保ち、描画内容は props から取得する。
+      void state;
       const { html } = (dll.list || (await this.importLit())) as LitModule;
 
       const watchId = props.watchId;

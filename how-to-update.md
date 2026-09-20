@@ -22,6 +22,12 @@ UIを変更した場合は、専用ブラウザに対して`bun run dev:verify:u
 
 ## 公開前
 
+名称移行後の連携先は`window.FutatsumeWatch`、初期化イベントは`BeforeFutatsumeWatchInitialize` / `FutatsumeWatchInitialize`です。DOMの`zenza` / `zen`接頭辞は`futatsume`へ、GamePadのコマンドは`toggleFutatsumeGamePadConfig`へ変わります。旧名を使う外部連携も同時に更新してください。lintは警告を含めて0件を必須にします。
+
+設定の移行元キーは`src/config-migration.ts`だけで管理します。旧設定ファイルのTube設定名も読み込み時に変換します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。配布物は`bun run build`で再生成します。
+
+名称や保存キーの変更時は`bun run dev:verify:migration`で隔離したブラウザコンテキストへ旧設定フィクスチャを読み込み、初期化イベント・実設定モデル・保存キー・旧データ保持を確認します。接続先はほかの検証と同じ`FUTATSUME_DEV_PORT`を使います。
+
 - プッシュ時は `src/version.ts` と `package.json`、READMEの版を更新します。ユーザースクリプトの版と説明はVite設定から生成します。
 - CHANGELOGのUnreleasedを対象版へ整理し、ユーザースクリプトのdescriptionにも変更要点を反映します。
 - 型検査・ビルドだけを動作確認の代わりにしません。未検証の認証操作やブラウザは明記します。

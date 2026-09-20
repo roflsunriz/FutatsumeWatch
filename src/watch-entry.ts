@@ -20,7 +20,7 @@ export function watchIdFromUrl(value: string, base = location.href): string | nu
 
 // 公式の意味を持つdata属性とプロフィールURLを使い、生成クラス名に依存しない。
 export function findWatchEntrySlot(doc: Document): { parent: HTMLElement; before: Element } | null {
-  const headings = [...doc.querySelectorAll('h1')].filter((heading) => !heading.closest('#zenzaVideoPlayerDialog'));
+  const headings = [...doc.querySelectorAll('h1')].filter((heading) => !heading.closest('#futatsumeVideoPlayerDialog'));
   for (const heading of headings) {
     let row = heading.parentElement;
     for (let depth = 0; row && depth < 4; depth++, row = row.parentElement) {
@@ -113,7 +113,7 @@ export function installWatchEntry(): WatchEntry {
   const open = (id: string): void => {
     if (!openVideo || state !== 'ready') return;
     document.querySelectorAll('video').forEach((video) => {
-      if (!video.closest('#zenzaVideoPlayerDialog')) video.pause();
+      if (!video.closest('#futatsumeVideoPlayerDialog')) video.pause();
     });
     openVideo(id);
   };
@@ -148,7 +148,7 @@ export function installWatchEntry(): WatchEntry {
     } else button.remove();
     for (const [link, control] of mounted) {
       const id = watchIdFromUrl(link.href);
-      if (!link.isConnected || !id || isWatch || link.closest('#zenzaVideoPlayerDialog')) {
+      if (!link.isConnected || !id || isWatch || link.closest('#futatsumeVideoPlayerDialog')) {
         control.remove();
         mounted.delete(link);
       } else if (control.dataset.futatsumeVideo !== id) control.dataset.futatsumeVideo = id;
@@ -160,7 +160,7 @@ export function installWatchEntry(): WatchEntry {
         !id ||
         !link.textContent?.trim() ||
         link.querySelector('img') ||
-        link.closest('#zenzaVideoPlayerDialog,#mylistPocket-popup')
+        link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')
       )
         continue;
       const existing = mounted.get(link);

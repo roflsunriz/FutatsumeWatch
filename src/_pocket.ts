@@ -1,22 +1,17 @@
 import _ from 'lodash';
-
 import { gate } from '../packages/lib/src/message/gate';
 import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
 import { netUtil } from '../packages/lib/src/infra/netUtil';
 import { textUtil } from '../packages/lib/src/text/textUtil';
 import { workerUtil } from '../packages/lib/src/infra/workerUtil';
-import { IndexedDbStorage } from '../packages/lib/src/infra/IndexedDbStorage';
 import { css } from '../packages/lib/src/css/css';
-import { Emitter, PromiseHandler, EmitterInitFunc } from '../packages/lib/src/Emitter';
+import { Emitter } from '../packages/lib/src/Emitter';
 import { AntiPrototypeJs } from '../packages/lib/src/infra/AntiPrototype-js';
 import { CrossDomainGate } from '../packages/lib/src/infra/CrossDomainGate';
-import { StorageWriter } from '../packages/lib/src/infra/StorageWriter';
 import { DataStorage } from '../packages/lib/src/infra/DataStorage';
-import { reg } from '../packages/lib/src/text/reg';
 import { parseThumbInfo } from '../packages/lib/src/nico/parseThumbInfo';
 import { ThumbInfoCacheDb } from '../packages/lib/src/nico/ThumbInfoCacheDb';
 import { MylistApiLoader } from '../packages/lib/src/nico/MylistApiLoader';
-import { objUtil } from '../packages/lib/src/infra/objUtil';
 import { bounce } from '../packages/lib/src/infra/bounce';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
 import type { BounceCallback } from '../packages/lib/src/infra/bounce';
@@ -141,7 +136,7 @@ interface CacheItemData {
   expiredAt: unknown;
   data: unknown;
 }
-interface ZenzaExternalApi {
+interface FutatsumeExternalApi {
   sendOrExecCommand(name: string, param: unknown): unknown;
   execCommand(name: string, param: unknown): unknown;
   sendOrOpen(param: unknown): unknown;
@@ -150,11 +145,11 @@ interface ZenzaExternalApi {
   deflistAdd(params: unknown): unknown;
   deflistRemove(params: unknown): unknown;
 }
-interface ZenzaLike {
+interface FutatsumeLike {
   emitter: InstanceType<typeof Emitter>;
   ready?: unknown;
   config: { getValue(key: string): unknown; setValue(key: string, value: unknown): void };
-  external: ZenzaExternalApi;
+  external: FutatsumeExternalApi;
 }
 interface PocketExternal {
   info(watchId: string): unknown;
@@ -175,7 +170,7 @@ interface MylistPocketApi {
 interface PocketWindow {
   MylistPocket: MylistPocketApi;
   MylistPocketLib: { workerUtil: typeof workerUtil };
-  ZenzaWatch?: ZenzaLike;
+  FutatsumeWatch?: FutatsumeLike;
 }
 interface GateApi {
   post(data: unknown, opts: { sessionId: unknown }): void;
@@ -224,7 +219,6 @@ void AntiPrototypeJs().then(() => {
       `%c${PRODUCT}`,
       'font-family: "Apple LiGothic"; padding: 4px; background: red; color: white; font-size: 150%;'
     );
-    const TOKEN = 'r:' + Math.random();
 
     const CONSTANT = {
       BASE_Z_INDEX: 100000,
@@ -233,11 +227,6 @@ void AntiPrototypeJs().then(() => {
     (window as unknown as PocketWindow).MylistPocket = MylistPocket;
 
     const protocol = location.protocol;
-    const global = {
-      debug: MylistPocket.debug,
-      TOKEN,
-      PRODUCT,
-    };
 
     const __css__ = `
       a[href*='watch/'] > g-img {
@@ -265,13 +254,13 @@ void AntiPrototypeJs().then(() => {
         .mylistPocketHoverMenu.is-otherDomain .wwwOnly {
           display: none;
         }
-        .mylistPocketHoverMenu.is-otherDomain:not(.is-zenzaReady) .wwwZenzaOnly {
+        .mylistPocketHoverMenu.is-otherDomain:not(.is-futatsumeReady) .wwwFutatsumeOnly {
           display: none;
         }
-        .mylistPocketHoverMenu .zenzaMenu {
+        .mylistPocketHoverMenu .futatsumeMenu {
           display: none;
         }
-        .mylistPocketHoverMenu.is-zenzaReady .zenzaMenu {
+        .mylistPocketHoverMenu.is-futatsumeReady .futatsumeMenu {
           display: inline-block;
         }
 
@@ -508,10 +497,10 @@ void AntiPrototypeJs().then(() => {
       }
 
 
-    .zenzaPlayerContainer.is-error   #mylistPocket-popup,
-    .zenzaPlayerContainer.is-loading #mylistPocket-popup,
-    .zenzaPlayerContainer.error   #mylistPocket-popup,
-    .zenzaPlayerContainer.loading #mylistPocket-popup {
+    .futatsumePlayerContainer.is-error   #mylistPocket-popup,
+    .futatsumePlayerContainer.is-loading #mylistPocket-popup,
+    .futatsumePlayerContainer.error   #mylistPocket-popup,
+    .futatsumePlayerContainer.loading #mylistPocket-popup {
       opacity: 0;
       pointer-events: none;
     }
@@ -675,17 +664,17 @@ void AntiPrototypeJs().then(() => {
     `.trim();
 
     const __tpl__ = `
-      <div class="mylistPocketHoverMenu scalingUI zen-family">
-        <button class="mylistPocketButton command deflist-add wwwZenzaOnly is-need-login" data-command="deflist"
+      <div class="mylistPocketHoverMenu scalingUI futatsume-family">
+        <button class="mylistPocketButton command deflist-add wwwFutatsumeOnly is-need-login" data-command="deflist"
           tooltip="とりあえずマイリスト">&#x271A;</button>
         <button class="mylistPocketButton command info" data-command="info"
           tooltip="動画情報を表示">？</button>
-        <button class="mylistPocketButton command playlist-queue zenzaMenu" data-command="playlist-queue"
-          tooltip="ZenzaWatchのプレイリストに追加">▶</button>
+        <button class="mylistPocketButton command playlist-queue futatsumeMenu" data-command="playlist-queue"
+          tooltip="FutatsumeWatchのプレイリストに追加">▶</button>
       </div>
       </div>
 
-      <div id="mylistPocket-popup" class="zen-family">
+      <div id="mylistPocket-popup" class="futatsume-family">
         <span slot="video-title">【実況】どんぐりころころの大冒険 Part1(最終回)</span>
         <a href="/watch/sm9" slot="watch-link"></a>
         <img slot="video-thumbnail" data-type="image">
@@ -729,7 +718,7 @@ void AntiPrototypeJs().then(() => {
           .root.is-otherDomain .wwwOnly {
             display: none;
           }
-          .root.is-otherDomain:not(.is-zenzaReady) .wwwZenzaOnly {
+          .root.is-otherDomain:not(.is-futatsumeReady) .wwwFutatsumeOnly {
             display: none;
           }
 
@@ -1207,7 +1196,7 @@ void AntiPrototypeJs().then(() => {
                 text-decoration: line-through;
                 color: #888 !important;
               }
-              .zenzaPlayerContainer .tagItemMenu {
+              .futatsumePlayerContainer .tagItemMenu {
                 margin: 0 8px;
               }
 
@@ -1291,11 +1280,11 @@ void AntiPrototypeJs().then(() => {
                 background: #333;
               }
 
-              .zenza-menu {
+              .futatsume-menu {
                 display: none;
               }
 
-              .is-zenzaReady .zenza-menu {
+              .is-futatsumeReady .futatsume-menu {
                 display: inline-block;
                 background: rgba(0, 0, 0, 0.7);
                 margin-left: 32px;
@@ -1305,8 +1294,8 @@ void AntiPrototypeJs().then(() => {
                 box-shadow: 0 0 16px #000;
               }
 
-              .is-zenzaReady .zenza-menu::after {
-                content: 'ZenzaWatch';
+              .is-futatsumeReady .futatsume-menu::after {
+                content: 'FutatsumeWatch';
                 position: absolute;
                 left: 50%;
                 bottom: 10px;
@@ -1616,7 +1605,7 @@ void AntiPrototypeJs().then(() => {
             <div class="footer-menu scalingUI">
               <div class="regular-menu">
                 <button
-                  class="mylistPocketButton deflist-add pocket-button command command-watch-id wwwZenzaOnly"
+                  class="mylistPocketButton deflist-add pocket-button command command-watch-id wwwFutatsumeOnly"
                   data-command="deflist-add"
                   tooltip="とりあえずマイリスト"
                 >とり</button>
@@ -1638,12 +1627,12 @@ void AntiPrototypeJs().then(() => {
               </div>
 
 
-              <div class="zenza-menu">
+              <div class="futatsume-menu">
                 <button
                   class="pocket-button command command-watch-id"
-                  data-command="zenza-open-now"
-                  tooltip="ZenzaWatchで開く"
-                >Zen</button>
+                  data-command="futatsume-open-now"
+                  tooltip="FutatsumeWatchで開く"
+                >Futatsume</button>
                 <button
                   class="pocket-button command command-watch-id"
                   data-command="playlist-inert"
@@ -1719,14 +1708,14 @@ void AntiPrototypeJs().then(() => {
                 <span>検索結果やランキングのニコニ広告を消す</span>
               </label>
 
-              <label class="setting-label wwwOnly wwwZenzaOnly setting-ng-label">
+              <label class="setting-label wwwOnly wwwFutatsumeOnly setting-ng-label">
                 <input
                   type="checkbox"
                   class="setting-form"
-                  data-config-name="syncZenza"
+                  data-config-name="syncFutatsume"
                   data-config-namespace="ng"
                 >
-                <span>NGタグ・投稿者をZenzaWatchにも反映する</span>
+                <span>NGタグ・投稿者をFutatsumeWatchにも反映する</span>
               </label>
 
               <div class="setting-ng-textarea setting-ng">
@@ -2018,7 +2007,7 @@ void AntiPrototypeJs().then(() => {
         return html;
       };
 
-      util.getSleepPromise = function (sleepTime: number, label = 'sleep'): (result: unknown) => Promise<unknown> {
+      util.getSleepPromise = function (sleepTime: number): (result: unknown) => Promise<unknown> {
         return function (result: unknown): Promise<unknown> {
           return new Promise((resolve) => {
             window.setTimeout(() => {
@@ -2040,59 +2029,62 @@ void AntiPrototypeJs().then(() => {
 
     MylistPocket.emitter = util.emitter = new Emitter();
 
-    const ZenzaDetector = (function () {
+    const FutatsumeDetector = (function () {
       let isReady = false;
-      let Zenza: ZenzaLike | null = null;
+      let Futatsume: FutatsumeLike | null = null;
       const emitter = new Emitter();
 
       const initialize = function (): void {
-        const onZenzaReady = (): void => {
+        const onFutatsumeReady = (): void => {
           isReady = true;
-          Zenza = (window as unknown as PocketWindow).ZenzaWatch!;
+          Futatsume = (window as unknown as PocketWindow).FutatsumeWatch!;
 
-          Zenza.emitter.on('hideHover', () => {
+          Futatsume.emitter.on('hideHover', () => {
             util.emitter.emit('hideHover');
           });
 
-          Zenza.emitter.on('csrfToken', ((token: string) => {
+          Futatsume.emitter.on('csrfToken', ((token: string) => {
             util.emitter.emit('csrfToken', token);
           }) as unknown as EmitterCallback);
 
           const popup = document.getElementById('mylistPocket-popup');
           const defaultContainer = document.getElementById('mylistPocketDomContainer')!;
-          defaultContainer.classList.add('zen-family');
-          let zenzaContainer: Element | null;
-          Zenza.emitter.on('fullScreenStatusChange', ((isFull: boolean) => {
+          defaultContainer.classList.add('futatsume-family');
+          let futatsumeContainer: Element | null;
+          Futatsume.emitter.on('fullScreenStatusChange', ((isFull: boolean) => {
             if (isFull) {
-              if (!zenzaContainer) {
-                zenzaContainer = document.querySelector('.zenzaPlayerContainer');
+              if (!futatsumeContainer) {
+                futatsumeContainer = document.querySelector('.futatsumePlayerContainer');
               }
-              zenzaContainer!.appendChild(popup!);
+              futatsumeContainer!.appendChild(popup!);
             } else {
               defaultContainer.appendChild(popup!);
             }
           }) as unknown as EmitterCallback);
-          emitter.emit('ready', Zenza);
+          emitter.emit('ready', Futatsume);
         };
 
-        if ((window as unknown as PocketWindow).ZenzaWatch && (window as unknown as PocketWindow).ZenzaWatch!.ready) {
-          window.console.log('ZenzaWatch is Ready');
-          onZenzaReady();
+        if (
+          (window as unknown as PocketWindow).FutatsumeWatch &&
+          (window as unknown as PocketWindow).FutatsumeWatch!.ready
+        ) {
+          window.console.log('FutatsumeWatch is Ready');
+          onFutatsumeReady();
         } else {
-          document.body.addEventListener('ZenzaWatchInitialize', function () {
-            window.console.log('ZenzaWatchInitialize MylistPocket');
-            onZenzaReady();
+          document.body.addEventListener('FutatsumeWatchInitialize', function () {
+            window.console.log('FutatsumeWatchInitialize MylistPocket');
+            onFutatsumeReady();
           });
         }
       };
 
-      const detect = function (): Promise<ZenzaLike | null> {
+      const detect = function (): Promise<FutatsumeLike | null> {
         return new Promise((res) => {
           if (isReady) {
-            return res(Zenza);
+            return res(Futatsume);
           }
           emitter.on('ready', () => {
-            res(Zenza);
+            res(Futatsume);
           });
         });
       };
@@ -2118,7 +2110,7 @@ void AntiPrototypeJs().then(() => {
         'ng.owner': '',
         'ng.word': '',
         'ng.tag': '',
-        'ng.syncZenza': false,
+        'ng.syncFutatsume': false,
 
         'fav.owner': '',
         'fav.word': '',
@@ -2193,7 +2185,7 @@ void AntiPrototypeJs().then(() => {
               let item: CacheItemData | null = null;
               try {
                 item = JSON.parse(storage[key] as string) as CacheItemData;
-              } catch (e) {
+              } catch {
                 storage.removeItem(key);
               }
               //console.info(
@@ -2240,7 +2232,7 @@ void AntiPrototypeJs().then(() => {
           let item: CacheItemData | null;
           try {
             item = JSON.parse(this._storage[key] as string) as CacheItemData;
-          } catch (e) {
+          } catch {
             delete this._memory[key];
             this._storage.removeItem(key);
             return null;
@@ -2463,15 +2455,13 @@ void AntiPrototypeJs().then(() => {
 
     MylistPocket.debug.ThumbInfoLoader = ThumbInfoLoader;
 
-    const emitter = util.emitter;
-
     class HoverMenu extends Emitter {
       _view!: HTMLElement;
       _x!: number;
       _y!: number;
       _watchId!: string;
       _hoverElement!: Element | null;
-      _isZenzaReady?: boolean;
+      _isFutatsumeReady?: boolean;
       _deflistButton!: HTMLElement;
       _isBusy?: boolean;
       constructor() {
@@ -2503,10 +2493,10 @@ void AntiPrototypeJs().then(() => {
 
         this._x = this._y = 0;
 
-        void ZenzaDetector.detect().then((ZenzaWatch: unknown) => {
-          this._isZenzaReady = true;
-          this.addClass('is-zenzaReady');
-          (ZenzaWatch as ZenzaLike).emitter.on(
+        void FutatsumeDetector.detect().then((FutatsumeWatch: unknown) => {
+          this._isFutatsumeReady = true;
+          this.addClass('is-futatsumeReady');
+          (FutatsumeWatch as FutatsumeLike).emitter.on(
             'DialogPlayerOpen',
             bounce.time(() => {
               this.hide();
@@ -2680,7 +2670,7 @@ void AntiPrototypeJs().then(() => {
         return !!this._isBusy;
       }
 
-      notifyBeginDeflistUpdate(watchId?: string): void {
+      notifyBeginDeflistUpdate(): void {
         this.addClass('is-deflistUpdating');
       }
 
@@ -2724,7 +2714,7 @@ void AntiPrototypeJs().then(() => {
       _deflistButton!: HTMLElement;
       _videoInfo!: PocketVideoInfo;
       _isInitialized?: boolean;
-      _isZenzaReady?: boolean;
+      _isFutatsumeReady?: boolean;
       _boundOnBodyMouseDown!: (e: Event) => void;
       constructor({ host, tpl }: { host: Element; tpl: HTMLTemplateElement }) {
         super();
@@ -2798,10 +2788,10 @@ void AntiPrototypeJs().then(() => {
         this._favConfig.on('update', debUpdateFavNg);
         //this._mylistConfig.on('update', debUpdateFavNg);
 
-        void ZenzaDetector.detect().then(() => {
-          this._isZenzaReady = true;
-          this.addClass('is-zenzaReady');
-          (window as unknown as PocketWindow).ZenzaWatch!.emitter.on(
+        void FutatsumeDetector.detect().then(() => {
+          this._isFutatsumeReady = true;
+          this.addClass('is-futatsumeReady');
+          (window as unknown as PocketWindow).FutatsumeWatch!.emitter.on(
             'DialogPlayerOpen',
             bounce.time(() => {
               this.hide();
@@ -2876,12 +2866,15 @@ void AntiPrototypeJs().then(() => {
 
         const onUpdate = bounce.time(refresh, 100) as unknown as (...args: never[]) => void;
 
-        const syncZenza = bounce.time((): void => {
-          if (!this._ngConfig.props.syncZenza || !this._isZenzaReady) {
+        const syncFutatsume = bounce.time((): void => {
+          if (!this._ngConfig.props.syncFutatsume || !this._isFutatsumeReady) {
             return;
           }
-          (window as unknown as PocketWindow).ZenzaWatch!.config.setValue('videoTagFilter', this._ngConfig.props.tag);
-          (window as unknown as PocketWindow).ZenzaWatch!.config.setValue(
+          (window as unknown as PocketWindow).FutatsumeWatch!.config.setValue(
+            'videoTagFilter',
+            this._ngConfig.props.tag
+          );
+          (window as unknown as PocketWindow).FutatsumeWatch!.config.setValue(
             'videoOwnerFilter',
             this._ngConfig.props.owner
           );
@@ -2893,7 +2886,7 @@ void AntiPrototypeJs().then(() => {
         this._favConfig.on('update', onUpdate);
         this._ngConfig.on('update', (): void => {
           onUpdate();
-          syncZenza();
+          syncFutatsume();
         });
       }
 
@@ -3162,7 +3155,7 @@ void AntiPrototypeJs().then(() => {
       _createDescription(elm: Element, data: string): void {
         (elm as unknown as HTMLElement).innerHTML = util.httpLink(data);
         const watchReg = /(watch|shorts)\/([a-z0-9]+)/;
-        const isZenzaReady = this._isZenzaReady;
+        const isFutatsumeReady = this._isFutatsumeReady;
         //if (util.isFirefox()) { return; }
         Array.from(elm.querySelectorAll('.videoLink[href*="watch/"],.videoLink[href*="shorts/"]')).forEach((link) => {
           const href = link.getAttribute('href');
@@ -3170,10 +3163,10 @@ void AntiPrototypeJs().then(() => {
             return;
           }
           const watchId = RegExp.$2;
-          if (isZenzaReady) {
+          if (isFutatsumeReady) {
             link.classList.add('noHoverMenu');
             link.classList.add('command');
-            link.setAttribute('data-command', 'zenza-open');
+            link.setAttribute('data-command', 'futatsume-open');
             link.setAttribute('data-param', watchId);
           }
           const label = document.createElement('span');
@@ -3191,7 +3184,6 @@ void AntiPrototypeJs().then(() => {
           btn.setAttribute('data-param', watchId);
           link.appendChild(btn);
 
-          const thumbnail = util.getThumbnailUrlByVideoId(watchId);
           const img = document.createElement('img');
           img.className = 'videoThumbnail preview';
           img.src = 'https://nicovideo.cdn.nimg.jp/uni/img/common/video_deleted.jpg'; //(thumbnail || '').replace(/^http:/, '');
@@ -3209,11 +3201,10 @@ void AntiPrototypeJs().then(() => {
         this.removeClass('is-ok');
       }
 
-      _createTagSlot(tag: PocketVideoTag, { isChannel, owner }: PocketVideoInfo): Element {
+      _createTagSlot(tag: PocketVideoTag, { isChannel }: PocketVideoInfo): Element {
         const text = util.escapeHtml(tag.text);
         const lock = tag.isLocked ? 'is-locked' : '';
         const span = document.createElement('span');
-        const ownerId = owner ? owner.id : '';
 
         const a = document.createElement('a');
         const target = this._config.props.openNewWindow ? '_blank' : '_self';
@@ -3251,11 +3242,11 @@ void AntiPrototypeJs().then(() => {
         bt.innerHTML = '&#x2716;'; //'&#8416;'; // &#x2716;
         span.appendChild(bt);
 
-        const menu = `<zenza-tag-item-menu
+        const menu = `<futatsume-tag-item-menu
           class="tagItemMenu"
           data-text="${encodeURIComponent(text)}"
           data-has-nicodic="0"
-        ></zenza-tag-item-menu>`;
+        ></futatsume-tag-item-menu>`;
         span.insertAdjacentHTML('afterbegin', menu);
 
         span.className = 'tag-container';
@@ -3264,7 +3255,7 @@ void AntiPrototypeJs().then(() => {
         return span;
       }
 
-      notifyBeginDeflistUpdate(watchId?: string): void {
+      notifyBeginDeflistUpdate(): void {
         this.addClass('is-deflistUpdating');
       }
 
@@ -3429,11 +3420,11 @@ void AntiPrototypeJs().then(() => {
         });
       }
 
-      let zenza: ZenzaLike;
+      let futatsume: FutatsumeLike;
       let token: unknown;
-      return ZenzaDetector.detect()
+      return FutatsumeDetector.detect()
         .then((z) => {
-          zenza = z as ZenzaLike;
+          futatsume = z as FutatsumeLike;
         })
         .then(() => {
           return CsrfTokenLoader.load().then(
@@ -3453,7 +3444,7 @@ void AntiPrototypeJs().then(() => {
         })
         .then((info) => {
           if (!enableAutoComment) {
-            return zenza.external.deflistAdd({ watchId, token });
+            return futatsume.external.deflistAdd({ watchId, token });
           }
 
           const thumb = info as ThumbInfoOk;
@@ -3461,7 +3452,7 @@ void AntiPrototypeJs().then(() => {
           const description = enableAutoComment
             ? `投稿者: ${thumb.owner!.name} ${thumb.owner!.linkId} ${originalVideoId}`
             : '';
-          return zenza.external.deflistAdd({ watchId, description, token });
+          return futatsume.external.deflistAdd({ watchId, description, token });
         });
     };
 
@@ -3470,11 +3461,11 @@ void AntiPrototypeJs().then(() => {
         return MylistApiLoader.removeDeflistItem(watchId);
       }
 
-      let zenza: ZenzaLike;
+      let futatsume: FutatsumeLike;
       let token: unknown;
-      return ZenzaDetector.detect()
+      return FutatsumeDetector.detect()
         .then((z) => {
-          zenza = z as ZenzaLike;
+          futatsume = z as FutatsumeLike;
         })
         .then(() => {
           return CsrfTokenLoader.load().then(
@@ -3487,7 +3478,7 @@ void AntiPrototypeJs().then(() => {
           );
         })
         .then(() => {
-          return zenza.external.deflistRemove({ watchId, token });
+          return futatsume.external.deflistRemove({ watchId, token });
         });
     };
 
@@ -3600,8 +3591,8 @@ void AntiPrototypeJs().then(() => {
       document.body.appendChild(f);
     };
 
-    const initZenzaBridge = (): void => {
-      ZenzaDetector.initialize();
+    const initFutatsumeBridge = (): void => {
+      FutatsumeDetector.initialize();
     };
 
     const createVideoInfoView = (): VideoInfoView => {
@@ -3711,31 +3702,31 @@ void AntiPrototypeJs().then(() => {
           case 'mylist-comment-open':
             window.open(protocol + '//www.nicovideo.jp/mylistcomment/video/' + (param as string));
             break;
-          case 'zenza-open-now':
+          case 'futatsume-open-now':
             if (
-              (window as unknown as PocketWindow).ZenzaWatch!.config &&
-              (window as unknown as PocketWindow).ZenzaWatch!.config.getValue('enableSingleton')
+              (window as unknown as PocketWindow).FutatsumeWatch!.config &&
+              (window as unknown as PocketWindow).FutatsumeWatch!.config.getValue('enableSingleton')
             ) {
-              (window as unknown as PocketWindow).ZenzaWatch!.external.sendOrExecCommand('openNow', param);
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.sendOrExecCommand('openNow', param);
             } else {
-              (window as unknown as PocketWindow).ZenzaWatch!.external.execCommand('openNow', param);
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.execCommand('openNow', param);
             }
             break;
-          case 'zenza-open':
-            if ((window as unknown as PocketWindow).ZenzaWatch!.config.getValue('enableSingleton')) {
-              (window as unknown as PocketWindow).ZenzaWatch!.external.sendOrOpen(param);
+          case 'futatsume-open':
+            if ((window as unknown as PocketWindow).FutatsumeWatch!.config.getValue('enableSingleton')) {
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.sendOrOpen(param);
             } else {
-              (window as unknown as PocketWindow).ZenzaWatch!.external.open(param);
+              (window as unknown as PocketWindow).FutatsumeWatch!.external.open(param);
             }
             break;
           case 'playlist-inert':
-            (window as unknown as PocketWindow).ZenzaWatch!.external.playlist.insert(param);
+            (window as unknown as PocketWindow).FutatsumeWatch!.external.playlist.insert(param);
             break;
           case 'playlist-queue':
-            (window as unknown as PocketWindow).ZenzaWatch!.external.playlist.add(param);
+            (window as unknown as PocketWindow).FutatsumeWatch!.external.playlist.add(param);
             break;
           case 'deflist-add':
-            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate('is-deflistUpdating');
+            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate();
 
             return deflistAdd(param as string)
               .then(util.getSleepPromise(1000, 'deflist-add'))
@@ -3749,7 +3740,7 @@ void AntiPrototypeJs().then(() => {
                 }
               );
           case 'deflist-remove':
-            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate('is-deflistUpdating');
+            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate();
 
             return deflistRemove(param as string)
               .then(util.getSleepPromise(1000, 'deflist-remove'))
@@ -3967,16 +3958,13 @@ void AntiPrototypeJs().then(() => {
       ngConfig.on(
         'update',
         // eslint-disable-next-line @typescript-eslint/no-misused-promises -- debounce化関数の戻り値はemitterが無視するため許容する
-        bounce.time(
-          (({ key, value }: { key: string; value: unknown }): void => {
-            ngChecker.init({
-              word: ngConfig.props.word as string,
-              tag: ngConfig.props.tag as string,
-              owner: ngConfig.props.owner as string,
-            });
-          }) as unknown as BounceCallback,
-          100
-        )
+        bounce.time((): void => {
+          ngChecker.init({
+            word: ngConfig.props.word as string,
+            tag: ngConfig.props.tag as string,
+            owner: ngConfig.props.owner as string,
+          });
+        }, 100)
       );
 
       const favChecker = new MatchChecker({
@@ -3988,16 +3976,13 @@ void AntiPrototypeJs().then(() => {
       favConfig.on(
         'update',
         // eslint-disable-next-line @typescript-eslint/no-misused-promises -- debounce化関数の戻り値はemitterが無視するため許容する
-        bounce.time(
-          (({ key, value }: { key: string; value: unknown }): void => {
-            favChecker.init({
-              word: favConfig.props.word as string,
-              tag: favConfig.props.tag as string,
-              owner: favConfig.props.owner as string,
-            });
-          }) as unknown as BounceCallback,
-          100
-        )
+        bounce.time((): void => {
+          favChecker.init({
+            word: favConfig.props.word as string,
+            tag: favConfig.props.tag as string,
+            owner: favConfig.props.owner as string,
+          });
+        }, 100)
       );
 
       return { ngChecker, favChecker };
@@ -4205,7 +4190,7 @@ void AntiPrototypeJs().then(() => {
     const init = async (): Promise<void> => {
       await config.promise('restore');
       initDom();
-      initZenzaBridge();
+      initFutatsumeBridge();
 
       const infoView = createVideoInfoView();
       const dispatcher = createCommandDispatcher({ infoView });

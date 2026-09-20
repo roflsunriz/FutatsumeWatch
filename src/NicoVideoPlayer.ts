@@ -3,7 +3,7 @@ import { global } from './FutatsumeWatchIndex';
 import { NicoCommentPlayer } from './CommentPlayer';
 import type { CommentPlayerOptions, CommentPlayerChatFilter, CommentPlayerParams } from './CommentPlayer';
 import { util, Config, Fullscreen, VideoCaptureUtil, BaseViewComponent } from './util';
-import { YouTubeWrapper } from '../packages/zenza/src/videoPlayer/YouTubeWrapper';
+import { YouTubeWrapper } from '../packages/futatsume/src/videoPlayer/YouTubeWrapper';
 import { CONSTANT } from './constant';
 import { Emitter } from './baselib';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
@@ -710,7 +710,7 @@ class ContextMenu extends BaseViewComponent {
     document.body.addEventListener('click', this._bound.onBodyClick);
     const view = this._view;
 
-    this._onBeforeShow(x, y);
+    this._onBeforeShow();
 
     view.style.left = cssUtil.px(Math.max(0, Math.min(x, global.innerWidth - view.offsetWidth))) as string;
     view.style.top = cssUtil.px(Math.max(0, Math.min(y + 20, global.innerHeight - view.offsetHeight))) as string;
@@ -730,7 +730,7 @@ class ContextMenu extends BaseViewComponent {
     return this._state.isOpen;
   }
 
-  _onBeforeShow(x?: number, y?: number): void {
+  _onBeforeShow(): void {
     // チェックボックスなどを反映させるならココ
     const pr = parseFloat(String(this._playerState.playbackRate));
     const view = (util as unknown as NvpUtil).$(this._view);
@@ -766,7 +766,7 @@ class ContextMenu extends BaseViewComponent {
 }
 
 ContextMenu.__css__ = `
-  .zenzaPlayerContextMenu {
+  .futatsumePlayerContextMenu {
     position: fixed;
     background: rgba(255, 255, 255, 0.8);
     overflow: visible;
@@ -779,30 +779,30 @@ ContextMenu.__css__ = `
     user-select: none;
     color: #000;
   }
-  .zenzaPlayerContextMenu.is-Open {
+  .futatsumePlayerContextMenu.is-Open {
     display: block;
     opacity: 0.5;
   }
-  .zenzaPlayerContextMenu.is-Open:hover {
+  .futatsumePlayerContextMenu.is-Open:hover {
     opacity: 1;
   }
-  .is-fullscreen .zenzaPlayerContextMenu {
+  .is-fullscreen .futatsumePlayerContextMenu {
     position: absolute;
   }
 
-  .zenzaPlayerContextMenu:not(.is-Open) {
+  .futatsumePlayerContextMenu:not(.is-Open) {
     display: none;
     /*left: -9999px;
     top: -9999px;
     opacity: 0;*/
   }
 
-  .zenzaPlayerContextMenu ul {
+  .futatsumePlayerContextMenu ul {
     padding: 0;
     margin: 0;
   }
 
-  .zenzaPlayerContextMenu ul li {
+  .futatsumePlayerContextMenu ul li {
     position: relative;
     line-height: 120%;
     margin: 2px;
@@ -813,31 +813,31 @@ ContextMenu.__css__ = `
     list-style-type: none;
     float: inherit;
   }
-  .is-playlistEnable .zenzaPlayerContextMenu li.togglePlaylist:before,
-  .is-flipV          .zenzaPlayerContextMenu li.toggle-flipV:before,
-  .is-flipH          .zenzaPlayerContextMenu li.toggle-flipH:before,
-  .zenzaPlayerContextMenu ul                 li.selected:before {
+  .is-playlistEnable .futatsumePlayerContextMenu li.togglePlaylist:before,
+  .is-flipV          .futatsumePlayerContextMenu li.toggle-flipV:before,
+  .is-flipH          .futatsumePlayerContextMenu li.toggle-flipH:before,
+  .futatsumePlayerContextMenu ul                 li.selected:before {
     content: '✔';
     left: -10px;
     color: #000 !important;
     position: absolute;
   }
-  .zenzaPlayerContextMenu ul li:hover {
+  .futatsumePlayerContextMenu ul li:hover {
     background: #336;
     color: #fff;
   }
-  .zenzaPlayerContextMenu ul li.separator {
+  .futatsumePlayerContextMenu ul li.separator {
     border: 1px outset;
     height: 2px;
     width: 90%;
   }
-  .zenzaPlayerContextMenu.show {
+  .futatsumePlayerContextMenu.show {
     opacity: 0.8;
   }
-  .zenzaPlayerContextMenu .listInner {
+  .futatsumePlayerContextMenu .listInner {
   }
 
-  .zenzaPlayerContextMenu .controlButtonContainer {
+  .futatsumePlayerContextMenu .controlButtonContainer {
     position: absolute;
     bottom: 100%;
     left: 50%;
@@ -845,11 +845,11 @@ ContextMenu.__css__ = `
     transform: translate(-50%, 0);
     white-space: nowrap;
   }
-  .zenzaPlayerContextMenu .controlButtonContainerFlex {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex {
     display: flex;
   }
 
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton {
     flex: 1;
     height: 48px;
     font-size: 24px;
@@ -865,32 +865,32 @@ ContextMenu.__css__ = `
     margin: auto;
   }
 
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.screenShot {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.screenShot {
     flex: 1;
     font-size: 24px;
   }
 
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.playbackRate {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.playbackRate {
     flex: 2;
     font-size: 14px;
   }
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.rate010,
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.rate100,
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.rate200 {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.rate010,
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.rate100,
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.rate200 {
     flex: 3;
     font-size: 24px;
   }
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.seek5s {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.seek5s {
     flex: 2;
   }
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton.seek15s {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton.seek15s {
     flex: 3;
   }
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton:hover {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton:hover {
     transform: translate(0px, -4px);
     box-shadow: 0px 4px 2px #666;
   }
-  .zenzaPlayerContextMenu .controlButtonContainerFlex > .controlButton:active {
+  .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton:active {
     transform: none;
     box-shadow: 0 0 0;
     border: 1px inset;
@@ -906,7 +906,7 @@ ContextMenu.__css__ = `
   `.trim();
 
 ContextMenu.__tpl__ = `
-  <div class="zenzaPlayerContextMenu">
+  <div class="futatsumePlayerContextMenu">
     <div class="controlButtonContainer">
       <div class="controlButtonContainerFlex">
         <div class="controlButton command screenShot" data-command="screenShot"
@@ -1093,14 +1093,14 @@ class VideoPlayer extends Emitter {
     const body = document.createElement('div');
     (util as unknown as NvpUtil).$(body).addClass(`videoPlayer nico ${this._id}`);
     (util as unknown as NvpUtil).$(video).addClass('videoPlayer-video').attr(options);
-    body.id = 'ZenzaWatchVideoPlayerContainer';
+    body.id = 'FutatsumeWatchVideoPlayerContainer';
     this._body = body;
     this.classList = ClassList(body);
     body.append(video);
     video.pause();
 
     this._video = video;
-    this._video.className = 'zenzaWatchVideoElement';
+    this._video.className = 'futatsumeWatchVideoElement';
     (video as unknown as { controlslist: string }).controlslist = 'nodownload';
     video.controls = false;
     video.autoplay = !!params.autoPlay;
@@ -1191,7 +1191,7 @@ class VideoPlayer extends Emitter {
         this._isAspectRatioFixed = true;
         this.emit('aspectRatioFix', this._video.videoHeight / Math.max(1, this._video.videoWidth));
       }
-      if (this._isYouTube && Config.props.bestZenTube) {
+      if (this._isYouTube && Config.props.bestFutatsumeTube) {
         this._videoYouTube.selectBestQuality();
       }
     }
@@ -1568,7 +1568,7 @@ class VideoPlayer extends Emitter {
   }
   set playbackRate(v: number) {
     console.log('setPlaybackRate', v);
-    //if (!ZenzaWatch.util.isPremium()) { v = Math.min(1, v); }
+    //if (!FutatsumeWatch.util.isPremium()) { v = Math.min(1, v); }
     // たまにリセットされたり反映されなかったりする？
     this._playbackRate = v;
     const video = this._video;
@@ -1696,25 +1696,25 @@ class VideoPlayer extends Emitter {
 
 VideoPlayer.__css__ = `
     .videoPlayer iframe,
-    .videoPlayer .zenzaWatchVideoElement {
+    .videoPlayer .futatsumeWatchVideoElement {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
       z-index: 5;
     }
-    .zenzaWatchVideoElement {
+    .futatsumeWatchVideoElement {
       display: block;
       transition: transform 0.4s ease;
     }
 
-    .is-flipH .zenzaWatchVideoElement {
+    .is-flipH .futatsumeWatchVideoElement {
       transform: perspective(400px) rotateY(180deg);
     }
-    .is-flipV .zenzaWatchVideoElement {
+    .is-flipV .futatsumeWatchVideoElement {
       transform: perspective(400px) rotateX(180deg);
     }
-    .is-flipV.is-flipH .zenzaWatchVideoElement {
+    .is-flipV.is-flipH .futatsumeWatchVideoElement {
       transform: perspective(400px) rotateX(180deg) rotateY(180deg);
     }
 
@@ -1741,7 +1741,7 @@ VideoPlayer.__css__ = `
       display: none !important;
     }
 
-    .videoPlayer.is-youtube .zenzaWatchVideoElement {
+    .videoPlayer.is-youtube .futatsumeWatchVideoElement {
       display: none;
     }
 

@@ -1,6 +1,3 @@
-import { ZenzaWatch } from '../../../../src/FutatsumeWatchIndex';
-import { browser } from '../../../../src/browser';
-
 import { CacheStorage } from '../infra/CacheStorage';
 import { NicoRssLoader } from './NicoRssLoader';
 import { MatrixRankingLoader } from './MatrixRankingLoader';

@@ -1,4 +1,4 @@
-import { ZenzaWatch, PRODUCT } from './FutatsumeWatchIndex';
+import { FutatsumeWatch, PRODUCT } from './FutatsumeWatchIndex';
 import { PopupMessage } from './util';
 import { PlayerConfig } from './NicoVideoPlayerDialog';
 import type { ConfigStore } from './Config';
@@ -46,7 +46,7 @@ const RootDispatcher = (() => {
   class RootDispatcher {
     static initialize(dialog: RootPlayer): void {
       player = dialog;
-      playerState = ZenzaWatch.state.player as RootPlayerState;
+      playerState = FutatsumeWatch.state.player as RootPlayerState;
       config = PlayerConfig.getInstance(config as unknown as ConfigStore) as RootPlayerConfig;
       config.on('update', RootDispatcher.onConfigUpdate);
       player.on('command', RootDispatcher.execCommand);
@@ -81,7 +81,7 @@ const RootDispatcher = (() => {
           break;
         }
         case 'picture-in-picture':
-          void document.querySelector<HTMLVideoElement>('.zenzaWatchVideoElement')!.requestPictureInPicture();
+          void document.querySelector<HTMLVideoElement>('.futatsumeWatchVideoElement')!.requestPictureInPicture();
           break;
         case 'toggle-comment':
         case 'toggle-showComment':
@@ -92,7 +92,7 @@ const RootDispatcher = (() => {
         case 'toggle-enableFilter':
         case 'toggle-enableNicosJumpVideo':
         case 'toggle-useWellKnownPort':
-        case 'toggle-bestZenTube':
+        case 'toggle-bestFutatsumeTube':
         case 'toggle-autoCommentSpeedRate':
         case 'toggle-video.hls.enableOnlyRequired':
           command = command.replace(/^toggle-/, '');
@@ -123,7 +123,7 @@ const RootDispatcher = (() => {
           );
           break;
         default:
-          ZenzaWatch.emitter.emit(`command-${command}`, command, params);
+          FutatsumeWatch.emitter.emit(`command-${command}`, command, params);
           window.dispatchEvent(new CustomEvent(`${PRODUCT}-command`, { detail: { command, params, param: params } }));
       }
       return result;

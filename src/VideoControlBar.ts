@@ -1,13 +1,13 @@
 import _ from 'lodash';
 // import * as _ from 'lodash';
-import { ZenzaWatch, global } from './FutatsumeWatchIndex';
+import { FutatsumeWatch, global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';
 import { SeekBarThumbnail, Storyboard } from './StoryBoard';
 import { util, BaseViewComponent } from './util';
 import { Emitter } from './baselib';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
 import { throttle } from '../packages/lib/src/infra/bounce';
-import { HeatMapWorker } from '../packages/zenza/src/heatMap/HeatMapWorker';
+import { HeatMapWorker } from '../packages/futatsume/src/heatMap/HeatMapWorker';
 import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
 import { TextLabel } from '../packages/lib/src/ui/TextLabel';
 import { cssUtil } from '../packages/lib/src/css/css';
@@ -216,11 +216,11 @@ class VideoControlBar extends Emitter {
       _playbackRateSelectMenu: '.playbackRateSelectMenu',
       _videoServerTypeMenu: '.videoServerTypeMenu',
       _videoServerTypeSelectMenu: '.videoServerTypeSelectMenu',
-      _resumePointer: 'zenza-seekbar-label',
+      _resumePointer: 'futatsume-seekbar-label',
       _bufferRange: '.bufferRange',
       _seekRange: '.seekRange',
       _seekBarPointer: '.seekBarPointer',
-      resumePointers: 'zenza-seekbar-label',
+      resumePointers: 'futatsume-seekbar-label',
     });
     Object.assign(this, mq.e, { _currentTime: 0 });
     Object.assign(this, mq.$);
@@ -299,7 +299,7 @@ class VideoControlBar extends Emitter {
     updateEnableCommentPreview(config.props.enableCommentPreview);
     config.onkey('enableCommentPreview', updateEnableCommentPreview);
 
-    const watchElement = ($container[0] as Element).closest('#zenzaVideoPlayerDialog');
+    const watchElement = ($container[0] as Element).closest('#futatsumeVideoPlayerDialog');
     this._wheelSeeker = new WheelSeeker({
       parentNode: $view[0],
       watchElement,
@@ -374,7 +374,7 @@ class VideoControlBar extends Emitter {
     config.onkey('playbackRate', updatePlaybackRate);
   }
   _initializeVolumeControl(): void {
-    const $vol = this._$view.find('zenza-range-bar input[type="range"]');
+    const $vol = this._$view.find('futatsume-range-bar input[type="range"]');
     const vol = $vol[0] as HTMLInputElement & { view?: HTMLInputElement };
 
     const setVolumeBar = (this._setVolumeBar = (v: unknown): void => {
@@ -551,7 +551,7 @@ class VideoControlBar extends Emitter {
   _onSeekBarMouseDown(e: MouseEvent): void {
     // e.preventDefault();
     e.stopPropagation();
-    this._beginMouseDrag(e);
+    this._beginMouseDrag();
   }
   _onSeekBarMouseMove(e: MouseEvent): void {
     if (!this.state.isDragging) {
@@ -581,7 +581,7 @@ class VideoControlBar extends Emitter {
     this._seekBarToolTip.update(sec, left);
     this.storyboard.setCurrentTime(sec, true);
   }
-  _beginMouseDrag(e?: MouseEvent): void {
+  _beginMouseDrag(): void {
     this._bindDragEvent();
     this.classList.add('is-dragging');
     this.state.isDragging = true;
@@ -601,13 +601,15 @@ class VideoControlBar extends Emitter {
     this._endMouseDrag();
   }
   _bindDragEvent(): void {
-    (util as unknown as VcbUtil).$('body').on('mouseup.ZenzaWatchSeekBar', this._onBodyMouseUp.bind(this));
+    (util as unknown as VcbUtil).$('body').on('mouseup.FutatsumeWatchSeekBar', this._onBodyMouseUp.bind(this));
 
-    (util as unknown as VcbUtil).$(window).on('blur.ZenzaWatchSeekBar', this._onWindowBlur.bind(this), { once: true });
+    (util as unknown as VcbUtil)
+      .$(window)
+      .on('blur.FutatsumeWatchSeekBar', this._onWindowBlur.bind(this), { once: true });
   }
   _unbindDragEvent(): void {
-    (util as unknown as VcbUtil).$('body').off('mouseup.ZenzaWatchSeekBar');
-    (util as unknown as VcbUtil).$(window).off('blur.ZenzaWatchSeekBar');
+    (util as unknown as VcbUtil).$('body').off('mouseup.FutatsumeWatchSeekBar');
+    (util as unknown as VcbUtil).$(window).off('blur.FutatsumeWatchSeekBar');
   }
   _onTimer(): void {
     this._timerCount++;
@@ -640,7 +642,7 @@ class VideoControlBar extends Emitter {
       }
     }
   }
-  _onFirstVideoInitialized(watchId?: unknown): void {
+  _onFirstVideoInitialized(): void {
     const [view] = this._$view;
     const handler = (command: unknown, param: unknown): void => {
       this.emit('command', command, param);
@@ -746,7 +748,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     bottom: 0;
     left: 0;
     width: 100vw;
-    height: var(--zenza-control-bar-height, ${VideoControlBar.BASE_HEIGHT}px);
+    height: var(--futatsume-control-bar-height, ${VideoControlBar.BASE_HEIGHT}px);
     z-index: 150000;
     background: #000;
     transition: opacity 0.3s ease, transform 0.3s ease;
@@ -892,8 +894,8 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
   .videoControlBar .controlButton:focus-within {
     pointer-events: none;
   }
-  .videoControlBar .controlButton:focus-within .zenzaPopupMenu,
-  .videoControlBar .controlButton              .zenzaPopupMenu:hover {
+  .videoControlBar .controlButton:focus-within .futatsumePopupMenu,
+  .videoControlBar .controlButton              .futatsumePopupMenu:hover {
     pointer-events: auto;
     visibility: visible;
     opacity: 0.99;
@@ -913,7 +915,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
   .settingPanelSwitch .tooltip {
     left: 0;
   }
-  .videoControlBar .zenzaSubMenu {
+  .videoControlBar .futatsumeSubMenu {
     left: 50%;
     transform: translate(-50%, 0);
     bottom: 44px;
@@ -926,7 +928,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     left: 50%;
   }
 
-  .videoControlBar .zenzaSubMenu::after {
+  .videoControlBar .futatsumeSubMenu::after {
     content: '';
     position: absolute;
     display: block;
@@ -1196,7 +1198,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     z-index: 200;
   }
 
-  .zenzaHeatMap {
+  .futatsumeHeatMap {
     position: absolute;
     pointer-events: none;
     top: 0; left: 0;
@@ -1207,7 +1209,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     opacity: 0.5;
     z-index: 110;
   }
-  .noHeatMap .zenzaHeatMap {
+  .noHeatMap .futatsumeHeatMap {
     display: none;
   }
 
@@ -1325,7 +1327,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     font-size: 15px;
   }
 
-  .zenzaPlayerContainer:not(.is-mute) .muteSwitch .mute-on,
+  .futatsumePlayerContainer:not(.is-mute) .muteSwitch .mute-on,
                             .is-mute  .muteSwitch .mute-off {
     display: none;
   }
@@ -1371,7 +1373,7 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     visibility: visible;
     pointer-events: auto;
   }
-  .zenzaStoryboardOpen .is-storyboardAvailable .toggleStoryboard {
+  .futatsumeStoryboardOpen .is-storyboardAvailable .toggleStoryboard {
     color: var(--enabled-button-color);
   }
 
@@ -1494,14 +1496,14 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
   }
 
   /* domandを使用不能の時はdomand画質選択を薄く */
-  .zenzaPlayerContainer:not(.is-domandAvailable) .serverType.select-server-domand {
+  .futatsumePlayerContainer:not(.is-domandAvailable) .serverType.select-server-domand {
     opacity: 0.4;
     pointer-events: none;
     text-shadow: none !important;
   }
 
   /* dmcを使用不能の時はdmc画質選択を薄く */
-  .zenzaPlayerContainer:not(.is-dmcAvailable) .serverType.select-server-dmc {
+  .futatsumePlayerContainer:not(.is-dmcAvailable) .serverType.select-server-dmc {
     opacity: 0.4;
     pointer-events: none;
     text-shadow: none !important;
@@ -1525,10 +1527,10 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     }
   }
 
-  .ZenzaWatchVer {
+  .FutatsumeWatchVer {
     display: none;
   }
-  .ZenzaWatchVer[data-env="DEV"] {
+  .FutatsumeWatchVer[data-env="DEV"] {
     display: inline-block;
     color: #999;
     position: absolute;
@@ -1671,13 +1673,13 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
   .controlItemContainer.center {
     top: auto;
   }
-  .zenzaStoryboardOpen .controlItemContainer.center {
+  .futatsumeStoryboardOpen .controlItemContainer.center {
     background: transparent;
   }
-  .zenzaStoryboardOpen .controlItemContainer.center .scalingUI {
+  .futatsumeStoryboardOpen .controlItemContainer.center .scalingUI {
     background: rgba(32, 32, 32, 0.5);
   }
-  .zenzaStoryboardOpen .controlItemContainer.center .scalingUI:hover {
+  .futatsumeStoryboardOpen .controlItemContainer.center .scalingUI:hover {
     background: rgba(32, 32, 32, 0.8);
   }
   .controlItemContainer.right {
@@ -1698,18 +1700,18 @@ VideoControlBar.__tpl__ = `
           <div class="bufferRange"></div>
           <div class="progressWave"></div>
           <input type="range" class="seekRange" min="0" step="any">
-          <canvas width="200" height="10" class="heatMap zenzaHeatMap"></canvas>
+          <canvas width="200" height="10" class="heatMap futatsumeHeatMap"></canvas>
         </div>
-        <zenza-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></zenza-seekbar-label>
-        <zenza-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></zenza-seekbar-label>
-        <zenza-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></zenza-seekbar-label>
-        <zenza-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></zenza-seekbar-label>
-        <zenza-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></zenza-seekbar-label>
+        <futatsume-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></futatsume-seekbar-label>
+        <futatsume-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></futatsume-seekbar-label>
+        <futatsume-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></futatsume-seekbar-label>
+        <futatsume-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></futatsume-seekbar-label>
+        <futatsume-seekbar-label class="resumePointer" data-command="seekTo" data-text="ここまで見た"></futatsume-seekbar-label>
       </div>
 
       <div class="controlItemContainer left">
         <div class="scalingUI">
-          <div class="ZenzaWatchVer" data-env="${(ZenzaWatch as unknown as VcbTemplateInfo).env}">ver ${(ZenzaWatch as unknown as VcbTemplateInfo).version}${(ZenzaWatch as unknown as VcbTemplateInfo).env === 'DEV' ? '(Dev)' : ''}</div>
+          <div class="FutatsumeWatchVer" data-env="${(FutatsumeWatch as unknown as VcbTemplateInfo).env}">ver ${(FutatsumeWatch as unknown as VcbTemplateInfo).version}${(FutatsumeWatch as unknown as VcbTemplateInfo).env === 'DEV' ? '(Dev)' : ''}</div>
         </div>
       </div>
       <div class="controlItemContainer center">
@@ -1743,7 +1745,7 @@ VideoControlBar.__tpl__ = `
             <div class="playbackRateMenu controlButton" tabindex="-1" data-has-submenu="1">
               <div class="controlButtonInner"></div>
               <div class="tooltip">再生速度</div>
-              <div class="playbackRateSelectMenu zenzaPopupMenu zenzaSubMenu">
+              <div class="playbackRateSelectMenu futatsumePopupMenu futatsumeSubMenu">
                 <div class="triangle"></div>
                 <p class="caption">再生速度</p>
                 <ul>
@@ -1777,7 +1779,7 @@ VideoControlBar.__tpl__ = `
             </div>
 
             <div class="volumeControl">
-              <zenza-range-bar><input class="volumeRange" type="range" value="0.5" min="0.01" max="1" step="any"></zenza-range-bar>
+              <futatsume-range-bar><input class="volumeRange" type="range" value="0.5" min="0.01" max="1" step="any"></futatsume-range-bar>
             </div>
 
             <div class="nextVideo controlButton playControl" data-command="playNextVideo" data-param="0">
@@ -1793,14 +1795,14 @@ VideoControlBar.__tpl__ = `
 
         <div class="scalingUI">
 
-          <div class="videoServerTypeMenu controlButton forYouTube" data-command="reload" title="ZenTube解除">
+          <div class="videoServerTypeMenu controlButton forYouTube" data-command="reload" title="FutatsumeTube解除">
             <div class="controlButtonInner">画</div>
           </div>
           <div class="videoServerTypeMenu controlButton" tabindex="-1" data-has-submenu="1">
             <div class="controlButtonInner">画</div>
 
             <div class="tooltip">動画サーバー・画質</div>
-            <div class="videoServerTypeSelectMenu zenzaPopupMenu zenzaSubMenu">
+            <div class="videoServerTypeSelectMenu futatsumePopupMenu futatsumeSubMenu">
               <div class="triangle"></div>
               <p class="caption">動画サーバー・画質</p>
               <ul>
@@ -1835,7 +1837,7 @@ VideoControlBar.__tpl__ = `
           <div class="screenModeMenu controlButton" tabindex="-1" data-has-submenu="1">
             <div class="tooltip">画面サイズ・モード変更</div>
             <div class="controlButtonInner">&#9114;</div>
-            <div class="screenModeSelectMenu zenzaPopupMenu zenzaSubMenu">
+            <div class="screenModeSelectMenu futatsumePopupMenu futatsumeSubMenu">
               <div class="triangle"></div>
               <p class="caption">画面モード</p>
               <ul>
@@ -1852,7 +1854,7 @@ VideoControlBar.__tpl__ = `
           <div class="fullscreenControlBarModeMenu controlButton" tabindex="-1" data-has-submenu="1">
             <div class="tooltip">ツールバーの表示</div>
             <div class="controlButtonInner">&#128204;</div>
-            <div class="fullscreenControlBarModeSelectMenu zenzaPopupMenu zenzaSubMenu">
+            <div class="fullscreenControlBarModeSelectMenu futatsumePopupMenu futatsumeSubMenu">
               <div class="triangle"></div>
               <p class="caption">ツールバーの表示</p>
               <ul>
@@ -2255,14 +2257,14 @@ CommentPreviewView.WIDTH = 350;
 CommentPreviewView.HOVER_WIDTH = 180;
 CommentPreviewView.ITEM_HEIGHT = 20;
 CommentPreviewView.__tpl__ = `
-  <div class="zenzaCommentPreview">
+  <div class="futatsumeCommentPreview">
     <div class="listContainer"></div>
   </div>
   `.trim();
 
 (util as unknown as VcbUtil).addStyle(
   `
-  .zenzaCommentPreview {
+  .futatsumeCommentPreview {
     display: none;
     position: absolute;
     bottom: 16px;
@@ -2276,11 +2278,11 @@ CommentPreviewView.__tpl__ = `
     transition: --trans-x-pp 0.2s;
     will-change: transform;
   }
-  .zenzaCommentPreview * {
+  .futatsumeCommentPreview * {
     box-sizing: border-box;
   }
-  .is-wheelSeeking .zenzaCommentPreview,
-  .seekBarContainer:hover .zenzaCommentPreview {
+  .is-wheelSeeking .futatsumeCommentPreview,
+  .seekBarContainer:hover .futatsumeCommentPreview {
     display: block;
   }
 
@@ -2290,21 +2292,21 @@ CommentPreviewView.__tpl__ = `
 
 (util as unknown as VcbUtil).addStyle(
   `
-  .zenzaCommentPreview {
+  .futatsumeCommentPreview {
     border-bottom: 24px solid transparent;
     background: rgba(0, 0, 0, 0.4);
     z-index: 100;
     overflow: auto;
   }
-  .zenzaCommentPreview:hover {
+  .futatsumeCommentPreview:hover {
     background: black;
   }
-  .zenzaCommentPreview.is-updating {
+  .futatsumeCommentPreview.is-updating {
     transition: opacity 0.2s ease;
     opacity: 0.3;
     cursor: wait;
   }
-  .zenzaCommentPreview.is-updating * {
+  .futatsumeCommentPreview.is-updating * {
     pointer-evnets: none;
   }
   .listContainer {
@@ -2312,7 +2314,7 @@ CommentPreviewView.__tpl__ = `
     padding: 4px;
     pointer-events: none;
   }
-  .zenzaCommentPreview:hover .listContainer {
+  .futatsumeCommentPreview:hover .listContainer {
     pointer-events: auto;
   }
   .listContainer .nicoChat {
@@ -2403,8 +2405,8 @@ CommentPreviewView.__tpl__ = `
     transform: translateY(2px);
   }
 
-  .zenzaScreenMode_sideView .zenzaCommentPreview,
-  .zenzaScreenMode_small .zenzaCommentPreview {
+  .futatsumeScreenMode_sideView .futatsumeCommentPreview,
+  .futatsumeScreenMode_small .futatsumeCommentPreview {
     background: rgba(0, 0, 0, 0.9);
   }
 `,
@@ -2413,7 +2415,7 @@ CommentPreviewView.__tpl__ = `
 
 (util as unknown as VcbUtil).addStyle(
   `
-  .zenzaCommentPreview {
+  .futatsumeCommentPreview {
     bottom: 24px;
     box-sizing: border-box;
     height: 140px;
@@ -2606,7 +2608,7 @@ class SeekBarToolTip {
     this._repeatCommand = command;
     this._repeatParam = param;
 
-    (util as unknown as VcbUtil).$('body').on('mouseup.zenzaSeekbarToolTip', this._boundOnMouseUp);
+    (util as unknown as VcbUtil).$('body').on('mouseup.futatsumeSeekbarToolTip', this._boundOnMouseUp);
     this._$view.on('mouseleave', this._boundOnMouseUp).on('mouseup', this._boundOnMouseUp);
     if (this._repeatTimer) {
       window.clearInterval(this._repeatTimer);
@@ -2620,7 +2622,7 @@ class SeekBarToolTip {
       window.clearInterval(this._repeatTimer);
       this._repeatTimer = null;
     }
-    (util as unknown as VcbUtil).$('body').off('mouseup.zenzaSeekbarToolTip');
+    (util as unknown as VcbUtil).$('body').off('mouseup.futatsumeSeekbarToolTip');
     this._$view.off('mouseleave').off('mouseup');
   }
   _onRepeat(): void {

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { ZenzaWatch } from '../../../../src/FutatsumeWatchIndex';
+import { FutatsumeWatch } from '../../../../src/FutatsumeWatchIndex';
 import { uq } from '../../../lib/src/uQuery';
 import { nicoUtil } from '../../../lib/src/nico/nicoUtil';
 import { cssUtil } from '../../../lib/src/css/css';
@@ -35,7 +35,7 @@ interface CssUtilLike {
   px(value: number): string;
 }
 
-interface ZenzaWatchLike {
+interface FutatsumeWatchLike {
   emitter: {
     on(name: string, handler: (...args: unknown[]) => void): void;
     emit(name: string, ...args: unknown[]): void;
@@ -73,9 +73,9 @@ class HoverMenu {
 
     const uqFn = uq as unknown as UqStatic;
     const nicoUtilLike = nicoUtil as unknown as NicoUtilLike;
-    const zenzaWatch = ZenzaWatch as unknown as ZenzaWatchLike;
+    const futatsumeWatch = FutatsumeWatch as unknown as FutatsumeWatchLike;
     const $view = (this._$view = uqFn(
-      '<zen-button class="ZenButton"><div class="ZenButtonInner scalingUI">Zen</div></zen-button>'
+      '<futatsume-button class="FutatsumeButton"><div class="FutatsumeButtonInner scalingUI">Futatsume</div></futatsume-button>'
     ));
 
     if (
@@ -88,7 +88,7 @@ class HoverMenu {
     } else {
       this._onHoverEnd = _.debounce(this._onHoverEnd.bind(this), 500);
       $view.on(location.host.includes('google') ? 'mouseup' : 'click', this._onClick.bind(this));
-      zenzaWatch.emitter.on('hideHover', () => $view.removeClass('show'));
+      futatsumeWatch.emitter.on('hideHover', () => $view.removeClass('show'));
       uqFn('body')
         .on('mouseover', this._onHover.bind(this))
         .on('mouseover', (e) => this._onHoverEnd(e))
@@ -176,7 +176,7 @@ class HoverMenu {
     }
 
     if (e.shiftKey) {
-      // 秘密機能。最後にZenzaWatchを開いたウィンドウで開く
+      // 秘密機能。最後にFutatsumeWatchを開いたウィンドウで開く
       void this._send(watchId);
     } else {
       void this._open(watchId);
@@ -186,7 +186,7 @@ class HoverMenu {
     void this._open(watchId, params);
   }
   async _open(watchId: string, params?: unknown): Promise<void> {
-    const zenzaWatch = ZenzaWatch as unknown as ZenzaWatchLike;
+    const futatsumeWatch = FutatsumeWatch as unknown as FutatsumeWatchLike;
     this._playerOption = Object.assign(
       {
         economy: this._playerConfig.getValue('forceEconomy'),
@@ -198,7 +198,7 @@ class HoverMenu {
 
     const player = await this._getPlayer();
     if (this._playerConfig.getValue('enableSingleton')) {
-      zenzaWatch.external.sendOrOpen(watchId, this._playerOption);
+      futatsumeWatch.external.sendOrOpen(watchId, this._playerOption);
     } else {
       player.open(watchId, this._playerOption);
     }
@@ -207,14 +207,14 @@ class HoverMenu {
     void this._send(watchId, params);
   }
   async _send(watchId: string, params?: unknown): Promise<void> {
-    const zenzaWatch = ZenzaWatch as unknown as ZenzaWatchLike;
+    const futatsumeWatch = FutatsumeWatch as unknown as FutatsumeWatchLike;
     await this._getPlayer();
-    zenzaWatch.external.send(watchId, Object.assign({ query: this._query }, params));
+    futatsumeWatch.external.send(watchId, Object.assign({ query: this._query }, params));
   }
   _overrideWatchLink(): void {
     const nicoruConsole = console as unknown as ConsoleWithNicoru;
     const nicoUtilLike = nicoUtil as unknown as NicoUtilLike;
-    const zenzaWatch = ZenzaWatch as unknown as ZenzaWatchLike;
+    const futatsumeWatch = FutatsumeWatch as unknown as FutatsumeWatchLike;
     const uqFn = uq as unknown as UqStatic;
     let userPageIntercept: ((e: MouseEvent) => void) | undefined;
     if (document.querySelector('.UserPageHeader') != null) {
@@ -276,13 +276,13 @@ class HoverMenu {
 
       this._query = nicoUtilLike.parseWatchQuery((anchor.search || '').substr(1));
       if (mouse.shiftKey) {
-        // 秘密機能。最後にZenzaWatchを開いたウィンドウで開く
+        // 秘密機能。最後にFutatsumeWatchを開いたウィンドウで開く
         void this._send(watchId);
       } else {
         void this._open(watchId);
       }
 
-      window.setTimeout(() => zenzaWatch.emitter.emit('hideHover'), 1500);
+      window.setTimeout(() => futatsumeWatch.emitter.emit('hideHover'), 1500);
     };
     uqFn('body').on('mouseover', (e) => {
       if (userPageIntercept) {

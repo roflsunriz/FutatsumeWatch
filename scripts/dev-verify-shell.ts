@@ -6,7 +6,7 @@ const out = new URL('../dev-assets/verification/', import.meta.url);
 const checks: string[] = [];
 const root = 'window.FutatsumeWatch';
 const container = `document.querySelector('.fw-player')`;
-const video = `document.querySelector('#zenzaVideoPlayerDialog zenza-video')`;
+const video = `document.querySelector('#futatsumeVideoPlayerDialog futatsume-video')`;
 async function check(session: CdpSession, expression: string, label: string, timeout = 8000): Promise<void> {
   const deadline = Date.now() + timeout;
   do {
@@ -30,7 +30,7 @@ async function click(session: CdpSession, action: string): Promise<void> {
     advanced: 'advanced',
     masked: 'masked',
     toggleHLSDebug: 'hls',
-    toggleZenzaGamePadConfig: 'gamepad',
+    toggleFutatsumeGamePadConfig: 'gamepad',
     toggleHeatSyncDialog: 'heatsync',
   };
   const tab = settingsTabs[action];
@@ -209,7 +209,7 @@ async function main(): Promise<void> {
     await screenshot(session, '1280-settings');
     await check(
       session,
-      `(()=>{const menu=document.querySelector('.fw-settings');return menu.querySelectorAll(':scope > button').length===1&&menu.querySelectorAll(':scope > .fw-quality').length===1&&menu.querySelectorAll(':scope > a').length===1&&menu.querySelectorAll(':scope > details').length===1&&menu.querySelectorAll('[data-shell-action="advanced"],[data-shell-action="masked"],[data-shell-action="toggleHLSDebug"],[data-shell-action="toggleZenzaGamePadConfig"],[data-shell-action="toggleHeatSyncDialog"]').length===0})()`,
+      `(()=>{const menu=document.querySelector('.fw-settings');return menu.querySelectorAll(':scope > button').length===1&&menu.querySelectorAll(':scope > .fw-quality').length===1&&menu.querySelectorAll(':scope > a').length===1&&menu.querySelectorAll(':scope > details').length===1&&menu.querySelectorAll('[data-shell-action="advanced"],[data-shell-action="masked"],[data-shell-action="toggleHLSDebug"],[data-shell-action="toggleFutatsumeGamePadConfig"],[data-shell-action="toggleHeatSyncDialog"]').length===0})()`,
       '設定前のメニューを4項目に集約'
     );
     await clickVisible(session, '.fw-settings > details > summary');
@@ -235,7 +235,7 @@ async function main(): Promise<void> {
     await click(session, 'general');
     await check(
       session,
-      `document.querySelector('zenza-setting-panel')?.isOpen && !!window.__fwQuery('[data-fw-settings="general"] [data-settings-close]')`,
+      `document.querySelector('futatsume-setting-panel')?.isOpen && !!window.__fwQuery('[data-fw-settings="general"] [data-settings-close]')`,
       '左メニューから一般設定を開く'
     );
     await screenshot(session, 'general');
@@ -249,13 +249,17 @@ async function main(): Promise<void> {
     );
     await deepClick(session, '[data-setting-name="autoPlay"]');
     await deepClick(session, '[data-fw-settings="general"] [data-settings-close]');
-    await check(session, `!document.querySelector('zenza-setting-panel').isOpen`, '一般設定の閉じるボタン');
+    await check(session, `!document.querySelector('futatsume-setting-panel').isOpen`, '一般設定の閉じるボタン');
     await click(session, 'settings');
     await click(session, 'advanced');
-    await check(session, `!!document.querySelector('.zenzaAdvancedSettingPanel.show')`, '左メニューから詳細設定を開く');
+    await check(
+      session,
+      `!!document.querySelector('.futatsumeAdvancedSettingPanel.show')`,
+      '左メニューから詳細設定を開く'
+    );
     await screenshot(session, 'advanced');
-    await clickVisible(session, '.zenzaAdvancedSetting-close');
-    await check(session, `!document.querySelector('.zenzaAdvancedSettingPanel.show')`, '詳細設定を閉じる');
+    await clickVisible(session, '.futatsumeAdvancedSetting-close');
+    await check(session, `!document.querySelector('.futatsumeAdvancedSettingPanel.show')`, '詳細設定を閉じる');
     for (const [action, opened, close] of [
       [
         'toggleHLSDebug',
@@ -263,9 +267,9 @@ async function main(): Promise<void> {
         `${root}.external.execCommand('toggleHLSDebug')`,
       ],
       [
-        'toggleZenzaGamePadConfig',
-        `!!window.__fwQuery('.ZenzaGamePadConfigPanel[open]')`,
-        `${root}.external.execCommand('toggleZenzaGamePadConfig')`,
+        'toggleFutatsumeGamePadConfig',
+        `!!window.__fwQuery('.FutatsumeGamePadConfigPanel[open]')`,
+        `${root}.external.execCommand('toggleFutatsumeGamePadConfig')`,
       ],
       [
         'toggleHeatSyncDialog',
@@ -321,7 +325,7 @@ async function main(): Promise<void> {
     });
     await check(
       session,
-      `${container}.dataset.panel==='' && document.querySelector('#zenzaVideoPlayerDialog').classList.contains('is-open')`,
+      `${container}.dataset.panel==='' && document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
       'Escapeは詳細だけを閉じる'
     );
     await click(session, 'fullscreen');
@@ -406,7 +410,7 @@ async function main(): Promise<void> {
     await click(session, 'close');
     await check(
       session,
-      `!document.querySelector('#zenzaVideoPlayerDialog').classList.contains('is-open')`,
+      `!document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
       '閉じるボタンで終了'
     );
     if (errors.length) throw new Error(errors.join('\n'));

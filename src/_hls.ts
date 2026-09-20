@@ -1,3 +1,4 @@
+import { migrateAddonConfig } from './config-migration';
 import HlsRuntime from 'hls.js';
 import { SettingsDialog } from '../packages/components/src/settings-dialog';
 import { SETTINGS_FIELD_THEME } from '../packages/components/src/settings-dialog-theme';
@@ -27,7 +28,7 @@ interface HlsStoredMeta {
   url: string;
   stats: unknown;
 }
-interface HlsZenzaVideo extends HTMLElement {
+interface HlsFutatsumeVideo extends HTMLElement {
   hlsConfig: Record<string, unknown>;
 }
 interface HlsVideoDebugDialog extends HTMLElement {
@@ -60,7 +61,7 @@ interface HlsDebounced<A extends Array<unknown> = Array<unknown>> {
 }
 interface HlsWindowExtension {
   PureArray?: ArrayConstructor;
-  ZenzaWatch?: {
+  FutatsumeWatch?: {
     util?: {
       dimport(url: string): Promise<unknown>;
     };
@@ -107,22 +108,12 @@ interface HlsFragmentLoaderStatic {
   preloadFragment: (fragment: HlsFragment, url: string) => Promise<boolean | undefined>;
   levels?: ReadonlyArray<HlsLevel>;
 }
-interface HlsKeyData {
-  frag: { decryptdata: { uri: string } };
-}
-interface HlsKeyloaderState {
-  onKeyLoading_org?: (data: HlsKeyData) => unknown;
-  onKeyLoading?: (data: HlsKeyData) => void;
-  loadsuccess_org?: (response: unknown, stats: unknown, context: unknown) => unknown;
-  loadsuccess?: (response: unknown, stats: unknown, context: unknown) => unknown;
-  decrypturl?: string;
-}
 
 // hls.js@latest だと再生が始まらない動画がたまにある。 0.8.9ならok
 
 export async function initializeHls(): Promise<void> {
   await AntiPrototypeJs();
-  const PRODUCT = 'ZenzaWatchHLS';
+  const PRODUCT = 'FutatsumeWatchHLS';
   const monkey = (
     PRODUCT: string,
     { ErrorEvent, MediaError, HTMLDialogElement, DOMException }: HlsMonkeyModules
@@ -130,13 +121,13 @@ export async function initializeHls(): Promise<void> {
     const window: Window & typeof globalThis = globalThis.window;
     const console = window.console;
     const VER = '0.0.1';
-    const PopupMessage = { debug: () => {} };
+
     const Array = (window as unknown as HlsWindowExtension).PureArray || window.Array;
     let primaryVideo: (HTMLElement & { hlsConfig?: unknown }) | null = null;
 
     console.log(`%c${PRODUCT} v:%s`, 'background: cyan;', VER);
 
-    console.time('ZenzaWatch HLS');
+    console.time('FutatsumeWatch HLS');
 
     const DEFAULT_CONFIG: Record<string, HlsConfigValue> = {
       // hls.js 以外のパラメータ
@@ -228,8 +219,8 @@ export async function initializeHls(): Promise<void> {
     const dimport: ((url: string) => Promise<unknown>) & { map: Record<string, Promise<unknown>> } = Object.assign(
       (url: string): Promise<unknown> => {
         const win = window as unknown as HlsWindowExtension;
-        if (win.ZenzaWatch && win.ZenzaWatch.util && win.ZenzaWatch.util.dimport) {
-          return win.ZenzaWatch.util.dimport(url);
+        if (win.FutatsumeWatch && win.FutatsumeWatch.util && win.FutatsumeWatch.util.dimport) {
+          return win.FutatsumeWatch.util.dimport(url);
         }
         if (dimport.map[url]) {
           return dimport.map[url];
@@ -265,12 +256,13 @@ export async function initializeHls(): Promise<void> {
       const config: Record<string, HlsConfigValue> = {},
         emitter = new Emitter() as unknown as HlsConfig;
       const storage = localStorage as unknown as Record<string, string>;
+      migrateAddonConfig(localStorage, 'hls', Object.keys(DEFAULT_CONFIG));
       Object.keys(DEFAULT_CONFIG).forEach((key) => {
-        const storageKey = `ZenzaWatch_video.hls.${key}`;
+        const storageKey = `FutatsumeWatch_video.hls.${key}`;
         if (storage[storageKey]) {
           try {
             config[key] = JSON.parse(storage[storageKey]) as HlsConfigValue;
-          } catch (e) {
+          } catch {
             console.error(storageKey, storage[storageKey]);
             localStorage.removeItem(storageKey);
             config[key] = DEFAULT_CONFIG[key];
@@ -289,7 +281,7 @@ export async function initializeHls(): Promise<void> {
           if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG, key)) {
             return;
           }
-          const storageKey = `ZenzaWatch_video.hls.${key}`;
+          const storageKey = `FutatsumeWatch_video.hls.${key}`;
           if (config[key] !== value) {
             config[key] = value;
             storage[storageKey] = JSON.stringify(value);
@@ -397,7 +389,7 @@ export async function initializeHls(): Promise<void> {
         declare static db: IDBDatabase | null;
         declare isBusy: boolean;
         static get dbName(): string {
-          return 'zenza_hls';
+          return 'futatsume_hls';
         }
         static get ver(): number {
           return 4;
@@ -509,7 +501,7 @@ export async function initializeHls(): Promise<void> {
             req.onsuccess = (): void => {
               resolve(req.result);
             };
-            req.onerror = (err: Event): unknown => resolve;
+            req.onerror = (): unknown => resolve;
             if (timeout) {
               // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 既存プロトコルの拒否値を温存する
               setTimeout(() => reject(`timeout: key${key}`), timeout);
@@ -675,13 +667,17 @@ export async function initializeHls(): Promise<void> {
         },
         async gc(): Promise<unknown> {
           if (navigator && navigator.locks) {
-            return await navigator.locks.request('ZenzaHLS_GC', { ifAvailable: true }, async (lock: Lock | null) => {
-              if (!lock) {
-                return;
+            return await navigator.locks.request(
+              'FutatsumeHLS_GC',
+              { ifAvailable: true },
+              async (lock: Lock | null) => {
+                if (!lock) {
+                  return;
+                }
+                await IndexDBStorage.getInstance().gc();
+                await new Promise<void>((r) => setTimeout(r, 5000));
               }
-              await IndexDBStorage.getInstance().gc();
-              await new Promise<void>((r) => setTimeout(r, 5000));
-            });
+            );
           } else {
             return IndexDBStorage.getInstance().gc();
           }
@@ -845,12 +841,12 @@ export async function initializeHls(): Promise<void> {
         return this.sendRequest('clear', {});
       },
     };
-    Storage.worker = createWebWorker(StorageWorker, { name: 'ZenzaWatchHLSWorker' });
+    Storage.worker = createWebWorker(StorageWorker, { name: 'FutatsumeWatchHLSWorker' });
     (Storage.worker as Worker).addEventListener('message', Storage.onMessage.bind(Storage));
     void Storage.setConfig({ cache_expire_time: Config.get('cache_expire_time') });
     Storage.gc = debounce(Storage.gc.bind(Storage), 10 * 1000);
 
-    const ZenzaVideoElement = (({ Hls, throttle }: { Hls: HlsStatic; throttle: HlsThrottle }) => {
+    (({ Hls, throttle }: { Hls: HlsStatic; throttle: HlsThrottle }) => {
       // TODO: ニコニコ動画の仕様に依存する部分を切り離して、もう少し汎用的にする
 
       const PLAYER_MODE = {
@@ -867,7 +863,7 @@ export async function initializeHls(): Promise<void> {
       };
 
       // readonly の Event.target を無理やり書き換える (意味ないかも)
-      const overrideTarget = (event: unknown, target: unknown): unknown => {
+      const overrideTarget = (event: unknown): unknown => {
         return event;
       };
 
@@ -877,9 +873,7 @@ export async function initializeHls(): Promise<void> {
           const url = fragment.url;
           const levels = (globalThis as unknown as { levels?: ReadonlyArray<HlsLevel> }).levels;
 
-          const [, videoId, level, sn] = /\/nicovideo-([a-z0-9]+)_.*\/([\d]+)\/ts\/([\d]+)\.ts/.exec(
-            url
-          ) as RegExpExecArray;
+          const [, videoId, , sn] = /\/nicovideo-([a-z0-9]+)_.*\/([\d]+)\/ts\/([\d]+)\.ts/.exec(url) as RegExpExecArray;
           let rel = '';
           if (fragment.levelkey && fragment.levelkey.reluri) {
             const m = /h=(.*?)&/.exec(fragment.levelkey.reluri);
@@ -1154,68 +1148,8 @@ export async function initializeHls(): Promise<void> {
         FragmentLoaderClass.preloadFragment = preloadFragment;
         return FragmentLoaderClass;
       };
-      /** @param  */
-      const objectUrlMap: Record<string, { url: string; time: number }> = {}; // {url: ObjectURL, time: number}
-      const keyclean = (): void => {
-        const keys = Object.keys(objectUrlMap).sort(
-          (a: string, b: string) => (a as unknown as { time: number }).time - (b as unknown as { time: number }).time
-        );
-        while (keys.length > 100) {
-          const key = keys.shift() as string;
-          URL.revokeObjectURL((objectUrlMap[key] as { url: string }).url);
-          delete objectUrlMap[key];
-        }
-      };
-      const overrideKeyloader = (hls: HlsInstance): void => {
-        const keyloader = hls.coreComponents.find((h) => Object.prototype.hasOwnProperty.call(h, 'decryptkey')) as
-          HlsKeyloaderState | undefined;
-        if (!keyloader) {
-          console.warn('keyloader not founnd', hls.coreComponents);
-          return;
-        }
-        keyloader.onKeyLoading_org = (keyloader.onKeyLoading as unknown as (data: HlsKeyData) => unknown).bind(
-          keyloader
-        );
-        keyloader.onKeyLoading = function (this: HlsKeyloaderState, data: HlsKeyData): unknown {
-          const uri = data.frag.decryptdata.uri;
-          const objUrl = (objectUrlMap[uri] as { url: string }).url;
-          if (objUrl) {
-            data.frag.decryptdata.uri = objUrl;
-          }
-          return this.onKeyLoading_org!(data);
-        }.bind(keyloader);
-
-        keyloader.loadsuccess_org = (
-          keyloader.loadsuccess as unknown as (response: unknown, stats: unknown, context: unknown) => unknown
-        ).bind(keyloader);
-        keyloader.loadsuccess = function (
-          this: HlsKeyloaderState,
-          response: unknown,
-          stats: unknown,
-          context: unknown
-        ): unknown {
-          if ((this.decrypturl as string).startsWith('blob')) {
-            return this.loadsuccess_org!(response, stats, context);
-          }
-          const blob = new Blob([new DataView((response as { data: ArrayBuffer }).data)]);
-          objectUrlMap[this.decrypturl as string] = { url: URL.createObjectURL(blob), time: Date.now() };
-          keyclean();
-          return this.loadsuccess_org!(response, stats, context);
-        }.bind(keyloader);
-      };
 
       let idCounter = 0;
-
-      const parseUrl = (url: string): HTMLAnchorElement => {
-        const a = document.createElement('a');
-        a.href = url;
-        return a;
-      };
-
-      const compareHash = (url1: string, url2: string): boolean => {
-        console.log('compareHash\n"%s"\n"%s"', parseUrl(url1).search, parseUrl(url2).search);
-        return parseUrl(url1).search === parseUrl(url2).search;
-      };
 
       interface HlsManifestData {
         levels: ReadonlyArray<HlsLevel>;
@@ -1246,7 +1180,7 @@ export async function initializeHls(): Promise<void> {
         response?: { code?: number };
       }
 
-      class ZenzaVideoElement extends HTMLElement {
+      class FutatsumeVideoElement extends HTMLElement {
         declare _src: string;
         declare _hls: HlsInstance | null;
         declare _hlsConfig: Record<string, unknown>;
@@ -1339,7 +1273,7 @@ export async function initializeHls(): Promise<void> {
           this._eventWrapperMap = new Map();
 
           const shadow = (this._shadow = this.attachShadow({ mode: 'open' }));
-          shadow.innerHTML = (this.constructor as typeof ZenzaVideoElement).template;
+          shadow.innerHTML = (this.constructor as typeof FutatsumeVideoElement).template;
 
           const root = (this._root = shadow.querySelector('.root') as Element);
           const video = (this._video = root.querySelector('video') as HTMLVideoElement);
@@ -1498,10 +1432,9 @@ export async function initializeHls(): Promise<void> {
               this._video.src = v;
               return;
             }
-            const hls = this._initHLSJS(v);
+            this._initHLSJS(v);
 
             this._src = v;
-            //hls.loadSource(v);
             //hls.attachMedia(this._video);
             this.playerMode = PLAYER_MODE.HLS_JS;
             return;
@@ -1568,8 +1501,8 @@ export async function initializeHls(): Promise<void> {
             return;
           }
 
-          const wrapper = (event: unknown, ...args: Array<unknown>): void => {
-            callback(overrideTarget(event, this) as Event);
+          const wrapper = (event: unknown): void => {
+            callback(overrideTarget(event) as Event);
           };
 
           map[eventName] = wrapper;
@@ -1786,14 +1719,6 @@ export async function initializeHls(): Promise<void> {
 
         // @see https://github.com/video-dev/hls.js/blob/master/docs/API.md#fifth-step-error-handling
         _onHLSJSError(e: unknown, data: HlsErrorData): void {
-          let errorUrl = data.context && data.context.url ? data.context.url : '';
-          // eslint-disable-next-line no-useless-assignment -- 後続の比較処理がコメント化されている間の温存
-          errorUrl = !errorUrl && data.frag && data.frag.url ? data.frag.url : '';
-          // 時間差で前の動画のエラーが飛んできたら無視
-          //if (errorUrl && !compareHash(errorUrl, this.src)) {
-          //  //return;
-          //}
-
           if (data.fatal) {
             return this._onHLSJSFatalError(e, data);
           }
@@ -1842,7 +1767,7 @@ export async function initializeHls(): Promise<void> {
                     code: HLS_ERROR_CODE.NETWORK,
                     message: `403 Forbidden, ${data.details}`,
                   };
-                  this.dispatchEvent(overrideTarget(event, this) as Event);
+                  this.dispatchEvent(overrideTarget(event) as Event);
                 } else {
                   // this.dispatchEvent(new Event('stalled'));
                 }
@@ -1876,10 +1801,10 @@ export async function initializeHls(): Promise<void> {
 
           const event = new ErrorEvent('error');
           this._error = {
-            code: HLS_ERROR_CODE.UNKNOWN,
+            code,
             message: data.details,
           };
-          this.dispatchEvent(overrideTarget(event, this) as Event);
+          this.dispatchEvent(overrideTarget(event) as Event);
         }
 
         _onHLSJSFragLoaded(): void {
@@ -1893,7 +1818,7 @@ export async function initializeHls(): Promise<void> {
       }
 
       if (window.customElements) {
-        window.customElements.define('zenza-video', ZenzaVideoElement);
+        window.customElements.define('futatsume-video', FutatsumeVideoElement);
       }
       if (!Hls) {
         const s = document.createElement('script');
@@ -1907,7 +1832,7 @@ export async function initializeHls(): Promise<void> {
       } else {
         console.info('hls.js ready:', Hls.version);
       }
-      return ZenzaVideoElement;
+      return FutatsumeVideoElement;
     })({ Hls, throttle });
 
     interface HlsDebugPropDef {
@@ -2636,7 +2561,7 @@ export async function initializeHls(): Promise<void> {
       return VideoDebugDialog;
     };
 
-    interface HlsLocalZenzaWatch {
+    interface HlsLocalFutatsumeWatch {
       ready?: boolean;
       debug: Record<string, unknown>;
       emitter: HlsRuntimeEmitter;
@@ -2651,8 +2576,8 @@ export async function initializeHls(): Promise<void> {
       html: (strings: TemplateStringsArray, ...values: Array<unknown>) => unknown;
       render: (node: unknown, target: HTMLElement | ShadowRoot) => void;
     }
-    const ZenzaDetector: { initialize(): void; detect(timing?: string): Promise<HlsLocalZenzaWatch> } = (() => {
-      let ZenzaWatch: HlsLocalZenzaWatch | null = null;
+    const FutatsumeDetector: { initialize(): void; detect(timing?: string): Promise<HlsLocalFutatsumeWatch> } = (() => {
+      let FutatsumeWatch: HlsLocalFutatsumeWatch | null = null;
       let emitter: AnyEmitter | undefined;
 
       const initialize = (): void => {
@@ -2660,33 +2585,33 @@ export async function initializeHls(): Promise<void> {
           return;
         }
         emitter = new Emitter();
-        const onBeforeZenzaReady = (): void => {
-          ZenzaWatch = (window as unknown as { ZenzaWatch: HlsLocalZenzaWatch }).ZenzaWatch;
-          void emitter!.emitResolve('beforeReady', ZenzaWatch);
+        const onBeforeFutatsumeReady = (): void => {
+          FutatsumeWatch = (window as unknown as { FutatsumeWatch: HlsLocalFutatsumeWatch }).FutatsumeWatch;
+          void emitter!.emitResolve('beforeReady', FutatsumeWatch);
         };
 
-        const onZenzaReady = (): void => {
-          ZenzaWatch = (window as unknown as { ZenzaWatch: HlsLocalZenzaWatch }).ZenzaWatch;
-          void emitter!.emitResolve('beforeReady', ZenzaWatch);
-          void emitter!.emitResolve('afterReady', ZenzaWatch);
+        const onFutatsumeReady = (): void => {
+          FutatsumeWatch = (window as unknown as { FutatsumeWatch: HlsLocalFutatsumeWatch }).FutatsumeWatch;
+          void emitter!.emitResolve('beforeReady', FutatsumeWatch);
+          void emitter!.emitResolve('afterReady', FutatsumeWatch);
         };
 
-        if ((window as unknown as { ZenzaWatch?: HlsLocalZenzaWatch }).ZenzaWatch) {
-          onBeforeZenzaReady();
-          if ((window as unknown as { ZenzaWatch: HlsLocalZenzaWatch }).ZenzaWatch.ready) {
-            return onZenzaReady();
+        if ((window as unknown as { FutatsumeWatch?: HlsLocalFutatsumeWatch }).FutatsumeWatch) {
+          onBeforeFutatsumeReady();
+          if ((window as unknown as { FutatsumeWatch: HlsLocalFutatsumeWatch }).FutatsumeWatch.ready) {
+            return onFutatsumeReady();
           }
         }
-        window.addEventListener('BeforeZenzaWatchInitialize', onBeforeZenzaReady, { once: true });
-        window.addEventListener('ZenzaWatchInitialize', onZenzaReady, { once: true });
+        window.addEventListener('BeforeFutatsumeWatchInitialize', onBeforeFutatsumeReady, { once: true });
+        window.addEventListener('FutatsumeWatchInitialize', onFutatsumeReady, { once: true });
       };
 
-      const detect = (timing = 'ready'): Promise<HlsLocalZenzaWatch> => {
+      const detect = (timing = 'ready'): Promise<HlsLocalFutatsumeWatch> => {
         initialize();
         if (timing === 'beforeready') {
-          return emitter!.promise('beforeReady') as unknown as Promise<HlsLocalZenzaWatch>;
+          return emitter!.promise('beforeReady') as unknown as Promise<HlsLocalFutatsumeWatch>;
         } else {
-          return emitter!.promise('afterReady') as unknown as Promise<HlsLocalZenzaWatch>;
+          return emitter!.promise('afterReady') as unknown as Promise<HlsLocalFutatsumeWatch>;
         }
       };
 
@@ -2697,39 +2622,39 @@ export async function initializeHls(): Promise<void> {
       hlsConfig,
       html,
       render,
-      ZenzaWatch,
+      FutatsumeWatch,
     }: {
       hlsConfig: Record<string, unknown>;
       html: HlsDebugModule['html'];
       render: HlsDebugModule['render'];
-      ZenzaWatch: HlsLocalZenzaWatch;
+      FutatsumeWatch: HlsLocalFutatsumeWatch;
     }): void => {
-      void ZenzaWatch.emitter.promise('videoControBar.addonMenuReady').then(({ container }) => {
+      void FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady').then(({ container }) => {
         const div = html`<div class="command controlButton" data-command="toggleHLSDebug">
           <div class="controlButtonInner">hls</div>
         </div>`;
-        ZenzaWatch.util.addStyle(
+        FutatsumeWatch.util.addStyle(
           `
           .controlButton[data-command=toggleHLSDebug] {
             font-family: Avenir;
           }`,
-          { className: 'ZenzaHLS' }
+          { className: 'FutatsumeHLS' }
         );
         const mount = document.createElement('span');
         container.append(mount);
         render(div, mount);
       });
-      void ZenzaWatch.emitter.promise('videoContextMenu.addonMenuReady.list').then(({ container }) => {
+      void FutatsumeWatch.emitter.promise('videoContextMenu.addonMenuReady.list').then(({ container }) => {
         const li = html`<li class="command" data-command="toggleHLSDebug">HLS設定</li>`;
         const mount = document.createElement('li');
         container.append(mount);
         render(li, mount);
       });
 
-      ZenzaWatch.emitter.once('command-toggleHLSDebug', () => {
+      FutatsumeWatch.emitter.once('command-toggleHLSDebug', () => {
         initDebugElements(hlsConfig, { html, render });
         const d = document.createElement('video-debug-dialog') as unknown as HlsVideoDebugDialog;
-        d.className = 'zen-family';
+        d.className = 'futatsume-family';
         d.hlsConfig = hlsConfig;
         d.addEventListener('change', (e: Event) => {
           const detail = (e as CustomEvent).detail as { name: string; value: HlsConfigValue };
@@ -2767,18 +2692,18 @@ export async function initializeHls(): Promise<void> {
           d.setValue('abrEwmaDefaultEstimate', value);
         });
 
-        ZenzaWatch.debug.hlsDebugDialog = d;
+        FutatsumeWatch.debug.hlsDebugDialog = d;
         document.body.append(d);
         d.open();
 
-        ZenzaWatch.emitter.on('command-toggleHLSDebug', () => {
-          (ZenzaWatch.debug.hlsDebugDialog as HlsVideoDebugDialog).toggle();
+        FutatsumeWatch.emitter.on('command-toggleHLSDebug', () => {
+          (FutatsumeWatch.debug.hlsDebugDialog as HlsVideoDebugDialog).toggle();
         });
       });
     };
 
     const init = (): void => {
-      console.log('%cinit ZenzaWatch HLS', 'background: cyan');
+      console.log('%cinit FutatsumeWatch HLS', 'background: cyan');
 
       const hlsConfig: Record<string, unknown> = Object.assign({}, Config.raw);
       Config.on('update', (key: unknown, value: unknown): void => {
@@ -2786,11 +2711,11 @@ export async function initializeHls(): Promise<void> {
       });
 
       let lastLevel = -1;
-      const createVideoElement = (usecase?: string): HTMLVideoElement | HlsZenzaVideo => {
+      const createVideoElement = (usecase?: string): HTMLVideoElement | HlsFutatsumeVideo => {
         if (!window.customElements) {
           return document.createElement('video');
         }
-        const video = document.createElement('zenza-video') as unknown as HlsZenzaVideo;
+        const video = document.createElement('futatsume-video') as unknown as HlsFutatsumeVideo;
         if (usecase === 'capture') {
           //return null;
           // 静止画キャプチャ用なのにどんどんバッファするのは無駄なので抑える
@@ -2806,10 +2731,8 @@ export async function initializeHls(): Promise<void> {
             fragLoadingMaxRetry: 3,
             levelLoadingMaxRetry: 1,
             abrEwmaDefaultEstimate: (
-              (globalThis as unknown as { ZenzaWatch: HlsLocalZenzaWatch }).ZenzaWatch.debug.hlsConfig as Record<
-                string,
-                unknown
-              >
+              (globalThis as unknown as { FutatsumeWatch: HlsLocalFutatsumeWatch }).FutatsumeWatch.debug
+                .hlsConfig as Record<string, unknown>
             ).abrEwmaDefaultEstimate,
             startLevel: lastLevel,
           });
@@ -2832,10 +2755,8 @@ export async function initializeHls(): Promise<void> {
             lastLevel = detail.level;
             if (Config.get('autoAbrEwmaDefaultEstimate')) {
               (
-                (globalThis as unknown as { ZenzaWatch: HlsLocalZenzaWatch }).ZenzaWatch.debug.hlsConfig as Record<
-                  string,
-                  unknown
-                >
+                (globalThis as unknown as { FutatsumeWatch: HlsLocalFutatsumeWatch }).FutatsumeWatch.debug
+                  .hlsConfig as Record<string, unknown>
               ).abrEwmaDefaultEstimate = Math.round(detail.bitrate * 0.8);
             }
           });
@@ -2845,17 +2766,17 @@ export async function initializeHls(): Promise<void> {
         return video;
       };
 
-      (window as unknown as Record<string, unknown>).ZenzaHLS = {
+      (window as unknown as Record<string, unknown>).FutatsumeHLS = {
         createVideoElement,
       };
 
-      void ZenzaDetector.detect('beforeready')
-        .then((ZenzaWatch: HlsLocalZenzaWatch) => {
-          ZenzaWatch.debug.isHLSSupported = true;
+      void FutatsumeDetector.detect('beforeready')
+        .then((FutatsumeWatch: HlsLocalFutatsumeWatch) => {
+          FutatsumeWatch.debug.isHLSSupported = true;
 
-          ZenzaWatch.debug.hlsConfig = {};
+          FutatsumeWatch.debug.hlsConfig = {};
           Object.keys(Config.raw).forEach((key: string) => {
-            Object.defineProperty(ZenzaWatch.debug.hlsConfig, key, {
+            Object.defineProperty(FutatsumeWatch.debug.hlsConfig, key, {
               get() {
                 return Config.get(key);
               },
@@ -2865,12 +2786,12 @@ export async function initializeHls(): Promise<void> {
             });
           });
 
-          ZenzaWatch.debug.createVideoElement = createVideoElement;
-          return ZenzaWatch;
+          FutatsumeWatch.debug.createVideoElement = createVideoElement;
+          return FutatsumeWatch;
         })
-        .then((ZenzaWatch: HlsLocalZenzaWatch) => {
-          initDebug({ hlsConfig, html, render, ZenzaWatch });
-          console.timeEnd('ZenzaWatch HLS');
+        .then((FutatsumeWatch: HlsLocalFutatsumeWatch) => {
+          initDebug({ hlsConfig, html, render, FutatsumeWatch });
+          console.timeEnd('FutatsumeWatch HLS');
         });
     };
 

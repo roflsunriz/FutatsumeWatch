@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { textUtil } from '../packages/lib/src/text/textUtil';
 import { PromiseHandler } from '../packages/lib/src/Emitter';
 import type { AnyPromiseHandler } from '../packages/lib/src/Emitter';
 
@@ -804,7 +803,7 @@ class VideoInfoModel extends JSONable {
     const duration = this.duration;
     const MARGIN = 10;
     const resumePoints = (this._cacheData && this._cacheData.resume ? this._cacheData.resume : [])
-      .filter(({ now, time }) => time > MARGIN && time < duration - MARGIN)
+      .filter(({ time }) => time > MARGIN && time < duration - MARGIN)
       .map(({ now, time }) => {
         return { now: new Date(now).toLocaleString(), time };
       });

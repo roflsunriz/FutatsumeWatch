@@ -59,7 +59,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 初期化はAntiPrototypeJs→設定復元→runtimeのモジュール評価→API/Worker/描画依存の配線→HLS→initialize→追加機能。モジュール評価時にConfig.propsを読む既存箇所があるため、Configのrestore前にruntimeを静的importしない。
 - useDefineForClassFields:falseは必須。ES2022既定では型用フィールド宣言が親の初期化済みDOM参照をundefinedで上書きする。型用宣言をdeclareへ統一するまで従来の生成規則を維持する。
 - Workerへ関数・クラスのtoStringを渡す経路が残る。バンドル時の匿名化・名前変更・自由変数を実行検証すること。StoryboardInfoModelは明示的なfactoryとEmitter引数でWorkerへ渡す。minifyを有効化する前に全Worker経路を再検証する。
-- lodash/jQueryは各モジュールからimportする。ホストページのwindow._/$/jQueryを上書きしない。旧window.ZenzaWatch・イベント・DOM名は連携互換のため維持し、window.FutatsumeWatchと同じ実体を公開する。
+- lodash/jQueryは各モジュールからimportする。ホストページのwindow._/$/jQueryを上書きしない。現行の公開名はwindow.FutatsumeWatch。利用者の全面移行指示により、旧window名・イベント・DOM名の互換別名は廃止した。
 - 設定はsrc/config-migration.tsで旧ZenzaWatch_キーから既知の設定だけ移す。新キーの値を優先し旧キーは残す。プレイリスト保存失敗でsessionStorage.clear()してはならない。
 - 旧連結版で実測した初期化停止はconsoleのconstへの再代入、uQueryの空生成時undefined参照。移行後は動画情報のdmcInfo:null、Workerクラスの文字列化、未接続のConfig/イベント/デバッグ情報も修正した。
 - 動画ページにはdata-futatsume-openボタンから起動できる導線がある。検証はexternal.openだけで済ませず、この導線から行う。
@@ -70,7 +70,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - devフローは利用者が操作するため既定headed。無人検証時はstart --headlessを指定する。Bunの子Chromeは親終了に追従するためStart-Processで分離する。停止は専用stateファイルのPIDだけを対象にする。
 - TM 5.5の初回User Scripts許可は手動。ダッシュボードのinput[type=checkbox]は行選択であり、有効化ではない。.scripttr .enablerと.enabler_enabledで状態を確認する。
 - scripts/dev-verify.tsは実際にインストールした配布物を操作し、ready・HLS時間進行・コメント描画・シーク・設定保存・追加画面・プレイリスト切替を検証する。存在するだけのグローバルを成功条件にしない。
-- コメント描画はdocument.hidden時に止める仕様。ヘッドレスでもPage.bringToFrontで対象タブを可視状態にして確認する。zenza-videoの実videoはshadow DOM内であるため、通常のquerySelectorAll('video')だけでは検出できない。
+- コメント描画はdocument.hidden時に止める仕様。ヘッドレスでもPage.bringToFrontで対象タブを可視状態にして確認する。futatsume-videoの実videoはshadow DOM内であるため、通常のquerySelectorAll('video')だけでは検出できない。
 - scripts/dev-verify-addons.tsは隔離コンテキスト・通信遮断・固定HTML・実際にエンコードした映像でCapTubeとブログパーツを検証する。公開サイトの実測とは区別する。
 - CDPヘルパーはプロトコルエラーと評価中例外を失敗にし、15秒でタイムアウトする。Worker例外も収集する。結果・画像はdev-assets/verificationに保存し、認証情報や署名URLをGitへ含めない。
 - 実ページはNicoCache系プロキシ経由で他の拡張コードが混在する場合がある。広告等の既知の第三者通信失敗と製品例外を分ける。動画・コメントは製品の状態とDOMから判定する。
@@ -138,3 +138,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 旧`test/browser`のイベント検証は`test/unit/uquery.test.ts`へ移した。DOMは同じイベント・関数のリスナーを共有するため、uQueryの名前空間を一つ解除しても別の登録が残る間は実リスナーを消さない。`sample/`は旧コメントアートの比較資料で、実行済みのテストと混同しない。
 - `v<version>`タグでは`.github/workflows/ci.yml`が品質検証後にCHANGELOGの対象版と配布物をリリースへ掲載する。mainの通常プッシュではリリースしない。
 - 既定の`minify: true`はWorker内で`ReferenceError: e/t is not defined`を生み再生を止めた。`rolldownOptions.output.minify`で`mangle:false`・`compress:false`・`codegen.removeWhitespace:true`を指定し、名前と関数構造を保持する。変更時は実配布物の再生・Worker・保存HTMLを再検証する。
+
+## 名称の全面移行とlint（2026-09-20、未リリース）
+
+- 現行コード・DOM・イベント・追加機能はFutatsumeWatch / Futatsume系、プレイヤーのパッケージは`packages/futatsume`へ統一した。旧ブランド文字列は`src/config-migration.ts`の読み込み境界と移行テスト、由来・上流URL・過去の記録だけに残す。`escapeToZenkaku`、`frozen`、資料内の全角空白`zen_space`はブランド名ではない。
+- `main.ts`で共有保存値・プレイリスト・前回再生状態を移し、Configの復元前に本体設定を、HLS/GamePadの初期化時に各既定キーを移す。本体の移行版は2。マーカー1では名称変更したTube設定だけをFutatsumeWatchの旧キーから移し、リセットした値を旧ブランドのバックアップから復活させない。旧値は保持し、新キーを優先する。旧設定JSONは`Config.import`でキーを変換する。
+- GamePadの公開オブジェクトはプレイヤーを開いてから設定される。起動前の移行確認では保存キーを確認し、操作は起動後に検証する。`dev:verify:migration`は隔離コンテキストで移行とHLSエラー種別を検証する。
+- lintは`--max-warnings 0`・未使用宣言error。継承・公開契約に必要な未使用引数だけ意図を明示し、未使用の代入を外す際は初期化や入力検証の副作用を残す。
+- Bun 1.4.0の`install --lockfile-only --ignore-scripts`は`--force`付きでも既存lockfileのルートnameを更新しなかった。今回だけルートnameをpackage.jsonへ合わせ、依存解決情報を変えず`--frozen-lockfile`で整合性を確認する。

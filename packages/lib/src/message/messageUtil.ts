@@ -162,11 +162,11 @@ const BroadcastEmitter = (messageUtil.BroadcastEmitter = (() => {
    */
   const onStorage = (e: StorageEvent) => {
     const command: string | null = e.key;
-    if (e.type !== 'storage' || !(command!.startsWith(`${PRODUCT}_`) || command!.startsWith('ZenzaWatch_'))) {
+    if (e.type !== 'storage' || !command?.startsWith(`${PRODUCT}_`)) {
       return;
     }
 
-    const name = command!.replace('FutatsumeWatch_', '').replace('ZenzaWatch_', '');
+    const name = command.slice(`${PRODUCT}_`.length);
     const oldValue = e.oldValue;
     const newValue = e.newValue;
     if (oldValue === newValue) {

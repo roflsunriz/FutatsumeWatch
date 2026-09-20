@@ -1,38 +1,3 @@
-const sm9 = `
-<?xml version="1.0" encoding="UTF-8"?>
-<nicovideo_thumb_response status="ok">
-  <thumb>
-    <video_id>sm9</video_id>
-    <title>新・豪血寺一族 -煩悩解放 - レッツゴー！陰陽師</title>
-    <description>レッツゴー！陰陽師（フルコーラスバージョン）</description>
-    <thumbnail_url>http://nicovideo.cdn.nimg.jp/thumbnails/9/9</thumbnail_url>
-    <first_retrieve>2007-03-06T00:33:00+09:00</first_retrieve>
-    <length>5:20</length>
-    <movie_type>flv</movie_type>
-    <size_high>21138631</size_high>
-    <size_low>17436492</size_low>
-    <view_counter>18135121</view_counter>
-    <comment_num>4843412</comment_num>
-    <mylist_counter>176842</mylist_counter>
-    <last_res_body>悪霊退散卍悪霊退散卍 獅子手脳(666) 悪霊退散卍悪霊退散卍 悪霊退散卍悪霊退... </last_res_body>
-    <watch_url>https://www.nicovideo.jp/watch/sm9</watch_url>
-    <thumb_type>video</thumb_type>
-    <embeddable>1</embeddable>
-    <no_live_play>0</no_live_play>
-    <tags domain="jp">
-      <tag lock="1">陰陽師</tag>
-      <tag lock="1">レッツゴー！陰陽師</tag>
-      <tag lock="1">公式</tag>
-      <tag lock="1">音楽</tag>
-      <tag lock="1">ゲーム</tag>
-    </tags>
-    <genre>未設定</genre>
-    <user_id>4</user_id>
-    <user_nickname>中の</user_nickname>
-    <user_icon_url>https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/s/0/4.jpg?1271141672</user_icon_url>
-  </thumb>
-</nicovideo_thumb_response>
-`;
 export interface VideoTag {
   text: string | null;
   category: boolean;

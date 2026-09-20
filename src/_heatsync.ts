@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { SettingsDialog } from '../packages/components/src/settings-dialog';
 import { Emitter } from '../packages/lib/src/Emitter';
 import type { EmitterCallback } from '../packages/lib/src/Emitter';
-import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
+import { FutatsumeDetector } from '../packages/components/src/util/futatsume-detector';
 
 // 型宣言のみを置く（transpile で除去され、生成物には含まれない）。
 // ランタイムコードへの変更は、型注釈・as キャスト・declare フィールドに留める。
@@ -47,7 +47,7 @@ interface HeatsyncDialog {
 interface HeatsyncVideoInfo {
   tagList?: Array<{ name: string }>;
 }
-interface HeatsyncZenzaWatch {
+interface HeatsyncFutatsumeWatch {
   config: {
     getValue(key: string): HeatsyncConfigValue;
     setValue(key: string, value?: unknown): void;
@@ -96,7 +96,7 @@ interface HeatsyncShadowHost extends Element {
   const PRODUCT = 'HeatSync';
   const monkey = function (PRODUCT: string): void {
     const console = window.console;
-    const ZenzaWatch: HeatsyncZenzaWatch | null = null;
+
     //const $ = window.jQuery;
     console.log(`exec ${PRODUCT}..`);
 
@@ -297,7 +297,6 @@ interface HeatsyncShadowHost extends Element {
       };
 
       const config: Record<string, HeatsyncConfigValue> = {};
-      let noEmit = false;
 
       emitter.refresh = (emitChange = false) => {
         Object.keys(defaultConfig).forEach((key) => {
@@ -344,7 +343,6 @@ interface HeatsyncShadowHost extends Element {
       };
 
       emitter.clearConfig = function (): void {
-        noEmit = true;
         Object.keys(defaultConfig).forEach((key) => {
           if (
             (_ as unknown as { contains(list: Array<string>, value: string): boolean }).contains(
@@ -364,7 +362,6 @@ interface HeatsyncShadowHost extends Element {
             // ストレージ異常時は既定値を維持する
           }
         });
-        noEmit = false;
       };
 
       emitter.getKeys = function (): Array<string> {
@@ -398,7 +395,7 @@ interface HeatsyncShadowHost extends Element {
         };
       };
 
-      util.emitter.on('broadcast', (type: unknown) => {
+      util.emitter.on('broadcast', () => {
         //if (type !== 'configUpdate') { return; }
         emitter.refresh(false);
         emitter.emit('refresh');
@@ -428,8 +425,8 @@ interface HeatsyncShadowHost extends Element {
         this._config = config.namespace('turbo');
 
         util.emitter.on('heatMapUpdate', this._onHeatMapUpdate.bind(this));
-        util.emitter.on('zenzaClose', this._onZenzaClose.bind(this));
-        util.emitter.on('zenzaOpen', this._onZenzaOpen.bind(this));
+        util.emitter.on('futatsumeClose', this._onFutatsumeClose.bind(this));
+        util.emitter.on('futatsumeOpen', this._onFutatsumeOpen.bind(this));
         util.emitter.on('broadcast', this._onBroadcast.bind(this));
       }
 
@@ -446,7 +443,7 @@ interface HeatsyncShadowHost extends Element {
         clearInterval(this._timer as ReturnType<typeof setInterval>);
         this._rate = config.getValue('turbo.red') as number;
         if (this._enabled && config.getValue('turbo.enabled')) {
-          (window as unknown as { ZenzaWatch: HeatsyncZenzaWatch }).ZenzaWatch.config.setValue(
+          (window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch.config.setValue(
             'playbackRate',
             this._rate
           );
@@ -455,15 +452,18 @@ interface HeatsyncShadowHost extends Element {
         this._timer = null;
       }
 
-      _onZenzaOpen(): void {
-        if (this._dialog || !(window as unknown as { ZenzaWatch: HeatsyncZenzaWatch }).ZenzaWatch.debug.dialog) {
+      _onFutatsumeOpen(): void {
+        if (
+          this._dialog ||
+          !(window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch.debug.dialog
+        ) {
           return;
         }
-        this._dialog = (window as unknown as { ZenzaWatch: HeatsyncZenzaWatch }).ZenzaWatch.debug.dialog;
+        this._dialog = (window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch.debug.dialog;
         this._dialog.on('loadVideoInfo', this._onVideoInfoLoad.bind(this));
       }
 
-      _onZenzaClose(): void {
+      _onFutatsumeClose(): void {
         this.disable();
       }
 
@@ -504,8 +504,8 @@ interface HeatsyncShadowHost extends Element {
       _onTimer(): void {
         //if (!this._videoElement) {
         this._videoElement = (
-          window as unknown as { ZenzaWatch: HeatsyncZenzaWatch }
-        ).ZenzaWatch.external.getVideoElement();
+          window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }
+        ).FutatsumeWatch.external.getVideoElement();
         if (!this._videoElement) {
           return;
         }
@@ -556,7 +556,7 @@ interface HeatsyncShadowHost extends Element {
         }
         // スローは即時、加速はちょっと遅く反映
         this._rate = rate > this._rate ? (rate * 2 + this._rate) / 3 : rate;
-        (window as unknown as { ZenzaWatch: HeatsyncZenzaWatch }).ZenzaWatch.config.setValue(
+        (window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch.config.setValue(
           'playbackRate',
           Math.floor(this._rate * 100) / 100
         );
@@ -1182,7 +1182,7 @@ interface HeatsyncShadowHost extends Element {
     };
 
     let configPanel: ConfigPanel | undefined;
-    const initDom = async (ZenzaWatch: HeatsyncZenzaWatch): Promise<void> => {
+    const initDom = async (FutatsumeWatch: HeatsyncFutatsumeWatch): Promise<void> => {
       const li = document.createElement('li');
       li.innerHTML = '<a href="javascript:;">†HeatSync†設定</a>';
       li.addEventListener('click', () => {
@@ -1201,54 +1201,54 @@ interface HeatsyncShadowHost extends Element {
         product.toggleButton = toggleButton;
         toggleButton.on('command', handler);
         if (!configPanel) {
-          configPanel = new ConfigPanel({ parentNode: document.querySelector('.zenzaPlayerContainer') });
+          configPanel = new ConfigPanel({ parentNode: document.querySelector('.futatsumePlayerContainer') });
         }
         toggleButton.refresh();
       };
-      if (ZenzaWatch.emitter.promise) {
-        const { container, handler } = (await ZenzaWatch.emitter.promise('videoControBar.addonMenuReady')) as {
+      if (FutatsumeWatch.emitter.promise) {
+        const { container, handler } = (await FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady')) as {
           container: Element | null;
           handler: EmitterCallback;
         };
         initButton(container, handler);
       } else {
-        ZenzaWatch.emitter.on('videoControBar.addonMenuReady', initButton);
+        FutatsumeWatch.emitter.on('videoControBar.addonMenuReady', initButton);
       }
     };
 
     const init = (): void => {
       let syncer: Syncer;
       console.log('init HeatSync...');
-      void ZenzaDetector.detect().then(() => {
-        const ZenzaWatch = (window as unknown as { ZenzaWatch: HeatsyncZenzaWatch }).ZenzaWatch;
-        ZenzaWatch.emitter.on('DialogPlayerOpen', () => {
-          util.emitter.emit('zenzaOpen');
+      void FutatsumeDetector.detect().then(() => {
+        const FutatsumeWatch = (window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch;
+        FutatsumeWatch.emitter.on('DialogPlayerOpen', () => {
+          util.emitter.emit('futatsumeOpen');
           if (configPanel) {
-            (document.querySelector('.zenzaPlayerContainer') as Element).append(configPanel.view);
+            (document.querySelector('.futatsumePlayerContainer') as Element).append(configPanel.view);
           }
         });
 
-        ZenzaWatch.emitter.on('DialogPlayerClose', () => {
-          util.emitter.emit('zenzaClose');
+        FutatsumeWatch.emitter.on('DialogPlayerClose', () => {
+          util.emitter.emit('futatsumeClose');
           if (configPanel) {
             document.body.append(configPanel.view);
           }
         });
 
-        ZenzaWatch.emitter.on('heatMapUpdate', (p: unknown) => {
+        FutatsumeWatch.emitter.on('heatMapUpdate', (p: unknown) => {
           util.emitter.emit('heatMapUpdate', p);
         });
 
-        ZenzaWatch.emitter.on('command-toggleHeatSyncDialog', () => {
+        FutatsumeWatch.emitter.on('command-toggleHeatSyncDialog', () => {
           if (!configPanel) {
-            configPanel = new ConfigPanel({ parentNode: document.querySelector('.zenzaPlayerContainer') });
+            configPanel = new ConfigPanel({ parentNode: document.querySelector('.futatsumePlayerContainer') });
           }
           configPanel.toggle();
         });
 
-        void initDom(ZenzaWatch);
+        void initDom(FutatsumeWatch);
 
-        //console.info('detect zenzawatch...');
+        //console.info('detect futatsumewatch...');
 
         syncer = new Syncer();
 

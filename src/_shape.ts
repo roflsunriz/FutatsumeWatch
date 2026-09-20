@@ -1,6 +1,5 @@
 import { css } from '../packages/lib/src/css/css';
 import { SettingsDialog } from '../packages/components/src/settings-dialog';
-import { throttle } from '../packages/lib/src/infra/bounce';
 
 interface MaskedWatchConfig {
   interval: number;
@@ -52,7 +51,7 @@ interface MaskedWatchPaintProps {
   get(name: string): { toString(): string };
 }
 
-interface MaskedWatchZenza {
+interface MaskedWatchFutatsume {
   emitter: {
     promise(event: string): Promise<unknown>;
     on(event: string, listener: (...args: unknown[]) => void): unknown;
@@ -82,7 +81,7 @@ interface MaskedWatchCss {
 
   const monkey = (PRODUCT: string): void => {
     'use strict';
-    let ZenzaWatch: MaskedWatchZenza | null = null;
+    let FutatsumeWatch: MaskedWatchFutatsume | null = null;
 
     const DEFAULT_CONFIG: MaskedWatchConfig = {
       interval: 300,
@@ -157,13 +156,13 @@ interval: ${config.interval}        // マスクの更新間隔
     };
 
     const 業務 = function (self: MaskedWatchWorkerSelf): void {
-      let fastMode!: boolean, faceDetection!: boolean, textDetection!: boolean, debug!: boolean, enabled!: boolean;
+      let fastMode!: boolean, faceDetection!: boolean, textDetection!: boolean;
       const init = (params: MaskedWatchWorkerParams): void => {
         updateConfig({ config: params.config as MaskedWatchConfig });
       };
 
       const updateConfig = ({ config }: { config: MaskedWatchConfig }): void => {
-        ({ fastMode, faceDetection, textDetection, debug, enabled } = config);
+        ({ fastMode, faceDetection, textDetection } = config);
         faceDetector = new ((self || window) as unknown as MaskedWatchDetectorHost).FaceDetector({ fastMode });
         textDetector = new ((self || window) as unknown as MaskedWatchDetectorHost).TextDetector();
       };
@@ -225,11 +224,7 @@ interval: ${config.interval}        // マスクの更新間隔
       };
     };
 
-    const 下請 = function (
-      self: unknown,
-      registerPaint: (name: string, painter: unknown) => void,
-      config: MaskedWatchConfig
-    ): void {
+    const 下請 = function (self: unknown, registerPaint: (name: string, painter: unknown) => void): void {
       registerPaint(
         '塗装',
         class {
@@ -342,7 +337,7 @@ interval: ${config.interval}        // マスクの更新間隔
         pointerEvents: 'none',
         userSelect: 'none',
       });
-      debugLayer.classList.add('zen-family');
+      debugLayer.classList.add('futatsume-family');
       debugLayer.dataset.type = type;
       debugLayer.style.backgroundImage = 'paint(塗装)';
       if (config.debug) {
@@ -466,7 +461,7 @@ interval: ${config.interval}        // マスクの更新間隔
             return;
           }
           this.shadow = this.attachShadow({ mode: 'open' });
-          this.shadow.innerHTML = this.getTemplate(config);
+          this.shadow.innerHTML = this.getTemplate();
           this.root = this.shadow.querySelector('#root') as HTMLDialogElement;
           this.modal = new SettingsDialog(this.root, 'masked', () => {});
           this.shadow.querySelector('.close-button')!.addEventListener('click', (e: Event) => {
@@ -477,8 +472,8 @@ interval: ${config.interval}        // マスクの更新間隔
           this.root.addEventListener('click', (e: Event) => {
             e.stopPropagation();
           });
-          this.classList.add('zen-family');
-          this.root.classList.add('zen-family');
+          this.classList.add('futatsume-family');
+          this.root.classList.add('futatsume-family');
           this.update();
 
           this.root.addEventListener('change', (e: Event) => {
@@ -491,7 +486,7 @@ interval: ${config.interval}        // マスクの更新間隔
             (config as unknown as Record<string, unknown>)[name] = value;
           });
         }
-        getTemplate(config: MaskedWatchConfig): string {
+        getTemplate(): string {
           return `
           <dialog id="root" class="root">
             <div>
@@ -649,7 +644,7 @@ interval: ${config.interval}        // マスクの更新間隔
             return;
           }
           this.shadow = this.attachShadow({ mode: 'open' });
-          this.shadow.innerHTML = this.getTemplate(config);
+          this.shadow.innerHTML = this.getTemplate();
           this.root = this.shadow.querySelector('#root') as HTMLElement;
           this.root.addEventListener('click', (e: Event) => {
             dialog.toggle();
@@ -657,7 +652,7 @@ interval: ${config.interval}        // マスクの更新間隔
             e.preventDefault();
           });
         }
-        getTemplate(config: MaskedWatchConfig): string {
+        getTemplate(): string {
           return `
           <style>
           .controlButton {
@@ -730,17 +725,17 @@ interval: ${config.interval}        // マスクの更新間隔
       return document.createElement(`${PRODUCT.toLowerCase()}-toggle-button`);
     };
 
-    const ZenzaDetector = ((): { detect(): Promise<unknown> } => {
-      const zenzaWindow = window as unknown as { ZenzaWatch?: { ready?: unknown } };
+    const FutatsumeDetector = ((): { detect(): Promise<unknown> } => {
+      const futatsumeWindow = window as unknown as { FutatsumeWatch?: { ready?: unknown } };
       const promise =
-        zenzaWindow.ZenzaWatch && zenzaWindow.ZenzaWatch.ready
-          ? Promise.resolve(zenzaWindow.ZenzaWatch)
+        futatsumeWindow.FutatsumeWatch && futatsumeWindow.FutatsumeWatch.ready
+          ? Promise.resolve(futatsumeWindow.FutatsumeWatch)
           : new Promise((resolve) => {
               [window, document.body || document.documentElement].forEach((e) =>
                 e.addEventListener(
-                  'ZenzaWatchInitialize',
+                  'FutatsumeWatchInitialize',
                   () => {
-                    resolve(zenzaWindow.ZenzaWatch);
+                    resolve(futatsumeWindow.FutatsumeWatch);
                   },
                   { once: true }
                 )
@@ -755,7 +750,7 @@ interval: ${config.interval}        // マスクの更新間隔
       if (!config.enabled || document.visibilityState !== 'visible') {
         return;
       }
-      [...document.querySelectorAll('video, zenza-video')]
+      [...document.querySelectorAll('video, futatsume-video')]
         .filter((video) => !(video as HTMLVideoElement).paused && !vmap.has(video))
         .forEach((video) => {
           // 対応プレイヤー増やすならココ
@@ -770,9 +765,9 @@ interval: ${config.interval}        // マスクの更新間隔
           } else if (video.closest('#watchVideoContainer')) {
             layer = document.querySelector('#jsPlayerCanvasComment canvas');
             type = 'NICO SP';
-          } else if (video.closest('.zenzaPlayerContainer')) {
+          } else if (video.closest('.futatsumePlayerContainer')) {
             layer = document.querySelector('.commentLayerFrame');
-            type = 'ZenzaWatch';
+            type = 'FutatsumeWatch';
           } else if (video.closest('[class*="__leo"]')) {
             layer = document.querySelector('#comment-layer-container canvas');
             type = 'NICO LIVE';
@@ -842,14 +837,14 @@ interval: ${config.interval}        // マスクの更新間隔
         document.querySelector('#siteHeaderRightMenuContainer') ? 1000 : 15000
       );
 
-      void ZenzaDetector.detect().then((zen) => {
-        console.log('ZenzaWatch found ver.%s', (zen as { version?: unknown })?.version);
-        ZenzaWatch = zen as MaskedWatchZenza;
-        void ZenzaWatch.emitter.promise('videoControBar.addonMenuReady').then((result) => {
+      void FutatsumeDetector.detect().then((futatsume) => {
+        console.log('FutatsumeWatch found ver.%s', (futatsume as { version?: unknown })?.version);
+        FutatsumeWatch = futatsume as MaskedWatchFutatsume;
+        void FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady').then((result) => {
           const { container } = result as { container: Element };
           container.append(createToggleButton(config, dialog));
         });
-        void ZenzaWatch.emitter.promise('videoContextMenu.addonMenuReady.list').then((result) => {
+        void FutatsumeWatch.emitter.promise('videoContextMenu.addonMenuReady.list').then((result) => {
           const { container } = result as { container: Element };
           const faceMenu = document.createElement('li');
           faceMenu.className = 'command';
@@ -867,7 +862,7 @@ interval: ${config.interval}        // マスクの更新間隔
           textMenu.addEventListener('click', () => {
             config.textDetection = !config.textDetection;
           });
-          ZenzaWatch!.emitter.on('showMenu', () => {
+          FutatsumeWatch!.emitter.on('showMenu', () => {
             faceMenu.classList.toggle('selected', config.faceDetection);
             textMenu.classList.toggle('selected', config.textDetection);
           });

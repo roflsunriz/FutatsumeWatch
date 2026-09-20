@@ -42,9 +42,7 @@ const WatchPageHistory = (() => {
   let originalTitle = window && window.document && window.document.title;
   let isOpen = false;
   let dialog: HistoryDialog | undefined;
-  let watchId: unknown;
   let path: string | null;
-  let title: string | null;
 
   const replaceHistoryState = (url: string | null): void => {
     history.replaceState(history.state, '', url);
@@ -95,7 +93,7 @@ const WatchPageHistory = (() => {
 
   const onDialogClose = (): void => {
     isOpen = false;
-    watchId = title = path = null;
+    path = null;
     replaceHistoryState(originalUrl);
     document.title = originalTitle;
   };

@@ -539,7 +539,7 @@ const { NicoSearchApiV2Query, NicoSearchApiV2Loader } = (function () {
     static async searchMore(word: string, params: SearchQueryParams, maxLimit = 300): Promise<NicoSearchResult> {
       const ONCE_LIMIT = 100; // 一回で取れる件数
       const PER_PAGE = 25; // 検索ページで1ページあたりに表示される件数
-      const MAX_PAGE = 64; // 25 * 64 = 1600
+      // 25 * 64 = 1600
 
       const result = await NicoSearchApiV2Loader.search(word, params);
 

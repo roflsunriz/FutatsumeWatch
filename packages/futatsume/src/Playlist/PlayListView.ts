@@ -140,7 +140,7 @@ class PlayListView extends Emitter {
       this._$menu.raf.removeClass('show');
       this._$fileDrop.raf.removeClass('show');
     });
-    uqFn('.zenzaVideoPlayerDialog')
+    uqFn('.futatsumeVideoPlayerDialog')
       .on('dragover', this._onDragOverFile.bind(this))
       .on('dragenter', this._onDragEnterFile.bind(this))
       .on('dragleave', this._onDragLeaveFile.bind(this))
@@ -276,7 +276,7 @@ PlayListView.__css__ = `
       color: #fff;
       text-shadow: 0 0 8px orange;
     }
-    .zenzaScreenMode_sideView .is-playlistEnable .is-notFullscreen .tabSelect.playlist::after  {
+    .futatsumeScreenMode_sideView .is-playlistEnable .is-notFullscreen .tabSelect.playlist::after  {
       text-shadow: 0 0 8px #336;
     }
 
@@ -433,7 +433,7 @@ PlayListView.__tpl__ = `
 
         <div class="playlist-count playlist-command" data-command="toggleMenu">
           <span class="playlist-index">---</span> / <span class="playlist-length">---</span>
-          <div class="zenzaPopupMenu playlist-menu">
+          <div class="futatsumePopupMenu playlist-menu">
             <div class="listInner">
             <ul>
               <li class="playlist-command" data-command="shuffle">

@@ -1,6 +1,6 @@
 // import {PRODUCT} from './FutatsumeWatchIndex';
 const PRODUCT = 'FutatsumeWatch';
-import { migrateConfig } from './config-migration';
+import { migrateConfig, migrateImportedConfig } from './config-migration';
 import { DataStorage } from '../packages/lib/src/infra/DataStorage';
 
 export interface ConfigProps {
@@ -113,8 +113,8 @@ export interface ConfigProps {
   'navi.playlistButtonMode': string;
   'navi.ownerFilter': boolean;
   'navi.lastSearchQuery': string;
-  autoZenTube: boolean;
-  bestZenTube: boolean;
+  autoFutatsumeTube: boolean;
+  bestFutatsumeTube: boolean;
   KEY_CLOSE: number;
   KEY_RE_OPEN: number;
   KEY_HOME: number;
@@ -337,8 +337,8 @@ const Config = (() => {
     'navi.ownerFilter': false,
     'navi.lastSearchQuery': '',
 
-    autoZenTube: false,
-    bestZenTube: false,
+    autoFutatsumeTube: false,
+    bestFutatsumeTube: false,
 
     KEY_CLOSE: 27, // ESC
     KEY_RE_OPEN: 27 + 0x1000, // SHIFT + ESC
@@ -404,6 +404,8 @@ const Config = (() => {
     storage: localStorage,
   });
 })();
+const importConfig = Config.import.bind(Config);
+Config.import = (data) => importConfig(migrateImportedConfig(data));
 Config.exportConfig = () => Config.export();
 Config.importConfig = (v: unknown) => Config.import(v);
 Config.exportToFile = () => {

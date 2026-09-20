@@ -669,7 +669,7 @@ VideoListView.__tpl__ = `
 
 </style>
 <style id="listItemStyle">%CSS%</style>
-<body class="zenzaRoot">
+<body class="futatsumeRoot">
 <div id="listContainer">
   <div id="listContainerInner"></div>
 </div>

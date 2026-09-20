@@ -30,7 +30,7 @@ class ShortcutKeyEmitter {
     // コンソールでキーバインド変更
     //
     // 例: ENTERでコメント入力開始
-    // ZenzaWatch.config.props['KEY_INPUT_COMMENT'] = 13;
+    // FutatsumeWatch.config.props['KEY_INPUT_COMMENT'] = 13;
     // SHIFTをつけたいときは 13 + 0x1000
 
     const map: Record<string, number> = {

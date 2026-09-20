@@ -74,7 +74,7 @@ const nicoUtil = {
       }
 
       return result;
-    } catch (e) {
+    } catch {
       return {};
     }
   },
@@ -123,7 +123,7 @@ const nicoUtil = {
       const el = document.querySelector('#CommonHeader[data-common-header]') as HTMLElement;
       const parsed: unknown = JSON.parse(el.dataset.commonHeader || '{}');
       return parsed as CommonHeaderData;
-    } catch (e) {
+    } catch {
       return { initConfig: {} } as unknown as CommonHeaderData;
     }
   },
@@ -150,7 +150,7 @@ const nicoUtil = {
     try {
       const h = document.getElementsByClassName('html')[0] as HTMLElement;
       return h.lang || 'ja-JP';
-    } catch (e) {
+    } catch {
       return 'ja-JP';
     }
   },

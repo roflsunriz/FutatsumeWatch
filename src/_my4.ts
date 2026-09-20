@@ -1,23 +1,7 @@
 import jquery from 'jquery';
-
 import * as lit from 'lit/html.js';
 import { bounce } from '../packages/lib/src/infra/bounce';
 import { cssUtil } from '../packages/lib/src/css/css';
-import { PromiseHandler } from '../packages/lib/src/Emitter';
-
-interface My4Lit {
-  html: (strings: TemplateStringsArray, ...values: unknown[]) => unknown;
-  render(template: unknown, container: Element): void;
-}
-
-interface My4JQueryResult {
-  on(event: string, listener: (...args: unknown[]) => void): unknown;
-}
-
-interface My4JQuery {
-  (ready: () => void): unknown;
-  (selector: string): My4JQueryResult;
-}
 
 interface My4FilterProps {
   playable?: string;
@@ -34,9 +18,6 @@ interface My4Item {
 }
 
 ((window: Window) => {
-  const global = {
-    PRODUCT: 'MylistFilter',
-  };
   const { html } = lit;
   const $ = jquery;
 

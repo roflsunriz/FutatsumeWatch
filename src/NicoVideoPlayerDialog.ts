@@ -1,4 +1,3 @@
-import * as $ from 'jquery';
 import * as _ from 'lodash';
 import { global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';
@@ -11,11 +10,10 @@ import { CommentInputPanel } from './CommentInputPanel';
 import { CommentPanel } from './CommentPanel';
 import { VideoControlBar } from './VideoControlBar';
 import { VideoInfoPanel } from './VideoInfoPanel';
-import { SettingPanel } from './SettingPanel';
 import { PlayerShell } from './player-shell';
 import { closeSettingsDialog } from '../packages/components/src/settings-dialog';
-import { PlayList, PlayListSession } from '../packages/zenza/src/Playlist/PlayList';
-import type { PlaylistDescriptor } from '../packages/zenza/src/Playlist/PlayList';
+import { PlayList, PlayListSession } from '../packages/futatsume/src/Playlist/PlayList';
+import type { PlaylistDescriptor } from '../packages/futatsume/src/Playlist/PlayList';
 import { Emitter } from './baselib';
 import { ThreadLoader } from '../packages/lib/src/nico/ThreadLoader';
 import { sleep } from '../packages/lib/src/infra/sleep';
@@ -57,7 +55,7 @@ interface VideoWatchOptionBag {
   autoCloseFullScreen?: boolean;
   reloadCount?: number;
   videoServerType?: string;
-  isAutoZenTubeDisabled?: boolean;
+  isAutoFutatsumeTubeDisabled?: boolean;
   currentTime?: string | number;
   [key: string]: unknown;
 }
@@ -90,7 +88,7 @@ interface VariablesMapperState {
   [key: string]: unknown;
 }
 
-interface ZenzaSettingPanelElement extends HTMLElement {
+interface FutatsumeSettingPanelElement extends HTMLElement {
   config: unknown;
   toggle(): void;
   close(): void;
@@ -339,8 +337,8 @@ class VideoWatchOptions {
   get videoServerType() {
     return this._options.videoServerType ?? this._config.getValue('videoServerType');
   }
-  get isAutoZenTubeDisabled() {
-    return !!this._options.isAutoZenTubeDisabled;
+  get isAutoFutatsumeTubeDisabled() {
+    return !!this._options.isAutoFutatsumeTubeDisabled;
   }
   get reloadCount() {
     return this._options.reloadCount;
@@ -358,7 +356,7 @@ class VideoWatchOptions {
     _.defaults(options, this._options);
     options.openNow = true;
     delete options.videoServerType;
-    options.isAutoZenTubeDisabled = false;
+    options.isAutoFutatsumeTubeDisabled = false;
     options.currentTime = 0;
     options.reloadCount = 0;
     options.query = {};
@@ -367,8 +365,8 @@ class VideoWatchOptions {
   createForReload(options: VideoWatchOptionBag | undefined): VideoWatchOptionBag {
     options = options || {};
     delete this._options.economy;
-    options.isAutoZenTubeDisabled =
-      typeof options.isAutoZenTubeDisabled === 'boolean' ? options.isAutoZenTubeDisabled : true;
+    options.isAutoFutatsumeTubeDisabled =
+      typeof options.isAutoFutatsumeTubeDisabled === 'boolean' ? options.isAutoFutatsumeTubeDisabled : true;
     _.defaults(options, this._options);
     options.openNow = true;
     options.reloadCount = options.reloadCount ? options.reloadCount + 1 : 1;
@@ -404,7 +402,7 @@ class NicoVideoPlayerDialogView extends Emitter {
   declare private _isMouseMoving: boolean | undefined;
   declare private _classNameTable: Map<string, string> | undefined;
   declare private _lastScreenMode: string;
-  declare settingPanel: ZenzaSettingPanelElement | undefined;
+  declare settingPanel: FutatsumeSettingPanelElement | undefined;
   declare varMapper: VariablesMapper;
   declare static __css__: string;
   declare static __tpl__: string;
@@ -450,7 +448,7 @@ class NicoVideoPlayerDialogView extends Emitter {
     const state = this._state;
     this._$body = (util as unknown as DialogUtilView).$('body, html');
 
-    const $container = (this._$playerContainer = $dialog.find('.zenzaPlayerContainer'));
+    const $container = (this._$playerContainer = $dialog.find('.futatsumePlayerContainer'));
     const container = $container[0] as Element;
     const classList = (this.classList = ClassList(container));
 
@@ -496,14 +494,14 @@ class NicoVideoPlayerDialogView extends Emitter {
         }
         lastX = me.screenX;
         lastY = me.screenY;
-        onMouseMove(me);
-        onMouseMoveEnd(me);
+        onMouseMove();
+        onMouseMoveEnd();
       }, 100)
     );
 
     $dialog
       .on('dblclick', (e: Event) => {
-        if (!e.target || (e.target as Element).id !== 'zenzaVideoPlayerDialog') {
+        if (!e.target || (e.target as Element).id !== 'futatsumeVideoPlayerDialog') {
           return;
         }
         if (config.props.enableDblclickClose) {
@@ -608,10 +606,10 @@ class NicoVideoPlayerDialogView extends Emitter {
     }
   }
   async _onPaste(e: ClipboardEvent): Promise<void> {
-    const isZen = !!(e.target as unknown as Element).closest('.zenzaVideoPlayerDialog');
+    const isFutatsume = !!(e.target as unknown as Element).closest('.futatsumeVideoPlayerDialog');
     const target = ((e as Event & { path?: EventTarget[] }).path?.[0] ?? e.target) as HTMLElement;
-    window.console.log('onPaste', { e, target, isZen });
-    if (!isZen && ['INPUT', 'TEXTAREA'].includes(target.tagName)) {
+    window.console.log('onPaste', { e, target, isFutatsume });
+    if (!isFutatsume && ['INPUT', 'TEXTAREA'].includes(target.tagName)) {
       return;
     }
     let text: string;
@@ -665,7 +663,7 @@ class NicoVideoPlayerDialogView extends Emitter {
       return;
     }
     const $container = this._$playerContainer;
-    const header = $container.find('.zenzaWatchVideoHeaderPanel')[0] as HTMLElement;
+    const header = $container.find('.futatsumeWatchVideoHeaderPanel')[0] as HTMLElement;
     const config = this._playerConfig;
 
     // 画面の縦幅にシークバー分の余裕がある時は常時表示
@@ -696,14 +694,14 @@ class NicoVideoPlayerDialogView extends Emitter {
 
     update();
   }
-  _onMouseMove(e?: MouseEvent): void {
+  _onMouseMove(): void {
     if (this._isMouseMoving) {
       return;
     }
     this.addClass('is-mouseMoving');
     this._isMouseMoving = true;
   }
-  _onMouseMoveEnd(e?: MouseEvent): void {
+  _onMouseMoveEnd(): void {
     if (!this._isMouseMoving) {
       return;
     }
@@ -830,16 +828,16 @@ class NicoVideoPlayerDialogView extends Emitter {
   }
   _getScreenModeClassNameTable() {
     return [
-      'zenzaScreenMode_3D',
-      'zenzaScreenMode_small',
-      'zenzaScreenMode_sideView',
-      'zenzaScreenMode_normal',
-      'zenzaScreenMode_big',
-      'zenzaScreenMode_wide',
+      'futatsumeScreenMode_3D',
+      'futatsumeScreenMode_small',
+      'futatsumeScreenMode_sideView',
+      'futatsumeScreenMode_normal',
+      'futatsumeScreenMode_big',
+      'futatsumeScreenMode_wide',
     ];
   }
   _applyScreenMode(force = false): void {
-    const screenMode = this._state.isOpen ? `zenzaScreenMode_${this._state.screenMode}` : '';
+    const screenMode = this._state.isOpen ? `futatsumeScreenMode_${this._state.screenMode}` : '';
     if (!force && this._lastScreenMode === screenMode) {
       return;
     }
@@ -894,7 +892,7 @@ class NicoVideoPlayerDialogView extends Emitter {
       ClassList(document.body).remove('fullscreen');
     }
     this._$body.raf.addClass('showNicoVideoPlayerDialog');
-    (util as unknown as DialogUtilView).StyleSwitcher.update({ on: 'style.zenza-open' });
+    (util as unknown as DialogUtilView).StyleSwitcher.update({ on: 'style.futatsume-open' });
     this._updateScreenModeStyle();
   }
   hide(): void {
@@ -906,7 +904,7 @@ class NicoVideoPlayerDialogView extends Emitter {
     }
     this._$body.raf.removeClass('showNicoVideoPlayerDialog');
     (util as unknown as DialogUtilView).StyleSwitcher.update({
-      off: 'style.zenza-open, style.screenMode',
+      off: 'style.futatsume-open, style.screenMode',
       on: 'link[href*="watch.css"]',
     });
     this._clearClass();
@@ -930,7 +928,7 @@ class NicoVideoPlayerDialogView extends Emitter {
   }
   toggleSettingPanel(): void {
     if (!this.settingPanel) {
-      this.settingPanel = document.createElement('zenza-setting-panel') as ZenzaSettingPanelElement;
+      this.settingPanel = document.createElement('futatsume-setting-panel') as FutatsumeSettingPanelElement;
       this.settingPanel.config = this._playerConfig;
       this._$playerContainer.append(this.settingPanel);
     }
@@ -979,15 +977,15 @@ class NicoVideoPlayerDialogView extends Emitter {
   .is-watch .BaseLayout {
     display: none;
   }
-  #zenzaVideoPlayerDialog {
+  #futatsumeVideoPlayerDialog {
     touch-action: manipulation; /* for Safari */
     touch-action: none;
   }
-  #zenzaVideoPlayerDialog::before {
+  #futatsumeVideoPlayerDialog::before {
     display: none;
   }
 
-  .zenzaPlayerContainer {
+  .futatsumePlayerContainer {
     left: 0 !important;
     top:  0 !important;
     width:  100vw !important;
@@ -1020,13 +1018,13 @@ class NicoVideoPlayerDialogView extends Emitter {
 
   .showVideoControlBar {
     --padding-bottom: ${(VideoControlBar as unknown as { BASE_HEIGHT: number }).BASE_HEIGHT}px;
-    --padding-bottom: var(--zenza-control-bar-height);
+    --padding-bottom: var(--futatsume-control-bar-height);
   }
-  .zenzaStoryboardOpen .showVideoControlBar {
-    --padding-bottom: calc(var(--zenza-control-bar-height) + 80px);
+  .futatsumeStoryboardOpen .showVideoControlBar {
+    --padding-bottom: calc(var(--futatsume-control-bar-height) + 80px);
   }
-  .zenzaStoryboardOpen.is-fullscreen .showVideoControlBar {
-    --padding-bottom: calc(var(--zenza-control-bar-height) + 50px);
+  .futatsumeStoryboardOpen.is-fullscreen .showVideoControlBar {
+    --padding-bottom: calc(var(--futatsume-control-bar-height) + 50px);
   }
 
   .showVideoControlBar .videoPlayer,
@@ -1055,12 +1053,12 @@ class NicoVideoPlayerDialogView extends Emitter {
     z-index: 102 !important;
   }
 
-  body[data-screen-mode="3D"] .zenzaPlayerContainer .videoPlayer {
+  body[data-screen-mode="3D"] .futatsumePlayerContainer .videoPlayer {
     transform: perspective(700px) rotateX(10deg);
     margin-top: -5%;
   }
 
-  .zenzaPlayerContainer {
+  .futatsumePlayerContainer {
     left: 0;
     width: 100vw;
     height: 100vh;
@@ -1075,12 +1073,12 @@ class NicoVideoPlayerDialogView extends Emitter {
     z-index: 102;
   }
 
-  body[data-screen-mode="3D"] .zenzaPlayerContainer .videoPlayer {
+  body[data-screen-mode="3D"] .futatsumePlayerContainer .videoPlayer {
     transform: perspective(600px) rotateX(10deg);
     height: 100%;
   }
 
-  body[data-screen-mode="3D"] .zenzaPlayerContainer .commentLayerFrame {
+  body[data-screen-mode="3D"] .futatsumePlayerContainer .commentLayerFrame {
     transform: translateZ(0) perspective(600px) rotateY(30deg) rotateZ(-15deg) rotateX(15deg);
     opacity: 0.9;
     height: 100%;
@@ -1093,15 +1091,15 @@ class NicoVideoPlayerDialogView extends Emitter {
 
 (util as unknown as DialogUtilView).addStyle(
   `
-  body #zenzaVideoPlayerDialog {
+  body #futatsumeVideoPlayerDialog {
     contain: style size;
   }
 
-  #zenzaVideoPlayerDialog::before {
+  #futatsumeVideoPlayerDialog::before {
     display: none;
   }
 
-  body.zenzaScreenMode_sideView {
+  body.futatsumeScreenMode_sideView {
     --sideView-left-margin: ${CONSTANT.SIDE_PLAYER_WIDTH + 24}px;
     --sideView-top-margin: 76px;
     margin-left: var(--sideView-left-margin);
@@ -1110,33 +1108,33 @@ class NicoVideoPlayerDialogView extends Emitter {
     width: auto;
   }
 
-  body.zenzaScreenMode_sideView.nofix {
+  body.futatsumeScreenMode_sideView.nofix {
     --sideView-top-margin: 40px;
   }
-  body.zenzaScreenMode_sideView:not(.nofix) #siteHeader {
+  body.futatsumeScreenMode_sideView:not(.nofix) #siteHeader {
     width: auto;
   }
-  body.zenzaScreenMode_sideView:not(.nofix) #siteHeader #siteHeaderInner {
+  body.futatsumeScreenMode_sideView:not(.nofix) #siteHeader #siteHeaderInner {
     width: auto;
   }
 
- .zenzaScreenMode_sideView .zenzaVideoPlayerDialog.is-open,
- .zenzaScreenMode_small .zenzaVideoPlayerDialog.is-open {
+ .futatsumeScreenMode_sideView .futatsumeVideoPlayerDialog.is-open,
+ .futatsumeScreenMode_small .futatsumeVideoPlayerDialog.is-open {
     display: block;
     top: 0; left: 0; right: 100%; bottom: 100%;
   }
 
-  .zenzaScreenMode_sideView .zenzaPlayerContainer,
-  .zenzaScreenMode_small .zenzaPlayerContainer {
+  .futatsumeScreenMode_sideView .futatsumePlayerContainer,
+  .futatsumeScreenMode_small .futatsumePlayerContainer {
     width: ${CONSTANT.SIDE_PLAYER_WIDTH}px;
     height: ${CONSTANT.SIDE_PLAYER_HEIGHT}px;
   }
 
-  .is-open .zenzaVideoPlayerDialog {
+  .is-open .futatsumeVideoPlayerDialog {
     contain: layout style size;
   }
 
-  .zenzaVideoPlayerDialogInner {
+  .futatsumeVideoPlayerDialogInner {
     top: 0;
     left: 0;
     transform: none;
@@ -1145,13 +1143,13 @@ class NicoVideoPlayerDialogView extends Emitter {
 
   @media screen and (min-width: 1432px)
   {
-    body.zenzaScreenMode_sideView {
+    body.futatsumeScreenMode_sideView {
       --sideView-left-margin: calc(100vw - 1024px);
     }
-    body.zenzaScreenMode_sideView:not(.nofix) #siteHeader {
+    body.futatsumeScreenMode_sideView:not(.nofix) #siteHeader {
       width: calc(100vw - (100vw - 1024px));
     }
-    .zenzaScreenMode_sideView .zenzaPlayerContainer {
+    .futatsumeScreenMode_sideView .futatsumePlayerContainer {
       width: calc(100vw - 1024px);
       height: calc((100vw - 1024px) * 9 / 16);
     }
@@ -1162,8 +1160,8 @@ class NicoVideoPlayerDialogView extends Emitter {
 
 (util as unknown as DialogUtilView).addStyle(
   `
-body.zenzaScreenMode_sideView,
-body.zenzaScreenMode_small {
+body.futatsumeScreenMode_sideView,
+body.futatsumeScreenMode_small {
   border-bottom: 40px solid;
   margin-top: 0;
 }
@@ -1174,11 +1172,11 @@ body.zenzaScreenMode_small {
 (util as unknown as DialogUtilView).addStyle(
   `
 
-  .zenzaScreenMode_normal .zenzaPlayerContainer .videoPlayer {
+  .futatsumeScreenMode_normal .futatsumePlayerContainer .videoPlayer {
     left: 2.38%;
     width: 95.23%;
   }
-  .zenzaScreenMode_big .zenzaPlayerContainer {
+  .futatsumeScreenMode_big .futatsumePlayerContainer {
     width: ${CONSTANT.BIG_PLAYER_WIDTH}px;
     height: ${CONSTANT.BIG_PLAYER_HEIGHT}px;
   }
@@ -1190,10 +1188,10 @@ body.zenzaScreenMode_small {
 
 (util as unknown as DialogUtilView).addStyle(
   `
-  .zenzaScreenMode_3D,
-  .zenzaScreenMode_normal,
-  .zenzaScreenMode_big,
-  .zenzaScreenMode_wide
+  .futatsumeScreenMode_3D,
+  .futatsumeScreenMode_normal,
+  .futatsumeScreenMode_big,
+  .futatsumeScreenMode_wide
   {
     overflow-x: hidden !important;
     overflow-y: hidden !important;
@@ -1204,20 +1202,20 @@ body.zenzaScreenMode_small {
     プレイヤーが動いてる間、裏の余計な物のマウスイベントを無効化
     多少軽量化が期待できる？
   */
-  body.zenzaScreenMode_big >*:not(.zen-family) *,
-  body.zenzaScreenMode_normal >*:not(.zen-family) *,
-  body.zenzaScreenMode_wide >*:not(.zen-family) *,
-  body.zenzaScreenMode_3D >*:not(.zen-family) * {
+  body.futatsumeScreenMode_big >*:not(.futatsume-family) *,
+  body.futatsumeScreenMode_normal >*:not(.futatsume-family) *,
+  body.futatsumeScreenMode_wide >*:not(.futatsume-family) *,
+  body.futatsumeScreenMode_3D >*:not(.futatsume-family) * {
     pointer-events: none;
     user-select: none;
     animation-play-state: paused !important;
     contain: style layout paint;
   }
 
-  body.zenzaScreenMode_big .ZenButton,
-  body.zenzaScreenMode_normal .ZenButton,
-  body.zenzaScreenMode_wide .ZenButton,
-  body.zenzaScreenMode_3D  .ZenButton {
+  body.futatsumeScreenMode_big .FutatsumeButton,
+  body.futatsumeScreenMode_normal .FutatsumeButton,
+  body.futatsumeScreenMode_wide .FutatsumeButton,
+  body.futatsumeScreenMode_3D  .FutatsumeButton {
     display: none;
   }
 
@@ -1243,12 +1241,12 @@ body.zenzaScreenMode_small {
     visibility: hidden !important;
   }
 `,
-  { className: 'zenza-open', disabled: true }
+  { className: 'futatsume-open', disabled: true }
 );
 
 NicoVideoPlayerDialogView.__css__ = `
 
-  .zenzaVideoPlayerDialog {
+  .futatsumeVideoPlayerDialog {
     display: none;
     position: fixed;
     /*background: rgba(0, 0, 0, 0.8);*/
@@ -1263,7 +1261,7 @@ NicoVideoPlayerDialogView.__css__ = `
     contain: size style layout;
   }
 
-  .zenzaVideoPlayerDialog::before {
+  .futatsumeVideoPlayerDialog::before {
     content: ' ';
     background: rgba(0, 0, 0, 0.8);
     position: fixed;
@@ -1278,28 +1276,28 @@ NicoVideoPlayerDialogView.__css__ = `
     display: none !important;
   }
 
-  .zenzaVideoPlayerDialog * {
+  .futatsumeVideoPlayerDialog * {
     box-sizing: border-box;
   }
 
-  .zenzaVideoPlayerDialog.is-open {
+  .futatsumeVideoPlayerDialog.is-open {
     display: flex;
     justify-content: center;
     align-items: center;
   }
 
-  .zenzaVideoPlayerDialog li {
+  .futatsumeVideoPlayerDialog li {
     text-align: left;
   }
 
-  .zenzaVideoPlayerDialogInner {
+  .futatsumeVideoPlayerDialogInner {
     background: #000;
     box-sizing: border-box;
     z-index: 1;
     box-shadow: 4px 4px 4px #000;
   }
 
-  .zenzaPlayerContainer {
+  .futatsumePlayerContainer {
     position: relative;
     background: #000;
     width: 672px;
@@ -1308,21 +1306,21 @@ NicoVideoPlayerDialogView.__css__ = `
     background-repeat: no-repeat;
     background-position: center center;
   }
-  .zenzaPlayerContainer.is-loading {
+  .futatsumePlayerContainer.is-loading {
     cursor: wait;
   }
-  .zenzaPlayerContainer:not(.is-loading):not(.is-error) {
+  .futatsumePlayerContainer:not(.is-loading):not(.is-error) {
     background-image: none !important;
     background: none !important;
   }
-  .zenzaPlayerContainer.is-loading .videoPlayer,
-  .zenzaPlayerContainer.is-loading .commentLayerFrame,
-  .zenzaPlayerContainer.is-error .videoPlayer,
-  .zenzaPlayerContainer.is-error .commentLayerFrame {
+  .futatsumePlayerContainer.is-loading .videoPlayer,
+  .futatsumePlayerContainer.is-loading .commentLayerFrame,
+  .futatsumePlayerContainer.is-error .videoPlayer,
+  .futatsumePlayerContainer.is-error .commentLayerFrame {
     display: none;
   }
 
-  .zenzaPlayerContainer .videoPlayer {
+  .futatsumePlayerContainer .videoPlayer {
     position: absolute;
     top: 0;
     left: 0;
@@ -1345,7 +1343,7 @@ NicoVideoPlayerDialogView.__css__ = `
     cursor: wait;
   }
 
-  .zenzaPlayerContainer .commentLayerFrame {
+  .futatsumePlayerContainer .commentLayerFrame {
     position: absolute;
     border: 0;
     top: 0;
@@ -1358,10 +1356,10 @@ NicoVideoPlayerDialogView.__css__ = `
     pointer-events: none;
     cursor: none;
     user-select: none;
-    opacity: var(--zenza-comment-layer-opacity);
+    opacity: var(--futatsume-comment-layer-opacity);
   }
 
-  .zenzaPlayerContainer.is-backComment .commentLayerFrame {
+  .futatsumePlayerContainer.is-backComment .commentLayerFrame {
     position: fixed;
     top:  0;
     left: 0;
@@ -1384,7 +1382,7 @@ NicoVideoPlayerDialogView.__css__ = `
     display: none;
     pointer-events: none;
   }
-  .zenzaPlayerContainer.is-loading .loadingMessageContainer {
+  .futatsumePlayerContainer.is-loading .loadingMessageContainer {
     display: inline-block;
     position: absolute;
     z-index: 10000;
@@ -1402,8 +1400,8 @@ NicoVideoPlayerDialogView.__css__ = `
     100% { transform: rotate(-1800deg); }
   }
 
-  .zenzaPlayerContainer.is-loading .loadingMessageContainer::before,
-  .zenzaPlayerContainer.is-loading .loadingMessageContainer::after {
+  .futatsumePlayerContainer.is-loading .loadingMessageContainer::before,
+  .futatsumePlayerContainer.is-loading .loadingMessageContainer::after {
     display: inline-block;
     text-align: center;
     content: '${'\\00272A'}';
@@ -1414,7 +1412,7 @@ NicoVideoPlayerDialogView.__css__ = `
     animation-duration: 5s;
     animation-timing-function: linear;
   }
-  .zenzaPlayerContainer.is-loading .loadingMessageContainer::after {
+  .futatsumePlayerContainer.is-loading .loadingMessageContainer::after {
     animation-direction: reverse;
   }
 
@@ -1424,7 +1422,7 @@ NicoVideoPlayerDialogView.__css__ = `
     user-select: none;
   }
 
-  .zenzaPlayerContainer.is-error .errorMessageContainer {
+  .futatsumePlayerContainer.is-error .errorMessageContainer {
     display: inline-block;
     position: absolute;
     z-index: 10000;
@@ -1455,14 +1453,14 @@ NicoVideoPlayerDialogView.__css__ = `
   @media screen {
     /* 右パネル分の幅がある時は右パネルを出す */
     @media (min-width: 992px) {
-      .zenzaScreenMode_normal .zenzaVideoPlayerDialogInner {
+      .futatsumeScreenMode_normal .futatsumeVideoPlayerDialogInner {
         padding-right: ${CONSTANT.RIGHT_PANEL_WIDTH}px;
         background: none;
       }
     }
 
     @media (min-width: 1216px) {
-      .zenzaScreenMode_big .zenzaVideoPlayerDialogInner {
+      .futatsumeScreenMode_big .futatsumeVideoPlayerDialogInner {
         padding-right: ${CONSTANT.RIGHT_PANEL_WIDTH}px;
         background: none;
       }
@@ -1472,7 +1470,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (max-width: 991px) and (min-height: 700px)
     {
-      .zenzaScreenMode_normal .zenzaVideoPlayerDialogInner {
+      .futatsumeScreenMode_normal .futatsumeVideoPlayerDialogInner {
         padding-bottom: 240px;
         background: none;
       }
@@ -1481,7 +1479,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (max-width: 1215px) and (min-height: 700px)
     {
-      .zenzaScreenMode_big .zenzaVideoPlayerDialogInner {
+      .futatsumeScreenMode_big .futatsumeVideoPlayerDialogInner {
         padding-bottom: 240px;
         background: none;
       }
@@ -1491,7 +1489,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (min-width: 1328px) and (min-height: 700px)
     {
-      .zenzaScreenMode_big .zenzaPlayerContainer {
+      .futatsumeScreenMode_big .futatsumePlayerContainer {
         width: calc(960px * 1.05);
         height: 540px;
       }
@@ -1501,7 +1499,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (min-width: 1530px) and (min-height: 900px)
     {
-      .zenzaScreenMode_big .zenzaPlayerContainer {
+      .futatsumeScreenMode_big .futatsumePlayerContainer {
         width: calc(1152px * 1.05);
         height: 648px;
       }
@@ -1511,7 +1509,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (min-width: 1664px) and (min-height: 900px)
     {
-      .zenzaScreenMode_big .zenzaPlayerContainer {
+      .futatsumeScreenMode_big .futatsumePlayerContainer {
         width: calc(1280px * 1.05);
         height: 720px;
       }
@@ -1521,7 +1519,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (min-width: 2336px) and (min-height: 1200px)
     {
-      .zenzaScreenMode_big .zenzaPlayerContainer {
+      .futatsumeScreenMode_big .futatsumePlayerContainer {
         width: calc(1920px * 1.05);
         height: 1080px;
       }
@@ -1531,7 +1529,7 @@ NicoVideoPlayerDialogView.__css__ = `
     @media
       (min-width: 2976px) and (min-height: 1660px)
     {
-      .zenzaScreenMode_big .zenzaPlayerContainer {
+      .futatsumeScreenMode_big .futatsumePlayerContainer {
         width: calc(2560px * 1.05);
         height: 1440px;
       }
@@ -1541,10 +1539,10 @@ NicoVideoPlayerDialogView.__css__ = `
   `.trim();
 
 NicoVideoPlayerDialogView.__tpl__ = `
-    <div id="zenzaVideoPlayerDialog" class="zenzaVideoPlayerDialog zen-family zen-root">
-      <div class="zenzaVideoPlayerDialogInner">
+    <div id="futatsumeVideoPlayerDialog" class="futatsumeVideoPlayerDialog futatsume-family futatsume-root">
+      <div class="futatsumeVideoPlayerDialogInner">
         <div class="menuContainer"></div>
-        <div class="zenzaPlayerContainer">
+        <div class="futatsumePlayerContainer">
 
           <div class="popupMessageContainer"></div>
           <div class="errorMessageContainer"></div>
@@ -1603,7 +1601,7 @@ class NicoVideoPlayerDialog extends Emitter {
     this._keyEmitter.on('keyDown', this._onKeyDown.bind(this) as EmitterCallback);
     this._keyEmitter.on('keyUp', this._onKeyUp.bind(this) as EmitterCallback);
 
-    this._id = 'ZenzaWatchDialog_' + Date.now() + '_' + Math.random();
+    this._id = 'FutatsumeWatchDialog_' + Date.now() + '_' + Math.random();
     this._playerConfig.on('update', this._onPlayerConfigUpdate.bind(this) as EmitterCallback);
 
     this._escBlockExpiredAt = -1;
@@ -2569,7 +2567,7 @@ class NicoVideoPlayerDialog extends Emitter {
     if (this._requestId !== requestId) {
       return;
     }
-    this._setErrorMessage(e.message || '通信エラー', watchId);
+    this._setErrorMessage(e.message || '通信エラー');
     this._state.isError = true;
     if (e.info) {
       this._videoInfo = new VideoInfoModel(e.info as unknown as RawVideoInfoData) as unknown as DialogVideoInfo;
@@ -2591,8 +2589,7 @@ class NicoVideoPlayerDialog extends Emitter {
     const server = serverType === 'dmc' ? 'dmc.nico' : serverType;
     window.console.error(`${server} fail`, result);
     this._setErrorMessage(
-      `動画の読み込みに失敗しました(${server}) ${((result as { message?: unknown })?.message || '') as string}`,
-      this._watchId
+      `動画の読み込みに失敗しました(${server}) ${((result as { message?: unknown })?.message || '') as string}`
     );
     this._state.setState({ isError: true, isLoading: false });
     if (this.isPlaylistEnable) {
@@ -2619,7 +2616,7 @@ class NicoVideoPlayerDialog extends Emitter {
         if ((this as unknown as { _playserState: { isError: boolean } })._playserState.isError) {
           break;
         }
-        this._setErrorMessage('動画の再生開始に失敗しました', this._watchId);
+        this._setErrorMessage('動画の再生開始に失敗しました');
         this._state.setVideoErrorOccurred();
         break;
 
@@ -2641,7 +2638,7 @@ class NicoVideoPlayerDialog extends Emitter {
       window.setTimeout(() => this.playNextVideo(), 3000);
     }
   }
-  _setErrorMessage(msg: string, watchId?: string): void {
+  _setErrorMessage(msg: string): void {
     this._state.errorMessage = msg;
   }
   _onCommentLoadSuccess(requestId: string, result: DialogCommentLoadResult): void {
@@ -2824,7 +2821,7 @@ class NicoVideoPlayerDialog extends Emitter {
     this._setErrorMessage(e.description);
     this.emit('error', e);
     if (e.fallback) {
-      setTimeout(() => this.reload({ isAutoZenTubeDisabled: true }), 3000);
+      setTimeout(() => this.reload({ isAutoFutatsumeTubeDisabled: true }), 3000);
     }
   }
   _onVideoAbort() {
@@ -3452,10 +3449,10 @@ class VideoHoverMenu {
       }
 
       .is-youTube .onErrorMenu .for-nicovideo,
-                  .onErrorMenu .for-ZenTube {
+                  .onErrorMenu .for-FutatsumeTube {
         display: none;
       }
-      .is-youTube.is-error .onErrorMenu .for-ZenTube {
+      .is-youTube.is-error .onErrorMenu .for-FutatsumeTube {
         display: inline-block;
       }
 
@@ -3545,15 +3542,15 @@ class VideoHoverMenu {
         will-change: opacity;
       }
 
-      .menuButton:active .zenzaPopupMenu {
+      .menuButton:active .futatsumePopupMenu {
         transform: translate(0, -2px);
         transition: none;
       }
       .hoverMenuContainer .menuButton:focus-within {
         pointer-events: none;
       }
-      .hoverMenuContainer .menuButton:focus-within .zenzaPopupMenu,
-      .hoverMenuContainer .menuButton              .zenzaPopupMenu:hover {
+      .hoverMenuContainer .menuButton:focus-within .futatsumePopupMenu,
+      .hoverMenuContainer .menuButton              .futatsumePopupMenu:hover {
         pointer-events: auto;
         visibility: visible;
         opacity: 0.99;
@@ -3624,7 +3621,7 @@ class VideoHoverMenu {
       left: 120px;
       top: 0;
     }
-    .zenzaTweetButton {
+    .futatsumeTweetButton {
       left: 40px;
     }
 
@@ -3794,7 +3791,7 @@ class VideoHoverMenu {
         visibility: visible;
       }
 
-      .zenzaTweetButton:hover {
+      .futatsumeTweetButton:hover {
         text-shadow: 1px 1px 2px #88c;
         background: #1da1f2;
         color: #fff;
@@ -3898,7 +3895,7 @@ class VideoHoverMenu {
 (util as unknown as DialogUtilView).addStyle(
   `
   .menuItemContainer.leftBottom {
-    bottom: calc(64px * var(--zenza-ui-scale,1));
+    bottom: calc(64px * var(--futatsume-ui-scale,1));
   }
   .menuItemContainer.leftBottom .scalingUI {
     transform-origin: left bottom;
@@ -3929,7 +3926,7 @@ VideoHoverMenu.__tpl__ = `
               >♡</div><div class="liked-heart"
               >♥</div><div class="heart-effect">♡</div></div>
           </div>
-          <div class="menuButton zenzaTweetButton" data-command="tweet">
+          <div class="menuButton futatsumeTweetButton" data-command="tweet">
             <div class="tooltip">ツイート</div>
             <div class="menuButtonInner">t</div>
           </div>
@@ -3937,7 +3934,7 @@ VideoHoverMenu.__tpl__ = `
             data-command="nop" tabindex="-1" data-has-submenu="1">
             <div class="tooltip">マイリスト登録</div>
             <div class="menuButtonInner">My</div>
-            <div class="mylistSelectMenu selectMenu zenzaPopupMenu forMember">
+            <div class="mylistSelectMenu selectMenu futatsumePopupMenu forMember">
               <div class="triangle"></div>
               <div class="mylistSelectMenuInner">
               </div>
@@ -3973,7 +3970,7 @@ VideoHoverMenu.__tpl__ = `
 
         <div class="menuButton reloadMenu for-nicovideo" data-command="reload">
           <div class="menuButtonInner for-nicovideo">リロード</div>
-          <div class="menuButtonInner for-ZenTube">ZenTube解除</div>
+          <div class="menuButtonInner for-FutatsumeTube">FutatsumeTube解除</div>
         </div>
 
         <div class="menuButton playNextVideo" data-command="playNextVideo">
@@ -4019,7 +4016,7 @@ class VariablesMapper {
     this.emitter = new Emitter();
 
     const update = _.debounce(this.update.bind(this), 500);
-    Object.keys(this.state).forEach((key) => config.onkey(key, () => update(key)));
+    Object.keys(this.state).forEach((key) => config.onkey(key, () => update()));
     update();
   }
 
@@ -4035,7 +4032,7 @@ class VariablesMapper {
     void cssUtil.setProps([this.element, key, value]);
   }
 
-  update(_key?: unknown): void {
+  update(): void {
     const state = this.state;
     const nextState = this.nextState;
 
@@ -4048,11 +4045,11 @@ class VariablesMapper {
     this.state = nextState;
     Object.assign((this.element as HTMLElement).dataset, { fullscreenControlBarMode });
     if (state.scale !== menuScale) {
-      this.setVar('--zenza-ui-scale', menuScale);
-      this.setVar('--zenza-control-bar-height', css.px(this.videoControlBarHeight));
+      this.setVar('--futatsume-ui-scale', menuScale);
+      this.setVar('--futatsume-control-bar-height', css.px(this.videoControlBarHeight));
     }
     if (state.commentLayerOpacity !== commentLayerOpacity) {
-      this.setVar('--zenza-comment-layer-opacity', commentLayerOpacity);
+      this.setVar('--futatsume-comment-layer-opacity', commentLayerOpacity);
     }
     this.emitter.emit('update', nextState);
   }

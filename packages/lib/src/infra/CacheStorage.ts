@@ -7,9 +7,6 @@ interface CacheItem {
 
 type LooseStorage = Storage & Record<string, string | undefined>;
 
-import { textUtil } from '../text/textUtil';
-import { netUtil } from './netUtil';
-
 const PRODUCT = 'TEST';
 // _ は連結スコープの UMD グローバル（@types/lodash、src/concat-globals.d.ts 参照）。
 //===BEGIN===
@@ -32,7 +29,7 @@ const CacheStorage = (() => {
           let item: CacheItem | undefined;
           try {
             item = JSON.parse(String(storage[key])) as CacheItem;
-          } catch (e) {
+          } catch {
             storage.removeItem(key);
           }
           if (item!.expiredAt === '' || (item!.expiredAt as number) > now) {

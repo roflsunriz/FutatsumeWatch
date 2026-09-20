@@ -1,5 +1,4 @@
 import { IndexedDbStorage } from '../infra/IndexedDbStorage';
-import { VideoInfoModel } from '../../../../src/VideoInfo';
 
 interface IndexedDbOpen {
   open: (info: unknown) => Promise<unknown>;

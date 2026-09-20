@@ -1,5 +1,5 @@
 /* Only the size resets override legacy full-screen !important geometry. */
-#zenzaVideoPlayerDialog {
+#futatsumeVideoPlayerDialog {
   --fw-panel-width: min(390px, 88vw);
   --fw-ink: #f1f4f9;
   --fw-muted: #aab4c6;
@@ -8,10 +8,10 @@
   color: var(--fw-ink);
   font-family: system-ui, sans-serif;
 }
-#zenzaVideoPlayerDialog.is-open {
+#futatsumeVideoPlayerDialog.is-open {
   inset: 0;
 }
-#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner {
+#futatsumeVideoPlayerDialog .futatsumeVideoPlayerDialogInner {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -20,29 +20,29 @@
   transform: none;
   box-shadow: none;
 }
-#zenzaVideoPlayerDialog .fw-player {
+#futatsumeVideoPlayerDialog .fw-player {
   position: absolute;
   inset: 0;
   width: 100% !important;
   height: 100% !important;
   --padding-bottom: 0px;
-  --zenza-control-bar-height: 24px;
+  --futatsume-control-bar-height: 24px;
   isolation: isolate;
 }
-#zenzaVideoPlayerDialog .fw-player .videoPlayer,
-#zenzaVideoPlayerDialog .fw-player .commentLayerFrame,
-#zenzaVideoPlayerDialog .fw-player .resizeObserver {
+#futatsumeVideoPlayerDialog .fw-player .videoPlayer,
+#futatsumeVideoPlayerDialog .fw-player .commentLayerFrame,
+#futatsumeVideoPlayerDialog .fw-player .resizeObserver {
   width: 100%;
   height: 100%;
   left: 0;
   top: 0;
 }
-#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoHeaderPanel,
-#zenzaVideoPlayerDialog .fw-player .videoControlBar > .controlItemContainer,
-#zenzaVideoPlayerDialog .fw-player .menuItemContainer {
+#futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoHeaderPanel,
+#futatsumeVideoPlayerDialog .fw-player .videoControlBar > .controlItemContainer,
+#futatsumeVideoPlayerDialog .fw-player .menuItemContainer {
   display: none;
 }
-#zenzaVideoPlayerDialog .fw-controls {
+#futatsumeVideoPlayerDialog .fw-controls {
   position: absolute;
   inset: 0;
   z-index: 400;
@@ -52,14 +52,14 @@
     visibility 160ms;
   background: linear-gradient(#0009, transparent 24%, transparent 73%, #000b);
 }
-#zenzaVideoPlayerDialog .fw-controls button,
-#zenzaVideoPlayerDialog .fw-controls input,
-#zenzaVideoPlayerDialog .fw-controls select,
-#zenzaVideoPlayerDialog .fw-settings {
+#futatsumeVideoPlayerDialog .fw-controls button,
+#futatsumeVideoPlayerDialog .fw-controls input,
+#futatsumeVideoPlayerDialog .fw-controls select,
+#futatsumeVideoPlayerDialog .fw-settings {
   pointer-events: auto;
 }
-#zenzaVideoPlayerDialog .fw-controls button,
-#zenzaVideoPlayerDialog .fw-settings button {
+#futatsumeVideoPlayerDialog .fw-controls button,
+#futatsumeVideoPlayerDialog .fw-settings button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -74,35 +74,35 @@
   font: inherit;
   cursor: pointer;
 }
-#zenzaVideoPlayerDialog .fw-controls button:hover,
-#zenzaVideoPlayerDialog .fw-settings button:hover,
-#zenzaVideoPlayerDialog .fw-settings a:hover {
+#futatsumeVideoPlayerDialog .fw-controls button:hover,
+#futatsumeVideoPlayerDialog .fw-settings button:hover,
+#futatsumeVideoPlayerDialog .fw-settings a:hover {
   background: #ffffff18;
 }
-#zenzaVideoPlayerDialog :is(.fw-controls, .fw-settings, .tabSelectContainer) :focus-visible {
+#futatsumeVideoPlayerDialog :is(.fw-controls, .fw-settings, .tabSelectContainer) :focus-visible {
   outline: 2px solid var(--fw-accent);
   outline-offset: -2px;
 }
-#zenzaVideoPlayerDialog [data-shell-action][aria-pressed='true'] {
+#futatsumeVideoPlayerDialog [data-shell-action][aria-pressed='true'] {
   color: var(--fw-accent);
   background: #8ddbc71c;
 }
-#zenzaVideoPlayerDialog :is(.fw-controls, .fw-settings, .tabSelectContainer) svg {
+#futatsumeVideoPlayerDialog :is(.fw-controls, .fw-settings, .tabSelectContainer) svg {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
 }
-#zenzaVideoPlayerDialog .fw-header {
+#futatsumeVideoPlayerDialog .fw-header {
   display: flex;
   align-items: flex-start;
   gap: clamp(8px, 1.5vw, 28px);
   padding: clamp(12px, 2.5vw, 36px);
 }
-#zenzaVideoPlayerDialog .fw-heading {
+#futatsumeVideoPlayerDialog .fw-heading {
   flex: 1;
   min-width: 0;
 }
-#zenzaVideoPlayerDialog .fw-title {
+#futatsumeVideoPlayerDialog .fw-title {
   font-size: clamp(18px, 2vw, 30px);
   line-height: 1.4;
   font-weight: 600;
@@ -111,7 +111,7 @@
   overflow-wrap: anywhere;
   text-shadow: 0 2px 8px #000;
 }
-#zenzaVideoPlayerDialog .fw-stats {
+#futatsumeVideoPlayerDialog .fw-stats {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 18px;
@@ -119,16 +119,16 @@
   color: #d0d7e2;
   font-size: clamp(11px, 1.2vw, 14px);
 }
-#zenzaVideoPlayerDialog .fw-stats span {
+#futatsumeVideoPlayerDialog .fw-stats span {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
-#zenzaVideoPlayerDialog .fw-stats svg {
+#futatsumeVideoPlayerDialog .fw-stats svg {
   width: 16px;
   height: 16px;
 }
-#zenzaVideoPlayerDialog .fw-transport {
+#futatsumeVideoPlayerDialog .fw-transport {
   position: absolute;
   inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
@@ -136,19 +136,19 @@
   align-items: center;
   gap: clamp(24px, 7vw, 100px);
 }
-#zenzaVideoPlayerDialog .fw-transport button {
+#futatsumeVideoPlayerDialog .fw-transport button {
   width: clamp(56px, 7vw, 88px);
   height: clamp(56px, 7vw, 88px);
   border-radius: 50%;
   background: #10151da6;
   box-shadow: 0 2px 16px #0004;
 }
-#zenzaVideoPlayerDialog .fw-transport svg {
+#futatsumeVideoPlayerDialog .fw-transport svg {
   width: 65%;
   height: 65%;
   filter: drop-shadow(0 1px 4px #000);
 }
-#zenzaVideoPlayerDialog .fw-bottom {
+#futatsumeVideoPlayerDialog .fw-bottom {
   position: absolute;
   left: clamp(8px, 2vw, 28px);
   right: clamp(8px, 2vw, 28px);
@@ -158,13 +158,13 @@
   gap: 8px;
   flex-wrap: wrap;
 }
-#zenzaVideoPlayerDialog .fw-speed {
+#futatsumeVideoPlayerDialog .fw-speed {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
-#zenzaVideoPlayerDialog .fw-controls select,
-#zenzaVideoPlayerDialog .fw-settings select {
+#futatsumeVideoPlayerDialog .fw-controls select,
+#futatsumeVideoPlayerDialog .fw-settings select {
   font: inherit;
   color: var(--fw-ink);
   background: #19202ce6;
@@ -173,23 +173,23 @@
   padding: 8px 4px;
   min-height: 40px;
 }
-#zenzaVideoPlayerDialog [data-shell-volume] {
+#futatsumeVideoPlayerDialog [data-shell-volume] {
   width: clamp(64px, 10vw, 150px);
   accent-color: var(--fw-accent);
 }
-#zenzaVideoPlayerDialog .fw-time {
+#futatsumeVideoPlayerDialog .fw-time {
   margin-inline-start: auto;
   color: #d0d7e2;
   font-variant-numeric: tabular-nums;
 }
-#zenzaVideoPlayerDialog .fw-announcement {
+#futatsumeVideoPlayerDialog .fw-announcement {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
 }
-#zenzaVideoPlayerDialog .fw-player .videoControlBar {
+#futatsumeVideoPlayerDialog .fw-player .videoControlBar {
   position: absolute;
   inset: auto 0 0;
   height: 24px;
@@ -200,27 +200,27 @@
   opacity: 1;
   background: transparent;
 }
-#zenzaVideoPlayerDialog .fw-player .seekBarContainer {
+#futatsumeVideoPlayerDialog .fw-player .seekBarContainer {
   top: auto;
   bottom: 0;
   width: 100%;
   height: 24px;
 }
-#zenzaVideoPlayerDialog .fw-player .seekBar {
+#futatsumeVideoPlayerDialog .fw-player .seekBar {
   margin: 0;
   height: 24px;
 }
-#zenzaVideoPlayerDialog .fw-player[data-controls='hidden'] .fw-controls,
-#zenzaVideoPlayerDialog .fw-player[data-controls='hidden'] .videoControlBar,
-#zenzaVideoPlayerDialog .fw-player[data-controls='hidden'] .commentInputPanel {
+#futatsumeVideoPlayerDialog .fw-player[data-controls='hidden'] .fw-controls,
+#futatsumeVideoPlayerDialog .fw-player[data-controls='hidden'] .videoControlBar,
+#futatsumeVideoPlayerDialog .fw-player[data-controls='hidden'] .commentInputPanel {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
-#zenzaVideoPlayerDialog .fw-player[data-controls='hidden'] .videoPlayer > * {
+#futatsumeVideoPlayerDialog .fw-player[data-controls='hidden'] .videoPlayer > * {
   cursor: none;
 }
-#zenzaVideoPlayerDialog .fw-backdrop {
+#futatsumeVideoPlayerDialog .fw-backdrop {
   display: none;
   position: absolute;
   inset: 0;
@@ -232,11 +232,11 @@
   z-index: 500;
   cursor: pointer;
 }
-#zenzaVideoPlayerDialog .fw-player[data-panel='settings'] .fw-backdrop,
-#zenzaVideoPlayerDialog .fw-player[data-panel='details'] .fw-backdrop {
+#futatsumeVideoPlayerDialog .fw-player[data-panel='settings'] .fw-backdrop,
+#futatsumeVideoPlayerDialog .fw-player[data-panel='details'] .fw-backdrop {
   display: block;
 }
-#zenzaVideoPlayerDialog .fw-settings {
+#futatsumeVideoPlayerDialog .fw-settings {
   display: none;
   position: absolute;
   inset: 0 auto 0 0;
@@ -250,24 +250,24 @@
   font-size: 15px;
   box-shadow: 12px 0 48px #0005;
 }
-#zenzaVideoPlayerDialog .fw-player[data-panel='settings'] .fw-settings {
+#futatsumeVideoPlayerDialog .fw-player[data-panel='settings'] .fw-settings {
   display: block;
 }
-#zenzaVideoPlayerDialog .fw-menu-heading {
+#futatsumeVideoPlayerDialog .fw-menu-heading {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 0 0 24px 8px;
 }
-#zenzaVideoPlayerDialog .fw-menu-heading small {
+#futatsumeVideoPlayerDialog .fw-menu-heading small {
   display: block;
   color: var(--fw-muted);
   margin-top: 4px;
 }
-#zenzaVideoPlayerDialog .fw-settings > button,
-#zenzaVideoPlayerDialog .fw-settings details button,
-#zenzaVideoPlayerDialog .fw-settings > a,
-#zenzaVideoPlayerDialog .fw-quality {
+#futatsumeVideoPlayerDialog .fw-settings > button,
+#futatsumeVideoPlayerDialog .fw-settings details button,
+#futatsumeVideoPlayerDialog .fw-settings > a,
+#futatsumeVideoPlayerDialog .fw-quality {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -278,17 +278,17 @@
   color: var(--fw-ink);
   border-radius: 8px;
 }
-#zenzaVideoPlayerDialog .fw-settings details {
+#futatsumeVideoPlayerDialog .fw-settings details {
   margin-top: 16px;
   border-top: 1px solid #ffffff20;
   padding-top: 16px;
 }
-#zenzaVideoPlayerDialog .fw-settings summary {
+#futatsumeVideoPlayerDialog .fw-settings summary {
   cursor: pointer;
   color: var(--fw-muted);
   padding: 10px;
 }
-#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanel {
+#futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoInfoPanel {
   display: none;
   position: absolute;
   inset: 0 0 0 auto;
@@ -308,13 +308,13 @@
   z-index: 510;
   overflow: hidden;
 }
-#zenzaVideoPlayerDialog .fw-player[data-panel='details'] .zenzaWatchVideoInfoPanel {
+#futatsumeVideoPlayerDialog .fw-player[data-panel='details'] .futatsumeWatchVideoInfoPanel {
   display: block;
 }
-#zenzaVideoPlayerDialog .fw-player[data-panel='details'] .zenzaWatchVideoInfoPanel > * {
+#futatsumeVideoPlayerDialog .fw-player[data-panel='details'] .futatsumeWatchVideoInfoPanel > * {
   pointer-events: auto;
 }
-#zenzaVideoPlayerDialog .fw-player .tabSelectContainer {
+#futatsumeVideoPlayerDialog .fw-player .tabSelectContainer {
   display: flex;
   position: absolute;
   inset: 0 0 auto;
@@ -324,7 +324,7 @@
   background: #131923;
   border-bottom: 1px solid #ffffff20;
 }
-#zenzaVideoPlayerDialog .fw-player .tabSelect {
+#futatsumeVideoPlayerDialog .fw-player .tabSelect {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -338,73 +338,73 @@
   background: transparent;
   color: var(--fw-muted);
 }
-#zenzaVideoPlayerDialog .fw-player .tabSelect.activeTab {
+#futatsumeVideoPlayerDialog .fw-player .tabSelect.activeTab {
   color: var(--fw-accent);
   box-shadow: inset 0 -2px var(--fw-accent);
 }
-#zenzaVideoPlayerDialog .fw-player .tabs.activeTab {
+#futatsumeVideoPlayerDialog .fw-player .tabs.activeTab {
   margin-top: 60px;
   height: calc(100% - 60px);
   overflow: auto;
 }
-#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelInner,
-#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelContent {
+#futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoInfoPanelInner,
+#futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoInfoPanelContent {
   background: transparent;
   color: var(--fw-ink);
 }
-#zenzaVideoPlayerDialog .fw-player .videoDescription {
+#futatsumeVideoPlayerDialog .fw-player .videoDescription {
   color: #d0d7e2;
   padding: 16px;
   line-height: 1.8;
 }
-#zenzaVideoPlayerDialog .fw-player .videoDescription a {
+#futatsumeVideoPlayerDialog .fw-player .videoDescription a {
   color: #8ddbc7;
 }
-#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer {
+#futatsumeVideoPlayerDialog .fw-player .videoOwnerInfoContainer {
   padding: 20px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
 }
-#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner {
+#futatsumeVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner {
   display: flex;
   align-items: center;
   gap: 10px;
   min-width: 0;
 }
-#zenzaVideoPlayerDialog .fw-player .ownerIcon {
+#futatsumeVideoPlayerDialog .fw-player .ownerIcon {
   width: 64px;
   height: 64px;
   border-radius: 12px;
 }
-#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-header, .playlist-header) {
+#futatsumeVideoPlayerDialog .fw-player :is(.commentPanel-header, .playlist-header) {
   background: #19212e;
   color: #d0d7e2;
   border-bottom: 1px solid #ffffff20;
 }
-#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-menu-button, .playlist-menu-button) {
+#futatsumeVideoPlayerDialog .fw-player :is(.commentPanel-menu-button, .playlist-menu-button) {
   background: #253141;
   border: 0;
   border-radius: 5px;
   color: #d0d7e2;
   font-size: 13px;
 }
-#zenzaVideoPlayerDialog .fw-player .autoScroll .autoScroll,
-#zenzaVideoPlayerDialog .fw-player .is-enable .toggleEnable {
+#futatsumeVideoPlayerDialog .fw-player .autoScroll .autoScroll,
+#futatsumeVideoPlayerDialog .fw-player .is-enable .toggleEnable {
   color: var(--fw-accent);
   text-shadow: none;
 }
-#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelFoot {
+#futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoInfoPanelFoot {
   background: transparent;
 }
-#zenzaVideoPlayerDialog .fw-tags {
+#futatsumeVideoPlayerDialog .fw-tags {
   scrollbar-width: thin;
   scrollbar-color: #526173 #131923;
 }
-#zenzaVideoPlayerDialog .fw-player .seriesList {
+#futatsumeVideoPlayerDialog .fw-player .seriesList {
   margin: 12px;
 }
-#zenzaVideoPlayerDialog .fw-tags {
+#futatsumeVideoPlayerDialog .fw-tags {
   display: none;
   position: absolute;
   inset: 0 var(--fw-panel-width) auto 0;
@@ -415,17 +415,17 @@
   background: #131923cc;
   border-bottom: 1px solid #ffffff20;
 }
-#zenzaVideoPlayerDialog .fw-player[data-panel='details'] .fw-tags {
+#futatsumeVideoPlayerDialog .fw-player[data-panel='details'] .fw-tags {
   display: block;
 }
-#zenzaVideoPlayerDialog .fw-tags .videoTagsContainer {
+#futatsumeVideoPlayerDialog .fw-tags .videoTagsContainer {
   display: block;
   position: static;
   width: 100%;
   background: transparent;
   color: var(--fw-ink);
 }
-#zenzaVideoPlayerDialog .fw-player .commentInputPanel {
+#futatsumeVideoPlayerDialog .fw-player .commentInputPanel {
   z-index: 420;
   position: absolute;
   top: auto;
@@ -435,7 +435,7 @@
   height: auto;
   transform: translateX(-50%);
 }
-#zenzaVideoPlayerDialog .fw-player .commentInputOuter {
+#futatsumeVideoPlayerDialog .fw-player .commentInputOuter {
   display: flex;
   gap: 8px;
   background: #131923e6;
@@ -444,10 +444,10 @@
   box-shadow: none;
   opacity: 1;
 }
-#zenzaVideoPlayerDialog .fw-player .commentInputPanel > * {
+#futatsumeVideoPlayerDialog .fw-player .commentInputPanel > * {
   pointer-events: auto;
 }
-#zenzaVideoPlayerDialog .fw-player .commentInput {
+#futatsumeVideoPlayerDialog .fw-player .commentInput {
   min-width: 0;
   flex: 1;
   opacity: 0.85;
@@ -457,10 +457,10 @@
   background: transparent;
   box-shadow: none;
 }
-#zenzaVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput, .commentSubmit) {
+#futatsumeVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput, .commentSubmit) {
   display: none;
 }
-#zenzaVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput, .commentSubmit) {
+#futatsumeVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput, .commentSubmit) {
   display: block;
   position: static;
   opacity: 1;
@@ -470,78 +470,78 @@
   color: var(--fw-ink);
   box-shadow: none;
 }
-#zenzaVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel {
+#futatsumeVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel {
   top: calc(100% + 6px);
   background: #253141;
   color: var(--fw-ink);
 }
 @media (max-width: 600px) {
-  #zenzaVideoPlayerDialog .fw-player .commentInputPanel {
+  #futatsumeVideoPlayerDialog .fw-player .commentInputPanel {
     bottom: 164px;
   }
-  #zenzaVideoPlayerDialog .fw-player .commentInputOuter {
+  #futatsumeVideoPlayerDialog .fw-player .commentInputOuter {
     display: grid;
     grid-template-columns: 1fr 100px;
   }
-  #zenzaVideoPlayerDialog .fw-player .commentInput {
+  #futatsumeVideoPlayerDialog .fw-player .commentInput {
     grid-column: 1 / -1;
     grid-row: 1;
   }
-  #zenzaVideoPlayerDialog .fw-header {
+  #futatsumeVideoPlayerDialog .fw-header {
     gap: 4px;
     padding: 10px 6px;
   }
-  #zenzaVideoPlayerDialog .fw-header button {
+  #futatsumeVideoPlayerDialog .fw-header button {
     min-width: 36px;
     padding: 6px;
   }
-  #zenzaVideoPlayerDialog .fw-stats {
+  #futatsumeVideoPlayerDialog .fw-stats {
     gap: 5px 10px;
   }
-  #zenzaVideoPlayerDialog .fw-bottom {
+  #futatsumeVideoPlayerDialog .fw-bottom {
     gap: 3px;
   }
-  #zenzaVideoPlayerDialog .fw-speed svg {
+  #futatsumeVideoPlayerDialog .fw-speed svg {
     display: none;
   }
-  #zenzaVideoPlayerDialog .fw-time {
+  #futatsumeVideoPlayerDialog .fw-time {
     font-size: 11px;
   }
-  #zenzaVideoPlayerDialog [data-shell-volume] {
+  #futatsumeVideoPlayerDialog [data-shell-volume] {
     width: 64px;
   }
-  #zenzaVideoPlayerDialog .fw-player[data-panel='details'] .fw-tags {
+  #futatsumeVideoPlayerDialog .fw-player[data-panel='details'] .fw-tags {
     inset: 60px 0 auto auto;
     width: var(--fw-panel-width);
     max-height: 100px;
     padding: 8px;
   }
-  #zenzaVideoPlayerDialog .fw-player .tabs.activeTab {
+  #futatsumeVideoPlayerDialog .fw-player .tabs.activeTab {
     margin-top: 160px;
     height: calc(100% - 160px);
   }
 }
 @media (max-height: 480px) {
-  #zenzaVideoPlayerDialog .fw-header {
+  #futatsumeVideoPlayerDialog .fw-header {
     padding: 8px;
   }
-  #zenzaVideoPlayerDialog .fw-title {
+  #futatsumeVideoPlayerDialog .fw-title {
     font-size: 18px;
     max-height: 1.4em;
   }
-  #zenzaVideoPlayerDialog .fw-transport button {
+  #futatsumeVideoPlayerDialog .fw-transport button {
     width: 48px;
     height: 48px;
   }
-  #zenzaVideoPlayerDialog .fw-settings {
+  #futatsumeVideoPlayerDialog .fw-settings {
     padding-top: 8px;
   }
-  #zenzaVideoPlayerDialog .fw-menu-heading {
+  #futatsumeVideoPlayerDialog .fw-menu-heading {
     margin-bottom: 6px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  #zenzaVideoPlayerDialog .fw-controls {
+  #futatsumeVideoPlayerDialog .fw-controls {
     transition: none;
   }
 }

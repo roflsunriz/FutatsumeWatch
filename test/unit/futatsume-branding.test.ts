@@ -3,11 +3,11 @@ import fs from 'node:fs';
 import { STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/version';
 
 describe('FutatsumeWatch改名', () => {
-  it('製品定数が新名称で旧名称を保持する', () => {
+  it('製品定数が現行名称を指す', () => {
     // FutatsumeWatchIndex は window 前提の依存を引くため静的 import せず原文で固定する
     const src = fs.readFileSync('./src/FutatsumeWatchIndex.ts', 'utf8');
     expect(src).toContain(`PRODUCT = 'FutatsumeWatch'`);
-    expect(src).toContain(`LEGACY_PRODUCT = 'ZenzaWatch'`);
+    expect(src).not.toContain('LEGACY_PRODUCT');
   });
 
   it('版管理が新生成物を指す', () => {
@@ -33,16 +33,15 @@ describe('FutatsumeWatch改名', () => {
     expect(source).not.toMatch(/^\/\/\s*@require\s/m);
   });
 
-  it('旧 dist が残っていない', () => {
-    for (const file of [
-      'dist/ZenzaWatch.user.js',
-      'dist/ZenzaWatch-dev.user.js',
-      'dist/ZenzaHLS.user.js',
-      'dist/ZenzaGamePad.user.js',
-      'dist/ZenzaBlogPartsButton.user.js',
-      'dist/ZenzaAdvancedSettings.user.js',
-    ]) {
-      expect(fs.existsSync(file)).toBe(false);
+  it('移行境界以外の現行コードとパスに旧ブランド名が残らない', () => {
+    const oldBrand = /zenza|\bzen\b|zentube|zenbutton|iszen\b/i;
+    for (const root of ['src', 'packages', 'scripts']) {
+      for (const entry of fs.readdirSync(root, { recursive: true, withFileTypes: true })) {
+        expect(entry.name).not.toMatch(oldBrand);
+        if (!entry.isFile() || !/\.(ts|css)$/.test(entry.name)) continue;
+        if (root === 'src' && entry.name === 'config-migration.ts') continue;
+        expect(fs.readFileSync(`${entry.parentPath}/${entry.name}`, 'utf8')).not.toMatch(oldBrand);
+      }
     }
   });
 });

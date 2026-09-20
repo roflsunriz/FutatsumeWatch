@@ -1,7 +1,7 @@
 import { global } from './FutatsumeWatchIndex';
 import { Emitter } from '../packages/lib/src/Emitter';
-import { NicoComment, type SetChatsOptions } from '../packages/zenza/src/commentLayer/NicoComment';
-import { NicoChat, type NicoChatType } from '../packages/zenza/src/commentLayer/NicoChat';
+import { NicoComment, type SetChatsOptions } from '../packages/futatsume/src/commentLayer/NicoComment';
+import { NicoChat, type NicoChatType } from '../packages/futatsume/src/commentLayer/NicoChat';
 import { CommentOverlayView, type CommentMedia } from './comment-overlay-view';
 
 export type CommentPlayerOptions = SetChatsOptions;

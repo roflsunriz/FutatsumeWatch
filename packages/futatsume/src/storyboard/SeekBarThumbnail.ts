@@ -133,8 +133,8 @@ class SeekBarThumbnail {
     this.classList = classListFactory(view);
 
     this.thumbnail = worker.createThumbnail({
-      container: view.querySelector('.zenzaSeekThumbnail-image'),
-      canvas: view.querySelector('.zenzaSeekThumbnail-thumbnail'),
+      container: view.querySelector('.futatsumeSeekThumbnail-image'),
+      canvas: view.querySelector('.futatsumeSeekThumbnail-thumbnail'),
       info: model.rawData,
       name: 'StoryboardThumbnail',
     });
@@ -155,23 +155,23 @@ SeekBarThumbnail.BASE_WIDTH = 160;
 SeekBarThumbnail.BASE_HEIGHT = 90;
 
 SeekBarThumbnail.__tpl__ = `
-  <div class="zenzaSeekThumbnail">
-    <div class="zenzaSeekThumbnail-image"><canvas width="160" height="90" class="zenzaSeekThumbnail-thumbnail"></canvas></div>
+  <div class="futatsumeSeekThumbnail">
+    <div class="futatsumeSeekThumbnail-image"><canvas width="160" height="90" class="futatsumeSeekThumbnail-thumbnail"></canvas></div>
   </div>
 `.trim();
 
 SeekBarThumbnail.__css__ = `
-  .is-error .zenzaSeekThumbnail,
-  .is-loading .zenzaSeekThumbnail {
+  .is-error .futatsumeSeekThumbnail,
+  .is-loading .futatsumeSeekThumbnail {
     display: none !important;
   }
 
-  .zenzaSeekThumbnail {
+  .futatsumeSeekThumbnail {
     display: none;
     pointer-events: none;
   }
 
-  .zenzaSeekThumbnail-image {
+  .futatsumeSeekThumbnail-image {
     width: 160px;
     height: 90px;
     opacity: 0.8;
@@ -179,13 +179,13 @@ SeekBarThumbnail.__css__ = `
     background: #999;
   }
 
-  .enableCommentPreview .zenzaSeekThumbnail {
+  .enableCommentPreview .futatsumeSeekThumbnail {
     width: 100%;
     height: 100%;
     display: none !important;
   }
 
-  .zenzaSeekThumbnail.is-visible {
+  .futatsumeSeekThumbnail.is-visible {
     display: block;
     overflow: hidden;
     box-sizing: border-box;

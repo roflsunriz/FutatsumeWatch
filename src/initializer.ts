@@ -1,19 +1,18 @@
-import { ZenzaWatch, global } from './FutatsumeWatchIndex';
+import { FutatsumeWatch, global } from './FutatsumeWatchIndex';
 import { Config, PlayerSession, util, WatchPageHistory } from './util';
 import type { ConfigStore } from './Config';
 import { NicoVideoPlayerDialog, PlayerConfig, PlayerState } from './NicoVideoPlayerDialog';
 import { initializeGinzaSlayer } from './GinzaSlayer';
 import type { GinzaSlayerQuery } from './GinzaSlayer';
 import { CONSTANT } from './constant';
-import { CustomElements } from '../packages/zenza/src/parts/CustomElements';
+import { CustomElements } from '../packages/futatsume/src/parts/CustomElements';
 import { RootDispatcher } from './RootDispatcher';
 import { BroadcastEmitter } from '../packages/lib/src/message/messageUtil';
-import { HoverMenu } from '../packages/zenza/src/menu/HoverMenu';
-import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
-import { replaceRedirectLinks } from '../packages/zenza/src/init/replaceRedirectLinks';
+import { HoverMenu } from '../packages/futatsume/src/menu/HoverMenu';
+import { replaceRedirectLinks } from '../packages/futatsume/src/init/replaceRedirectLinks';
 import { cssUtil } from '../packages/lib/src/css/css';
 import { ThumbInfoLoader } from '../packages/lib/src/nico/ThumbInfoLoader';
-import { StoryboardWorker } from '../packages/zenza/src/storyboard/StoryboardWorker';
+import { StoryboardWorker } from '../packages/futatsume/src/storyboard/StoryboardWorker';
 import { VideoSessionWorker } from '../packages/lib/src/nico/VideoSessionWorker';
 import { StoryboardCacheDb } from '../packages/lib/src/nico/StoryboardCacheDb';
 import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
@@ -82,12 +81,7 @@ interface InitializerMylistApiLoader {
   removeDeflistItem(watchId: string): Promise<unknown>;
 }
 
-interface InitializerPlaylistSession {
-  save(data: unknown): unknown;
-  restore(): unknown;
-}
-
-import { PlayListSession as PlaylistSession } from '../packages/zenza/src/Playlist/PlayListSession';
+import { PlayListSession as PlaylistSession } from '../packages/futatsume/src/Playlist/PlayListSession';
 const START_PAGE_QUERY = location.search.slice(1);
 
 //===BEGIN===
@@ -115,7 +109,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
       if (!document.body.classList.contains('showNicoVideoPlayerDialog')) return;
 
       // 画面モードが横か小のときには止めない
-      if (/(^|[^\w])zenzaScreenMode_(small|sideView)([^\w]|$)/.test(document.body.className)) return;
+      if (/(^|[^\w])futatsumeScreenMode_(small|sideView)([^\w]|$)/.test(document.body.className)) return;
 
       (ev.target as HTMLVideoElement).pause();
     };
@@ -211,7 +205,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
   //@require replaceRedirectLinks
 
   const initialize = async function (): Promise<void> {
-    console.log('%cinitialize ZenzaWatch...', 'background: lightgreen; ');
+    console.log('%cinitialize FutatsumeWatch...', 'background: lightgreen; ');
 
     (
       domEvent as unknown as {
@@ -219,8 +213,8 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
       }
     ).dispatchCustomEvent(
       document.body,
-      'BeforeZenzaWatchInitialize',
-      (window as unknown as { ZenzaWatch: unknown }).ZenzaWatch,
+      'BeforeFutatsumeWatchInitialize',
+      (window as unknown as { FutatsumeWatch: unknown }).FutatsumeWatch,
       { bubbles: true, composed: true }
     );
     (
@@ -260,14 +254,14 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
 
     initializeMessage(dialog);
     (WatchPageHistory as unknown as { initialize(dialog: unknown): void }).initialize(dialog);
-    initializeExternal(dialog, Config, hoverMenu);
+    initializeExternal(dialog);
 
     if (!isWatch) {
       initializeLastSession(dialog);
     }
 
     (CustomElements as unknown as { initialize(): void }).initialize();
-    (window as unknown as { ZenzaWatch: { ready: boolean } }).ZenzaWatch.ready = true;
+    (window as unknown as { FutatsumeWatch: { ready: boolean } }).FutatsumeWatch.ready = true;
     void global.emitter.emitAsync('ready');
     global.emitter.emitResolve('init');
     (
@@ -276,8 +270,8 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
       }
     ).dispatchCustomEvent(
       document.body,
-      'ZenzaWatchInitialize',
-      (window as unknown as { ZenzaWatch: unknown }).ZenzaWatch,
+      'FutatsumeWatchInitialize',
+      (window as unknown as { FutatsumeWatch: unknown }).FutatsumeWatch,
       { bubbles: true, composed: true }
     );
   };
@@ -364,7 +358,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
      * @param {string} type
      * @param {string} sessionId
      */
-    const onWindowMessage = (cmd: InitializerCommandBody, type: string, sessionId: string): void => {
+    const onWindowMessage = (cmd: InitializerCommandBody): void => {
       const { command, params } = cmd;
       const watchId = cmd.watchId || params.watchId; // 互換のため冗長
       // window.console.log('initializeMessage.onWindowMessage', {message: cmd, type, sessionId});
@@ -385,26 +379,24 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
      * @param {string} sessionId
      */
     bcast.on('message', (message, type, sessionId) => {
-      return type === 'broadcast'
-        ? onBroadcastMessage(message, type, sessionId)
-        : onWindowMessage(message, type, sessionId);
+      return type === 'broadcast' ? onBroadcastMessage(message, type, sessionId) : onWindowMessage(message);
     });
 
     player.on('close', () => bcast.notifyClose());
     player.on('open', () => bcast.notifyOpen());
   };
 
-  const initializeExternal = (dialog: InitializerDialog, ..._rest: unknown[]): void => {
+  const initializeExternal = (dialog: InitializerDialog): void => {
     const command = (command: string, param?: unknown): { status: string } => dialog.execCommand(command, param);
 
     const open = (watchId: string, params?: unknown): unknown => dialog.open(watchId, params);
 
-    // 最後にZenzaWatchを開いたタブに送る
+    // 最後にFutatsumeWatchを開いたタブに送る
     const send = (watchId: string, params?: unknown): void => {
       (BroadcastEmitter as unknown as InitializerBroadcastEmitter).sendOpen(watchId, params);
     };
 
-    // 最後にZenzaWatchを開いたタブに送る
+    // 最後にFutatsumeWatchを開いたタブに送る
     // なかったら同じタブで開く. 一見万能だが、pingを投げる都合上ワンテンポ遅れる。
     const sendOrOpen = (watchId: string, params?: unknown): unknown => {
       if (dialog.isLastOpenedPlayer) {
@@ -444,7 +436,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
       description?: string;
       token?: string;
     }): Promise<unknown> => {
-      const mylistApiLoader = ZenzaWatch.api.MylistApiLoader as InitializerMylistApiLoader;
+      const mylistApiLoader = FutatsumeWatch.api.MylistApiLoader as InitializerMylistApiLoader;
       if (token) {
         mylistApiLoader.setCsrfToken(token);
       }
@@ -452,7 +444,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
     };
 
     const deflistRemove = ({ watchId, token }: { watchId: string; token?: string }): Promise<unknown> => {
-      const mylistApiLoader = ZenzaWatch.api.MylistApiLoader as InitializerMylistApiLoader;
+      const mylistApiLoader = FutatsumeWatch.api.MylistApiLoader as InitializerMylistApiLoader;
       if (token) {
         mylistApiLoader.setCsrfToken(token);
       }
@@ -461,7 +453,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
 
     const echo = (msg = 'こんにちはこんにちは！'): Promise<unknown> => sendExecCommand('echo', msg);
 
-    Object.assign(ZenzaWatch.external, {
+    Object.assign(FutatsumeWatch.external, {
       execCommand: command,
       sendExecCommand,
       sendOrExecCommand,
@@ -480,16 +472,16 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
         export: exportPlaylist,
       },
     });
-    Object.assign(ZenzaWatch.debug, {
+    Object.assign(FutatsumeWatch.debug, {
       dialog,
       getFrameBodies: () => {
-        return Array.from(document.querySelectorAll('.zenzaPlayerContainer iframe')).map(
+        return Array.from(document.querySelectorAll('.futatsumePlayerContainer iframe')).map(
           (f) => (f as HTMLIFrameElement).contentWindow!.document.body
         );
       },
     });
-    if (ZenzaWatch !== (window as unknown as { ZenzaWatch: unknown }).ZenzaWatch) {
-      (window as unknown as { ZenzaWatch: { external: Record<string, unknown> } }).ZenzaWatch.external = {
+    if (FutatsumeWatch !== (window as unknown as { FutatsumeWatch: unknown }).FutatsumeWatch) {
+      (window as unknown as { FutatsumeWatch: { external: Record<string, unknown> } }).FutatsumeWatch.external = {
         open,
         sendOrOpen,
         sendOrExecCommand,
@@ -543,7 +535,7 @@ const { initialize } = ((): { initialize: () => Promise<void> } => {
     console.log('initializeDialog');
     const playerConfig = PlayerConfig.getInstance(config) as ConfigStore;
     const state = PlayerState.getInstance(playerConfig);
-    ZenzaWatch.state.player = state;
+    FutatsumeWatch.state.player = state;
     const dialog = new (
       NicoVideoPlayerDialog as unknown as new (params: {
         offScreenLayer: unknown;

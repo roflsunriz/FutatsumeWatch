@@ -1,9 +1,8 @@
 import _ from 'lodash';
-import { CONSTANT } from './constant';
 import { Emitter } from './baselib';
 import { Config } from './Config';
 import { browser } from './browser';
-import { ZenzaWatch, PRODUCT } from './FutatsumeWatchIndex';
+import { FutatsumeWatch } from './FutatsumeWatchIndex';
 import { StyleSwitcher } from '../packages/lib/src/css/StyleSwitcher';
 import { dimport } from '../packages/lib/src/infra/dimport';
 import { VideoItemObserver } from '../packages/lib/src/nico/VideoItemObserver';
@@ -23,18 +22,18 @@ import { PopupMessage } from '../packages/lib/src/ui/PopupMessage';
 import { RequestAnimationFrame } from '../packages/lib/src/infra/RequestAnimationFrame';
 import { env } from '../packages/lib/src/infra/env';
 import { Clipboard } from '../packages/lib/src/dom/Clipboard';
-import { createVideoElement } from '../packages/zenza/src/videoPlayer/createVideoElement';
+import { createVideoElement } from '../packages/futatsume/src/videoPlayer/createVideoElement';
 import { domEvent } from '../packages/lib/src/dom/domEvent';
 import { VideoCaptureUtil } from '../packages/lib/src/dom/VideoCaptureUtil';
 import { speech } from '../packages/lib/src/infra/speech';
-import { MylistPocketDetector } from '../packages/zenza/src/init/MylistPocketDetector';
-import { ShortcutKeyEmitter } from '../packages/zenza/src/ShortcutKeyEmitter';
-import { PlayerSession } from '../packages/zenza/src/init/PlayerSession';
-import { WatchPageHistory } from '../packages/zenza/src/init/WatchPageHistory';
+import { MylistPocketDetector } from '../packages/futatsume/src/init/MylistPocketDetector';
+import { ShortcutKeyEmitter } from '../packages/futatsume/src/ShortcutKeyEmitter';
+import { PlayerSession } from '../packages/futatsume/src/init/PlayerSession';
+import { WatchPageHistory } from '../packages/futatsume/src/init/WatchPageHistory';
 import { watchResize } from '../packages/lib/src/dom/watchResize';
-import { BaseViewComponent } from '../packages/zenza/src/parts/BaseViewComponent';
-import { FrameLayer } from '../packages/zenza/src/parts/FrameLayer';
-import { saveMymemory } from '../packages/zenza/src/parts/saveMymemory';
+import { BaseViewComponent } from '../packages/futatsume/src/parts/BaseViewComponent';
+import { FrameLayer } from '../packages/futatsume/src/parts/FrameLayer';
+import { saveMymemory } from '../packages/futatsume/src/parts/saveMymemory';
 
 export interface UtilBrowserWindow {
   navigator: Navigator;
@@ -54,10 +53,10 @@ const window = browser.window as UtilBrowserWindow;
 let console: Console | Record<string, (...args: unknown[]) => void> = window.console;
 
 Object.assign(window, {
-  ZenzaWatch,
+  FutatsumeWatch,
 });
 
-const util = ZenzaWatch.util as UtilTable;
+const util = FutatsumeWatch.util as UtilTable;
 
 //===BEGIN===
 //@require reg
@@ -75,7 +74,7 @@ const AsyncEmitter = (() => {
   emitter.prototype.emitAsync = (Emitter as unknown as { prototype: Record<string, unknown> }).prototype.emitAsync;
   return emitter;
 })();
-(ZenzaWatch ? ZenzaWatch.lib : ({} as Record<string, unknown>)).AsyncEmitter = AsyncEmitter;
+(FutatsumeWatch ? FutatsumeWatch.lib : ({} as Record<string, unknown>)).AsyncEmitter = AsyncEmitter;
 
 //@require Fullscreen
 util.fullscreen = Fullscreen;

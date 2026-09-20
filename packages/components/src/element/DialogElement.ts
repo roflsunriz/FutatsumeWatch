@@ -24,6 +24,10 @@ class DialogElement extends BaseCommandElement {
     _props: PropsMap = {},
     _events: ElementEvents = {}
   ): Promise<TemplateResult | null> {
+    // 派生パネルが使うテンプレート引数の並びを保つ。
+    void _state;
+    void _props;
+    void _events;
     return Promise.resolve(null);
   }
   static async getTemplate(
@@ -90,7 +94,10 @@ class DialogElement extends BaseCommandElement {
     event.stopPropagation();
     event.preventDefault();
   }
-  onChange(_event: Event): void {}
+  onChange(_event: Event): void {
+    // 派生パネルの入力変更ハンドラーと同じ契約を保つ。
+    void _event;
+  }
   onOpen(): void {}
   onKey(event: Event): void {
     event.stopPropagation();

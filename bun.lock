@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "ZenzaWatch",
+      "name": "FutatsumeWatch",
       "dependencies": {
         "comment-overlay": "4.1.6",
         "hls.js": "1.7.3",

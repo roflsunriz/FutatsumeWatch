@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { CommentRenderer, cloneDefaultSettings } from 'comment-overlay';
-import { NicoChat } from '../../packages/zenza/src/commentLayer/NicoChat';
-import { NicoComment } from '../../packages/zenza/src/commentLayer/NicoComment';
+import { NicoChat } from '../../packages/futatsume/src/commentLayer/NicoChat';
+import { NicoComment } from '../../packages/futatsume/src/commentLayer/NicoComment';
 import { overlayEntry, decorateOverlayComment, commentPresentation } from '../../src/comment-overlay-data';
 import { Config } from '../../src/Config';
 

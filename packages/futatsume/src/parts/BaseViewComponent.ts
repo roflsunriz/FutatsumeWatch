@@ -1,7 +1,6 @@
 import { Emitter } from '../../../lib/src/Emitter';
 import { PRODUCT } from '../../../../src/FutatsumeWatchIndex';
 import { cssUtil } from '../../../lib/src/css/css';
-import { bounce } from '../../../lib/src/infra/bounce';
 import { ClassList } from '../../../lib/src/dom/ClassListWrapper';
 
 interface BaseViewParams {

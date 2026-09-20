@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { Emitter } from '../packages/lib/src/Emitter';
 import { cssUtil } from '../packages/lib/src/css/css';
 import { uq } from '../packages/lib/src/uQuery';
@@ -257,7 +256,7 @@ class SettingPanel extends (Emitter as unknown as SettingEmitterCtor) {
   }
 }
 SettingPanel.__css__ = `
-  .zenzaSettingPanel {
+  .futatsumeSettingPanel {
     display: block;
     position: absolute;
     left: 50%;
@@ -273,10 +272,10 @@ SettingPanel.__css__ = `
     outline: none;
     contain: strict;
   }
-  .zenzaSettingPanel:not(:focus-within) >* {
+  .futatsumeSettingPanel:not(:focus-within) >* {
     display: none;
   }
-  .zenzaSettingPanel:focus-within {
+  .futatsumeSettingPanel:focus-within {
     width: 500px;
     height: 400px;
     opacity: 1;
@@ -288,39 +287,39 @@ SettingPanel.__css__ = `
     background: rgba(0, 0, 0, 0.8);
   }
 
-  .zenzaSettingPanel:focus-within::-webkit-scrollbar {
+  .futatsumeSettingPanel:focus-within::-webkit-scrollbar {
     width: 16px;
     background: var(--scrollbar-bg-color);
   }
-  .zenzaSettingPanel:focus-within::-webkit-scrollbar-thumb {
+  .futatsumeSettingPanel:focus-within::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb-color);
   }
 
-  .zenzaScreenMode_sideView .zenzaSettingPanel:focus-within,
-  .zenzaScreenMode_small    .zenzaSettingPanel:focus-within {
+  .futatsumeScreenMode_sideView .futatsumeSettingPanel:focus-within,
+  .futatsumeScreenMode_small    .futatsumeSettingPanel:focus-within {
     position: fixed;
   }
 
-  .zenzaSettingPanel:focus-within {
+  .futatsumeSettingPanel:focus-within {
     border: 2px outset #fff;
     box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.5);
     pointer-events: auto;
   }
 
 
-  .zenzaSettingPanel .settingPanelInner {
+  .futatsumeSettingPanel .settingPanelInner {
     box-sizing: border-box;
     margin: 16px;
     overflow: visible;
   }
-  .zenzaSettingPanel .caption {
+  .futatsumeSettingPanel .caption {
     background: #333;
     font-size: 20px;
     padding: 4px 2px;
     color: #fff;
   }
 
-  .zenzaSettingPanel label {
+  .futatsumeSettingPanel label {
     display: inline-block;
     box-sizing: border-box;
     width: 100%;
@@ -328,18 +327,18 @@ SettingPanel.__css__ = `
     cursor: pointer;
   }
 
-  .zenzaSettingPanel .control {
+  .futatsumeSettingPanel .control {
     border-radius: 4px;
     background: rgba(88, 88, 88, 0.3);
     padding: 8px;
     margin: 16px 4px;
   }
 
-  .zenzaSettingPanel .control:hover {
+  .futatsumeSettingPanel .control:hover {
     border-color: #ff9;
   }
 
-  .zenzaSettingPanel button {
+  .futatsumeSettingPanel button {
     font-size: 10pt;
     padding: 4px 8px;
     background: #888;
@@ -348,32 +347,32 @@ SettingPanel.__css__ = `
     cursor: pointer;
   }
 
-  .zenzaSettingPanel input[type=checkbox] {
+  .futatsumeSettingPanel input[type=checkbox] {
     transform: scale(2);
     margin-left: 8px;
     margin-right: 16px;
   }
 
-  .zenzaSettingPanel .filterEditContainer {
+  .futatsumeSettingPanel .filterEditContainer {
     color: #fff;
     margin-bottom: 32px;
   }
-  .zenzaSettingPanel .filterEditContainer.forGuest {
+  .futatsumeSettingPanel .filterEditContainer.forGuest {
     padding: 8px;
   }
-  .zenzaSettingPanel .filterEditContainer p {
+  .futatsumeSettingPanel .filterEditContainer p {
     color: #fff;
     font-size: 120%;
   }
 
-  .zenzaSettingPanel .filterEditContainer .info {
+  .futatsumeSettingPanel .filterEditContainer .info {
     color: #ccc;
     font-size: 90%;
     display: inline-block;
     margin: 8px 0;
   }
 
-  .zenzaSettingPanel .filterEdit {
+  .futatsumeSettingPanel .filterEdit {
     background: #000;
     color: #ccc;
     width: 90%;
@@ -382,19 +381,19 @@ SettingPanel.__css__ = `
     white-space: pre;
   }
 
-  .zenzaSettingPanel .fontEdit .info {
+  .futatsumeSettingPanel .fontEdit .info {
     color: #ccc;
     font-size: 90%;
     display: inline-block;
     margin: 8px 0;
   }
 
-  .zenzaSettingPanel .fontEdit p {
+  .futatsumeSettingPanel .fontEdit p {
     color: #fff;
     font-size: 120%;
   }
 
-  .zenzaSettingPanel input[type=text] {
+  .futatsumeSettingPanel input[type=text] {
     font-size: 24px;
     background: #000;
     color: #ccc;
@@ -402,7 +401,7 @@ SettingPanel.__css__ = `
     margin: 0 5%;
     border-radius: 8px;
   }
-  .zenzaSettingPanel select {
+  .futatsumeSettingPanel select {
     font-size:24px;
     background: #000;
     color: #ccc;
@@ -410,16 +409,16 @@ SettingPanel.__css__ = `
     border-radius: 8px;
     }
 
-  .zenzaSettingPanel .import-export {
+  .futatsumeSettingPanel .import-export {
     padding: 8px;
     text-align: center;
   }
 
-  .zenzaSettingPanel .export-config-button {
+  .futatsumeSettingPanel .export-config-button {
     display: inline-block;
   }
 
-  .zenzaSettingPanel  .import-config-file-select {
+  .futatsumeSettingPanel  .import-config-file-select {
     position: absolute;
     text-indent: -9999px;
     width: 160px;
@@ -428,12 +427,12 @@ SettingPanel.__css__ = `
     cursor: pointer;
   }
 
-  .zenzaSettingPanel  .import-config-file-select-label {
+  .futatsumeSettingPanel  .import-config-file-select-label {
     pointer-events: none;
     user-select: none;
   }
-  .zenzaSettingPanel .import-config-file-select-label,
-  .zenzaSettingPanel .export-config-button {
+  .futatsumeSettingPanel .import-config-file-select-label,
+  .futatsumeSettingPanel .export-config-button {
     display: inline-block;
     width: 160px;
     padding: 8px;
@@ -447,7 +446,7 @@ SettingPanel.__css__ = `
   `.trim();
 
 SettingPanel.__tpl__ = `
-  <div class="zenzaSettingPanel" tabindex="0">
+  <div class="futatsumeSettingPanel" tabindex="0">
     <div class="settingPanelInner">
       <p class="caption">プレイヤーの設定</p>
       <div class="autoPlayControl control toggle">
@@ -475,7 +474,7 @@ SettingPanel.__tpl__ = `
       <div class="enableSingleton control toggle">
         <label>
           <input type="checkbox" class="checkbox" data-setting-name="enableSingleton">
-          ZenzaWatchを起動してるタブがあればそちらで開く<br>
+          FutatsumeWatchを起動してるタブがあればそちらで開く<br>
           <smal>(singletonモード)</small>
         </label>
       </div>
@@ -497,7 +496,7 @@ SettingPanel.__tpl__ = `
       <div class="overrideWatchLinkControl control toggle">
         <label>
           <input type="checkbox" class="checkbox" data-setting-name="overrideWatchLink">
-          [Zen]ボタンなしでZenzaWatchを開く(リロード後に反映)
+          [Futatsume]ボタンなしでFutatsumeWatchを開く(リロード後に反映)
         </label>
       </div>
 
@@ -555,11 +554,11 @@ SettingPanel.__tpl__ = `
         </label>
       </div>
 
-      <div class="bestZenTube control toggle">
+      <div class="bestFutatsumeTube control toggle">
         <label>
-          <input type="checkbox" class="checkbox" data-setting-name="bestZenTube"
-          data-command="toggle-bestZenTube">
-            ZenTube使用時に最高画質をリクエストする (※ 機能してないかも)
+          <input type="checkbox" class="checkbox" data-setting-name="bestFutatsumeTube"
+          data-command="toggle-bestFutatsumeTube">
+            FutatsumeTube使用時に最高画質をリクエストする (※ 機能してないかも)
         </label>
       </div>
 

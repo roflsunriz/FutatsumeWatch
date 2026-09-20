@@ -1,4 +1,3 @@
-import { netUtil } from '../infra/netUtil';
 import { NVApi } from './NVApi';
 
 interface LikeApiType {

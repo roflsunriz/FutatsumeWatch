@@ -102,7 +102,7 @@ const VideoItemObserver = (() => {
     if (!container) {
       return;
     }
-    query = query || 'zenza-video-item';
+    query = query || 'futatsume-video-item';
     initIntersectionObserver(onItemInview);
     initMutationObserver({ query, container });
   };

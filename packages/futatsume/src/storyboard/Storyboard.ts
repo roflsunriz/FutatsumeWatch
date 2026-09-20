@@ -6,7 +6,6 @@ import { SeekBarThumbnail } from './SeekBarThumbnail';
 import { StoryboardWorker } from './StoryboardWorker';
 import { global } from '../../../../src/FutatsumeWatchIndex';
 import { nicoUtil } from '../../../lib/src/nico/nicoUtil';
-import { ClassList } from '../../../lib/src/dom/ClassListWrapper';
 import type { StoryboardRawData } from './StoryboardInfoModel';
 
 interface PlayerConfigLike {

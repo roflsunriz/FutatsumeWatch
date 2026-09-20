@@ -31,6 +31,12 @@ const created = (await browser.send('Target.createTarget', { url: 'about:blank' 
 const page = await attach((await listTargets()).find((t) => t.id === created.targetId)!);
 try {
   await page.send('Page.enable');
+  if (Bun.argv.includes('--bundle')) {
+    const source = await Bun.file(new URL('../dist/FutatsumeWatch.user.js', import.meta.url)).text();
+    await page.send('Page.addScriptToEvaluateOnNewDocument', {
+      source: `document.addEventListener('DOMContentLoaded', () => { ${source}\n }, {once:true});`,
+    });
+  }
   await page.send('Page.navigate', { url: searchUrl });
   await page.send('Page.bringToFront');
   await until(
@@ -47,7 +53,7 @@ try {
   await clickVisible(page, '[data-futatsume-video="sm9"]');
   await until(
     page,
-    `(()=>{const v=document.querySelector('#zenzaVideoPlayerDialog zenza-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
+    `(()=>{const v=document.querySelector('#futatsumeVideoPlayerDialog futatsume-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
     '検索結果の見えるボタンをマウスで押して再生'
   );
   await page.send('Page.navigate', { url: tagUrl });
@@ -79,7 +85,7 @@ try {
   await clickVisible(page, '[data-futatsume-open]');
   await until(
     page,
-    `(()=>{const v=document.querySelector('#zenzaVideoPlayerDialog zenza-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
+    `(()=>{const v=document.querySelector('#futatsumeVideoPlayerDialog futatsume-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
     '視聴ページの見えるボタンをマウスで押して再生'
   );
   await page.send('Page.navigateToHistoryEntry', { entryId: searchEntry.id });
@@ -91,7 +97,7 @@ try {
   await clickVisible(page, '[data-futatsume-video="sm9"]');
   await until(
     page,
-    `(()=>{const v=document.querySelector('#zenzaVideoPlayerDialog zenza-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
+    `(()=>{const v=document.querySelector('#futatsumeVideoPlayerDialog futatsume-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
     '戻った検索ページのボタンから再び再生'
   );
   report.completed = true;

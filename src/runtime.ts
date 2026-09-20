@@ -9,7 +9,7 @@ import { WatchInfoCacheDb } from '../packages/lib/src/nico/WatchInfoCacheDb';
 import { StoryboardCacheDb } from '../packages/lib/src/nico/StoryboardCacheDb';
 import { initialize } from './initializer';
 import { components } from '../packages/components/src';
-import { initCssProps } from '../packages/zenza/src/init/inintCssProps';
+import { initCssProps } from '../packages/futatsume/src/init/inintCssProps';
 import { dll } from '../packages/components/src/dll';
 import { GateAPI } from '../packages/lib/src/nico/GateAPI';
 import { initializeHls } from './_hls';
@@ -38,7 +38,7 @@ export async function startPlayer(): Promise<void> {
       await GateAPI.thumbInfo();
     return;
   }
-  Object.assign(window, { FutatsumeWatch, ZenzaWatch: FutatsumeWatch });
+  Object.assign(window, { FutatsumeWatch });
   Object.assign(FutatsumeWatch.util, util);
   Object.assign(FutatsumeWatch.api, loaders);
   Object.assign(FutatsumeWatch.api, { StoryboardInfoLoader, NicoSearchApiV2Loader });

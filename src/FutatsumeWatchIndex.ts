@@ -42,14 +42,9 @@ export interface FutatsumeWatchRoot {
   ENV: string;
 }
 
-export type ZenzaWatchEmitter = FutatsumeWatchEmitter;
-export type ZenzaWatchModules = FutatsumeWatchModules;
-export type ZenzaWatchRoot = FutatsumeWatchRoot;
-
 const TOKEN = Math.random();
 
 export const PRODUCT = 'FutatsumeWatch';
-export const LEGACY_PRODUCT = 'ZenzaWatch';
 const FutatsumeWatch: FutatsumeWatchRoot = {
   config: Config || {},
   util: {},
@@ -80,8 +75,6 @@ const FutatsumeWatch: FutatsumeWatchRoot = {
   version: VERSION,
   ENV: 'STABLE',
 };
-// 旧連携（MylistPocket・外部スクリプト・window.ZenzaWatch参照）のため別名を維持する。
-export const ZenzaWatch: FutatsumeWatchRoot = FutatsumeWatch;
 const global = {
   debug: FutatsumeWatch.debug,
   emitter: FutatsumeWatch.emitter,

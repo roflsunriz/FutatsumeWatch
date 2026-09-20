@@ -14,7 +14,7 @@ interface ConstantLike {
   SIDE_PLAYER_WIDTH: number;
 }
 
-interface ZenzaGlobalLike {
+interface FutatsumeGlobalLike {
   innerWidth: number;
   innerHeight: number;
 }
@@ -23,14 +23,13 @@ const initCssProps = (win?: Window): void => {
   const target = win || window;
   const css = cssUtil as unknown as CssUtilLike;
   const constant = CONSTANT as unknown as ConstantLike;
-  const zenzaGlobal = global as unknown as ZenzaGlobalLike;
+  const futatsumeGlobal = global as unknown as FutatsumeGlobalLike;
   const LEN = '<length>';
-  const TM = '<time>';
+
   const LP = '<length-percentage>';
   const CL = '<color>';
   const NUM = '<number>';
-  const SEC1 = css.s(1);
-  const PX0 = css.px(0);
+
   const TP = 'transparent';
   const inherits = true;
   css.registerProps(
@@ -38,10 +37,16 @@ const initCssProps = (win?: Window): void => {
     //   syntax: NUM, initialValue: css.number(100), inherits},
     // {name: '--inner-height', window: target,
     //   syntax: NUM, initialValue: css.number(100), inherits},
-    { name: '--zenza-ui-scale', window: target, syntax: NUM, initialValue: css.number(1), inherits },
-    { name: '--zenza-control-bar-height', window: target, syntax: LEN, initialValue: css.px(48), inherits },
-    { name: '--zenza-comment-layer-opacity', window: target, syntax: NUM, initialValue: css.number(1), inherits },
-    { name: '--zenza-comment-panel-header-height', window: target, syntax: LEN, initialValue: css.px(64), inherits },
+    { name: '--futatsume-ui-scale', window: target, syntax: NUM, initialValue: css.number(1), inherits },
+    { name: '--futatsume-control-bar-height', window: target, syntax: LEN, initialValue: css.px(48), inherits },
+    { name: '--futatsume-comment-layer-opacity', window: target, syntax: NUM, initialValue: css.number(1), inherits },
+    {
+      name: '--futatsume-comment-panel-header-height',
+      window: target,
+      syntax: LEN,
+      initialValue: css.px(64),
+      inherits,
+    },
     {
       name: '--sideView-left-margin',
       window: target,
@@ -78,8 +83,8 @@ const initCssProps = (win?: Window): void => {
     { name: '--enabled-button-color', window: target, syntax: CL, initialValue: TP, inherits }
   );
   css.setProps(
-    [document.documentElement, '--inner-width', css.number(zenzaGlobal.innerWidth)],
-    [document.documentElement, '--inner-height', css.number(zenzaGlobal.innerHeight)]
+    [document.documentElement, '--inner-width', css.number(futatsumeGlobal.innerWidth)],
+    [document.documentElement, '--inner-height', css.number(futatsumeGlobal.innerHeight)]
   );
 };
 

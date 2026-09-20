@@ -346,5 +346,5 @@ const TextLabel = (() => {
 
 // })();
 
-// u = uu`<div style="display:inline-block; background: #888; color: red; width: 200px; height: 80px;font-size: 24px;"><canvas></canvas></div>`; c = u.find('canvas'); document.body.append(u[0]);lbl = await ZenzaWatch.modules.TextLabel.create({container: u[0], canvas: c[0]}); lbl.text = 'hogehoge'
+// u = uu`<div style="display:inline-block; background: #888; color: red; width: 200px; height: 80px;font-size: 24px;"><canvas></canvas></div>`; c = u.find('canvas'); document.body.append(u[0]);lbl = await FutatsumeWatch.modules.TextLabel.create({container: u[0], canvas: c[0]}); lbl.text = 'hogehoge'
 export { TextLabel };

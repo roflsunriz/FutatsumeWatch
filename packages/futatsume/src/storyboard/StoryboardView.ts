@@ -182,8 +182,8 @@ class StoryboardView extends Emitter {
     }
     this.isOpen = true;
     classListFactory(this._view).add('is-open');
-    classListFactory(this._body!).add('zenzaStoryboardOpen');
-    classListFactory(this._container!).add('zenzaStoryboardOpen');
+    classListFactory(this._body!).add('futatsumeStoryboardOpen');
+    classListFactory(this._container!).add('futatsumeStoryboardOpen');
     this.updateAnimation();
     this.updatePointer();
   }
@@ -194,8 +194,8 @@ class StoryboardView extends Emitter {
     }
     this.isOpen = false;
     classListFactory(this._view).remove('is-open');
-    classListFactory(this._body!).remove('zenzaStoryboardOpen');
-    classListFactory(this._container!).remove('zenzaStoryboardOpen');
+    classListFactory(this._body!).remove('futatsumeStoryboardOpen');
+    classListFactory(this._container!).remove('futatsumeStoryboardOpen');
     this.updateAnimation();
   }
   disable(): void {
@@ -263,7 +263,7 @@ class StoryboardView extends Emitter {
     this._bouncedOnToucheMoveEnd = _.debounce(this._onTouchMoveEnd.bind(this), 2000);
 
     this._container!.append(view);
-    (view.closest('.zen-root') as Element).addEventListener('touchend', () => (this.isHover = false), {
+    (view.closest('.futatsume-root') as Element).addEventListener('touchend', () => (this.isHover = false), {
       passive: true,
     });
 

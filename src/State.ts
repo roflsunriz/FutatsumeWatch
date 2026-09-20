@@ -3,7 +3,6 @@ import { Emitter } from './baselib';
 import { global } from './FutatsumeWatchIndex';
 import { CONSTANT } from './constant';
 import type { ConfigProps } from './Config';
-import { bounce } from '../packages/lib/src/infra/bounce';
 import { nicoUtil } from '../packages/lib/src/nico/nicoUtil';
 
 interface StateEmitter {
@@ -36,7 +35,10 @@ class BaseState extends (Emitter as unknown as StateEmitterCtor) {
   protected _changed!: Map<string, unknown>;
   protected _timestamp!: number;
   protected _boundOnChange!: () => void;
-  static getInstance(..._args: unknown[]): BaseState | undefined {
+  static getInstance(...args: unknown[]): BaseState | undefined {
+    // サブクラスの初期化引数を受け付ける共通ファクトリー。
+    void args;
+
     if (!this.instance) {
       this.instance = new (this.constructor as unknown as new () => BaseState)();
     }

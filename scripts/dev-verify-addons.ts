@@ -110,10 +110,10 @@ await withPage(
   'https://ext.nicovideo.jp/thumb/sm9',
   '<!doctype html><title>Embed fixture</title><body></body>',
   async (page) => {
-    await check(page, `!!document.querySelector('#zenzaButton')`, 'ブログパーツの起動ボタン');
+    await check(page, `!!document.querySelector('#futatsumeButton')`, 'ブログパーツの起動ボタン');
     await evaluate(
       page,
-      `window.postMessage=(data,origin)=>{window.__packet={data:JSON.parse(data),origin};};document.querySelector('#zenzaButton').click();`
+      `window.postMessage=(data,origin)=>{window.__packet={data:JSON.parse(data),origin};};document.querySelector('#futatsumeButton').click();`
     );
     await check(
       page,
@@ -122,7 +122,7 @@ await withPage(
     );
     await evaluate(
       page,
-      `document.querySelector('#zenzaButton').dispatchEvent(new MouseEvent('click',{shiftKey:true,bubbles:true}));`
+      `document.querySelector('#futatsumeButton').dispatchEvent(new MouseEvent('click',{shiftKey:true,bubbles:true}));`
     );
     await check(page, `window.__packet.data.body.message.command==='send'`, 'ブログパーツのShift操作で送る要求');
   },

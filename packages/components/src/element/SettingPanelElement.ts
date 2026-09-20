@@ -2,12 +2,9 @@ import { DialogElement } from './DialogElement.js';
 import { domEvent } from '../../../lib/src/dom/domEvent';
 // import {textUtil} from '../../../lib/src/text/textUtil';
 // import {cssUtil} from '../../../lib/src/css/css';
-
 import type { TemplateResult } from 'lit/html.js';
 import type { ElementEvents } from './BaseCommandElement.js';
 import type { HtmlTag } from './DialogElement.js';
-
-const dll = {};
 
 interface SettingVideoHlsConf {
   enableOnlyRequired: unknown;
@@ -136,7 +133,7 @@ const { SettingPanelElement } = (() => {
             <input type="checkbox" class="checkbox"
               data-setting-name="enableSingleton"
               ?checked=${conf.enableSingleton}>
-              ZenzaWatchを起動してるタブがあればそちらで開く<br>
+              FutatsumeWatchを起動してるタブがあればそちらで開く<br>
               <smal>(singletonモード)</small>
           </label>
         </div>
@@ -163,7 +160,7 @@ const { SettingPanelElement } = (() => {
             <input type="checkbox" class="checkbox"
               data-setting-name="overrideWatchLink"
               ?checked=${conf.overrideWatchLink}>
-              [Zen]ボタンなしでZenzaWatchを開く(リロード後に反映)
+              [Futatsume]ボタンなしでFutatsumeWatchを開く(リロード後に反映)
           </label>
         </div>
 
@@ -237,10 +234,10 @@ const { SettingPanelElement } = (() => {
         <div class="control">
           <label>
             <input type="checkbox" class="checkbox"
-              data-setting-name="bestZenTube"
-              ?checked=${conf.bestZenTube}
-              data-command="toggle-bestZenTube">
-              ZenTube使用時に最高画質をリクエストする (※ 機能してないかも)
+              data-setting-name="bestFutatsumeTube"
+              ?checked=${conf.bestFutatsumeTube}
+              data-command="toggle-bestFutatsumeTube">
+              FutatsumeTube使用時に最高画質をリクエストする (※ 機能してないかも)
           </label>
         </div>
 
@@ -870,8 +867,8 @@ const { SettingPanelElement } = (() => {
   }
 
   if (window.customElements) {
-    if (!customElements.get('zenza-setting-panel')) {
-      customElements.define('zenza-setting-panel', SettingPanelElement);
+    if (!customElements.get('futatsume-setting-panel')) {
+      customElements.define('futatsume-setting-panel', SettingPanelElement);
     }
   }
   return { SettingPanelElement };

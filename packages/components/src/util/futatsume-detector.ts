@@ -1,31 +1,29 @@
-import { Emitter } from '../../../../src/baselib.js';
-import { MylistPocketDetector } from '../../../zenza/src/init/MylistPocketDetector';
+import { MylistPocketDetector } from '../../../futatsume/src/init/MylistPocketDetector';
 
-interface ZenzaWatchLike {
+interface FutatsumeWatchLike {
   ready?: unknown;
 }
 
-interface WindowWithZenzaWatch extends Window {
-  ZenzaWatch?: ZenzaWatchLike;
-  FutatsumeWatch?: ZenzaWatchLike;
+interface WindowWithFutatsumeWatch extends Window {
+  FutatsumeWatch?: FutatsumeWatchLike;
 }
 //===BEGIN===
 
-const ZenzaDetector = (() => {
-  const zenzaWindow = window as unknown as WindowWithZenzaWatch;
-  const current = zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch;
+const FutatsumeDetector = (() => {
+  const futatsumeWindow = window as unknown as WindowWithFutatsumeWatch;
+  const current = futatsumeWindow.FutatsumeWatch;
   const promise =
     current && current.ready
       ? Promise.resolve(current)
       : new Promise<unknown>((resolve) => {
           [window, document.body || document.documentElement].forEach((e) => {
-            e.addEventListener('FutatsumeWatchInitialize', () => {
-              resolve(zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch);
-            });
-            // 旧イベント名との互換のため旧名も購読する
-            e.addEventListener('ZenzaWatchInitialize', () => {
-              resolve(zenzaWindow.FutatsumeWatch ?? zenzaWindow.ZenzaWatch);
-            });
+            e.addEventListener(
+              'FutatsumeWatchInitialize',
+              () => {
+                resolve(futatsumeWindow.FutatsumeWatch);
+              },
+              { once: true }
+            );
           });
         });
   return { detect: () => promise };
@@ -33,7 +31,7 @@ const ZenzaDetector = (() => {
 
 //===END===
 
-export { ZenzaDetector, MylistPocketDetector };
+export { FutatsumeDetector, MylistPocketDetector };
 
 // const MylistPocketDetector = (() => {
 //   let isReady = false;

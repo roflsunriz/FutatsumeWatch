@@ -2,7 +2,7 @@ import type { RendererSettings } from 'comment-overlay';
 import engineSource from '../node_modules/comment-overlay/dist/comment-overlay.es.js?raw';
 import engineLicense from '../node_modules/comment-overlay/LICENSE?raw';
 import { overlayEntry, commentPresentation, decorateOverlayComment } from './comment-overlay-data';
-import type { NicoChatType } from '../packages/zenza/src/commentLayer/NicoChat';
+import type { NicoChatType } from '../packages/futatsume/src/commentLayer/NicoChat';
 import { installCommentDurations } from './comment-overlay-timing';
 
 const safeJson = (value: object): string => JSON.stringify(value).replaceAll('<', '\\u003c');

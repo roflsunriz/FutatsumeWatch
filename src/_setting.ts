@@ -1,14 +1,11 @@
 import lodash from 'lodash';
 import { SettingsDialog } from '../packages/components/src/settings-dialog';
-
-import { ZenzaDetector } from '../packages/components/src/util/ZenzaDetector';
+import { FutatsumeDetector } from '../packages/components/src/util/futatsume-detector';
 import { uq } from '../packages/lib/src/uQuery';
 import { cssUtil } from '../packages/lib/src/css/css';
-import { DataStorage } from '../packages/lib/src/infra/DataStorage';
 import { Config } from './Config';
 import type { ConfigStore } from './Config';
 import { FutatsumeWatch } from './FutatsumeWatchIndex';
-import { Emitter, Handler } from '../packages/lib/src/Emitter';
 
 interface SettingScriptLodash {
   debounce<T extends (...args: never[]) => unknown>(func: T, wait: number): T;
@@ -39,8 +36,8 @@ interface SettingScriptWindow {
   PureArray?: typeof Array;
   Array: typeof Array;
   _: SettingScriptLodash;
-  ZenzaAdvancedSettings: unknown;
-  ZenzaWatch: {
+  FutatsumeAdvancedSettings: unknown;
+  FutatsumeWatch: {
     external: {
       playlist: {
         export(): unknown;
@@ -59,29 +56,23 @@ interface SettingScriptCssUtil {
   addStyle(cssText: string): void;
 }
 ((window: Window) => {
-  const self = window;
-  const PRODUCT = 'ZenzaWatch';
-  const monkey = async (PRODUCT: string): Promise<void> => {
-    const scriptWindow = window as unknown as SettingScriptWindow;
+  const monkey = async (): Promise<void> => {
     const _ = lodash;
-    const Array = scriptWindow.PureArray || scriptWindow.Array;
+
     await Config.promise('restore');
     const $ = uq as unknown as SettingScriptUq;
-    (window as unknown as { ZenzaAdvancedSettings: unknown }).ZenzaAdvancedSettings = {
+    (window as unknown as { FutatsumeAdvancedSettings: unknown }).FutatsumeAdvancedSettings = {
       config: Config,
-    };
-    const global = {
-      PRODUCT,
     };
 
     let panel: SettingPanel | undefined;
 
     const __tpl__ = `
-      <button class="openZenzaAdvancedSettingPanel">ZenzaWatch上級者設定</button>
+      <button class="openFutatsumeAdvancedSettingPanel">FutatsumeWatch上級者設定</button>
     `.trim();
 
     const __css__ = `
-      .openZenzaAdvancedSettingPanel {
+      .openFutatsumeAdvancedSettingPanel {
         font-size: 12px;
         border-radius: 4px;
         -webkit-box-pack: justify;
@@ -97,11 +88,11 @@ interface SettingScriptCssUtil {
         letter-spacing: .5px;
         cursor: pointer;
       }
-      .openZenzaAdvancedSettingPanel:hover {
+      .openFutatsumeAdvancedSettingPanel:hover {
         background: #eee;
       }
 
-      .openZenzaAdvancedSettingPanel:active {
+      .openFutatsumeAdvancedSettingPanel:active {
         background: #ccc;
       }
 
@@ -141,13 +132,13 @@ interface SettingScriptCssUtil {
         (cssUtil as unknown as SettingScriptCssUtil).addStyle(SettingPanel.__css__);
         $container.append((uq as unknown as { html(tpl: string): unknown }).html(SettingPanel.__tpl__));
 
-        const $panel = (this._$panel = $container.find('.zenzaAdvancedSettingPanel'));
-        this._$view = $container.find('.zenzaAdvancedSettingPanel');
-        const dialog = document.querySelector<HTMLDialogElement>('.zenzaAdvancedSettingPanel')!;
+        const $panel = (this._$panel = $container.find('.futatsumeAdvancedSettingPanel'));
+        this._$view = $container.find('.futatsumeAdvancedSettingPanel');
+        const dialog = document.querySelector<HTMLDialogElement>('.futatsumeAdvancedSettingPanel')!;
         this.modal = new SettingsDialog(dialog, 'advanced', () => this._$view.toggleClass('show', false));
         this._$view.on('click', (e: unknown) => (e as { stopPropagation(): void }).stopPropagation());
 
-        this._$rawData = $panel.find('.zenzaAdvancedSetting-rawData');
+        this._$rawData = $panel.find('.futatsumeAdvancedSetting-rawData');
         this._$rawData.val(config.exportJson());
         this._$rawData.on('change', () => {
           let val = this._$rawData.val();
@@ -170,9 +161,9 @@ interface SettingScriptCssUtil {
           }
         });
 
-        this._$playlistData = $panel.find('.zenzaAdvancedSetting-playlistData');
+        this._$playlistData = $panel.find('.futatsumeAdvancedSetting-playlistData');
         this._$playlistData.val(
-          JSON.stringify((window as unknown as SettingScriptWindow).ZenzaWatch.external.playlist.export(), null, 2)
+          JSON.stringify((window as unknown as SettingScriptWindow).FutatsumeWatch.external.playlist.export(), null, 2)
         );
         this._$playlistData.on('change', () => {
           let val = this._$playlistData.val();
@@ -189,7 +180,7 @@ interface SettingScriptCssUtil {
           }
 
           if (confirm('プレイリストデータを直接書き換えしますか？')) {
-            (window as unknown as SettingScriptWindow).ZenzaWatch.external.playlist.import(data);
+            (window as unknown as SettingScriptWindow).FutatsumeWatch.external.playlist.import(data);
             location.reload();
           }
         });
@@ -212,7 +203,7 @@ interface SettingScriptCssUtil {
         });
         $input.on('change', onInputItemChange);
 
-        $panel.find('.zenzaAdvancedSetting-close').on('click', (e: unknown) => {
+        $panel.find('.futatsumeAdvancedSetting-close').on('click', (e: unknown) => {
           (e as { stopPropagation(): void }).stopPropagation();
           this.hide();
         });
@@ -263,9 +254,9 @@ interface SettingScriptCssUtil {
         switch (settingName) {
           case 'wordRegFilter':
             try {
-              const reg = new RegExp(val);
+              new RegExp(val);
               $target.addClass('update');
-            } catch (err) {
+            } catch {
               $target.addClass('error');
               //alert('正規表現にエラーがあります');
               return;
@@ -274,9 +265,9 @@ interface SettingScriptCssUtil {
           case 'wordRegFilterFlags':
             {
               try {
-                const reg = new RegExp(/./, val);
+                new RegExp(/./, val);
                 $target.addClass('update');
-              } catch (err) {
+              } catch {
                 $target.addClass('error');
                 //alert('正規表現にエラーがあります');
                 return;
@@ -293,13 +284,17 @@ interface SettingScriptCssUtil {
       _beforeShow(): void {
         if (this._$playlistData) {
           this._$playlistData.val(
-            JSON.stringify((window as unknown as SettingScriptWindow).ZenzaWatch.external.playlist.export(), null, 2)
+            JSON.stringify(
+              (window as unknown as SettingScriptWindow).FutatsumeWatch.external.playlist.export(),
+              null,
+              2
+            )
           );
         }
       }
       toggle(v?: boolean): void {
         this._initializeDom();
-        // window.ZenzaWatch.external.execCommand('close');
+        // window.FutatsumeWatch.external.execCommand('close');
         this._$view.toggleClass('show', v);
         if (this._$view.hasClass('show')) {
           this._beforeShow();
@@ -315,7 +310,7 @@ interface SettingScriptCssUtil {
     }
 
     SettingPanel.__css__ = `
-      .zenzaAdvancedSettingPanel {
+      .futatsumeAdvancedSettingPanel {
         position: fixed;
         left: 50%;
         top: -100vh;
@@ -332,18 +327,18 @@ interface SettingScriptCssUtil {
         -moz-user-select: none;
         overflow: hidden;
       }
-      .zenzaAdvancedSettingPanel.show {
+      .futatsumeAdvancedSettingPanel.show {
         opacity: 1;
         top: 50%;
       }
 
-      .zenzaAdvancedSettingPanel.show {
+      .futatsumeAdvancedSettingPanel.show {
         border: 2px outset #fff;
         box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.5);
         pointer-events: auto;
       }
 
-      .zenzaAdvancedSettingPanel .settingPanelInner {
+      .futatsumeAdvancedSettingPanel .settingPanelInner {
         box-sizing: border-box;
         margin: 8px;
         padding: 8px;
@@ -352,25 +347,25 @@ interface SettingScriptCssUtil {
         overscroll-behavior: contain;
         border: 1px inset;
       }
-      .zenzaAdvancedSettingPanel .caption {
+      .futatsumeAdvancedSettingPanel .caption {
         background: #333;
         font-size: 20px;
         padding: 4px 8px;
         color: #fff;
       }
 
-      .zenzaAdvancedSettingPanel .caption.sub {
+      .futatsumeAdvancedSettingPanel .caption.sub {
         margin: 8px;
         font-size: 16px;
       }
 
-      .zenzaAdvancedSettingPanel .example {
+      .futatsumeAdvancedSettingPanel .example {
         display: inline-block;
         margin: 0 16px;
         font-family: sans-serif;
       }
 
-      .zenzaAdvancedSettingPanel label {
+      .futatsumeAdvancedSettingPanel label {
         display: inline-block;
         box-sizing: border-box;
         width: 100%;
@@ -379,18 +374,18 @@ interface SettingScriptCssUtil {
         cursor: pointer;
       }
 
-      .zenzaAdvancedSettingPanel .control {
+      .futatsumeAdvancedSettingPanel .control {
         border-radius: 4px;
         background: rgba(88, 88, 88, 0.3);
         padding: 8px;
         margin: 16px 4px;
       }
 
-      .zenzaAdvancedSettingPanel .control:hover {
+      .futatsumeAdvancedSettingPanel .control:hover {
         background: rgba(88, 88, 128, 0.3);
       }
 
-      .zenzaAdvancedSettingPanel button {
+      .futatsumeAdvancedSettingPanel button {
         font-size: 10pt;
         padding: 4px 8px;
         background: #888;
@@ -399,17 +394,17 @@ interface SettingScriptCssUtil {
         cursor: pointer;
       }
 
-      .zenzaAdvancedSettingPanel input[type=checkbox] {
+      .futatsumeAdvancedSettingPanel input[type=checkbox] {
         transform: scale(2);
         margin-left: 8px;
         margin-right: 16px;
         cursor: pointer;
       }
 
-      .zenzaAdvancedSettingPanel .control.checked {
+      .futatsumeAdvancedSettingPanel .control.checked {
       }
 
-      .zenzaAdvancedSettingPanel input[type=text] {
+      .futatsumeAdvancedSettingPanel input[type=text] {
         font-size: 24px;
         background: #ccc;
         color: #000;
@@ -418,12 +413,12 @@ interface SettingScriptCssUtil {
         padding: 8px;
         border-radius: 8px;
       }
-      .zenzaAdvancedSettingPanel input[type=text].update {
+      .futatsumeAdvancedSettingPanel input[type=text].update {
         color: #003;
         background: #fff;
         box-shadow: 0 0 8px #ff9;
       }
-      .zenzaAdvancedSettingPanel input[type=text].update:before {
+      .futatsumeAdvancedSettingPanel input[type=text].update:before {
         content: 'ok';
         position: absolute;
         left: 0;
@@ -431,18 +426,18 @@ interface SettingScriptCssUtil {
         color: blue;
       }
 
-      .zenzaAdvancedSettingPanel input[type=text].error {
+      .futatsumeAdvancedSettingPanel input[type=text].error {
         color: #300;
         background: #f00;
       }
 
-      .zenzaAdvancedSettingPanel select {
+      .futatsumeAdvancedSettingPanel select {
         font-size:24px;
         margin: 0 5%;
         border-radius: 8px;
        }
 
-      .zenzaAdvancedSetting-close {
+      .futatsumeAdvancedSetting-close {
         position: absolute;
         width: 50%;
         left: 50%;
@@ -475,8 +470,8 @@ interface SettingScriptCssUtil {
         overflow: scroll;
       }
 
-      .zenzaAdvancedSetting-rawData,
-      .zenzaAdvancedSetting-playlistData {
+      .futatsumeAdvancedSetting-rawData,
+      .futatsumeAdvancedSetting-playlistData {
         width: 90%;
         height: 300px;
         margin: 0 5%;
@@ -484,13 +479,13 @@ interface SettingScriptCssUtil {
         overflow: scroll;
       }
 
-      .zenzaAdvancedSetting-close:active {
+      .futatsumeAdvancedSetting-close:active {
         box-shadow: none;
         border: inset 2px;
         transform: scale(0.8);
       }
 
-      .zenzaAdvancedSettingPanel:not(.debug) .debugOnly {
+      .futatsumeAdvancedSettingPanel:not(.debug) .debugOnly {
         display: none !important;
       }
 
@@ -522,7 +517,7 @@ interface SettingScriptCssUtil {
     `.trim();
 
     SettingPanel.__tpl__ = `
-      <dialog class="zenzaAdvancedSettingPanel zen-family">
+      <dialog class="futatsumeAdvancedSettingPanel futatsume-family">
         <div class="settingPanelInner">
           <div class="enableFullScreenOnDoubleClickControl control toggle">
             <label>
@@ -560,10 +555,10 @@ interface SettingScriptCssUtil {
             </label>
           </div>
 
-          <div class="autoZenTube control toggle">
+          <div class="autoFutatsumeTube control toggle">
             <label>
-              <input type="checkbox" class="checkbox" data-setting-name="autoZenTube">
-              自動ZenTube (ZenTubeから戻す時は動画を右クリックからリロード または 右下の「画」)
+              <input type="checkbox" class="checkbox" data-setting-name="autoFutatsumeTube">
+              自動FutatsumeTube（元に戻すには動画を右クリック→FutatsumeTube解除）
             </label>
           </div>
 
@@ -632,18 +627,18 @@ interface SettingScriptCssUtil {
           </div>
 
           <div class="debugOnly">
-            <p class="caption sub">生データ(ZenzaWatch設定)</p>
+            <p class="caption sub">生データ(FutatsumeWatch設定)</p>
             <span class="example">丸ごとコピペで保存/復元可能。 ここを消すと設定がリセットされます。</span>
-            <textarea class="zenzaAdvancedSetting-rawData"></textarea>
+            <textarea class="futatsumeAdvancedSetting-rawData"></textarea>
 
             <p class="caption sub">生データ(プレイリスト)</p>
             <span class="example">丸ごとコピペで保存/復元可能。 編集は自己責任で</span>
-            <textarea class="zenzaAdvancedSetting-playlistData"></textarea>
+            <textarea class="futatsumeAdvancedSetting-playlistData"></textarea>
 
           </div>
 
         </div>
-        <button type="button" class="zenzaAdvancedSetting-close">閉じる</button>
+        <button type="button" class="futatsumeAdvancedSetting-close">閉じる</button>
       </dialog>
     `.trim();
 
@@ -691,7 +686,7 @@ interface SettingScriptCssUtil {
   };
 
   const loadGM = (): void => {
-    void monkey(PRODUCT);
+    void monkey();
   };
-  void ZenzaDetector.detect().then(() => loadGM());
+  void FutatsumeDetector.detect().then(() => loadGM());
 })(globalThis ? (globalThis as unknown as { window: Window }).window : window);

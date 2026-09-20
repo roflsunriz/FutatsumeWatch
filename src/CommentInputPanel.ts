@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-import { CONSTANT } from './constant';
 import { Emitter } from './baselib';
 import { css } from '../packages/lib/src/css/css';
 import { uq } from '../packages/lib/src/uQuery';
@@ -187,7 +186,7 @@ CommentInputPanel.__css__ = `
     width: 500px;
     z-index: 100000;
   }
-  .zenzaScreenMode_wide .commentInputPanel,
+  .futatsumeScreenMode_wide .commentInputPanel,
   .is-fullscreen           .commentInputPanel {
     position: absolute !important; /* fixedだとFirefoxのバグで消える */
     top:  auto !important;

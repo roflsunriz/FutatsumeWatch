@@ -42,6 +42,8 @@ const { VideoSeriesProps, VideoSeriesLabel } = (() => {
       props: typeof VideoSeriesProps = VideoSeriesProps,
       events: ElementEvents = {}
     ): Promise<TemplateResult> {
+      // 共通レンダラーの引数順を保ち、描画内容は props から取得する。
+      void state;
       const { html } = (dll.list || (await this.importLit())) as LitModule;
       if (!props.id) {
         return html``;
@@ -203,8 +205,8 @@ const { VideoSeriesProps, VideoSeriesLabel } = (() => {
   }
 
   if (window.customElements) {
-    if (!customElements.get('zenza-video-series-label')) {
-      window.customElements.define('zenza-video-series-label', VideoSeriesLabel);
+    if (!customElements.get('futatsume-video-series-label')) {
+      window.customElements.define('futatsume-video-series-label', VideoSeriesLabel);
     }
   }
 

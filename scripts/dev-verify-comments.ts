@@ -12,7 +12,7 @@ export async function verifyCommentOverlay(session: CdpSession): Promise<string[
   const player = 'window.FutatsumeWatch.debug.nicoCommentPlayer';
   const view = `${player}._view`;
   const renderer = `${view}.renderer`;
-  const video = 'document.querySelector("#zenzaVideoPlayerDialog zenza-video")';
+  const video = 'document.querySelector("#futatsumeVideoPlayerDialog futatsume-video")';
   await evaluate(session, `${video}.pause(); ${video}.currentTime=30;`);
   await Bun.sleep(600);
   await evaluate(
@@ -81,7 +81,7 @@ export async function verifyCommentOverlay(session: CdpSession): Promise<string[
   await evaluate(session, `${player}.removeChat(window.__fwOverlayTestChat); delete window.__fwOverlayTestChat`);
   await check(`!${renderer}.comments.some(c=>c.text==='移行検証コメント')`, '投稿取り消しでCanvasの登録から除外');
   await session.send('Runtime.evaluate', {
-    expression: `document.querySelector('#zenzaVideoPlayerDialog').requestFullscreen()`,
+    expression: `document.querySelector('#futatsumeVideoPlayerDialog').requestFullscreen()`,
     userGesture: true,
     awaitPromise: true,
   });

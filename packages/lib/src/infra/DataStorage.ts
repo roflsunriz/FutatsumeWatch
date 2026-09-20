@@ -6,11 +6,6 @@ interface DataStorageOptions {
   dbStorage?: DataStorage;
 }
 
-interface KvStore {
-  get: (key: string) => Promise<unknown>;
-  set: (key: string, value: unknown) => unknown;
-}
-
 type LooseStorage = Storage & Record<string, string | undefined>;
 
 import { Emitter } from '../Emitter';
@@ -19,8 +14,6 @@ import { objUtil } from './objUtil';
 import { Observable } from './Observable';
 import type { AnySubscription, SubscriberCallback, SubscriberParams } from './Observable';
 import { bounce } from './bounce';
-import { dimport } from './dimport';
-import { global } from '../../../../src/FutatsumeWatchIndex';
 
 // objUtil.bridge で Emitter のメソッドが束縛コピーされる。実行時の姿を型で表す。
 interface DataStorageEmitter {
@@ -390,65 +383,6 @@ class DataStorage implements DataStorageEmitter {
 }
 
 //===END===
-
-class KVSDataStorage extends DataStorage {
-  dbStorage!: DataStorage;
-  constructor(defaultData: Record<string, unknown>, options: DataStorageOptions = {}) {
-    super(defaultData, options);
-  }
-
-  getStorageKey(key: string): string {
-    return key;
-  }
-
-  async restore(storage?: Storage): Promise<void> {
-    const dbs = this.options.dbStorage!.export();
-    for (const key of Object.keys(dbs)) {
-      const value = dbs[key];
-      (this.storage as unknown as KvStore).set(key, value);
-      this.dbStorage.deleteValue(key);
-    }
-    for (const key of Object.keys(this.default)) {
-      const storageKey = key;
-      const value = await (this.storage as unknown as KvStore).get(storageKey);
-      if (value !== undefined) {
-        this._data[key] = value;
-      } else {
-        this._data[key] = this.default[key];
-      }
-    }
-  }
-
-  async refresh(key?: string, storage?: Storage): Promise<unknown> {
-    // TODOOOOOO
-    key = this.getNativeKey(key as string);
-    const storageKey = key;
-    const value = await (this.storage as unknown as KvStore).get(storageKey);
-    if (value !== undefined) {
-      this._data[key] = value;
-    }
-    return this._data[key];
-  }
-
-  setValue(key: string, value: unknown): void {
-    const _key = key;
-    key = this.getNativeKey(key);
-    if (this._data[key] === value || arguments.length < 2 || value === undefined) {
-      return;
-    }
-    const storageKey = key;
-    const storage = this.storage;
-    if (!this.readonly) {
-      (storage as unknown as KvStore).set(storageKey, value);
-    }
-    this._data[key] = value;
-
-    if (!this.silently) {
-      this._changed.set(_key, value);
-      this._onChange();
-    }
-  }
-}
 
 export { DataStorage };
 export type { DataStorageOptions };

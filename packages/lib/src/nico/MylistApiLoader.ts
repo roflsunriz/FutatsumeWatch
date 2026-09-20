@@ -68,10 +68,7 @@ const MylistApiLoader = (() => {
   let cacheStorage: CacheStorageLike = null as unknown as CacheStorageLike;
   let token = '';
 
-  if (
-    (window as unknown as { ZenzaWatch?: unknown; FutatsumeWatch?: unknown }).FutatsumeWatch ??
-    (window as unknown as { ZenzaWatch?: unknown }).ZenzaWatch
-  ) {
+  if ((window as unknown as { FutatsumeWatch?: unknown }).FutatsumeWatch) {
     emitter.on('csrfTokenUpdate', (t: unknown) => {
       token = t as string;
       if (cacheStorage) {
@@ -311,7 +308,7 @@ const MylistApiLoader = (() => {
       groupId: string,
       { frontendId = 6, frontendVersion = 0 }: FrontendIdVersion = {}
     ) {
-      const item = await this.findMylistItemByWatchId(watchId, groupId).catch((err: unknown) => {
+      await this.findMylistItemByWatchId(watchId, groupId).catch((err: unknown) => {
         throw new Error('動画が見つかりません', { result: err, status: 'fail' } as unknown as ErrorOptions);
       });
 

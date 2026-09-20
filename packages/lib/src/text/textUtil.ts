@@ -38,14 +38,14 @@ const textUtil = {
           )
         )
       );
-    } catch (e) {
+    } catch {
       return '';
     }
   },
   encodeBase64: (str: string): string => {
     try {
       return btoa(unescape(encodeURIComponent(str)));
-    } catch (e) {
+    } catch {
       return '';
     }
   },
@@ -156,7 +156,7 @@ const textUtil = {
     try {
       JSON.parse(data);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   },

@@ -322,7 +322,7 @@ const Observable = (() => {
   return Observable;
 })();
 
-const WindowResizeObserver = Observable.fromEvent(window, 'resize').map((o) => {
+const WindowResizeObserver = Observable.fromEvent(window, 'resize').map(() => {
   return { width: window.innerWidth, height: window.innerHeight };
 });
 //===END===

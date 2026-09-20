@@ -102,11 +102,7 @@ interface FetchResultPayload {
   headers: [string, string][];
 }
 
-import { netUtil } from './netUtil';
 // import {globalEmitter} from '../../../../src/FutatsumeWatchIndex';
-import { Config } from '../../../../src/Config';
-import { TOKEN, PRODUCT } from '../../../../src/FutatsumeWatchIndex';
-import { PopupMessage } from '../ui/PopupMessage';
 import { EmitterInitFunc } from '../Emitter';
 const PID = 'PID';
 const bcast: Record<string, BroadcastChannel> = {};
@@ -116,12 +112,12 @@ const portMap: Record<string, MessagePort> = {};
 const workerUtil = (() => {
   let config: { export: (isAll?: boolean) => unknown } | undefined;
   let TOKEN: string | number | null | undefined;
-  let PRODUCT: string | undefined = 'ZenzaWatch?';
+  let PRODUCT: string | undefined = 'FutatsumeWatch?';
   let netUtil: { fetch: (url: string, options?: RequestInit) => Promise<unknown> } | undefined;
   let CONSTANT: unknown;
   const NAME = '';
   let global: WorkerEnvParams['global'] = null;
-  const external: unknown = null;
+
   const isAvailable = !!(window.Blob && window.Worker && window.URL);
 
   const messageWrapper = function (this: unknown, self: WorkerScope) {
@@ -160,7 +156,7 @@ const workerUtil = (() => {
                 console.time('ping:' + sessionId);
                 (port as unknown as WorkerProxy)
                   .ping()
-                  .then((result) => {
+                  .then(() => {
                     console.timeEnd('ping:' + sessionId);
                     console.log('ok %smec', Date.now() - Number(params.now), params);
                   })

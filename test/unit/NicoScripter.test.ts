@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { NicoScriptParser } from '../../packages/zenza/src/commentLayer/NicoScripter';
+import { NicoScriptParser } from '../../packages/futatsume/src/commentLayer/NicoScripter';
 
 const nicos = NicoScriptParser;
 

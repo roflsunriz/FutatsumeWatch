@@ -1,6 +1,6 @@
 import type { Comment, CommentRenderer } from 'comment-overlay';
 import { Config } from './Config';
-import type { NicoChatType } from '../packages/zenza/src/commentLayer/NicoChat';
+import type { NicoChatType } from '../packages/futatsume/src/commentLayer/NicoChat';
 
 export function overlayEntry(chat: NicoChatType): Parameters<CommentRenderer['addComments']>[0][number] {
   const commands = chat.cmd.split(/\s+/).filter(Boolean);

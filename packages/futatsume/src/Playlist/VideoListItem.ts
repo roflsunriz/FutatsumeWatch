@@ -1,4 +1,4 @@
-import { bounce, throttle } from '../../../lib/src/infra/bounce';
+import { throttle } from '../../../lib/src/infra/bounce';
 import { textUtil } from '../../../lib/src/text/textUtil';
 
 interface VideoRawData {
