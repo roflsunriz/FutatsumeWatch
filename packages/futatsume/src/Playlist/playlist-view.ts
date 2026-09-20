@@ -147,6 +147,7 @@ class PlayListView extends Emitter {
       .on('drop', this._onDropFile.bind(this));
 
     this._$fileSelect.on('change', this._onImportFileSelect.bind(this));
+    this._fileSelect.addEventListener('cancel', () => this._$fileDrop.removeClass('show is-dragover'));
 
     (
       ['addClass', 'removeClass', 'scrollTop', 'scrollToItem'] as Array<
@@ -234,7 +235,7 @@ class PlayListView extends Emitter {
     const nativeEvent = (e as unknown as { originalEvent?: DragEvent }).originalEvent ?? (e as unknown as DragEvent);
     const transfer = nativeEvent.dataTransfer as DataTransfer;
     const file = transfer.files[0] as File;
-    if (!/\.playlist\.json$/.test(file.name)) {
+    if (!file || !/\.playlist\.json$/.test(file.name)) {
       return;
     }
 
@@ -248,11 +249,12 @@ class PlayListView extends Emitter {
   }
   _onImportFileSelect(e: MouseEvent): void {
     e.preventDefault();
+    this._$fileDrop.removeClass('show is-dragover');
 
     const nativeEvent = (e as unknown as { originalEvent?: Event }).originalEvent ?? e;
     const target = nativeEvent.target as HTMLInputElement;
     const file = target.files?.[0] as File;
-    if (!/\.playlist\.json$/.test(file.name)) {
+    if (!file || !/\.playlist\.json$/.test(file.name)) {
       return;
     }
 

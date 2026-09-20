@@ -1,3 +1,5 @@
+import { cleanupCdp } from './dev-cdp';
+import { verificationDirectory } from './dev-verification-output';
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
@@ -9,7 +11,7 @@ const searchUrl =
   'https://www.nicovideo.jp/search/' + encodeURIComponent('レッツゴー！陰陽師') + '?sort=viewCount&order=desc';
 const tagUrl =
   'https://www.nicovideo.jp/tag/' + encodeURIComponent('レッツゴー！陰陽師') + '?sort=viewCount&order=desc';
-const out = new URL('../dev-assets/verification/', import.meta.url);
+const out = verificationDirectory;
 async function until(page: CdpSession, expression: string, label: string): Promise<void> {
   const end = Date.now() + 25000;
   while (Date.now() < end) {
@@ -108,7 +110,16 @@ try {
   throw error;
 } finally {
   await Bun.write(new URL('entry-report.json', out), JSON.stringify(report, null, 2) + '\n');
-  page.close();
-  await browser.send('Target.closeTarget', { targetId: created.targetId });
-  browser.close();
+  await cleanupCdp(
+    () => page.close(),
+    async () => {
+      const { targetInfo } = (await browser.send('Target.getTargetInfo', { targetId: created.targetId })) as {
+        targetInfo: { browserContextId?: string };
+      };
+      return process.env.FUTATSUME_TEST_OFFLINE === '1' && targetInfo.browserContextId
+        ? browser.send('Target.disposeBrowserContext', { browserContextId: targetInfo.browserContextId })
+        : browser.send('Target.closeTarget', { targetId: created.targetId });
+    },
+    () => browser.close()
+  );
 }

@@ -190,13 +190,17 @@ export class CommentInputPanel extends Emitter {
             : this.text.failure;
       this.setStatus(message || this.text.failure, true);
     } finally {
-      this.posting = false;
-      this.updateAvailability();
-      if (revision === this.revision && !this.unavailable) this.input.focus();
+      if (revision === this.revision) {
+        this.posting = false;
+        this.updateAvailability();
+        if (!this.unavailable) this.input.focus();
+      }
     }
   }
   reset(): void {
     this.revision++;
+    this.posting = false;
+    this.composing = false;
     this.blur();
     this.input.value = '';
     this.updateCount();

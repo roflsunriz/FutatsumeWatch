@@ -52,6 +52,72 @@ interface FrontendIdVersion {
   frontendId?: number;
   frontendVersion?: number;
 }
+interface MylistListOptions extends FrontendIdVersion {
+  forceRefresh?: boolean;
+}
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+function readMylistList(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) throw new Error('マイリスト一覧の応答形式が不正です。再取得してください。');
+  const lists: Array<Record<string, unknown>> = [];
+  for (const entry of value as unknown[]) {
+    if (
+      !isRecord(entry) ||
+      (typeof entry.id !== 'string' && typeof entry.id !== 'number') ||
+      typeof entry.name !== 'string'
+    )
+      throw new Error('マイリスト一覧の応答形式が不正です。再取得してください。');
+    lists.push(entry);
+  }
+  return lists;
+}
+async function readMylistResponse(response: Response): Promise<MylistApiEnvelope> {
+  if (!response.ok) throw new Error(`マイリストの通信に失敗しました (HTTP ${response.status})。再試行してください。`);
+  const body: unknown = await response.json();
+  if (
+    !isRecord(body) ||
+    !isRecord(body.meta) ||
+    typeof body.meta.status !== 'number' ||
+    !Number.isInteger(body.meta.status) ||
+    body.meta.status < 100 ||
+    body.meta.status > 599
+  )
+    throw new Error('マイリストの応答形式が不正です。');
+  if (body.data !== undefined && body.data !== null && !isRecord(body.data))
+    throw new Error('マイリストのデータ形式が不正です。');
+  const raw = isRecord(body.data) ? body.data : {};
+  const data: MylistApiEnvelope['data'] = {};
+  if (raw.mylists !== undefined) data.mylists = readMylistList(raw.mylists);
+  for (const name of ['watchLater', 'mylist'] as const) {
+    const value = raw[name];
+    if (value === undefined) continue;
+    if (
+      !isRecord(value) ||
+      !Array.isArray(value.items) ||
+      (value.items as unknown[]).some((item) => !isRecord(item)) ||
+      (value.hasNext !== undefined && typeof value.hasNext !== 'boolean') ||
+      (value.hasInvisibleItems !== undefined && typeof value.hasInvisibleItems !== 'boolean')
+    )
+      throw new Error('マイリストの動画一覧の形式が不正です。');
+    data[name] = {
+      items: value.items as MylistItem[],
+      hasNext: value.hasNext,
+      hasInvisibleItems: value.hasInvisibleItems,
+    };
+  }
+  const error = isRecord(body.error) ? body.error : {};
+  return {
+    meta: { status: body.meta.status },
+    data,
+    error: {
+      description:
+        typeof error.description === 'string'
+          ? error.description
+          : `マイリストの処理が拒否されました (${body.meta.status})`,
+      code: typeof error.code === 'string' ? error.code : undefined,
+    },
+  };
+}
 
 const emitter = new Emitter();
 //===BEGIN===
@@ -146,7 +212,7 @@ const MylistApiLoader = (() => {
             headers: { 'X-Frontend-Id': frontendId, 'X-Frontend-Version': frontendVersion },
             credentials: 'include',
           })
-          .then((r: Response) => r.json())
+          .then(readMylistResponse)
           .catch((e: unknown) => {
             throw new Error('とりあえずマイリストの取得失敗(2)', e as ErrorOptions);
           });
@@ -159,7 +225,7 @@ const MylistApiLoader = (() => {
         } else {
           data.hasInvisibleItems = data.hasInvisibleItems || res.data.watchLater.hasInvisibleItems;
           data.hasNext = res.data.watchLater.hasNext;
-          data.items.concat(res.data.watchLater.items);
+          data.items.push(...res.data.watchLater.items);
         }
         page.set('page', String(parseInt(String(page.get('page'))) + 1));
       } while (data && data.hasNext);
@@ -179,7 +245,7 @@ const MylistApiLoader = (() => {
             headers: { 'X-Frontend-Id': frontendId, 'X-Frontend-Version': frontendVersion },
             credentials: 'include',
           })
-          .then((r: Response) => r.json())
+          .then(readMylistResponse)
           .catch((e: unknown) => {
             throw new Error('マイリスト取得失敗(2)', e as ErrorOptions);
           });
@@ -192,7 +258,7 @@ const MylistApiLoader = (() => {
         } else {
           data.hasInvisibleItems = data.hasInvisibleItems || res.data.mylist.hasInvisibleItems;
           data.hasNext = res.data.mylist.hasNext;
-          data.items.concat(res.data.mylist.items);
+          data.items.push(...res.data.mylist.items);
         }
         page.set('page', String(parseInt(String(page.get('page'))) + 1));
       } while (data && data.hasNext);
@@ -200,15 +266,19 @@ const MylistApiLoader = (() => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- do-whileで必ず代入されることをtscに伝えられないため。ランタイムは消去により同一
       return data!.items;
     }
-    async getMylistList({ frontendId = 6, frontendVersion = 0 }: FrontendIdVersion = {}): Promise<
+    async getMylistList({ frontendId = 6, frontendVersion = 0, forceRefresh = false }: MylistListOptions = {}): Promise<
       Array<Record<string, unknown>>
     > {
       const url = 'https://nvapi.nicovideo.jp/v1/users/me/mylists';
       const cacheKey = 'mylistList';
 
       const cacheData: unknown = cacheStorage.getItem(cacheKey);
-      if (cacheData) {
-        return cacheData as Array<Record<string, unknown>>;
+      if (cacheData && !forceRefresh) {
+        try {
+          return readMylistList(cacheData);
+        } catch {
+          cacheStorage.removeItem(cacheKey);
+        }
       }
 
       // nvapi に X-Frontend-Id header が必要
@@ -217,7 +287,7 @@ const MylistApiLoader = (() => {
           headers: { 'X-Frontend-Id': frontendId, 'X-Frontend-Version': frontendVersion },
           credentials: 'include',
         })
-        .then((r: Response) => r.json())
+        .then(readMylistResponse)
         .catch((e: unknown) => {
           throw new Error('マイリスト一覧の取得失敗(2)', e as ErrorOptions);
         });
@@ -276,7 +346,7 @@ const MylistApiLoader = (() => {
           },
           credentials: 'include',
         })
-        .then((r: Response) => r.json())
+        .then(readMylistResponse)
         .catch((err: unknown) => {
           throw new Error('とりあえずマイリストから削除失敗(2)', {
             result: err,
@@ -326,7 +396,7 @@ const MylistApiLoader = (() => {
           },
           credentials: 'include',
         })
-        .then((r: Response) => r.json())
+        .then(readMylistResponse)
         .catch((err: unknown) => {
           throw new Error('マイリストから削除失敗(2)', { result: err, status: 'fail' } as unknown as ErrorOptions);
         });
@@ -375,7 +445,7 @@ const MylistApiLoader = (() => {
           },
           credentials: 'include',
         })
-        .then((r: Response) => r.json())
+        .then(readMylistResponse)
         .catch((err: unknown) => {
           throw new Error('とりあえずマイリスト登録失敗(200)', {
             status: 'fail',
@@ -459,7 +529,7 @@ const MylistApiLoader = (() => {
           },
           credentials: 'include',
         })
-        .then((r: Response) => r.json())
+        .then(readMylistResponse)
         .catch((err: unknown) => {
           throw new Error('マイリスト登録失敗(200)', {
             status: 'fail',

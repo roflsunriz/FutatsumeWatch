@@ -347,6 +347,12 @@ class NicoChatFilter extends Emitter {
   }
 
   setWordRegFilter(source: string, flags?: string): void {
+    if (!source) {
+      this._wordRegReg = null;
+      this._flags = flags;
+      this._onChange();
+      return;
+    }
     if (this._wordRegReg) {
       if (this._wordRegReg.source === source && this._flags === flags) {
         return;
@@ -354,6 +360,7 @@ class NicoChatFilter extends Emitter {
     }
     try {
       this._wordRegReg = new RegExp(source, flags);
+      this._flags = flags;
     } catch (e) {
       window.console.error(e);
       return;
@@ -495,6 +502,7 @@ class NicoChatFilter extends Emitter {
         }
 
         if (wordRegReg) {
+          wordRegReg.lastIndex = 0;
           m = wordRegReg.exec(nicoChat.text);
         }
         if (m) {
@@ -547,6 +555,9 @@ class NicoChatFilter extends Emitter {
         return true;
       }
       const text = nicoChat.text;
+      // g/y carry lastIndex between calls. Each comment is an independent
+      // input, including repeated passes after a setting change.
+      if (wordRegReg) wordRegReg.lastIndex = 0;
       return !(
         nicoChat.score <= threthold ||
         (wordReg && wordReg.test(text)) ||

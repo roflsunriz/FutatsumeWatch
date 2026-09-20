@@ -143,6 +143,9 @@ const RootDispatcher = (() => {
         case 'loop':
           playerState.isLoop = !!value;
           break;
+        case 'autoPlay':
+          playerState.isAutoPlay = !!value;
+          break;
         case 'mute':
           playerState.isMute = !!value;
           break;

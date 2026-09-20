@@ -1,5 +1,8 @@
+import { cleanupCdp } from './dev-cdp';
+import { verificationDirectory } from './dev-verification-output';
 import { attach, attachBrowser, evaluate, evaluateAsync, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
+import { offlineSites } from './dev-offline';
 
 const source = await Bun.file(new URL('../dist/FutatsumeWatch.user.js', import.meta.url)).text();
 const checks: string[] = [];
@@ -33,20 +36,10 @@ async function withPage(
     const target = (await listTargets()).find((t) => t.id === created.targetId)!;
     session = await attach(target);
     const page = session;
+    const site = offlineSites.get(page);
+    if (!site) throw new Error('追加機能の固定ページ検証にはオフライン監査が必要です');
+    site.documents.set(url, html);
     page.onEvent((method, params) => {
-      if (method === 'Fetch.requestPaused') {
-        const request = params.request as { url: string };
-        const action =
-          request.url === url
-            ? page.send('Fetch.fulfillRequest', {
-                requestId: params.requestId,
-                responseCode: 200,
-                responseHeaders: [{ name: 'Content-Type', value: 'text/html; charset=utf-8' }],
-                body: Buffer.from(html).toString('base64'),
-              })
-            : page.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'BlockedByClient' });
-        void action.catch((error: unknown) => errors.push(String(error)));
-      }
       if (method === 'Runtime.exceptionThrown') {
         const detail = params.exceptionDetails as { exception?: { description?: string } };
         errors.push(detail.exception?.description ?? 'ページ例外');
@@ -55,7 +48,6 @@ async function withPage(
     });
     await page.send('Page.enable');
     await page.send('Runtime.enable');
-    await page.send('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
     await page.send('Page.addScriptToEvaluateOnNewDocument', {
       source: `document.addEventListener('DOMContentLoaded',()=>{${source}\n});`,
     });
@@ -69,15 +61,17 @@ async function withPage(
     }
     if (errors.length) throw new Error(errors.join('\n'));
   } finally {
-    session?.close();
-    await browser.send('Target.disposeBrowserContext', { browserContextId: context.browserContextId });
-    browser.close();
+    await cleanupCdp(
+      () => session?.close(),
+      () => browser.send('Target.disposeBrowserContext', { browserContextId: context.browserContextId }),
+      () => browser.close()
+    );
   }
 }
 
 await withPage(
   'https://www.youtube.com/watch?v=fixture',
-  '<!doctype html><title>Capture fixture</title><input id="search"><video class="html5-main-video" muted width="320" height="180"></video>',
+  '<!doctype html><link rel="icon" href="data:,"><title>Capture fixture</title><input id="search"><video class="html5-main-video" muted width="320" height="180"></video>',
   async (page) => {
     await check(page, `!!document.querySelector('#CapTubePreviewContainer')`, 'YouTubeページでCapTubeを起動');
     await evaluateAsync(
@@ -108,7 +102,7 @@ await withPage(
 
 await withPage(
   'https://ext.nicovideo.jp/thumb/sm9',
-  '<!doctype html><title>Embed fixture</title><body></body>',
+  '<!doctype html><link rel="icon" href="data:,"><title>Embed fixture</title><body></body>',
   async (page) => {
     await check(page, `!!document.querySelector('#futatsumeButton')`, 'ブログパーツの起動ボタン');
     await evaluate(
@@ -130,7 +124,7 @@ await withPage(
 );
 
 await Bun.write(
-  new URL('../dev-assets/verification/addons.json', import.meta.url),
+  new URL('addons.json', verificationDirectory),
   JSON.stringify({ checks, completed: true }, null, 2) + '\n'
 );
 console.log(`別ページの検証に合格しました（${checks.length}項目、外部通信なし）`);

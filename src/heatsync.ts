@@ -428,6 +428,10 @@ interface HeatsyncShadowHost extends Element {
         util.emitter.on('futatsumeClose', this._onFutatsumeClose.bind(this));
         util.emitter.on('futatsumeOpen', this._onFutatsumeOpen.bind(this));
         util.emitter.on('broadcast', this._onBroadcast.bind(this));
+        config.on('turbo.enabled', () => {
+          if (!config.getValue('turbo.enabled')) this.disable();
+          else if (this._map?.length) this._onHeatMapUpdate({ map: this._map, duration: this._duration });
+        });
       }
 
       enable(): void {
@@ -441,8 +445,11 @@ interface HeatsyncShadowHost extends Element {
 
       disable(): void {
         clearInterval(this._timer as ReturnType<typeof setInterval>);
+        const appliedRate = Math.floor(this._rate * 100) / 100;
         this._rate = config.getValue('turbo.red') as number;
-        if (this._enabled && config.getValue('turbo.enabled')) {
+        // Restore only a speed this controller applied. A user's manual slow
+        // speed must survive disabling HeatSync and closing the player.
+        if (this._enabled && this._videoElement && Math.abs(this._videoElement.playbackRate - appliedRate) < 0.011) {
           (window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch.config.setValue(
             'playbackRate',
             this._rate
@@ -477,7 +484,7 @@ interface HeatsyncShadowHost extends Element {
       _onHeatMapUpdate({ map, duration }: { map: Array<number>; duration: number }): void {
         this._map = map;
         this._duration = duration;
-        this._rate = config.getValue('turbo.red') as number;
+        if (!config.getValue('turbo.enabled')) return this.disable();
         if (duration < (config.getValue('turbo.minDuration') as number)) {
           window.console.log('disable HeatSync by duration', duration);
           return this.disable();
@@ -488,8 +495,10 @@ interface HeatsyncShadowHost extends Element {
         //  return this.disable();
         //}
         const currentTags = this._tags || [];
-        // eslint-disable-next-line no-irregular-whitespace -- 区切りに全角スペース(U+3000)を意図的に含める
-        const ignoreTags = (config.getValue('turbo.ignoreTags') as string).split(/[ 　]/);
+        const ignoreTags = (config.getValue('turbo.ignoreTags') as string)
+          .toUpperCase()
+          .split(/[ \u3000]+/)
+          .filter(Boolean);
         if (
           currentTags.some((t) => {
             return ignoreTags.includes(t.toUpperCase());
@@ -498,6 +507,7 @@ interface HeatsyncShadowHost extends Element {
           window.console.log('disable HeatSync by tag'); //, currentTags, ignoreTags);
           return this.disable();
         }
+        this._rate = config.getValue('turbo.red') as number;
         this.enable();
       }
 
@@ -1146,7 +1156,7 @@ interface HeatsyncShadowHost extends Element {
           font-size: 12px;
           line-height: 16px;
           padding: 2px 4px;
-          border: 1px solid !000;
+          border: 1px solid #000;
           background: #ffc;
           color: #000;
           text-shadow: none;

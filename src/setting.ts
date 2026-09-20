@@ -155,9 +155,12 @@ interface SettingScriptCssUtil {
           }
 
           if (confirm('設定データを直接書き換えしますか？')) {
-            config.clear();
-            config.import(data);
-            location.reload();
+            try {
+              config.import(data);
+              location.reload();
+            } catch (error) {
+              alert(error instanceof Error ? error.message : '設定を読み込めませんでした。');
+            }
           }
         });
 
@@ -240,7 +243,9 @@ interface SettingScriptCssUtil {
         const val = !!target.checked;
 
         this._playerConfig.props[settingName as string] = val;
-        target.closest('.control')!.classList.toggle('checked', val);
+        const saved = Boolean(this._playerConfig.props[settingName as string]);
+        target.checked = saved;
+        target.closest('.control')!.classList.toggle('checked', saved);
       }
       _onInputItemChange(e: unknown): void {
         const target = (e as { target: HTMLInputElement }).target;
@@ -280,6 +285,8 @@ interface SettingScriptCssUtil {
         }
 
         this._playerConfig.props[settingName as string] = val;
+        const saved = this._playerConfig.props[settingName as string];
+        target.value = typeof saved === 'string' || typeof saved === 'number' ? String(saved) : '';
       }
       _beforeShow(): void {
         if (this._$playlistData) {

@@ -13,5 +13,5 @@ try {
   console.log(`拡張機能ページを開きました: chrome://extensions/?id=${EXT_ID}`);
   console.log('「ユーザー スクリプトを許可する」をONにして、動画ページを手動で再読み込みしてください。');
 } finally {
-  browser.close();
+  await browser.close();
 }

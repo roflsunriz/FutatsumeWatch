@@ -37,11 +37,11 @@ export async function checkInstallation(): Promise<void> {
         'スクリプトは登録されていますがページへ適用されません。「ユーザー スクリプトを許可する」とサイトへのアクセスを確認してください。導入成功とは扱いません。'
       );
     } finally {
-      page.close();
+      await page.close();
     }
   } finally {
     if (targetId) await browser.send('Target.closeTarget', { targetId });
-    browser.close();
+    await browser.close();
   }
 }
 

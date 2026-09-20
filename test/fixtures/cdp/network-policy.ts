@@ -33,11 +33,7 @@ const BLOCK_HOSTS = [
   'x.com',
 ];
 
-const BLOCK_PATHS: RegExp[] = [
-  /\/watch\/[^/]+\?edit=/,
-  /favicon\.ico/,
-  /robots\.txt/,
-];
+const BLOCK_PATHS: RegExp[] = [/\/watch\/[^/]+\?edit=/, /favicon\.ico/, /robots\.txt/];
 
 export const networkPolicy: NetworkPolicy = {
   allowHosts: ALLOW_HOSTS,
@@ -53,18 +49,20 @@ export function isBlockedUrl(rawUrl: string): boolean {
     return true;
   }
   const host = url.hostname.toLowerCase();
-  if (BLOCK_HOSTS.some((b) => host === b || host.endsWith(`.${b}`) || host.includes(b))) {
+  if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) {
+    return true;
+  }
+  if (BLOCK_HOSTS.some((b) => host === b || host.endsWith(`.${b}`))) {
     return true;
   }
   const path = `${url.pathname}${url.search}`;
+  if (/^\/watch\/[^/]+$/.test(url.pathname) && url.searchParams.has('edit')) {
+    return true;
+  }
   if (BLOCK_PATHS.some((re) => re.test(path) || re.test(rawUrl))) {
     return true;
   }
-  // dmc系はサブドメインが動的なため部分一致で許可する
-  if (host.includes('dmc.nico') || host.includes('domand') || host.includes('smilevideo')) {
-    return false;
-  }
-  return !ALLOW_HOSTS.some((a) => host === a || host.endsWith(`.${a}`) || host.includes(a));
+  return !ALLOW_HOSTS.some((a) => host === a || host.endsWith(`.${a}`));
 }
 
 export function redactHeaders(headers: Record<string, string>): Record<string, string> {
@@ -78,8 +76,7 @@ export function redactHeaders(headers: Record<string, string>): Record<string, s
 
 export function redactBodyText(text: string): string {
   // トークンらしい長い英数記号列をマスクする（動画ID sm/so/lv 形式は残す）
-  return text.replace(
-    /(?<![A-Za-z0-9_-])([A-Za-z0-9_-]{32,})(?![A-Za-z0-9_-])/g,
-    (m) => ( /^(sm|so|lv|co|ch|ar|im|mg|bk)\d+$/i.test(m) ? m : '[TOKEN]'),
+  return text.replace(/(?<![A-Za-z0-9_-])([A-Za-z0-9_-]{32,})(?![A-Za-z0-9_-])/g, (m) =>
+    /^(sm|so|lv|co|ch|ar|im|mg|bk)\d+$/i.test(m) ? m : '[TOKEN]'
   );
 }

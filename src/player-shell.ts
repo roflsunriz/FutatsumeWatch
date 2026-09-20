@@ -13,6 +13,7 @@ interface ShellVideo {
   title: string;
   postedAt: string | number;
   count: { view: number; comment: number; mylist: number; like?: number };
+  domandInfo?: { availableVideos: ReadonlyArray<{ label?: string; height: number }> } | null;
 }
 export class ABRepeat {
   start: number | null = null;
@@ -116,7 +117,7 @@ export class PlayerShell {
     this.menu.innerHTML = `<div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton('dismiss', t.close, 'close')}</div>
       <button type="button" data-shell-action="general">${t.settings}</button>
       <label class="fw-quality">${t.quality}<select data-shell-quality aria-label="${t.quality}">
-        ${['auto', '1080p', '720p', '480p', '360p', '144p'].map((v) => `<option value="${v}">${v === 'auto' ? t.auto : v}</option>`).join('')}
+        <option value="auto">${t.auto}</option>
       </select></label>
       <a href="https://github.com/roflsunriz/FutatsumeWatch" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       <details><summary>${t.more}</summary>
@@ -364,6 +365,15 @@ export class PlayerShell {
     return true;
   }
   updateVideo(video: ShellVideo): void {
+    const quality = this.require<HTMLSelectElement>('[data-shell-quality]');
+    quality.replaceChildren(new Option(this.text.auto, 'auto'));
+    for (const label of new Set(
+      video.domandInfo?.availableVideos.map((item) => item.label ?? `${item.height}p`) ?? []
+    )) {
+      quality.add(new Option(label, label));
+    }
+    quality.disabled = quality.options.length < 2;
+    this.syncQuality();
     this.require('.fw-title').textContent = video.title;
     this.require('.fw-title').title = video.title;
     const stats = this.require('.fw-stats');
@@ -399,8 +409,15 @@ export class PlayerShell {
     this.require('[data-shell-action="toggle-mute"]').innerHTML = shellIcon(this.state.isMute ? 'mute' : 'volume');
     this.volume.value = String(this.config.props.volume);
     this.speed.value = String(this.state.playbackRate);
-    this.require<HTMLSelectElement>('[data-shell-quality]').value = this.config.props.domandVideoQuality;
+    this.syncQuality();
     this.decorateTabs();
+  }
+  private syncQuality(): void {
+    const quality = this.require<HTMLSelectElement>('[data-shell-quality]');
+    const preferred = this.config.props.domandVideoQuality;
+    quality.value = [...quality.options].some((option) => option.value === preferred)
+      ? preferred
+      : (quality.options[1]?.value ?? 'auto');
   }
   private updateAB(): void {
     const { start, end } = this.ab;

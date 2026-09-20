@@ -247,6 +247,18 @@ class VideoListItemView {
     height: 100%;
     padding-left: 4px;
   }
+  .thumbnailContainer .mylistSelect {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 3px 5px;
+    border: 1px solid #718098;
+    border-radius: 3px;
+    background: #293b55;
+    color: #fff;
+    font: 12px sans-serif;
+    cursor: pointer;
+  }
 
   .postedAt {
     font-size: 12px;
@@ -402,6 +414,9 @@ class VideoListItemView {
                 <span class="command pocket-info" data-command="pocket-info" data-param=${watchId} title="動画情報"
                   >？</span
                 >
+                <button type="button" class="command mylistSelect" data-command="mylistSelect" data-param=${watchId}
+                  title=${navigator.language.startsWith('ja') ? 'マイリストに追加' : 'Add to mylist'}
+                  aria-label=${navigator.language.startsWith('ja') ? 'マイリストに追加' : 'Add to mylist'}>＋M</button>
               </div>
               <div class="videoInfo">
                 <div class="postedAt">${new Date(item.postedAt as string | number).toLocaleString()}</div>

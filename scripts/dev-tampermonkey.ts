@@ -17,7 +17,7 @@ export async function tampermonkeyOrigin(): Promise<string> {
           return `chrome-extension://${new URL(info.url).host}`;
         }
       } finally {
-        session.close();
+        await session.close();
       }
     }
     await Bun.sleep(250);

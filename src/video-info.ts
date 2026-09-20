@@ -11,6 +11,7 @@ interface DomandQualityItem {
 
 interface DomandVideoItem extends DomandQualityItem {
   height: number;
+  label?: string;
 }
 
 interface DmcAudioItem {
@@ -220,8 +221,9 @@ class DomandInfo extends JSONable {
   }
 
   get videos(): DomandVideoItem[] {
-    // 履歴的経緯: 真偽値を返す比較（1/0のみ）。順序は現行通り温存する。
-    return this._rawData.videos.toSorted((a, b) => (b.qualityLevel > a.qualityLevel ? 1 : 0));
+    return this._rawData.videos
+      .toSorted((a, b) => b.qualityLevel - a.qualityLevel)
+      .map((video) => ({ ...video, label: video.label ?? `${video.height}p` }));
   }
 
   get availableVideos(): DomandVideoItem[] {
@@ -845,13 +847,13 @@ class VideoInfoModel extends JSONable {
     }
 
     const highestDomand = Math.max(
-      ...this.domandInfo!.videos.map((v) => {
+      ...this.domandInfo!.availableVideos.map((v) => {
         return v.height;
       })
     );
 
     const highestDmc = Math.max(
-      ...this.dmcInfo!.videos.map((v) => {
+      ...this.dmcInfo!.availableVideos.map((v) => {
         return v.metadata.resolution.height;
       })
     );

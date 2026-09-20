@@ -496,10 +496,6 @@ class CommentListView extends Emitter {
   }
   _onItemClick(e: Event, item: HTMLElement): void {
     if ((e.target as unknown as Element).closest('.nicoru-icon')) {
-      item.classList.add('nicotta');
-      (item.dataset as Record<string, string | number | undefined>).nicoru = item.dataset.nicoru
-        ? (item.dataset.nicoru as unknown as number) * 1 + 1
-        : 1;
       this.emit('command', 'nicoru', item, item.dataset.itemId);
       return;
     }
@@ -510,7 +506,7 @@ class CommentListView extends Emitter {
       .addClass('show');
   }
   _onMenuClick(e: Event): void {
-    const target = (e.target as unknown as Element).closest<HTMLElement>('.menuButton');
+    const target = (e.target as unknown as Element).closest<HTMLElement>('.comment-row-action');
     this._$menu.removeClass('show');
     if (!target) {
       return;
@@ -1027,11 +1023,11 @@ CommentListView.__tpl__ = `
   <div class="virtualScrollBarContainer"><div class="virtualScrollBar"></div></div><div class="timeBar"></div>
   <div id="listContainer">
     <div class="listMenu">
-      <span class="menuButton itemDetailRequest" data-command="itemDetailRequest" title="詳細">？</span>
-      <span class="menuButton removeComment"     data-command="removeComment" title="コメントを削除">delete</span>
-      <span class="menuButton clipBoard"         data-command="clipBoard" title="クリップボードにコピー">copy</span>
-      <span class="menuButton addUserIdFilter"   data-command="addUserIdFilter" title="NGユーザー">NGuser</span>
-      <span class="menuButton addWordFilter"     data-command="addWordFilter" title="NGワード">NGword</span>
+      <span class="comment-row-action itemDetailRequest" data-command="itemDetailRequest" title="詳細">？</span>
+      <span class="comment-row-action removeComment"     data-command="removeComment" title="コメントを削除">delete</span>
+      <span class="comment-row-action clipBoard"         data-command="clipBoard" title="クリップボードにコピー">copy</span>
+      <span class="comment-row-action addUserIdFilter"   data-command="addUserIdFilter" title="NGユーザー">NGuser</span>
+      <span class="comment-row-action addWordFilter"     data-command="addWordFilter" title="NGワード">NGword</span>
     </div>
     <div id="listContainerInner"></div>
   </div>
@@ -1076,7 +1072,7 @@ const CommentListItemView = (() => {
         display: none;
       }
 
-      .listMenu  .menuButton {
+      .listMenu  .comment-row-action {
         font-size: 13px;
         line-height: 20px;
         border: 1px solid #666;
@@ -1087,12 +1083,12 @@ const CommentListItemView = (() => {
         width: 48px;
       }
 
-      .listMenu .menuButton:hover {
+      .listMenu .comment-row-action:hover {
         border: 1px solid #ccc;
         box-shadow: 2px 2px 2px #333;
       }
 
-      .listMenu .menuButton:active {
+      .listMenu .comment-row-action:active {
         box-shadow: none;
         transform: translate(0, 1px);
       }
@@ -1669,7 +1665,6 @@ class CommentPanelView extends Emitter {
   _onCommand(command: string, param: Element & { nicotta?: unknown }, itemId?: string): void {
     switch (command) {
       case 'nicoru':
-        param.nicotta = true;
         this.emit('command', command, param, itemId);
         break;
       default:
@@ -1853,6 +1848,8 @@ CommentPanelView.__tpl__ = `
   `.trim();
 
 class CommentPanel extends Emitter {
+  private generation = 0;
+  private readonly pendingChanges = new Set<string>();
   declare private _thumbInfoLoader: unknown;
   declare private _$container: Uq;
   declare private _player: NicoVideoPlayer;
@@ -1934,9 +1931,7 @@ class CommentPanel extends Emitter {
         this.emit('command', 'notify', 'クリップボードにコピーしました');
         break;
       case 'removeComment':
-        void new Promise<void>((resolve, reject) => this.emit('deleteChat', { resolve, reject }, item!.nicoChat)).then(
-          () => this._model.removeItem(item!)
-        );
+        if (item) this._changeComment('deleteChat', item);
         break;
       case 'addUserIdFilter':
         this._model.removeItem(item!);
@@ -1962,9 +1957,7 @@ class CommentPanel extends Emitter {
         }
         break;
       case 'nicoru':
-        item!.nicotta = true;
-        item!.nicoru += 1;
-        this.emit('command', command, item!.nicoChat);
+        if (item && !item.nicotta) this._changeComment('nicoruChat', item);
         break;
       default:
         this.emit('command', command, param);
@@ -1986,16 +1979,49 @@ class CommentPanel extends Emitter {
     this.emit('threadInfo', threadInfo);
   }
   _onPlayerOpen() {
+    this.generation++;
+    this.pendingChanges.clear();
     this._model.clear();
   }
   _onPlayerClose() {
+    this.generation++;
+    this.pendingChanges.clear();
     this._model.clear();
     this.stopTimer();
+  }
+  private _changeComment(operation: 'deleteChat' | 'nicoruChat', item: CommentListItem): void {
+    const key = `${operation}:${item.itemId}`;
+    if (this.pendingChanges.has(key)) return;
+    this.pendingChanges.add(key);
+    const generation = this.generation;
+    void new Promise<{ count?: number } | void>((resolve, reject) =>
+      this.emit(operation, { resolve, reject }, item.nicoChat)
+    )
+      .then((result) => {
+        if (generation !== this.generation) return;
+        if (operation === 'deleteChat') this._model.removeItem(item);
+        else {
+          item.nicotta = true;
+          item.nicoru = result?.count ?? item.nicoru + 1;
+          this._model.onUpdate(true);
+        }
+      })
+      .catch((error: unknown) => {
+        if (generation === this.generation)
+          this.emit(
+            'command',
+            'alert',
+            error instanceof Error ? error.message : 'コメントの変更に失敗しました。再試行してください。'
+          );
+      })
+      .finally(() => this.pendingChanges.delete(key));
   }
   setChatList(chatList: ChatListData): void {
     if (!this._model) {
       return;
     }
+    this.generation++;
+    this.pendingChanges.clear();
     this._model.setChatList(chatList);
   }
   get isAutoScroll(): boolean {
@@ -2187,7 +2213,12 @@ class TimeMachineView extends BaseViewComponent {
   }
 
   _onSubmit() {
-    const val = this._elm.input.value;
+    const input = this._elm.input;
+    if (!input.checkValidity()) {
+      input.reportValidity();
+      return;
+    }
+    const val = input.value;
     if (!val || !/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d(|:\d\d)$/.test(val)) {
       return;
     }
@@ -2338,7 +2369,7 @@ TimeMachineView._shadow_ = `
       <div class="reloadButton command" data-command="reloadComment" data-param="0" title="コメントのリロード"><span class="icon">&#8635;</span>リロード</div>
       <div class="backToTheFuture" title="Back To The Future">&#11152; Back</div>
       <div class="inputContainer">
-        <input type="datetime-local" class="dateTimeInput">
+        <input type="datetime-local" class="dateTimeInput" step="1" required>
         <div class="submitContainer">
         <div class="dateTimeSubmit">G&nbsp;&nbsp;O</div>
         <div class="dateTimeCancel">Cancel</div>

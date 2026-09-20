@@ -1,4 +1,5 @@
 import { evaluate } from './dev-cdp';
+import { verificationDirectory } from './dev-verification-output';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
 
@@ -133,23 +134,17 @@ export async function verifyCommentInput(session: CdpSession, check: Check): Pro
       );
       await clickVisible(session, '[data-comment-command="blue"]');
       const capture = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
-      await Bun.write(
-        new URL(`../dev-assets/verification/comment-form-${width}.png`, import.meta.url),
-        Buffer.from(capture.data, 'base64')
-      );
+      await Bun.write(new URL(`comment-form-${width}.png`, verificationDirectory), Buffer.from(capture.data, 'base64'));
       await clickVisible(session, '.commentInput');
       const controls = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
       await Bun.write(
-        new URL(`../dev-assets/verification/comment-form-${width}-controls.png`, import.meta.url),
+        new URL(`comment-form-${width}-controls.png`, verificationDirectory),
         Buffer.from(controls.data, 'base64')
       );
     }
   } catch (error) {
     const capture = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
-    await Bun.write(
-      new URL('../dev-assets/verification/comment-form-failure.png', import.meta.url),
-      Buffer.from(capture.data, 'base64')
-    );
+    await Bun.write(new URL('comment-form-failure.png', verificationDirectory), Buffer.from(capture.data, 'base64'));
     console.log(
       await evaluate(
         session,

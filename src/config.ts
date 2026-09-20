@@ -2,6 +2,7 @@
 const PRODUCT = 'FutatsumeWatch';
 import { migrateConfig, migrateImportedConfig } from './config-migration';
 import { DataStorage } from '../packages/lib/src/infra/data-storage';
+import { validateImportedConfig } from './config-validation';
 
 export interface ConfigProps {
   debug: boolean;
@@ -397,27 +398,42 @@ const Config = (() => {
   }
 
   if (location.host === 'www.nicovideo.jp') migrateConfig(localStorage, Object.keys(DEFAULT_CONFIG));
-  return (DataStorage as unknown as DataStorageModule).create(DEFAULT_CONFIG, {
+  const store = (DataStorage as unknown as DataStorageModule).create(DEFAULT_CONFIG, {
     prefix: PRODUCT,
     ignoreExportKeys: ['message', 'lastPlayerId', 'lastWatchId', 'debug'],
     readonly: !location || location.host !== 'www.nicovideo.jp',
     storage: localStorage,
   });
+  const importConfig = store.import.bind(store);
+  store.import = (data) => importConfig(validateImportedConfig(migrateImportedConfig(data), DEFAULT_CONFIG));
+  return store;
 })();
-const importConfig = Config.import.bind(Config);
-Config.import = (data) => importConfig(migrateImportedConfig(data));
+Config.on('save-error', () => {
+  window.alert(
+    navigator.language.startsWith('ja')
+      ? '設定を保存できませんでした。変更前の値を保持しています。サイトの保存容量やブラウザーの設定を確認してから、もう一度お試しください。'
+      : 'The setting could not be saved. The previous value was kept. Check the site storage quota and browser settings, then try again.'
+  );
+});
+Config.on('reset-error', (error) => {
+  window.alert(error instanceof Error ? error.message : '設定を初期化できませんでした。保存設定を確認してください。');
+});
 Config.exportConfig = () => Config.export();
 Config.importConfig = (v: unknown) => Config.import(v);
 Config.exportToFile = () => {
   const json = Config.exportJson();
-  const blob = new Blob([json], { type: 'text/html' });
+  const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'), {
     download: `${new Date().toLocaleString().replace(/[:/]/g, '_')}_FutatsumeWatch.config.json`,
     rel: 'noopener',
     href: url,
   });
-  a.click();
+  try {
+    a.click();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
 };
 const NaviConfig = Config;
 

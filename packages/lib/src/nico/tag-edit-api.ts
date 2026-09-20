@@ -1,201 +1,95 @@
-import { util } from '../../../../src/util';
-
-interface FetchUtilLike {
-  fetch: (url: string | URL, init?: RequestInit) => Promise<Response>;
+import { netUtil } from '../infra/net-util';
+interface TagFetch {
+  fetch(url: string, options: RequestInit): Promise<Response>;
 }
 
-interface TagEditLoadParams {
+export interface TagData {
+  name: string;
+  isNicodicArticleExists?: boolean;
+  isLocked?: boolean;
+}
+export interface TagApiResult {
+  tags: TagData[];
+}
+interface TagEditParams {
   videoId: string;
   tag?: string;
-  id?: string;
-  csrfToken?: string;
   editKey?: string;
-  ownerLock?: number;
-  description?: string;
 }
 
-interface TagApiEnvelope {
-  data?: unknown;
+function parseTags(value: unknown): TagData[] | null {
+  if (!Array.isArray(value)) return null;
+  const tags: TagData[] = [];
+  for (const entry of value as unknown[]) {
+    if (typeof entry !== 'object' || entry === null || !('name' in entry) || typeof entry.name !== 'string')
+      return null;
+    tags.push({
+      name: entry.name,
+      ...('isNicodicArticleExists' in entry && typeof entry.isNicodicArticleExists === 'boolean'
+        ? { isNicodicArticleExists: entry.isNicodicArticleExists }
+        : {}),
+      ...('isLocked' in entry && typeof entry.isLocked === 'boolean' ? { isLocked: entry.isLocked } : {}),
+    });
+  }
+  return tags;
 }
-
-interface TagEditRequestOptions {
-  method?: string;
-  credentials?: string;
-  headers?: Record<string, string | number | undefined>;
-  body?: string;
-}
-//===BEGIN===
 
 class TagEditApi {
-  load(videoId: string, editKey: string): Promise<unknown> {
-    const url = `https://nvapi.nicovideo.jp/v2/videos/${videoId}/tags`;
-    //const url = `/tag_edit/${videoId}/?res_type=json&cmd=tags&_=${Date.now()}`;
-    const options = {
-      method: 'GET',
+  async load(videoId: string, editKey = ''): Promise<TagApiResult> {
+    const tags = await this.request(videoId, editKey, 'GET');
+    if (!tags) throw new Error('タグ一覧の応答形式が不正です。再読み込みしてください。');
+    return { tags };
+  }
+  async add({ videoId, tag = '', editKey = '' }: TagEditParams): Promise<TagApiResult> {
+    const tags = await this.request(videoId, editKey, 'POST', tag);
+    return tags ? { tags } : this.load(videoId, editKey);
+  }
+  async remove({ videoId, tag = '', editKey = '' }: TagEditParams): Promise<TagApiResult> {
+    const tags = await this.request(videoId, editKey, 'DELETE', tag);
+    return tags ? { tags } : this.load(videoId, editKey);
+  }
+  private async request(
+    videoId: string,
+    editKey: string,
+    method: 'GET' | 'POST' | 'DELETE',
+    tag?: string
+  ): Promise<TagData[] | null> {
+    if (!videoId || (method !== 'GET' && (!editKey || !tag?.trim()))) {
+      throw new Error('タグを編集できません。動画とログイン状態を確認してください。');
+    }
+    const url = new URL(`https://nvapi.nicovideo.jp/v2/videos/${encodeURIComponent(videoId)}/tags`);
+    if (tag !== undefined) url.searchParams.set('tag', tag);
+    const response = await (netUtil as unknown as TagFetch).fetch(url.toString(), {
+      method,
       credentials: 'include',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Frontend-Id': 6,
-        'X-Frontend-Version': 0,
+        'X-Frontend-Id': '6',
+        'X-Frontend-Version': '0',
         'X-Request-With': 'https://www.nicovideo.jp',
         'X-Niconico-Language': 'ja-jp',
         'X-Tag-Edit-Key': editKey,
       },
-    };
-    return this._fetch(url, options)
-      .then((result: TagApiEnvelope) => {
-        return result.data;
-      })
-      .catch((err: unknown) => {
-        throw new Error('タグ一覧の取得失敗', { result: err, status: 'fail' } as unknown as ErrorOptions);
-      });
-  }
-
-  async add({ videoId, tag, editKey }: TagEditLoadParams): Promise<unknown> {
-    const encodedTag = encodeURIComponent(tag as string);
-    const url = `https://nvapi.nicovideo.jp/v2/videos/${videoId}/tags?tag=${encodedTag}`;
-    //const url = `/tag_edit/${videoId}/`;
-    /*
-    const body = this._buildQuery({
-      cmd: 'add',
-      tag,
-      id: '',
-      token: csrfToken,
-      watch_auth_key: watchAuthKey,
-      owner_lock: ownerLock,
-      res_type: 'json'
     });
-*/
-    const options = {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Frontend-Id': 6,
-        'X-Frontend-Version': 0,
-        'X-Request-With': 'https://www.nicovideo.jp',
-        'X-Niconico-Language': 'ja-jp',
-        'X-Tag-Edit-Key': editKey,
-      },
-    };
-
-    return await this._fetch(url, options)
-      .then((result: TagApiEnvelope) => {
-        return result.data;
-      })
-      .catch((err: unknown) => {
-        throw new Error('タグの追加失敗', { result: err, status: 'fail' } as unknown as ErrorOptions);
-      });
-
-    //return await this.load(videoId);
-  }
-
-  async remove({ videoId, tag = '', editKey }: TagEditLoadParams): Promise<unknown> {
-    const encodedTag = encodeURIComponent(tag);
-    const url = `https://nvapi.nicovideo.jp/v2/videos/${videoId}/tags?tag=${encodedTag}`;
-
-    //const url = `/tag_edit/${videoId}/`;
-    /*
-    const body = this._buildQuery({
-      cmd: 'remove',
-      tag, // いらないかも →というかこれだけ必要というか
-      id,
-      token: csrfToken,
-      watch_auth_key: watchAuthKey,
-      owner_lock: ownerLock,
-      res_type: 'json'
-    });
-*/
-    const options = {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Frontend-Id': 6,
-        'X-Frontend-Version': 0,
-        'X-Request-With': 'https://www.nicovideo.jp',
-        'X-Niconico-Language': 'ja-jp',
-        'X-Tag-Edit-Key': editKey,
-      },
-    };
-
-    return await this._fetch(url, options)
-      .then((result: TagApiEnvelope) => {
-        return result.data;
-      })
-      .catch((err: unknown) => {
-        throw new Error('タグの削除失敗', { result: err, status: 'fail' } as unknown as ErrorOptions);
-      });
-    //return await this.load(videoId);
-  }
-
-  _buildQuery(params: Record<string, string>): string {
-    const t: Array<string> = [];
-    Object.keys(params).forEach((key: string) => {
-      t.push(`${key}=${encodeURIComponent(params[key] as string)}`);
-    });
-    return t.join('&');
-  }
-
-  async _fetch(url: string, options: TagEditRequestOptions): Promise<TagApiEnvelope> {
-    const res: unknown = await (util as unknown as FetchUtilLike)
-      .fetch(url, options as unknown as RequestInit)
-      .catch((err: unknown) => {
-        throw new Error('タグ一覧の取得失敗', { result: err, status: 'fail' } as unknown as ErrorOptions);
-      });
-    const body: unknown = await (res as Response).json();
-    return body as TagApiEnvelope;
+    if (!response.ok)
+      throw new Error(`タグの処理に失敗しました (HTTP ${response.status})。状態を確認して再試行してください。`);
+    const body: unknown = await response.json();
+    if (typeof body !== 'object' || body === null) throw new Error('タグの応答形式が不正です。');
+    if (
+      'meta' in body &&
+      typeof body.meta === 'object' &&
+      body.meta !== null &&
+      'status' in body.meta &&
+      typeof body.meta.status === 'number' &&
+      body.meta.status >= 400
+    ) {
+      throw new Error(`タグの処理が拒否されました (${body.meta.status})。状態を確認してください。`);
+    }
+    if (!('data' in body) || typeof body.data !== 'object' || body.data === null) return null;
+    if (!('tags' in body.data)) return null;
+    const tags = parseTags(body.data.tags);
+    if (!tags) throw new Error('タグ一覧の応答形式が不正です。再読み込みしてください。');
+    return tags;
   }
 }
-
-//===END===
-//
 export { TagEditApi };
-
-/**
-
- // タグ一覧取得
- //www.nicovideo.jp/tag_edit/smXXXXXX/?res_type=json&cmd=tags
-
- { "is_owner": true,
-   "is_uneditable_tag": false,
-   "tags": [
-     // can_cat カテゴリタグにできるか？ cat カテゴリタグか？ dic 大百科があるか？
-     {"id": "11111", "tag": "aaa", "owner_lock": 0, "can_cat": false, "cat": null, "dic": true},
-     {"id": "22222", "tag": "bbb", "owner_lock": 0, "can_cat": false, "cat": null, "dic": true},
-     {"id": "33333", "tag": "ccc", "owner_lock": 0, "can_cat": false, "cat": null, "dic": true},
-     {"id": "44444", "tag": "ddd", "owner_lock": 0, "can_cat": false, "cat": null, "dic": true},
-     {"id": "55555", "tag": "eee", "owner_lock": 0, "can_cat": false, "cat": null}
-   ],
-   "status":"ok"
- }
-
- // タグ追加 レスポンスは一覧取得と同じ
- // URL: http://www.nicovideo.jp/tag_edit/smXXXXXX/
- // request POST
- res_type: json
- cmd: add
- tag: aaa bbb ccc ddd eee
- id: '' 空文字でよさそう
- token: CSRF_TOKEN
- watch_auth_key: WATCH_AUTH_KEY,
- owner_lock:1 ????
-
- // タグ削除
- res_type: json
- cmd: remove
- tag: eee
- id: 55555  // 削除するタグのID
- token: CSRF_TOKEN
- watch_auth_key: WATCH_AUTH_KEY,
- owner_lock: 1 ????
-
-
- // 編集系のエラー時は、statusがfailになるのとerror_msgが入っている以外は同じ 失敗でもタグ一覧は入っている
- { "is_owner":true,
-   "is_uneditable_tag":false,
-   "error_msg":"エラーメッセージ内容",
-   "tags":[], // タグ一覧
-   "status":"fail"
- }
- */

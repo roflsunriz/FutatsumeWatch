@@ -2,7 +2,6 @@ import _ from 'lodash';
 import { FutatsumeWatch, global } from './futatsume-watch-index';
 import { CONSTANT } from './constant';
 import { Config } from './config';
-import { IchibaLoader } from '../packages/lib/src/nico/loader';
 import { UaaLoader } from '../packages/lib/src/nico/loader';
 import { RelatedVideoList } from '../packages/futatsume/src/Playlist/related-video-list';
 import { TagListView } from './tag-list-view';
@@ -206,21 +205,20 @@ class VideoInfoPanel extends Emitter {
   _videoMetaInfo!: VideoMetaInfo;
   _uaaContainer!: Element;
   _uaaView!: UaaView;
-  _ichibaContainer!: Element;
-  _ichibaItemView!: IchibaItemView;
   _videoInfo!: VideoInfoModel;
   _futatsumeTubeUrl: string | null | undefined;
   _relatedVideoList?: RelatedVideoList;
   _pocket!: PocketApi;
   _activeTabName?: string;
   _isInitialized?: boolean;
+  private playbackGeneration = 0;
   constructor(params: VideoInfoPanelParams) {
     super();
     this._videoHeaderPanel = new VideoHeaderPanel();
     this._dialog = params.dialog;
     this._config = Config;
 
-    this._dialog.on('canplay', this._onVideoCanPlay.bind(this) as unknown as EmitterCallback);
+    this._dialog.on('canPlay', this._onVideoCanPlay.bind(this) as unknown as EmitterCallback);
     this._dialog.on('videoCount', this._onVideoCountUpdate.bind(this) as unknown as EmitterCallback);
 
     if (params.node) {
@@ -258,9 +256,6 @@ class VideoInfoPanel extends Emitter {
 
     this._uaaContainer = view.querySelector('.uaaContainer')!;
     this._uaaView = new UaaView({ parentNode: this._uaaContainer });
-
-    this._ichibaContainer = view.querySelector('.ichibaContainer')!;
-    this._ichibaItemView = new IchibaItemView({ parentNode: this._ichibaContainer });
 
     view.addEventListener('mousemove', (e) => e.stopPropagation());
     view.addEventListener('command', this._onCommandEvent.bind(this));
@@ -321,9 +316,6 @@ class VideoInfoPanel extends Emitter {
     classList.toggle('is-community', this._videoInfo.isCommunityVideo);
     classList.toggle('is-mymemory', this._videoInfo.isMymemory);
     classList.add(videoInfo.isChannel ? 'channelVideo' : 'userVideo');
-
-    this._ichibaItemView.clear();
-    this._ichibaItemView.videoId = videoInfo.videoId;
 
     this._uaaView.clear();
     this._uaaView.update(videoInfo);
@@ -459,6 +451,7 @@ class VideoInfoPanel extends Emitter {
     this._description.append($description[0]!);
   }
   async _onVideoCanPlay(watchId: string, videoInfo: VideoInfoModel, options: CanPlayOptions) {
+    const generation = ++this.playbackGeneration;
     // 動画の再生を優先するため、比較的どうでもいい要素はこのタイミングで初期化するのがよい
     if (!this._relatedVideoList) {
       this._relatedVideoList = new (
@@ -470,17 +463,29 @@ class VideoInfoPanel extends Emitter {
     }
 
     if (this._config.props.autoFutatsumeTube && this._futatsumeTubeUrl && !options.isAutoFutatsumeTubeDisabled) {
+      const url = this._futatsumeTubeUrl;
       void sleep(100).then(() => {
-        window.console.info('%cAuto FutatsumeTube', this._futatsumeTubeUrl);
-        this.emit('command', 'setVideo', this._futatsumeTubeUrl);
+        if (
+          generation !== this.playbackGeneration ||
+          this._videoInfo !== videoInfo ||
+          !this._config.props.autoFutatsumeTube
+        )
+          return;
+        window.console.info('%cAuto FutatsumeTube', url);
+        this.emit('command', 'setVideo', url);
       });
     }
     await sleep.idle();
+    if (generation !== this.playbackGeneration || this._videoInfo !== videoInfo) return;
     void this._relatedVideoList.fetchRecommend(
       videoInfo.videoId,
       watchId,
       videoInfo as unknown as RecommendVideoInfoLike
     );
+  }
+  cancelPending(): void {
+    this.playbackGeneration++;
+    this._uaaView?.clear();
   }
   _onVideoCountUpdate(...args: [VideoCountInfo]) {
     if (!this._videoHeaderPanel) {
@@ -538,9 +543,11 @@ class VideoInfoPanel extends Emitter {
     this._videoHeaderPanel.hide();
   }
   close() {
+    this._tagListView?.update({});
     this._videoHeaderPanel.close();
   }
   clear(): undefined {
+    this._tagListView?.update({});
     this._videoHeaderPanel.clear();
     this.classList.add('initializing');
     this._$ownerIcon.raf.addClass('is-loading');
@@ -878,7 +885,7 @@ css.addStyle(
     margin: 8px 0;
     padding: 8px;
     line-height: 150%;
-    text-align; center;
+    text-align: center;
     color: #333;
   }
 
@@ -1010,8 +1017,7 @@ css.addStyle(
   futatsume-video-item,
   futatsume-video-series-label,
   futatsume-vieo-description,
-  .UaaView,
-  .FutatsumeIchibaItemView {
+  .UaaView {
     content-visibility: auto;
   }
 
@@ -1263,9 +1269,6 @@ css.addStyle(
         z-index: 20000;
       }
 
-      .futatsumeScreenMode_normal .FutatsumeIchibaItemView {
-        margin: 8px 8px 96px;
-      }
 
       .futatsumeScreenMode_normal .futatsumeWatchVideoInfoPanel .videoOwnerInfoContainer {
         display: table;
@@ -1290,9 +1293,6 @@ css.addStyle(
         z-index: 20000;
       }
 
-      .futatsumeScreenMode_big .FutatsumeIchibaItemView {
-        margin: 8px 8px 96px;
-      }
 
       .futatsumeScreenMode_big .futatsumeWatchVideoInfoPanel .videoOwnerInfoContainer {
         display: table;
@@ -1354,7 +1354,6 @@ VideoInfoPanel.__tpl__ = `
           <div class="futatsumeWatchVideoInfoPanelFoot">
             <div class="uaaContainer"></div>
 
-            <div class="ichibaContainer"></div>
 
             <div class="videoTagsContainer sideTab"></div>
           </div>
@@ -1498,11 +1497,14 @@ class VideoHeaderPanel extends Emitter {
     }
     this.classList.remove('show');
   }
-  close() {}
+  close() {
+    this._tagListView?.update({});
+  }
   clear(): undefined {
     if (!this._$view) {
       return;
     }
+    this._tagListView?.update({});
     this.classList.add('initializing');
 
     this._videoTitle.textContent = '';
@@ -2249,244 +2251,6 @@ VideoSearchForm.__tpl__ = `
     </div>
   `.toString();
 
-class IchibaItemView extends BaseViewComponent {
-  declare static __tpl__: string;
-  declare static __css__: string;
-  _listContainer!: Element;
-  _listContainerDetails!: Element;
-  _videoId!: string;
-  _isLoading!: boolean;
-  constructor({ parentNode }: { parentNode: Element | null }) {
-    super({
-      parentNode,
-      name: 'IchibaItemView',
-      template: IchibaItemView.__tpl__,
-      css: IchibaItemView.__css__,
-    });
-
-    (FutatsumeWatch.debug as unknown as { ichiba?: unknown }).ichiba = this;
-  }
-
-  _initDom(...args: [Record<string, unknown>]) {
-    super._initDom(...args);
-
-    this._listContainer = this._view.querySelector('.ichibaItemListContainer .ichibaItemListInner')!;
-    this._listContainerDetails = this._view.querySelector('.ichibaItemListContainer .ichibaItemListDetails')!;
-  }
-
-  _onCommand(command: string, param: unknown) {
-    switch (command) {
-      case 'load':
-        void this.load(this._videoId);
-        break;
-      default:
-        super._onCommand(command, param);
-    }
-  }
-
-  load(videoId: string) {
-    if (this._isLoading) {
-      return;
-    }
-    videoId = videoId || this._videoId;
-    this._isLoading = true;
-    this.addClass('is-loading');
-    return IchibaLoader.load(videoId).then(this._onIchibaLoad.bind(this)).catch(this._onIchibaLoadFail.bind(this));
-  }
-
-  clear(): undefined {
-    this.removeClass('is-loading is-success is-fail is-empty');
-    this._listContainer.textContent = '';
-  }
-
-  _onIchibaLoad(data: unknown) {
-    this.removeClass('is-loading');
-    const div = document.createElement('div');
-    div.innerHTML = (data as { main: string }).main;
-
-    Array.from(div.querySelectorAll('[id]')).forEach((elm) => {
-      elm.classList.add(`ichiba-${elm.id}`);
-      elm.removeAttribute('id');
-    });
-    Array.from(div.querySelectorAll('[style]')).forEach((elm) => elm.removeAttribute('style'));
-
-    const items = div.querySelectorAll('.ichiba_mainitem');
-
-    if (!items || items.length < 1) {
-      this.addClass('is-empty');
-      this._listContainer.innerHTML = '<h2>貼られている商品はありません</h2>';
-    } else {
-      this._listContainer.innerHTML = div.innerHTML;
-    }
-    this.addClass('is-success');
-
-    this._listContainerDetails.setAttribute('open', 'open');
-
-    this._isLoading = false;
-  }
-
-  _onIchibaLoadFail() {
-    this.removeClass('is-loading');
-    this.addClass('is-fail');
-    this._isLoading = false;
-  }
-
-  get videoId(): string {
-    return this._videoId;
-  }
-
-  set videoId(v: string) {
-    this._videoId = v;
-  }
-}
-
-IchibaItemView.__tpl__ = `
-    <div class="FutatsumeIchibaItemView">
-      <div class="loadStart">
-        <div class="loadStartButton command" data-command="load">ニコニコ市場</div>
-      </div>
-      <div class="ichibaLoadingView">
-        <div class="loading-inner">
-          <span class="spinner">&#8987;</span>
-        </div>
-      </div>
-      <div class="ichibaItemListContainer">
-        <details class="ichibaItemListDetails">
-          <summary class="ichibaItemSummary loadStartButton">ニコニコ市場</summary>
-          <div class="ichibaItemListInner"></div>
-        </details>
-      </div>
-    </div>
-    `.trim();
-
-css.addStyle(
-  `
-  .FutatsumeIchibaItemView .loadStartButton {
-    color: #000;
-  }
-`,
-  { className: 'screenMode for-popup ichiba', disabled: true }
-);
-
-IchibaItemView.__css__ = `
-    .FutatsumeIchibaItemView {
-      text-align: center;
-      margin: 4px 8px 8px;
-      color: #ccc;
-    }
-
-      .FutatsumeIchibaItemView .loadStartButton {
-         font-size: 24px;
-         padding: 8px 8px;
-         margin: 8px;
-         background: inherit;
-         color: inherit;
-         border: 1px solid #ccc;
-         outline: none;
-         line-height: 20px;
-         border-radius: 8px;
-         cursor: pointer;
-         user-select: none;
-      }
-
-      .FutatsumeIchibaItemView .loadStartButton:active::after {
-        opacity: 0;
-      }
-
-      .FutatsumeIchibaItemView .loadStartButton:active {
-        transform: translate(0, 2px);
-      }
-
-      .FutatsumeIchibaItemView .ichibaLoadingView,
-      .FutatsumeIchibaItemView .ichibaItemListContainer {
-        display: none;
-      }
-
-    .FutatsumeIchibaItemView.is-loading {
-      cursor: wait;
-      user-select: none;
-    }
-      .FutatsumeIchibaItemView.is-loading * {
-        pointer-events: none;
-      }
-      .FutatsumeIchibaItemView.is-loading .ichibaLoadingView {
-        display: block;
-        font-size: 32px;
-      }
-      .FutatsumeIchibaItemView.is-loading .loadStart,
-      .FutatsumeIchibaItemView.is-loading .ichibaItemListContainer {
-        display: none;
-      }
-
-    .FutatsumeIchibaItemView.is-success {
-      background: none;
-    }
-      .FutatsumeIchibaItemView.is-success .ichibaLoadingView,
-      .FutatsumeIchibaItemView.is-success .loadStart {
-        display: none;
-      }
-      .FutatsumeIchibaItemView.is-success .ichibaItemListContainer {
-        display: block;
-      }
-      .FutatsumeIchibaItemView.is-success details[open] {
-        border: 1px solid #666;
-        border-radius: 4px;
-        padding: 0px;
-      }
-
-
-      .FutatsumeIchibaItemView.is-fail .ichibaLoadingView,
-      .FutatsumeIchibaItemView.is-fail .loadStartButton {
-        display: none;
-      }
-      .FutatsumeIchibaItemView.is-fail .ichibaItemListContainer {
-        display: block;
-      }
-
-
-    .FutatsumeIchibaItemView .ichibaItemListContainer {
-      text-align: center;
-    }
-      .FutatsumeIchibaItemView .ichibaItemListContainer .ichiba-ichiba_mainpiaitem,
-      .FutatsumeIchibaItemView .ichibaItemListContainer .ichiba_mainitem {
-        display: inline-table;
-        width: 220px;
-        margin: 8px;
-        padding: 8px;
-        word-break: break-all;
-        text-shadow: 1px 1px 0 #000;
-        background: #666;
-        border-radius: 4px;
-      }
-      .FutatsumeIchibaItemView .price,
-      .FutatsumeIchibaItemView .buy,
-      .FutatsumeIchibaItemView .click {
-        font-weight: bold;
-      }
-
-
-    .FutatsumeIchibaItemView a {
-      display: inline-block;
-      font-weight: bold;
-      text-decoration: none;
-      color: #ff9;
-      padding: 2px;
-    }
-    .FutatsumeIchibaItemView a:visited {
-      color: #ffd;
-    }
-
-
-    .FutatsumeIchibaItemView .rowJustify,
-    .FutatsumeIchibaItemView .noItem,
-    .ichiba-ichibaMainLogo,
-    .ichiba-ichibaMainHeader,
-    .ichiba-ichibaMainFooter {
-      display: none;
-    }
-
-    `.trim();
-
 // typoじゃなくてブロック回避のため名前を変えてる
 class UaaView extends BaseViewComponent {
   declare static __tpl__: string;
@@ -2498,6 +2262,13 @@ class UaaView extends BaseViewComponent {
   declare _elm: UaaElm;
   declare _shadow: Element | null;
   df?: DocumentFragment;
+  private loadGeneration = 0;
+  private loadTimer?: number;
+  readonly onEnabledChange = (): void => {
+    const info = this._props.videoInfo;
+    this.clear();
+    if (info && this._config.props.enable) this.update(info);
+  };
   constructor({ parentNode }: { parentNode: Element | null }) {
     super({
       parentNode,
@@ -2514,6 +2285,7 @@ class UaaView extends BaseViewComponent {
     };
 
     this._config = Config.namespace('uaa') as unknown as UaaConfig;
+    Config.onkey('uaa.enable', this.onEnabledChange);
 
     this._bound.load = this.load.bind(this) as unknown as (e: Event) => void;
     this._bound.update = this.update.bind(this) as unknown as (e: Event) => void;
@@ -2545,20 +2317,31 @@ class UaaView extends BaseViewComponent {
     this._props.videoInfo = videoInfo;
     this._props.videoId = videoInfo.videoId;
 
-    window.setTimeout(() => {
-      void this.load(videoInfo);
+    const generation = ++this.loadGeneration;
+    this.loadTimer = window.setTimeout(() => {
+      this.loadTimer = undefined;
+      if (generation === this.loadGeneration && this._config.props.enable) void this.load(videoInfo);
     }, 5000);
   }
 
   load(videoInfo: VideoInfoModel) {
     const videoId = videoInfo.videoId;
+    const generation = this.loadGeneration;
 
     return UaaLoader.load(videoId, { limit: 50 })
-      .then(this._onLoad.bind(this, videoId))
-      .catch(this._onFail.bind(this, videoId));
+      .then((result) => {
+        if (generation === this.loadGeneration && this._config.props.enable) this._onLoad(videoId, result);
+      })
+      .catch(() => {
+        if (generation === this.loadGeneration) this._onFail(videoId);
+      });
   }
 
   clear(): undefined {
+    this.loadGeneration++;
+    window.clearTimeout(this.loadTimer);
+    this.loadTimer = undefined;
+    this._props.videoId = undefined;
     this.setState({ isUpdating: false, isExist: false, isSpeaking: false });
     if (!this._elm.body) {
       return;
@@ -3249,4 +3032,4 @@ VideoMetaInfo._shadow_ = `
 
 //===END===
 
-export { VideoInfoPanel, VideoHeaderPanel, VideoSearchForm, IchibaItemView, UaaView, RelatedInfoMenu, VideoMetaInfo };
+export { VideoInfoPanel, VideoHeaderPanel, VideoSearchForm, UaaView, RelatedInfoMenu, VideoMetaInfo };

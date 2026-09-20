@@ -709,7 +709,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           font-size: 12px;
           line-height: 16px;
           padding: 2px 4px;
-          border: 1px solid !000;
+          border: 1px solid #000;
           background: #ffc;
           color: #000;
           text-shadow: none;
@@ -1163,7 +1163,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           break;
         case 13: // down
           if (isPauseButtonDown) {
-            speedUp();
+            speedDown();
           } else {
             execCommand('volumeDown');
           }
@@ -1455,7 +1455,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           this._povRepeat = 0;
 
           for (let i = 0, len = this._gamepadStatus.buttons.length + 16; i < len; i++) {
-            this._buttons[i] = { pressed: false, repeat: 0 };
+            this._buttons[i] = { pressed: 0, repeat: 0 };
           }
           for (let i = 0, len = this._gamepadStatus.axes.length + 16; i < len; i++) {
             this._axes[i] = { value: null, repeat: 0 };
@@ -1499,7 +1499,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
               this._buttons[i]!.repeat = 0;
             }
           }
-          for (let i = 0, len = Math.min(8, this._axes.length); i < len; i++) {
+          for (let i = 0, len = Math.min(8, this._axes.length, axes.length); i < len; i++) {
             const axis = Math.round((axes[i] as number) * 1000) / 1000;
 
             if (this._axes[i]!.value === null) {
@@ -1507,15 +1507,18 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
               continue;
             }
 
-            const diff = Math.round(Math.abs(axis - (this._axes[i]!.value as number)));
-            if (diff >= 1) {
+            const previous = this._axes[i]!.value as number;
+            const diff = Math.abs(axis - previous);
+            if (Math.abs(axis) > 0.1 && (Math.abs(previous) <= 0.1 || diff >= 0.1)) {
               this.emit('onAxisChange', i, axis);
             }
             if (Math.abs(axis) <= 0.1 && this._axes[i]!.repeat > 0) {
               this._axes[i]!.repeat = 0;
+              this.emit('onAxisRelease', i);
             } else if (Math.abs(axis) > 0.1) {
               this._axes[i]!.repeat++;
               isRepeating = true;
+              if (this._axes[i]!.repeat % 5 === 0) this.emit('onAxisRepeat', i, axis);
             } else {
               this._axes[i]!.repeat = 0;
             }
@@ -1629,8 +1632,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         FutatsumeWatch.modules ? new FutatsumeWatch.modules.Emitter() : new Emitter()
       ) as FutatsumeGamePadAddon;
 
-      const padIndex = (Config.get('deviceIndex') as number) * 1;
-
       const detectGamepad = (): void => {
         if (activeGamepad) {
           return;
@@ -1639,6 +1640,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         if (gamepads.length < 1) {
           return;
         }
+        const padIndex = Number(Config.get('deviceIndex'));
         const pad = Array.from(gamepads).find((pad) => {
           return (
             pad &&
@@ -1712,8 +1714,8 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           console.log('%cgamepad connected id:"%s"', 'background: lightblue;', e.gamepad.id);
           detectGamepad();
         } else {
-          FutatsumeGamePad.emit('onDeviceDisconnect', activeGamepad!.getDeviceIndex());
           if (activeGamepad) {
+            FutatsumeGamePad.emit('onDeviceDisconnect', activeGamepad.getDeviceIndex());
             activeGamepad.release();
           }
           activeGamepad = null;
@@ -1747,6 +1749,14 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
         window.addEventListener('gamepadconnected', (e) => onGamepadConnectStatusChange(e, true));
         window.addEventListener('gamepaddisconnected', (e) => onGamepadConnectStatusChange(e, false));
+        Config.on('deviceIndex', () => {
+          if (activeGamepad) {
+            FutatsumeGamePad.emit('onDeviceDisconnect', activeGamepad.getDeviceIndex());
+            activeGamepad.release();
+            activeGamepad = null;
+          }
+          detectGamepad();
+        });
 
         if (activeGamepad) {
           return;

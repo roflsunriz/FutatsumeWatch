@@ -52,7 +52,6 @@ interface NvpUtil {
   secToTime(sec: number): string;
 }
 interface NvpVideoPlayerParams {
-  autoplay?: NvpConfigValue;
   autoPlay?: NvpConfigValue;
   loop?: NvpConfigValue;
   mute?: NvpConfigValue;
@@ -134,9 +133,7 @@ class NicoVideoPlayer extends Emitter {
   declare _isSeeking: boolean;
   declare _parentNode: Element | null;
   declare _videoInfo: NvpVideoInfo;
-  // 上流由来の既知の未定義参照（AGENTS.md の GateAPI.exApi と同様に別タスクで確認する）。
-  // ランタイムでは常に undefined のため分岐は到達不能だが、行は温存する。
-  declare autoplay: boolean;
+  private nextAutoPlay: boolean | undefined;
   constructor(params: NvpPlayerParams) {
     super();
     this.initialize(params);
@@ -347,16 +344,9 @@ class NicoVideoPlayer extends Emitter {
   }
   _onVideoCanPlay(): void {
     this.emit('canPlay');
-    if (this.autoplay && !this.paused) {
-      (this as unknown as { _video: HTMLVideoElement })._video.play().catch((err: unknown) => {
-        if (err instanceof DOMException) {
-          // 他によくあるのはcode: 20 Aborted など
-          if (err.code === 35 /* NotAllowedError */) {
-            (this as unknown as { dispatchEvent(event: Event): void }).dispatchEvent(
-              new CustomEvent('autoplay-rejected')
-            );
-          }
-        }
+    if (this.isAutoPlay && this.paused) {
+      this._videoPlayer.play().catch((error: unknown) => {
+        this.emit('autoplay-rejected', error);
       });
     }
   }
@@ -401,6 +391,15 @@ class NicoVideoPlayer extends Emitter {
     }
   }
   setVideo(url: string) {
+    const setSource = (source: string): void => {
+      if (source !== CONSTANT.BLANK_VIDEO_URL) {
+        this.isAutoPlay = this.nextAutoPlay ?? Boolean(this._playerConfig.props.autoPlay);
+        this.nextAutoPlay = undefined;
+      }
+      this._videoPlayer.setSrc(source);
+      this._isEnded = false;
+      this._isSeeking = false;
+    };
     const e: { src: string; url: string | null; promise: Promise<string> | null } = {
       src: url,
       url: null,
@@ -412,14 +411,19 @@ class NicoVideoPlayer extends Emitter {
       url = e.url;
     }
     if (e.promise) {
-      return e.promise.then((url) => {
-        this._videoPlayer.setSrc(url);
-        this._isEnded = false;
-      });
+      return e.promise.then(setSource);
     }
-    this._videoPlayer.setSrc(url);
-    this._isEnded = false;
-    this._isSeeking = false;
+    setSource(url);
+  }
+  /** A quality reload can preserve pause without changing the saved preference. */
+  setNextAutoPlay(value: boolean | undefined): void {
+    this.nextAutoPlay = value;
+  }
+  get isAutoPlay(): boolean {
+    return this._videoPlayer.isAutoPlay;
+  }
+  set isAutoPlay(value: boolean) {
+    this._videoPlayer.isAutoPlay = value;
   }
   setThumbnail(url: string): void {
     this._videoPlayer.thumbnail = url;
@@ -1026,8 +1030,6 @@ class VideoPlayer extends Emitter {
   declare _volume: number;
   declare _thumbnail: string;
   declare _src: string;
-  // 上流由来の既知のタイポ（isAutoPlay が正しそうだが別タスクで確認する）。行は温存する。
-  declare isAutoplay: boolean;
   constructor(params: NvpVideoPlayerParams) {
     super();
     this._initialize(params);
@@ -1068,7 +1070,7 @@ class VideoPlayer extends Emitter {
   _resetVideo(params?: NvpVideoPlayerParams | null): void {
     params = params || {};
     if (this._videoElement) {
-      params.autoplay = this._videoElement.autoplay;
+      params.autoPlay = this._videoElement.autoplay;
       params.loop = this._videoElement.loop;
       params.mute = this._videoElement.muted;
       params.volume = this._videoElement.volume;
@@ -1582,11 +1584,11 @@ class VideoPlayer extends Emitter {
     return (this._video as HTMLVideoElement).buffered;
   }
   set isAutoPlay(v: boolean) {
+    this._videoElement.autoplay = v;
     this._video.autoplay = v;
   }
-  // 上流由来の既知のタイポ（setter は autoplay に書くが、getter は autoPlay を読むため常に undefined。別タスクで確認する）
   get isAutoPlay(): boolean {
-    return !!(this._video as unknown as { autoPlay: boolean }).autoPlay;
+    return this._video.autoplay;
   }
   setSrc(url: string): void {
     this.src = url;
@@ -1628,7 +1630,7 @@ class VideoPlayer extends Emitter {
     return this.bufferedRange;
   }
   setIsAutoPlay(v: boolean): void {
-    this.isAutoplay = v;
+    this.isAutoPlay = v;
   }
   getIsAutoPlay(): boolean {
     return this.isAutoPlay;

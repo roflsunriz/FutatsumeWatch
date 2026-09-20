@@ -77,6 +77,8 @@ interface SettingControlElement {
   tagName: string;
   type: string;
   name: string;
+  checkValidity(): boolean;
+  reportValidity(): boolean;
 }
 //===BEGIN===
 
@@ -817,6 +819,17 @@ const { SettingPanelElement } = (() => {
       if (!settingName) {
         return super.onChange(e);
       }
+      // change also fires when a number field is cleared or a pasted value is
+      // outside its bounds. Keep the last valid setting and let the browser
+      // explain the constraint instead of parsing an empty string as JSON.
+      if (
+        !elm.checkValidity() ||
+        (type === 'number' && (elm.value.trim() === '' || !Number.isFinite(Number(elm.value))))
+      ) {
+        elm.reportValidity();
+        e.stopPropagation();
+        return;
+      }
       let value: unknown = elm.value;
       // console.nicoru('onChange',
       //   {settingName, checked: elm.checked, value, type, tagName: elm.tagName}, elm, e);
@@ -824,7 +837,9 @@ const { SettingPanelElement } = (() => {
       if (elm.tagName === 'INPUT' && elm.type === 'checkbox') {
         value = elm.checked;
       } else {
-        if (['number', 'boolean', 'json'].includes(type as string)) {
+        if (type === 'number') {
+          value = Number(value);
+        } else if (['boolean', 'json'].includes(type as string)) {
           value = JSON.parse(value as string);
         } else if (type === 'array') {
           value = (value as string).split('\n');
@@ -832,6 +847,21 @@ const { SettingPanelElement } = (() => {
       }
       // console.nicoru({settingName, value, type});
       this.config.props[settingName] = value;
+      const saved = this.config.props[settingName];
+      if (saved !== value) {
+        if (elm.type === 'checkbox') elm.checked = Boolean(saved);
+        else if (elm.type === 'radio') {
+          const root = (e.target as Element).getRootNode() as Document | ShadowRoot;
+          for (const radio of root.querySelectorAll<HTMLInputElement>('input[type="radio"][data-setting-name]')) {
+            if (radio.dataset.settingName === settingName) radio.checked = saved === radio.value;
+          }
+        } else
+          elm.value = Array.isArray(saved)
+            ? saved.join('\n')
+            : typeof saved === 'string' || typeof saved === 'number'
+              ? String(saved)
+              : '';
+      }
       e.stopPropagation();
     }
 
@@ -846,20 +876,28 @@ const { SettingPanelElement } = (() => {
 
       const input = e.target as HTMLInputElement;
       const file = (input.files as FileList)[0] as File;
-      if (!/\.config\.json$/.test(file.name)) {
+      if (!file || !/\.config\.json$/.test(file.name)) {
         return;
       }
       if (!confirm(`ファイル "${file.name}" で書き換えますか？`)) {
         return;
       }
 
-      domEvent.dispatchCommand(e.target as Element, 'close', undefined);
-
       const fileReader = new FileReader();
       fileReader.onload = (ev: ProgressEvent): void => {
         const reader = ev.target as FileReader;
-        this.config.importJson(reader.result as string);
-        location.reload();
+        try {
+          this.config.importJson(reader.result as string);
+          domEvent.dispatchCommand(input, 'close', undefined);
+          location.reload();
+        } catch (error) {
+          alert(error instanceof Error ? error.message : '設定を読み込めませんでした。');
+          input.value = '';
+        }
+      };
+      fileReader.onerror = (): void => {
+        alert('設定ファイルを読み取れませんでした。ファイルを確認して、もう一度お試しください。');
+        input.value = '';
       };
 
       fileReader.readAsText(file);

@@ -161,7 +161,6 @@ const VideoInfoLoader = (function () {
       // easyComment,
       external: {
         commons: { hasContentTree },
-        // ichiba,
       },
       genre: {
         // isDisabled,

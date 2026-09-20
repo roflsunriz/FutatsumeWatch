@@ -85,16 +85,17 @@ class BaseState extends (Emitter as unknown as StateEmitterCtor) {
   }
 
   _onChange() {
-    const changed = this._changed;
+    const changed = new Map(this._changed);
     if (!changed.size) {
       return;
     }
+    this._changed.clear();
     this.emit('change', changed, changed.size);
     for (const [key, val] of changed) {
+      if (!Object.is(this._state[key], val)) continue;
       this.emit('update', key, val);
-      this.emit(`update-${key}`, val);
+      if (Object.is(this._state[key], val)) this.emit(`update-${key}`, val);
     }
-    this._changed.clear();
   }
 
   setState(key: string | Record<string, unknown> | Map<string, unknown>, val?: unknown): void {
@@ -138,6 +139,7 @@ class PlayerState extends BaseState {
   declare public isEnded: boolean;
   declare public isLoading: boolean;
   declare public isLoop: boolean;
+  declare public isAutoPlay: boolean;
   declare public isMute: boolean;
   declare public isMymemory: boolean;
   declare public isLiked: boolean;
@@ -189,6 +191,7 @@ class PlayerState extends BaseState {
       isEnded: false,
       isLoading: false,
       isLoop: config.props.loop,
+      isAutoPlay: config.props.autoPlay,
       isMute: config.props.mute,
       isMymemory: false,
       isLiked: false,

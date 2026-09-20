@@ -43,30 +43,36 @@ import { sleep } from '../infra/sleep';
 const VideoCaptureUtil = (() => {
   const _toCanvas = (v: CapturableVideo, width: number, height: number): HTMLCanvasElement => {
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d')!;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('画像保存用の描画領域を作成できませんでした');
     canvas.width = width;
     canvas.height = height;
     context.drawImage(v.drawableElement || v, 0, 0, width, height);
     return canvas;
   };
 
-  const isCORSReadySrc = (src: string): boolean => {
-    if (src.indexOf('delivery.domand.nicovideo.jp') >= 0 || src.indexOf('dmc.nico') >= 0) {
-      return true;
-    }
-    return false;
-  };
-
   const videoToCanvas = (video: HTMLVideoElement): Promise<{ canvas: HTMLCanvasElement }> => {
-    const src = video.src;
-
-    if (isCORSReadySrc(src)) {
-      return Promise.resolve({ canvas: _toCanvas(video, video.videoWidth, video.videoHeight) });
+    try {
+      if (video.readyState < 2 || !(video.videoWidth > 0) || !(video.videoHeight > 0)) {
+        throw new Error('映像の読み込みが完了してから画像を保存してください');
+      }
+      const canvas = _toCanvas(video, video.videoWidth, video.videoHeight);
+      // ホスト名ではなく、実フレームをPNGへ読み出せるかでCORSを判定する。
+      canvas.toDataURL('image/png');
+      return Promise.resolve({ canvas });
+    } catch (error) {
+      const reason =
+        error instanceof Error || (typeof error === 'object' && error !== null && 'name' in error)
+          ? error
+          : new Error('画像の生成に失敗しました');
+      return Promise.reject(
+        reason.name === 'SecurityError'
+          ? new Error('ブラウザーのCORS制限により、この映像を画像へ保存できません')
+          : error instanceof Error
+            ? error
+            : new Error('映像を画像へ変換できませんでした')
+      );
     }
-
-    // 未対応 URL 通知は {status, message} 形式のプロトコルのため Error 限定しない
-    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-    return Promise.reject({ status: 'fail', message: 'not supported url', url: src });
   };
 
   // 参考

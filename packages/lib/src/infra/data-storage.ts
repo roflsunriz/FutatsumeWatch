@@ -140,13 +140,19 @@ class DataStorage implements DataStorageEmitter {
   }
 
   _onChange(): unknown {
-    const changed = this._changed;
+    const changed = new Map(this._changed);
+    this._changed.clear();
+    if (!changed.size) return;
     this.emit('change', changed);
     for (const [key, val] of changed) {
-      this.emitAsync('update', key, val);
-      this.emitAsync(`update-${key}`, val);
+      setTimeout(() => {
+        // A newer write may arrive before this deferred delivery, including
+        // from another update listener. Never restore an obsolete UI value.
+        if (!Object.is(this.getValue(key), val)) return;
+        this.emit('update', key, val);
+        if (Object.is(this.getValue(key), val)) this.emit(`update-${key}`, val);
+      }, 0);
     }
-    this._changed.clear();
     return;
   }
 
@@ -228,7 +234,10 @@ class DataStorage implements DataStorageEmitter {
       try {
         (storage as unknown as LooseStorage)[storageKey] = JSON.stringify(value);
       } catch (e) {
-        window.console.error(e);
+        // A failed persistent write must not become a successful in-memory
+        // update. Consumers can report the failure without leaking the value.
+        this.emit('save-error', { key: _key, cause: e });
+        return;
       }
     }
     this._data[key] = value;
@@ -262,15 +271,69 @@ class DataStorage implements DataStorageEmitter {
   }
 
   import(data: Record<string, unknown>): void {
-    Object.keys(this.props).forEach((key) => {
-      const val = Object.prototype.hasOwnProperty.call(data, key) ? data[key] : this.default[key];
-      console.log('import data: %s=%s', key, val);
-      this.setValueSilently(key, val);
-    });
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new TypeError('設定データはオブジェクト形式で指定してください');
+    }
+    // Build the complete replacement before touching storage. Native keys may
+    // alias a page-specific setting, so retain the existing last-value contract.
+    const next = new Map<string, unknown>();
+    for (const key of Object.keys(this.props)) {
+      if (!Object.hasOwn(this.default, key)) continue;
+      const value = Object.hasOwn(data, key) ? data[key] : this.default[key];
+      if (value !== undefined) next.set(this.getNativeKey(key), value);
+    }
+    const writes = [...next]
+      .filter(([key, value]) => this._data[key] !== value)
+      .map(([key, value]) => {
+        const storageKey = this.getStorageKey(key);
+        return {
+          key,
+          value,
+          storageKey,
+          serialized: JSON.stringify(value),
+          previous: this.storage.getItem(storageKey),
+        };
+      });
+    if (!this.readonly) {
+      const applied: typeof writes = [];
+      try {
+        for (const write of writes) {
+          (this.storage as LooseStorage)[write.storageKey] = write.serialized;
+          applied.push(write);
+        }
+      } catch (cause) {
+        const rollbackErrors: unknown[] = [];
+        for (const write of applied.reverse()) {
+          try {
+            if (write.previous === null) this.storage.removeItem(write.storageKey);
+            else (this.storage as LooseStorage)[write.storageKey] = write.previous;
+          } catch (error) {
+            rollbackErrors.push(error);
+          }
+        }
+        if (rollbackErrors.length) {
+          throw new AggregateError(
+            [cause, ...rollbackErrors],
+            '設定の読み込みと元の保存値への復元に失敗しました。保存容量やブラウザーの設定を確認し、バックアップから復旧してください。',
+            { cause }
+          );
+        }
+        throw new Error(
+          '設定を読み込めませんでした。変更前の設定へ戻しました。保存容量やブラウザーの設定を確認して再試行してください。',
+          { cause }
+        );
+      }
+    }
+    // Import remains silent as before; callers reload only after it succeeds.
+    for (const { key, value } of writes) this._data[key] = value;
   }
 
   importJson(json: string): void {
-    this.import(JSON.parse(json) as Record<string, unknown>);
+    const data: unknown = JSON.parse(json);
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new TypeError('設定データはオブジェクト形式で指定してください');
+    }
+    this.import(data as Record<string, unknown>);
   }
 
   getKeys(): string[] {
@@ -278,28 +341,47 @@ class DataStorage implements DataStorageEmitter {
   }
 
   clearConfig(): void {
-    this.silently = true;
-    const storage = this.storage;
-    const loose = storage as unknown as LooseStorage;
-    Object.keys(this.default)
-      .filter((key) => !this._ignoreExportKeys.includes(key))
-      .forEach((key) => {
-        const storageKey = this.getStorageKey(key);
-        try {
-          if (Object.prototype.hasOwnProperty.call(storage, storageKey) || loose[storageKey] !== undefined) {
-            (console as unknown as { nicoru: (...args: unknown[]) => void }).nicoru(
-              'delete storage',
-              storageKey,
-              loose[storageKey]
-            );
-            delete loose[storageKey];
-          }
-          this._data[key] = this.default[key];
-        } catch {
-          /* ignore: storage cleanup is best-effort */
+    const keys = Object.keys(this.default).filter((key) => !this._ignoreExportKeys.includes(key));
+    if (!this.readonly) {
+      const removed: { storageKey: string; previous: string }[] = [];
+      try {
+        for (const key of keys) {
+          const storageKey = this.getStorageKey(key);
+          const previous = this.storage.getItem(storageKey);
+          if (previous === null) continue;
+          // Native removeItem is atomic: a throwing deletion has not changed
+          // that key, so only completed deletions need to be restored.
+          this.storage.removeItem(storageKey);
+          removed.push({ storageKey, previous });
         }
-      });
-    this.silently = false;
+      } catch (cause) {
+        const rollbackErrors: unknown[] = [];
+        for (const { storageKey, previous } of removed.reverse()) {
+          try {
+            this.storage.setItem(storageKey, previous);
+          } catch (error) {
+            rollbackErrors.push(error);
+          }
+        }
+        const error = rollbackErrors.length
+          ? new AggregateError(
+              [cause, ...rollbackErrors],
+              '設定の初期化と元の保存値への復元に失敗しました。保存容量やブラウザーの設定を確認し、バックアップから復旧してください。',
+              { cause }
+            )
+          : new Error(
+              '設定を初期化できませんでした。変更前の設定へ戻しました。ブラウザーの保存設定を確認して再試行してください。',
+              { cause }
+            );
+        this.emit('reset-error', error);
+        throw error;
+      }
+    }
+    // As with import, reset is silent. Do not alter the caller's silence mode.
+    for (const key of keys) {
+      this._data[key] = this.default[key];
+      this._changed.delete(key);
+    }
   }
 
   namespace(name: string): Record<string, unknown> {

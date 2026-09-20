@@ -1,4 +1,5 @@
 import type { CdpSession } from './dev-cdp';
+import { verificationDirectory } from './dev-verification-output';
 import { evaluate } from './dev-cdp';
 import { verifyCommentExports } from './dev-verify-comment-exports';
 
@@ -125,10 +126,7 @@ export async function verifyCommentOverlay(session: CdpSession): Promise<string[
       `${width}×${height}でコメント領域が動画に収まる`
     );
     const shot = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
-    await Bun.write(
-      new URL(`../dev-assets/verification/comments-${width}.png`, import.meta.url),
-      Buffer.from(shot.data, 'base64')
-    );
+    await Bun.write(new URL(`comments-${width}.png`, verificationDirectory), Buffer.from(shot.data, 'base64'));
   }
   await session.send('Emulation.setDeviceMetricsOverride', {
     width: 1280,

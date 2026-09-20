@@ -50,7 +50,7 @@ try {
   );
   const nav = await attach(blank);
   await nav.send('Page.navigate', { url: `http://127.0.0.1:${SERVE_PORT}/${FILE}` });
-  nav.close();
+  await nav.close();
 
   // 既登録の場合は確認ページが出ないため、出現しなければ登録確認へ進む。
   let freshInstall = true;
@@ -89,7 +89,7 @@ try {
       }
       console.log('承認ボタンを押下しました');
     } finally {
-      session.close();
+      await session.close();
     }
 
     await waitFor(
@@ -136,7 +136,7 @@ try {
       throw new Error(`スクリプトを有効化できませんでした: ${enabled}`);
     }
   } finally {
-    dashSession.close();
+    await dashSession.close();
   }
   console.log(
     '登録・有効化が完了しました。開いているページは必要に応じて手動で再読み込みし、ブラウザで操作してください。'
@@ -150,7 +150,7 @@ try {
       await browser.send('Target.closeTarget', { targetId: installTargetId });
     }
   } finally {
-    browser?.close();
+    await browser?.close();
     await server.stop();
   }
 }

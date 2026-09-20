@@ -6,7 +6,7 @@
 
 配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（**0.0.9**）。過去の配布物は[リリース一覧](https://github.com/roflsunriz/FutatsumeWatch/releases)から取得できます。
 
-Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。今回の実動作確認はTampermonkeyで実施しています。Violentmonkey・Greasemonkeyは未検証です。
+Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。マネージャ経由の実動作確認はTampermonkeyで実施しています。Firefoxでも配布物注入による代表操作を確認しましたが、Violentmonkey・Greasemonkey経由は未検証です。
 
 1. 旧ZenzaWatch・FutatsumeWatch開発版や、以前に個別導入したHLS・GamePad・MylistPocketなどの同梱対象を無効にします。設定は削除しないでください。
 2. 視聴ページでは、タイトル・いいねボタン・投稿者プロフィール・タグの間にある **四角形が二つ重なったアイコン** を押します。
@@ -68,12 +68,19 @@ bun run dev:stop  # 手動検証用Chromeを終了
 自動テストは別のコマンドで実行します：
 
 ```powershell
-bun run test:browser          # ビルド後、別のheadless Chromeですべてのブラウザテスト
+bun run test:browser          # ビルド後、別のheadless Chromeでオフラインのブラウザテスト
 bun run test:browser player   # 再生・コメント・保存
 bun run test:browser settings # 設定の実入力・保存・復元
+bun run test:browser player --live # 実サイトの読み取り・再生検証を明示実行
 ```
 
-対象は`all`（既定）、`entry`、`player`、`ui`、`settings`、`migration`、`addons`から選べます。自動テストは手動用のタブ・設定・プロファイルを共有せず、成功・失敗のどちらでもテスト用Chromeを終了します。強制中断などで残った場合は`bun run test:browser:stop`で停止できます。従来の`dev:verify*`も、この分離した自動テストを呼び出します。
+対象は`all`（既定）、`entry`、`player`、`ui`、`settings`、`migration`、`addons`、`functionality`、`library`、`guard`から選べます。既定は`--offline`で、生成したHLS映像と固定APIを使い、未登録の通信を失敗にします。`functionality`・`library`の投稿・タグ・マイリスト操作はテスト内だけで完結し、実サーバーへ送信しません。`guard`は通信遮断が実際に失敗を検出することを確かめます。
+
+自動テストは手動用のタブ・設定・プロファイルを共有せず、成功・失敗のどちらでもテスト用Chromeを終了します。結果は実行ごとに別ディレクトリへ保存します。強制中断などで残った場合は`bun run test:browser:stop`で停止できます。従来の`dev:verify*`も、この分離した自動テストを呼び出します。実サイトの状態は固定データの成功とは別に確認してください。
+
+機能ごとの対象と合格条件は[機能検証台帳](docs/functionality-test-matrix.md)と[承認済み計画](docs/plan-functionality-test.md)を参照してください。
+
+WindowsでFirefoxをインストール済みの場合は、`bun scripts/dev-verify-firefox.ts`で別プロファイルのオフライン代表検証を実行できます。通常利用中のプロファイル・タブは使用しません。マネージャの導入検証とは別です。
 
 [更新手順](how-to-update.md) / [貢献手順](CONTRIBUTING.md) / [問い合わせ](SUPPORT.md) / [セキュリティ](SECURITY.md)
 

@@ -21,6 +21,17 @@ interface MaskedWatchBoundingBox {
   type: string;
 }
 
+interface MaskedWatchSupport {
+  face: boolean;
+  text: boolean;
+}
+
+interface MaskedWatchProduct {
+  config: MaskedWatchConfig;
+  dialog?: unknown;
+  support: MaskedWatchSupport | null;
+}
+
 interface MaskedWatchWorkerParams {
   config?: MaskedWatchConfig;
   bitmap?: ImageBitmap;
@@ -144,9 +155,10 @@ interval: ${config.interval}        // マスクの更新間隔
       });
     Object.defineProperties(config, def);
 
-    const MaskedWatch: { config: MaskedWatchConfig; dialog?: unknown } = ((
-      window as unknown as { MaskedWatch: { config: MaskedWatchConfig } }
-    ).MaskedWatch = { config });
+    const MaskedWatch: MaskedWatchProduct = ((window as unknown as { MaskedWatch: MaskedWatchProduct }).MaskedWatch = {
+      config,
+      support: null,
+    });
 
     const createWorker = (func: (...args: never[]) => unknown, options: WorkerOptions = {}): Worker => {
       const src = `(${func.toString()})(self);`;
@@ -163,12 +175,20 @@ interval: ${config.interval}        // マスクの更新間隔
 
       const updateConfig = ({ config }: { config: MaskedWatchConfig }): void => {
         ({ fastMode, faceDetection, textDetection } = config);
-        faceDetector = new ((self || window) as unknown as MaskedWatchDetectorHost).FaceDetector({ fastMode });
-        textDetector = new ((self || window) as unknown as MaskedWatchDetectorHost).TextDetector();
+        const host = self as unknown as Partial<MaskedWatchDetectorHost>;
+        faceDetector = typeof host.FaceDetector === 'function' ? new host.FaceDetector({ fastMode }) : null;
+        textDetector = typeof host.TextDetector === 'function' ? new host.TextDetector() : null;
+        self.postMessage({
+          body: {
+            command: 'support',
+            params: { support: { face: faceDetector !== null, text: textDetector !== null } },
+            status: 'ok',
+          },
+        });
       };
 
-      let faceDetector!: { detect(bitmap: ImageBitmap): Promise<unknown[]> };
-      let textDetector!: { detect(bitmap: ImageBitmap): Promise<unknown[]> };
+      let faceDetector: { detect(bitmap: ImageBitmap): Promise<unknown[]> } | null = null;
+      let textDetector: { detect(bitmap: ImageBitmap): Promise<unknown[]> } | null = null;
       const detect = async ({
         bitmap,
       }: MaskedWatchWorkerParams): Promise<{
@@ -177,10 +197,10 @@ interval: ${config.interval}        // マスクの更新間隔
       }> => {
         // debug && console.time('detect');
         const tasks: Promise<unknown[]>[] = [];
-        if (faceDetection) {
+        if (faceDetection && faceDetector) {
           tasks.push(faceDetector.detect(bitmap as ImageBitmap).catch(() => []));
         }
-        if (textDetection) {
+        if (textDetection && textDetector) {
           tasks.push(textDetector.detect(bitmap as ImageBitmap).catch(() => []));
         }
         const detected = (await Promise.all(tasks)).flat();
@@ -263,6 +283,9 @@ interval: ${config.interval}        // マスクの更新間隔
 
               for (const box of boxes) {
                 const { x: boxX, y: boxY, width: boxWidth, height: boxHeight, type: boxType } = box;
+                if ((boxType === 'face' && !config.faceDetection) || (boxType === 'text' && !config.textDetection)) {
+                  continue;
+                }
                 let x = boxX,
                   y = boxY,
                   width = boxWidth,
@@ -353,11 +376,17 @@ interval: ${config.interval}        // マスクの更新間隔
           e.data as {
             body: {
               command: string;
-              params: { boxes: MaskedWatchBoundingBox[] };
+              params: { boxes: MaskedWatchBoundingBox[]; support?: MaskedWatchSupport };
             };
           }
         ).body;
         switch (command) {
+          case 'support':
+            if (params.support) {
+              MaskedWatch.support = params.support;
+              dialog.updateSupport();
+            }
+            break;
           case 'init':
             console.log('initialized');
             isBusy = false;
@@ -392,6 +421,8 @@ interval: ${config.interval}        // マスクの更新間隔
         if (isBusy || currentTime === video.currentTime || document.visibilityState !== 'visible') {
           return;
         }
+        const support = MaskedWatch.support;
+        if (support && !support.face && !support.text) return;
 
         currentTime = video.currentTime;
         const vw = video.videoWidth,
@@ -410,6 +441,7 @@ interval: ${config.interval}        // マスクの更新間隔
       let timer: ReturnType<typeof setInterval> = setInterval(onTimer, interval);
 
       const start = (): void => {
+        clearInterval(timer);
         timer = setInterval(onTimer, interval);
       };
       const stop = (): void => {
@@ -554,6 +586,7 @@ interval: ${config.interval}        // マスクの更新間隔
               }
             </style>
             <h1 class="title">††† Masked Watch 設定 †††</h1>
+            <p data-masked-support role="status"></p>
             <div class="config">
               <h3 class="name">顔の検出</h3>
               <label><input type="radio" name="faceDetection" value="true">ON</label>
@@ -600,6 +633,52 @@ interval: ${config.interval}        // マスクの更新間隔
               value = JSON.parse(input.value) as unknown;
             input.checked = (config as unknown as Record<string, unknown>)[name] === value;
           });
+          this.updateSupport();
+        }
+
+        updateSupport(): void {
+          if (!this.shadow) return;
+          const output = this.shadow.querySelector<HTMLElement>('[data-masked-support]');
+          if (!output) return;
+          const support = MaskedWatch.support;
+          const messages = {
+            ja: {
+              pending: '動画の再生後に検出APIの対応状況を確認します。',
+              unavailable:
+                'このブラウザーには顔・文字の検出APIがありません。設定は保持されますが、マスクは適用されません。',
+              available: '顔・文字の検出APIを確認しました。',
+              faceOnly: '文字の検出APIがありません。顔検出の設定は利用できます。',
+              textOnly: '顔の検出APIがありません。文字検出の設定は利用できます。',
+            },
+            en: {
+              pending: 'Detector support is checked after video playback starts.',
+              unavailable:
+                'This browser has no face or text detection API. Your settings are kept, but no mask is applied.',
+              available: 'Face and text detection APIs were found.',
+              faceOnly: 'The text detection API is unavailable. Face detection settings remain available.',
+              textOnly: 'The face detection API is unavailable. Text detection settings remain available.',
+            },
+          }[navigator.language.startsWith('ja') ? 'ja' : 'en'];
+          const state =
+            support === null
+              ? 'pending'
+              : !support.face && !support.text
+                ? 'unavailable'
+                : support.face && support.text
+                  ? 'available'
+                  : 'partial';
+          output.dataset.state = state;
+          output.dataset.reason = state === 'unavailable' ? 'detectors-unavailable' : state;
+          output.textContent =
+            support === null
+              ? messages.pending
+              : state === 'unavailable'
+                ? messages.unavailable
+                : state === 'available'
+                  ? messages.available
+                  : support.face
+                    ? messages.faceOnly
+                    : messages.textOnly;
         }
 
         get isOpen(): boolean {
@@ -695,7 +774,7 @@ interval: ${config.interval}        // マスクの更新間隔
             font-size: 12px;
             line-height: 16px;
             padding: 2px 4px;
-            border: 1px solid !000;
+            border: 1px solid #000;
             background: #ffc;
             color: #000;
             text-shadow: none;

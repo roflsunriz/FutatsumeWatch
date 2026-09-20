@@ -1,9 +1,10 @@
-import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
+import { verificationDirectory } from './dev-verification-output';
+import { attach, attachBrowser, cleanupCdp, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
 import { verifyCommentOverlay } from './dev-verify-comments';
 
-const outputDir = new URL('../dev-assets/verification/', import.meta.url);
+const outputDir = verificationDirectory;
 const urlIndex = Bun.argv.indexOf('--url');
 const watchUrl = urlIndex >= 0 ? Bun.argv[urlIndex + 1]! : 'https://www.nicovideo.jp/watch/sm9';
 const video = `document.querySelector('#futatsumeVideoPlayerDialog futatsume-video')`;
@@ -38,14 +39,18 @@ async function exec(session: CdpSession, command: string, value?: string | numbe
 async function main(): Promise<void> {
   const browser = await attachBrowser();
   const created = (await browser.send('Target.createTarget', { url: 'about:blank' })) as { targetId: string };
-  browser.close();
+  const { targetInfo } = (await browser.send('Target.getTargetInfo', { targetId: created.targetId })) as {
+    targetInfo: { browserContextId?: string };
+  };
+  const browserContextId = targetInfo.browserContextId;
   const target = (await listTargets()).find((t) => t.id === created.targetId);
   if (!target) throw new Error('検証用タブがありません');
   const session = await attach(target);
   const failures: string[] = [];
+  const ownWorkerMonitor = process.env.FUTATSUME_TEST_OFFLINE !== '1';
   const workerSubscriptions = new Set<Promise<unknown>>();
   let acceptWorkerSubscriptions = true;
-  const report = { url: watchUrl, checks, failures, completed: false };
+  const report = { url: watchUrl, browserContextId, checks, failures, completed: false };
   session.onEvent((method, params) => {
     if (method === 'Runtime.exceptionThrown') {
       const detail = params.exceptionDetails as { exception?: { description?: string }; url?: string };
@@ -53,7 +58,7 @@ async function main(): Promise<void> {
       if (/FutatsumeWatch|userscript.html|fw-probe|blob:/.test(message + (detail.url ?? '')))
         failures.push(message.slice(0, 800));
     }
-    if (method === 'Target.attachedToTarget' && acceptWorkerSubscriptions) {
+    if (method === 'Target.attachedToTarget' && ownWorkerMonitor && acceptWorkerSubscriptions) {
       const subscription = session.send('Target.sendMessageToTarget', {
         sessionId: params.sessionId,
         message: JSON.stringify({ id: 1, method: 'Runtime.enable' }),
@@ -63,7 +68,7 @@ async function main(): Promise<void> {
         .catch((error: unknown) => failures.push(String(error)))
         .finally(() => workerSubscriptions.delete(subscription));
     }
-    if (method === 'Target.receivedMessageFromTarget') {
+    if (method === 'Target.receivedMessageFromTarget' && ownWorkerMonitor) {
       const child = JSON.parse(String(params.message)) as {
         method?: string;
         params?: { exceptionDetails?: { exception?: { description?: string } } };
@@ -81,7 +86,8 @@ async function main(): Promise<void> {
         source: `document.addEventListener('DOMContentLoaded', () => { ${source}\n }, {once:true});`,
       });
     }
-    await session.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: false });
+    if (ownWorkerMonitor)
+      await session.send('Target.setAutoAttach', { autoAttach: true, waitForDebuggerOnStart: false, flatten: false });
     await session.send('Emulation.setDeviceMetricsOverride', {
       width: 1280,
       height: 800,
@@ -256,22 +262,39 @@ async function main(): Promise<void> {
     await until(session, `${video}?.readyState>=3 && !${video}.paused`, '閉じた後の再生復帰', 10000);
     const shot = (await session.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
     await Bun.write(new URL('player.png', outputDir), Buffer.from(shot.data, 'base64'));
+    const oldTimeOrigin = await evaluate(session, 'performance.timeOrigin');
+    let reloadLoaded = false;
+    session.onEvent((method) => {
+      if (method === 'Page.loadEventFired') reloadLoaded = true;
+    });
     await session.send('Page.reload');
+    const reloadDeadline = Date.now() + 30000;
+    while (!reloadLoaded && Date.now() < reloadDeadline) await Bun.sleep(50);
+    if (!reloadLoaded) throw Error('再読み込み後の文書が読み込まれませんでした');
     await until(
       session,
-      `!!${root}?.ready && ${root}.config.getValue('${setting}') === ${String(oldSetting)} && !!document.querySelector('[data-futatsume-open]')`,
+      `performance.timeOrigin!==${Number(oldTimeOrigin)} && !!${root}?.ready && ${root}.config.getValue('${setting}') === ${String(oldSetting)} && !!document.querySelector('[data-futatsume-open]')`,
       '再読み込み後の初期化と設定保持'
     );
     // Detaching first can invalidate an in-flight Runtime.enable request.
     acceptWorkerSubscriptions = false;
     await Promise.all(workerSubscriptions);
-    await session.send('Target.setAutoAttach', { autoAttach: false, waitForDebuggerOnStart: false, flatten: false });
+    if (ownWorkerMonitor)
+      await session.send('Target.setAutoAttach', { autoAttach: false, waitForDebuggerOnStart: false, flatten: false });
     if (failures.length) throw new Error(`製品またはWorkerの未処理例外: ${failures.join('\n')}`);
     report.completed = true;
     console.log(`実測検証に合格しました（${checks.length}項目）`);
   } finally {
     await Bun.write(new URL('report.json', outputDir), JSON.stringify(report, null, 2) + '\n');
-    session.close();
+    await cleanupCdp(
+      () => session.close(),
+      // Disposing an owned context already closes all of its pages.
+      () =>
+        process.env.FUTATSUME_TEST_OFFLINE === '1' && browserContextId
+          ? browser.send('Target.disposeBrowserContext', { browserContextId })
+          : browser.send('Target.closeTarget', { targetId: created.targetId }),
+      () => browser.close()
+    );
   }
 }
 await main();

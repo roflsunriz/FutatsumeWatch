@@ -2232,7 +2232,7 @@ export async function initializeHls(): Promise<void> {
           }
           Object.keys(this._elm).forEach((key: string) => {
             const elm = this._elm[key] as HlsDebugElement;
-            if (config && config[key]) {
+            if (config && Object.hasOwn(config, key)) {
               elm.defaultValue = config[key];
             }
             elm.reset();

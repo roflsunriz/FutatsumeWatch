@@ -105,6 +105,10 @@ function HeatMapInitFunc(self: HeatMapEmitter) {
       this.update();
     }
     update(): boolean {
+      if (!Number.isFinite(this._duration) || this._duration <= 0) {
+        this.map = [];
+        return false;
+      }
       if (this._duration < 0 || !this._chatReady) {
         return false;
       }
@@ -114,7 +118,7 @@ function HeatMapInitFunc(self: HeatMapEmitter) {
     getHeatMap(): number[] {
       const chatList = this._chat.top.concat(this._chat.naka, this._chat.bottom).filter((chat) => chat.fork !== 2); // かんたんコメント除外
       const duration = this._duration;
-      if (duration < 1) {
+      if (!Number.isFinite(duration) || duration < 1) {
         return [];
       }
       const map = new Array<number>(Math.max(Math.min(this.resolution, Math.floor(duration)), 1));
@@ -129,6 +133,7 @@ function HeatMapInitFunc(self: HeatMapEmitter) {
       for (i = chatList.length - 1; i >= 0; i--) {
         const nicoChat = chatList[i] as HeatChat;
         const pos = nicoChat.vpos;
+        if (!Number.isFinite(pos) || pos < 0 || pos >= duration * 100) continue;
         const mpos = Math.min(Math.floor((pos * ratio) / 100), map.length - 1);
         map[mpos] = (map[mpos] as number) + 1;
       }

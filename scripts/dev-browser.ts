@@ -112,6 +112,10 @@ async function start(headed: boolean): Promise<void> {
     '--remote-allow-origins=*',
   ];
   if (!TESTING) args.push(`--load-extension=${EXT_DIR}`);
+  if (TESTING && process.env.FUTATSUME_TEST_OFFLINE === '1') {
+    // 未捕捉のWorker/タブも外部へ送信させない。応答はCDP側で明示的に供給する。
+    args.push('--proxy-server=http://127.0.0.1:9', '--proxy-bypass-list=<-loopback>', '--disable-quic');
+  }
   if (!headed) {
     args.push('--headless=new', '--disable-gpu', '--mute-audio');
   }

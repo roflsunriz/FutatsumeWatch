@@ -18,7 +18,7 @@ const PlayListSession = ((storage: Storage) => {
     },
     save(data: unknown): void {
       const json = JSON.stringify(data);
-      if (lastJson === json) {
+      if (lastJson === json && storage.getItem(KEY) === json) {
         return;
       }
       lastJson = json;

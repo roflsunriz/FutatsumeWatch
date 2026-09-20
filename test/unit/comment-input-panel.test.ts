@@ -107,6 +107,21 @@ test('空白と76文字を拒否し75文字は送信する', async () => {
   f.posts[0]!.resolve();
   await sent;
 });
+test('絵文字も既存maxlengthと同じUTF-16単位で75/76の境界を表示・検証する', async () => {
+  const f = create();
+  f.input.value = '😀'.repeat(38);
+  f.input.dispatchEvent(new window.Event('input'));
+  expect(f.container.querySelector('.commentCount')!.textContent).toBe('76/75');
+  await f.panel.submit();
+  expect(f.posts).toHaveLength(0);
+  f.input.value = '😀'.repeat(37) + 'あ';
+  f.input.dispatchEvent(new window.Event('input'));
+  expect(f.container.querySelector('.commentCount')!.textContent).toBe('75/75');
+  const sent = f.panel.submit();
+  f.posts[0]!.resolve();
+  await sent;
+  expect(f.posts).toHaveLength(1);
+});
 test('IME確定とShift+Enterでは送らず通常Enterだけを送信する', async () => {
   const f = create();
   f.input.value = '日本語';
@@ -189,6 +204,31 @@ test('動画切替後に古い投稿結果で新しい本文を消さずフォ�
   expect(f.input.value).toBe('新動画');
   expect(f.status.textContent).toBe('');
   expect(document.activeElement).not.toBe(f.input);
+});
+test('切替で旧投稿の待機を解除し、旧finallyが新しい投稿の重複防止を解除しない', async () => {
+  for (const succeeds of [true, false]) {
+    const f = create();
+    f.input.value = '旧動画';
+    const old = f.panel.submit();
+    f.panel.reset();
+    expect(f.input.disabled).toBe(false);
+    f.input.value = '新動画';
+    const current = f.panel.submit();
+    expect(f.posts).toHaveLength(2);
+    if (succeeds) f.posts[0]!.resolve();
+    else f.posts[0]!.reject(new Error('古い拒否'));
+    await old;
+    expect(f.input.disabled).toBe(true);
+    expect(f.panel.element.dataset.posting).toBe('true');
+    expect(f.input.value).toBe('新動画');
+    expect(f.status.dataset.state).toBe('info');
+    await f.panel.submit();
+    expect(f.posts).toHaveLength(2);
+    f.posts[1]!.resolve();
+    await current;
+    expect(f.input.disabled).toBe(false);
+    expect(f.input.value).toBe('');
+  }
 });
 test('フォーム内の移動では一時停止・再開を繰り返さず設定を同期する', async () => {
   const f = create();

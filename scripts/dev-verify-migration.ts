@@ -1,3 +1,5 @@
+import { cleanupCdp } from './dev-cdp';
+import { verificationDirectory } from './dev-verification-output';
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import fixture from '../test/fixtures/storage-migration.json';
 
@@ -98,7 +100,7 @@ try {
     'HLSの通信・デコード・未知のエラーを区別し、取得済み映像の通信エラーは無視'
   );
   await Bun.write(
-    new URL('../dev-assets/verification/migration-report.json', import.meta.url),
+    new URL('migration-report.json', verificationDirectory),
     JSON.stringify({ checks, completed: true }, null, 2) + '\n'
   );
 } catch (error) {
@@ -111,7 +113,9 @@ try {
   );
   throw error;
 } finally {
-  page.close();
-  await browser.send('Target.disposeBrowserContext', { browserContextId });
-  browser.close();
+  await cleanupCdp(
+    () => page.close(),
+    () => browser.send('Target.disposeBrowserContext', { browserContextId }),
+    () => browser.close()
+  );
 }

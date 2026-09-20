@@ -7,6 +7,9 @@ import { NicoVideoPlayer } from './nico-video-player';
 import { VideoFilter, VideoInfoModel } from './video-info';
 import type { RawVideoInfoData, ResumeCacheEntry } from './video-info';
 import { CommentInputPanel } from './comment-input-panel';
+import { CommentPostSession, normalizeCommentCommands } from './comment-post-session';
+import { VideoRecoveryTasks } from './video-recovery-tasks';
+import { NicoChat } from '../packages/futatsume/src/commentLayer/nico-chat';
 import { CommentPanel } from './comment-panel';
 import { VideoControlBar } from './video-control-bar';
 import { VideoInfoPanel } from './video-info-panel';
@@ -22,6 +25,7 @@ import { PlayerState } from './state';
 import { ClassList } from '../packages/lib/src/dom/class-list-wrapper';
 import { objUtil } from '../packages/lib/src/infra/obj-util';
 import { MylistApiLoader } from '../packages/lib/src/nico/mylist-api-loader';
+import { openMylistPicker, closeMylistPicker } from './mylist-picker';
 import { ThumbInfoLoader } from '../packages/lib/src/nico/thumb-info-loader';
 import { WatchInfoCacheDb } from '../packages/lib/src/nico/watch-info-cache-db';
 import { css, cssUtil } from '../packages/lib/src/css/css';
@@ -141,7 +145,7 @@ interface DialogThreadMsgInfo {
   frontendId: string | number;
   frontendVersion: string | number;
   threads?: Array<{ id: string | number; forkLabel?: string; fork?: string }>;
-  defaultThread?: { is184Forced?: boolean };
+  defaultThread?: { is184Forced?: boolean; isThreadkeyRequired?: boolean };
   threadInfo?: DialogThreadInfoData;
   nvComment: {
     params: { language?: string; [key: string]: unknown };
@@ -173,13 +177,6 @@ interface DialogLoadError {
   message?: string;
   info?: { isPlayable: boolean; [key: string]: unknown };
   watchId?: string;
-}
-
-interface DialogThreadInfo {
-  threadId: number;
-  force184?: unknown;
-  blockNo?: unknown;
-  [key: string]: unknown;
 }
 
 interface DialogVideoError {
@@ -349,6 +346,9 @@ class VideoWatchOptions {
     }
 
     return !isNaN(this.query.from as unknown as number) ? parseFloat(this.query.from as string) : 0;
+  }
+  set currentTime(value: number) {
+    if (Number.isFinite(value)) this._options.currentTime = Math.max(0, value);
   }
   createForVideoChange(options: VideoWatchOptionBag | undefined): VideoWatchOptionBag {
     options = options || {};
@@ -900,6 +900,7 @@ class NicoVideoPlayerDialogView extends Emitter {
   }
   hide(): void {
     closeSettingsDialog();
+    this.videoInfoPanel?.cancelPending();
     this.commentInput.reset();
     this.shell?.close();
     ClassList(this._$dialog[0] as Element).remove('is-open');
@@ -1559,6 +1560,8 @@ NicoVideoPlayerDialogView.__tpl__ = `
  * TODO: 分割 まにあわなくなっても知らんぞー
  */
 class NicoVideoPlayerDialog extends Emitter {
+  private readonly commentPosts = new CommentPostSession();
+  private readonly videoRecovery = new VideoRecoveryTasks();
   declare private _playerConfig: DialogPlayerConfig;
   declare private _state: PlayerState;
   declare private _keyEmitter: DialogKeyEmitter;
@@ -1579,6 +1582,8 @@ class NicoVideoPlayerDialog extends Emitter {
   declare private _requestId: string;
   declare private _lastCurrentTime: number;
   declare private _lastOpenAt: number;
+  private reloadPlayback: boolean | undefined;
+  private commentRequestSequence = 0;
   declare private _nextVideo: unknown;
   declare private _threadInfo: unknown;
   constructor(params: NicoVideoPlayerDialogParams) {
@@ -1649,6 +1654,7 @@ class NicoVideoPlayerDialog extends Emitter {
       return this._nicoVideoPlayer;
     }
     await this._view.promise('dom-ready');
+    if (this._nicoVideoPlayer) return this._nicoVideoPlayer;
     const config = this._playerConfig;
     const nicoVideoPlayer = (this._nicoVideoPlayer = new NicoVideoPlayer({
       node: this._$playerContainer,
@@ -1761,6 +1767,9 @@ class NicoVideoPlayerDialog extends Emitter {
           (param as { mylistId: string; mylistName: string }).mylistId,
           (param as { mylistId: string; mylistName: string }).mylistName
         );
+      case 'mylistSelect':
+        void openMylistPicker(param as string);
+        break;
       case 'mylistRemove':
         return this._onMylistRemove(
           (param as { mylistId: string; mylistName: string }).mylistId,
@@ -1793,26 +1802,32 @@ class NicoVideoPlayerDialog extends Emitter {
         this.currentTime = this._videoInfo.initialPlaybackTime;
         break;
       case 'addWordFilter':
+        this._nicoVideoPlayer.filter.wordFilterList = this._playerConfig.props.wordFilter;
         (this._nicoVideoPlayer.filter.addWordFilter as (word: unknown) => void)(param);
+        this._playerConfig.setValue('wordFilter', this._nicoVideoPlayer.filter.wordFilterList);
         break;
       case 'setWordRegFilter':
       case 'setWordRegFilterFlags':
-        (this._nicoVideoPlayer.filter.setWordRegFilter as (word: unknown) => void)(param);
+        this._playerConfig.setValue(command === 'setWordRegFilter' ? 'wordRegFilter' : 'wordRegFilterFlags', param);
         break;
       case 'addUserIdFilter':
+        this._nicoVideoPlayer.filter.userIdFilterList = this._playerConfig.props.userIdFilter;
         (this._nicoVideoPlayer.filter.addUserIdFilter as (userId: unknown) => void)(param);
+        this._playerConfig.setValue('userIdFilter', this._nicoVideoPlayer.filter.userIdFilterList);
         break;
       case 'addCommandFilter':
+        this._nicoVideoPlayer.filter.commandFilterList = this._playerConfig.props.commandFilter;
         (this._nicoVideoPlayer.filter.addCommandFilter as (command: unknown) => void)(param);
+        this._playerConfig.setValue('commandFilter', this._nicoVideoPlayer.filter.commandFilterList);
         break;
       case 'setWordFilterList':
-        this._nicoVideoPlayer.filter.wordFilterList = param;
+        this._playerConfig.setValue('wordFilter', param);
         break;
       case 'setUserIdFilterList':
-        this._nicoVideoPlayer.filter.userIdFilterList = param;
+        this._playerConfig.setValue('userIdFilter', param);
         break;
       case 'setCommandFilterList':
-        this._nicoVideoPlayer.filter.commandFilterList = param;
+        this._playerConfig.setValue('commandFilter', param);
         break;
       case 'openNow':
         void this.open(param as string, { openNow: true });
@@ -1867,13 +1882,17 @@ class NicoVideoPlayerDialog extends Emitter {
           });
           return;
         }
-        (this._nicoVideoPlayer as unknown as { getScreenShot(): void }).getScreenShot();
+        void this._nicoVideoPlayer.getScreenShot().catch((error: unknown) => {
+          this.execCommand('alert', error instanceof Error ? error.message : '画像の保存に失敗しました');
+        });
         break;
       case 'screenShotWithComment':
         if (this._state.isYouTube) {
           return;
         }
-        (this._nicoVideoPlayer as unknown as { getScreenShotWithComment(): void }).getScreenShotWithComment();
+        void this._nicoVideoPlayer.getScreenShotWithComment().catch((error: unknown) => {
+          this.execCommand('alert', error instanceof Error ? error.message : 'コメント付き画像の保存に失敗しました');
+        });
         break;
       case 'nextVideo':
         this._nextVideo = param;
@@ -2019,6 +2038,13 @@ class NicoVideoPlayerDialog extends Emitter {
       case 'commandFilter':
         filter.commandFilterList = value;
         break;
+      case 'wordRegFilter':
+      case 'wordRegFilterFlags':
+        (filter.setWordRegFilter as (source: string, flags: string) => void)(
+          String(this._playerConfig.props.wordRegFilter || ''),
+          String(this._playerConfig.props.wordRegFilterFlags || '')
+        );
+        break;
       case 'filter.fork0':
       case 'filter.fork1':
       case 'filter.fork2':
@@ -2048,6 +2074,14 @@ class NicoVideoPlayerDialog extends Emitter {
   _onPlaylistInsert(watchId: string): void {
     void this._playlist.insert(watchId);
   }
+  private _onPlaylistLoadFail(error: unknown, fallback: string): void {
+    if (typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError') return;
+    const message =
+      typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+        ? error.message
+        : fallback;
+    this.execCommand('alert', message);
+  }
   _onPlaylistSetMylist(id: string): void {
     const option: { watchId: string; insert?: boolean } = { watchId: this._watchId };
     // 通常時はプレイリストの置き換え、
@@ -2060,7 +2094,7 @@ class NicoVideoPlayerDialog extends Emitter {
         this._state.currentTab = 'playlist';
         this._playlist.insertCurrentVideo(this._videoInfo);
       },
-      () => this.execCommand('alert', 'マイリストのロード失敗')
+      (error: unknown) => this._onPlaylistLoadFail(error, 'マイリストのロード失敗')
     );
   }
   _onPlaylistSetUploadedVideo(id: string): void {
@@ -2075,7 +2109,7 @@ class NicoVideoPlayerDialog extends Emitter {
         this._state.currentTab = 'playlist';
         this._playlist.insertCurrentVideo(this._videoInfo);
       },
-      (err: unknown) => this.execCommand('alert', (err as { message?: unknown }).message || '投稿動画一覧のロード失敗')
+      (error: unknown) => this._onPlaylistLoadFail(error, '投稿動画一覧のロード失敗')
     );
   }
   _onPlaylistSetSearchVideo(params: { option?: Record<string, unknown>; word?: string }): void {
@@ -2107,10 +2141,7 @@ class NicoVideoPlayerDialog extends Emitter {
         window.setTimeout(() => this._playlist.scrollToActiveItem(), 1000);
       },
       (err: unknown) => {
-        this.execCommand(
-          'alert',
-          (err as { message?: unknown }).message || '検索失敗または該当無し: 「' + (word as string) + '」'
-        );
+        this._onPlaylistLoadFail(err, '検索失敗または該当無し: 「' + (word as string) + '」');
       }
     );
   }
@@ -2124,8 +2155,7 @@ class NicoVideoPlayerDialog extends Emitter {
         this._playlist.insertCurrentVideo(this._videoInfo);
         window.setTimeout(() => this._playlist.scrollToActiveItem(), 1000);
       },
-      (err: unknown) =>
-        this.execCommand('alert', (err as { message?: unknown }).message || `シリーズリストの取得に失敗: series/${id}`)
+      (error: unknown) => this._onPlaylistLoadFail(error, `シリーズリストの取得に失敗: series/${id}`)
     );
   }
   _onPlaylistStatusUpdate(): void {
@@ -2308,11 +2338,9 @@ class NicoVideoPlayerDialog extends Emitter {
     userIdFilterList: unknown;
     commandFilterList: unknown;
   }): void {
-    const config = this._playerConfig;
-    config.props.enableFilter = filter.isEnable as boolean;
-    config.props.wordFilter = filter.wordFilterList as string;
-    config.props.userIdFilter = filter.userIdFilterList as string;
-    config.props.commandFilter = filter.commandFilterList as string;
+    // This notification is debounced. Writing every model field back here can
+    // overwrite newer form edits before their config update reaches the model.
+    // Settings are persisted at their explicit UI/command entry points instead.
     this.emit('commentFilterChange', filter);
   }
   _onVideoPlayerTypeChange(type = ''): void {
@@ -2342,17 +2370,18 @@ class NicoVideoPlayerDialog extends Emitter {
   hide(): void {
     this._state.isOpen = false;
   }
-  async open(watchId: string, options?: VideoWatchOptionBag): Promise<void> {
+  async open(watchId: string, options?: VideoWatchOptionBag, reload = false): Promise<void> {
     if (!watchId) {
       return;
     }
     // 連打対策
-    if (Date.now() - this._lastOpenAt < 1500 && this._watchId === watchId) {
+    if (!reload && this.isOpen && Date.now() - this._lastOpenAt < 1500 && this._watchId === watchId) {
       return;
     }
 
     this.refreshLastPlayerId();
-    this._requestId = 'play-' + Math.random();
+    if (!reload) this.reloadPlayback = undefined;
+    const requestId = (this._requestId = 'play-' + Math.random());
     const videoWatchOptions = (this._videoWatchOptions = new VideoWatchOptions(watchId, options, this._playerConfig));
 
     if (
@@ -2365,12 +2394,15 @@ class NicoVideoPlayerDialog extends Emitter {
       return;
     }
 
+    this.videoRecovery.reset();
+    this.commentPosts.reset();
     window.console.log('%copen video: ', 'color: blue;', watchId);
     window.console.time('動画選択から再生可能までの時間 watchId=' + watchId);
 
     let nicoVideoPlayer = this._nicoVideoPlayer;
     if (!nicoVideoPlayer) {
       nicoVideoPlayer = await this._initializeNicoVideoPlayer();
+      if (this._requestId !== requestId) return;
     } else {
       if (this._videoInfo) {
         this._savePlaybackPosition(this._videoInfo.contextWatchId, this.currentTime);
@@ -2383,6 +2415,8 @@ class NicoVideoPlayerDialog extends Emitter {
       }
     }
 
+    // A cancelled quality reload must not pass its one-shot pause to another video.
+    if (!reload) nicoVideoPlayer.setNextAutoPlay(undefined);
     this._state.resetVideoLoadingStatus();
 
     this._state.isCommentReady = false;
@@ -2396,8 +2430,8 @@ class NicoVideoPlayerDialog extends Emitter {
       WatchInfoCacheDb.get(this._watchId),
       this._initializePlaylist(), //videoinfo取得に300msくらいかかってるぽいから他のことやろうか
     ])
-      .then(this._onVideoInfoLoaderLoad.bind(this, this._requestId))
-      .catch(this._onVideoInfoLoaderFail.bind(this, this._requestId));
+      .then(this._onVideoInfoLoaderLoad.bind(this, requestId))
+      .catch(this._onVideoInfoLoaderFail.bind(this, requestId));
 
     this.show();
     if (this._playerConfig.getValue('autoFullScreen') && !(util as unknown as DialogUtilView).fullscreen.now()) {
@@ -2412,11 +2446,14 @@ class NicoVideoPlayerDialog extends Emitter {
   }
   reload(options?: VideoWatchOptionBag): void {
     const reloadOptions = this._videoWatchOptions.createForReload(options);
+    this.reloadPlayback =
+      this._state.isLoading && this.reloadPlayback !== undefined ? this.reloadPlayback : !this._nicoVideoPlayer.paused;
+    this._nicoVideoPlayer.setNextAutoPlay(this.reloadPlayback);
 
     if (this._lastCurrentTime > 0) {
       reloadOptions.currentTime = this._lastCurrentTime;
     }
-    void this.open(this._watchId, reloadOptions);
+    void this.open(this._watchId, reloadOptions, true);
   }
   get currentTime(): number {
     if (!this._nicoVideoPlayer) {
@@ -2429,10 +2466,13 @@ class NicoVideoPlayerDialog extends Emitter {
     return this._lastCurrentTime;
   }
   set currentTime(sec: number) {
-    if (!this._nicoVideoPlayer) {
+    if (!this._nicoVideoPlayer || !Number.isFinite(sec)) {
       return;
     }
     sec = Math.max(0, sec);
+    // HLS切替では旧canplayが先に到着し、isLoading=falseの後にもmetadataが届く。
+    // 明示シーク位置は常に更新し、遅いmetadataで以前の再開位置へ戻さない。
+    if (this._videoWatchOptions) this._videoWatchOptions.currentTime = sec;
     this._nicoVideoPlayer.currentTime = sec;
     this._lastCurrentTime = sec;
     MediaSessionApi.updatePositionStateByMedia(this as unknown as HTMLMediaElement);
@@ -2505,12 +2545,17 @@ class NicoVideoPlayerDialog extends Emitter {
     const useHLS =
       isHLSSupported &&
       (isHLSRequired || !this._playerConfig.props['video.hls.enableOnlyRequired'] || serverType != 'dmc');
-    this._videoSession = (await VideoSessionWorker.create({
+    const videoSession = (await VideoSessionWorker.create({
       videoInfo,
       videoQuality,
       serverType,
       useHLS,
     })) as unknown as VideoSessionWorkerSession;
+    if (this._requestId !== requestId) {
+      videoSession.close();
+      return;
+    }
+    this._videoSession = videoSession;
 
     if (this._videoFilter.isNgVideo(videoInfo)) {
       return this._onVideoFilterMatch();
@@ -2520,12 +2565,17 @@ class NicoVideoPlayerDialog extends Emitter {
       if (this._videoSession.isDmc) {
         await NVWatchCaller.call(videoInfo.dmcInfo!.trackingId);
       }
-      const sessionInfo = await this._videoSession.connect();
+      const sessionInfo = await videoSession.connect();
+      if (this._requestId !== requestId) {
+        videoSession.close();
+        return;
+      }
       this.setVideo(sessionInfo.url);
       videoInfo.setCurrentVideo(sessionInfo.url);
       this.emit('videoServerType', sessionInfo.type, sessionInfo, videoInfo);
     } catch (e) {
-      this._onVideoSessionFail(this._videoSession.serverType, e);
+      if (this._requestId !== requestId) return;
+      this._onVideoSessionFail(videoSession.serverType, e);
     }
     (this._state as unknown as { videoInfo: unknown }).videoInfo = videoInfo;
 
@@ -2549,14 +2599,25 @@ class NicoVideoPlayerDialog extends Emitter {
     });
   }
   loadComment(msgInfo: DialogThreadMsgInfo): void {
+    const requestId = this._requestId;
+    const commentRequest = ++this.commentRequestSequence;
     msgInfo.language = this._playerConfig.props.commentLanguage;
     this._playerConfig.props.commentLanguage = msgInfo.language;
-    this.threadLoader
-      .load(msgInfo)
-      .then(
-        this._onCommentLoadSuccess.bind(this, this._requestId),
-        this._onCommentLoadFail.bind(this, this._requestId)
-      );
+    this.threadLoader.load(msgInfo).then(
+      (result) => {
+        if (commentRequest === this.commentRequestSequence) this._onCommentLoadSuccess(requestId, result);
+      },
+      (error: unknown) => {
+        if (commentRequest !== this.commentRequestSequence) return;
+        const message =
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+              ? error.message
+              : 'コメントの取得に失敗しました';
+        this._onCommentLoadFail(requestId, { message });
+      }
+    );
   }
   reloadComment(param: { when?: number } = {}): void {
     const msgInfo = Object.assign({}, this._videoInfo.msgInfo);
@@ -2585,8 +2646,10 @@ class NicoVideoPlayerDialog extends Emitter {
     if (!this.isPlaylistEnable) {
       return;
     }
-    if (e.reason === 'forbidden' || e.info!.isPlayable === false) {
-      window.setTimeout(() => this.playNextVideo(), 3000);
+    if (e.reason === 'forbidden' || e.info?.isPlayable === false) {
+      this.videoRecovery.schedule(() => {
+        if (this.isOpen) this.playNextVideo();
+      });
     }
   }
   _onVideoSessionFail(serverType: string, result: unknown): void {
@@ -2597,7 +2660,9 @@ class NicoVideoPlayerDialog extends Emitter {
     );
     this._state.setState({ isError: true, isLoading: false });
     if (this.isPlaylistEnable) {
-      window.setTimeout(() => this.playNextVideo(), 3000);
+      this.videoRecovery.schedule(() => {
+        if (this.isOpen) this.playNextVideo();
+      });
     }
   }
   _onVideoPlayStartFail(err: unknown): void {
@@ -2616,8 +2681,7 @@ class NicoVideoPlayerDialog extends Emitter {
         //   window.console.info('%cリロードしたら直るかも', 'background: yellow');
         //
         // }
-        // 注意: _playserState は原文のまま（上流の綴り。未定義のため到達時は例外になる）。
-        if ((this as unknown as { _playserState: { isError: boolean } })._playserState.isError) {
+        if (this._state.isError) {
           break;
         }
         this._setErrorMessage('動画の再生開始に失敗しました');
@@ -2639,7 +2703,9 @@ class NicoVideoPlayerDialog extends Emitter {
     this._state.isError = true;
     this.emit('error');
     if (this.isPlaylistEnable) {
-      window.setTimeout(() => this.playNextVideo(), 3000);
+      this.videoRecovery.schedule(() => {
+        if (this.isOpen) this.playNextVideo();
+      });
     }
   }
   _setErrorMessage(msg: string): void {
@@ -2679,6 +2745,7 @@ class NicoVideoPlayerDialog extends Emitter {
     this.execCommand('alert', e.message);
   }
   _onLoadedMetaData(): void {
+    if (!this.isOpen || !this._requestId) return;
     // YouTubeは動画指定時にパラメータで開始位置を渡すので不要
     if (this._state.isYouTube) {
       return;
@@ -2778,6 +2845,8 @@ class NicoVideoPlayerDialog extends Emitter {
     this.emit('progress', range, currentTime);
   }
   async _onVideoError(e: DialogVideoError): Promise<void> {
+    if (!this.isOpen) return;
+    const requestId = this._requestId;
     this._state.setVideoErrorOccurred();
     if (e.type === 'youtube') {
       return this._onYouTubeVideoError(e);
@@ -2788,15 +2857,29 @@ class NicoVideoPlayerDialog extends Emitter {
     }
 
     const retry = (params?: VideoWatchOptionBag): void => {
-      setTimeout(() => {
+      this.videoRecovery.schedule(() => {
         if (!this.isOpen) {
           return;
         }
         this.reload(params);
-      }, 3000);
+      });
     };
 
-    const sessionState = await this._videoSession!.getState();
+    const session = this._videoSession;
+    if (!session) {
+      this._setErrorMessage('動画の接続状態を取得できませんでした');
+      return;
+    }
+    let sessionState: Awaited<ReturnType<VideoSessionWorkerSession['getState']>> | undefined;
+    try {
+      sessionState = await this.videoRecovery.read(() => session.getState());
+    } catch (error) {
+      if (this._requestId !== requestId || !this.isOpen || this._videoSession !== session) return;
+      this._setErrorMessage('動画の接続状態を取得できませんでした');
+      this.emit('error', error);
+      return;
+    }
+    if (!sessionState || this._requestId !== requestId || !this.isOpen || this._videoSession !== session) return;
     const { isDomand, isDmc, isDeleted, isAbnormallyClosed } = sessionState;
     const videoWatchOptions = this._videoWatchOptions;
     const code = (e && e.target && e.target.error && e.target.error.code) || 0;
@@ -2821,11 +2904,14 @@ class NicoVideoPlayerDialog extends Emitter {
     this.emit('error', e, code);
   }
   _onYouTubeVideoError(e: DialogVideoError): void {
+    if (!this.isOpen) return;
     window.console.error('onYouTubeVideoError!', e);
     this._setErrorMessage(e.description);
     this.emit('error', e);
     if (e.fallback) {
-      setTimeout(() => this.reload({ isAutoFutatsumeTubeDisabled: true }), 3000);
+      this.videoRecovery.schedule(() => {
+        if (this.isOpen) this.reload({ isAutoFutatsumeTubeDisabled: true });
+      });
     }
   }
   _onVideoAbort() {
@@ -2885,6 +2971,7 @@ class NicoVideoPlayerDialog extends Emitter {
     });
   }
   close(): void {
+    closeMylistPicker();
     if (this.isPlaying) {
       this._savePlaybackPosition(this._watchId, this.currentTime);
     }
@@ -2899,6 +2986,10 @@ class NicoVideoPlayerDialog extends Emitter {
     void global.emitter.emitAsync('DialogPlayerClose');
   }
   _refresh(): void {
+    this._requestId = '';
+    this.commentRequestSequence++;
+    this.videoRecovery.reset();
+    this.commentPosts.reset();
     if (this._nicoVideoPlayer) {
       this._nicoVideoPlayer.close();
     }
@@ -2936,8 +3027,31 @@ class NicoVideoPlayerDialog extends Emitter {
       language: this._playerConfig.props.commentLanguage,
     });
     this._commentPanel.on('command', this._onCommand.bind(this) as EmitterCallback);
-    this._commentPanel.on('deleteChat', ((e: { resolve(): void }, chat: unknown) => {
-      void (this.removeChat(chat) as Promise<unknown>).then(() => e.resolve());
+    this._commentPanel.on('deleteChat', ((e: { resolve(): void; reject(error: Error): void }, chat: unknown) => {
+      void this.removeChat(chat).then(
+        () => e.resolve(),
+        (error: unknown) => e.reject(error instanceof Error ? error : new Error('コメントを削除できませんでした。'))
+      );
+    }) as EmitterCallback);
+    this._commentPanel.on('nicoruChat', ((
+      e: { resolve(result: { count?: number }): void; reject(error: Error): void },
+      chat: unknown
+    ) => {
+      void this.threadLoader
+        .nicoru(this._videoInfo.msgInfo, chat as { no: number; fork?: number; text?: string; [key: string]: unknown })
+        .then(
+          (result) => e.resolve({ count: result.count }),
+          (error: unknown) =>
+            e.reject(
+              error instanceof Error
+                ? error
+                : new Error(
+                    typeof error === 'object' && error !== null && 'message' in error
+                      ? String(error.message)
+                      : 'ニコれませんでした。'
+                  )
+            )
+        );
     }) as EmitterCallback);
     this._commentPanel.on('update', _.debounce(this._onCommentPanelStatusUpdate.bind(this), 100));
     void this.emitResolve('commentpanel-ready');
@@ -2969,8 +3083,9 @@ class NicoVideoPlayerDialog extends Emitter {
   }
   play(): void {
     if (!this._state.isError && this._nicoVideoPlayer) {
+      const requestId = this._requestId;
       this._nicoVideoPlayer.play().catch((e) => {
-        this._onVideoPlayStartFail(e);
+        if (this._requestId === requestId && this.isOpen) this._onVideoPlayStartFail(e);
       });
     }
   }
@@ -2993,8 +3108,9 @@ class NicoVideoPlayerDialog extends Emitter {
         return;
       }
 
+      const requestId = this._requestId;
       this._nicoVideoPlayer.togglePlay().catch((e) => {
-        this._onVideoPlayStartFail(e);
+        if (this._requestId === requestId && this.isOpen) this._onVideoPlayStartFail(e);
       });
     }
   }
@@ -3012,71 +3128,62 @@ class NicoVideoPlayerDialog extends Emitter {
     vpos: unknown = null,
     options: Record<string, unknown> = {}
   ): Promise<unknown> {
-    if (!this._nicoVideoPlayer || !this.threadLoader || !this._state.isCommentReady || this._state.isCommentPosting) {
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 呼び出し元は成否のみ参照し理由を使わない契約のため維持する
-      return Promise.reject();
+    if (
+      !this._nicoVideoPlayer ||
+      !this.threadLoader ||
+      !this._state.isCommentReady ||
+      !this._state.isOpen ||
+      this._state.isCommentPosting ||
+      this._state.isWaybackMode ||
+      this._state.isMymemory
+    ) {
+      throw new Error('現在はコメントを投稿できません');
     }
-    if (!(util as unknown as DialogUtilView).isLogin()) {
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 呼び出し元は成否のみ参照し理由を使わない契約のため維持する
-      return Promise.reject();
+    if (!(util as unknown as DialogUtilView).isLogin()) throw new Error('コメント投稿にはログインが必要です');
+    if (
+      typeof text !== 'string' ||
+      !text.trim() ||
+      text.length > 75 ||
+      (cmd !== undefined && typeof cmd !== 'string')
+    ) {
+      throw new Error('投稿するコメントとコマンドを確認してください');
     }
-    const threadId = (this._threadInfo as DialogThreadInfo).threadId * 1;
-    // force184のスレッドに184コマンドをつけてしまうとエラー. 同じなんだから無視すりゃいいだろが
-    if ((this._threadInfo as DialogThreadInfo).force184 !== '1') {
-      cmd = cmd ? '184 ' + (cmd as string) : '184';
-    }
-    Object.assign(options, { isMine: true, isUpdating: true, thead: threadId });
-    vpos = !isNaN(vpos as number) && typeof vpos === 'number' ? vpos : this._nicoVideoPlayer.vpos;
-    const nicoChat = this._nicoVideoPlayer.addChat(text as string, cmd as string, vpos as number, options) as {
-      isUpdating: boolean;
-      no: unknown;
-      isPostFail: boolean;
-    };
-
-    this._state.isCommentPosting = true;
-
-    const lang = this._playerConfig.props.commentLanguage;
-    window.console.time('コメント投稿');
-
-    const onSuccess = (result: { no?: unknown; blockNo?: unknown }) => {
-      window.console.timeEnd('コメント投稿');
-      nicoChat.isUpdating = false;
-      nicoChat.no = result.no;
-      this.execCommand('notify', 'コメント投稿成功');
-      this._state.isCommentPosting = false;
-
-      (this._threadInfo as DialogThreadInfo).blockNo = result.blockNo;
-      void WatchInfoCacheDb.put(this._watchId, { comment: { text, cmd, vpos, options } });
-      return Promise.resolve(result);
-    };
-
-    const onFail = (err: unknown) => {
-      err = err || {};
-      window.console.log('_onFail: ', err);
-      window.console.timeEnd('コメント投稿');
-      nicoChat.isPostFail = true;
-      nicoChat.isUpdating = false;
-      this.execCommand('alert', (err as { message?: unknown }).message);
-      this._state.isCommentPosting = false;
-      if ((err as { blockNo?: unknown }).blockNo && typeof (err as { blockNo?: unknown }).blockNo === 'number') {
-        (this._threadInfo as DialogThreadInfo).blockNo = (err as { blockNo?: unknown }).blockNo;
-      }
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 上流由来の失敗値をそのまま透過させる契約のため維持する
-      return Promise.reject(err);
-    };
-
+    const player = this._nicoVideoPlayer;
     const msgInfo = this._videoInfo.msgInfo;
-    return this.threadLoader
-      .postChat(msgInfo, text as string, cmd as string, vpos as number, lang as unknown as boolean)
-      .then(onSuccess)
-      .catch(onFail);
+    const watchId = this._watchId;
+    const threadInfo = msgInfo.threadInfo;
+    if (!threadInfo?.threadId) throw new Error('コメント投稿先を取得できませんでした');
+    const command = normalizeCommentCommands(cmd ?? '', msgInfo.defaultThread?.isThreadkeyRequired === true);
+    const position = typeof vpos === 'number' && Number.isFinite(vpos) ? vpos : player.vpos;
+    const previewOptions = { ...options, isMine: true, isUpdating: true, thread: Number(threadInfo.threadId) };
+    return this.commentPosts.post({
+      createPreview: () => {
+        const preview = player.addChat(text, command, position, previewOptions);
+        if (!(preview instanceof NicoChat)) throw new Error('投稿プレビューを作成できませんでした');
+        return preview;
+      },
+      removePreview: (preview) => player.removeChat(preview),
+      send: (signal) => this.threadLoader.postChat(msgInfo, text, command, position, { signal }),
+      setPosting: (value) => {
+        this._state.isCommentPosting = value;
+      },
+      success: () => {
+        this.execCommand('notify', 'コメント投稿成功');
+        void WatchInfoCacheDb.put(watchId, {
+          comment: { text, cmd: command, vpos: position, options: previewOptions },
+        });
+      },
+      failure: (error) => {
+        this.execCommand('alert', error.message);
+      },
+    });
   }
-  removeChat(chat: unknown): Promise<unknown> | undefined {
+  removeChat(chat: unknown): Promise<void> {
     if (!this._nicoVideoPlayer || !this.threadLoader || !this._state.isCommentReady) {
-      return;
+      return Promise.reject(new Error('コメントの準備ができていません。再読み込みしてから試してください。'));
     }
     if (!(util as unknown as DialogUtilView).isLogin()) {
-      return;
+      return Promise.reject(new Error('ログインしてから再試行してください。'));
     }
 
     window.console.time('コメント削除');
@@ -3093,7 +3200,11 @@ class NicoVideoPlayerDialog extends Emitter {
         err = err || {};
         window.console.log('_onFail: ', err);
         window.console.timeEnd('コメント削除');
-        this.execCommand('alert', (err as { message?: unknown }).message);
+        throw new Error(
+          typeof err === 'object' && err !== null && 'message' in err
+            ? String(err.message)
+            : 'コメントを削除できませんでした。'
+        );
       });
   }
   get duration(): number {
@@ -3525,7 +3636,7 @@ class VideoHoverMenu {
         font-size: 12px;
         line-height: 16px;
         padding: 2px 4px;
-        border: 1px solid !000;
+        border: 1px solid #000;
         background: #ffc;
         color: black;
         box-shadow: 2px 2px 2px #fff;

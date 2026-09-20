@@ -92,6 +92,7 @@ class Storyboard extends Emitter {
     void this.emitResolve('dom-ready');
   }
   reset(): void {
+    this._requestId = undefined;
     if (!this.model) {
       return;
     }
@@ -100,12 +101,13 @@ class Storyboard extends Emitter {
     this.emit('reset', this.model);
   }
   onVideoCanPlay(watchId: string, videoInfo: StoryboardVideoInfo): void {
+    this.reset();
+    this._watchId = watchId;
     const nicoUtilLike = nicoUtil as unknown as NicoUtilLike;
     if (!this.config.props.enableStoryboard || !videoInfo.hasStoryboard || !nicoUtilLike.isPremium()) {
       return;
     }
 
-    this._watchId = watchId;
     const resuestId = (this._requestId = Math.random());
 
     StoryboardInfoLoader.load(
@@ -122,19 +124,19 @@ class Storyboard extends Emitter {
     this._initializeStoryboard();
   }
   _onStoryboardInfoLoad(resuestId: unknown, rawData: unknown): void {
-    if (resuestId !== this._requestId) {
+    if (resuestId !== this._requestId || !this.config.props.enableStoryboard || !nicoUtil.isPremium()) {
       return;
     } // video changed
     this.model.update(rawData as StoryboardRawData);
     this.emit('update', this.model);
 
-    this.state.isStoryboardAvailable = true;
+    this.state.isStoryboardAvailable = this.model.isAvailable;
   }
   _onStoryboardInfoLoadFail(resuestId: unknown, err: unknown): void {
-    console.warn('onStoryboardInfoFail', this._watchId, err);
     if (resuestId !== this._requestId) {
       return;
     } // video changed
+    console.warn('onStoryboardInfoFail', this._watchId, err);
     this.model.update(null);
     this.emit('update', this.model);
     this.state.isStoryboardAvailable = false;

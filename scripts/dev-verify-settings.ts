@@ -1,12 +1,32 @@
-import { attach, attachBrowser, evaluate, evaluateAsync, listTargets } from './dev-cdp';
+import { attach, attachBrowser, cleanupCdp, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
+import { verifySettingsFields } from './verify-settings-fields';
+import type { SettingsFieldResult } from './verify-settings-fields';
+import {
+  verifySettingsHlsActions,
+  verifySettingsImportFailures,
+  verifySettingsStorage,
+  captureSettingsExport,
+  settingsQuerySource,
+  verifySettingsRoundtrip,
+} from './verify-settings-storage';
+import { verificationDirectory } from './dev-verification-output';
+import { verifyPlayerSettingEffects } from './verify-settings-player';
+import {
+  settingsDetectorFixture,
+  verifyGamepadEffects,
+  verifyHeatSyncEffects,
+  verifyMaskedEffects,
+  verifyMaskedUnavailable,
+} from './verify-settings-addons';
 
-const output = new URL('../dev-assets/verification/', import.meta.url);
+const output = verificationDirectory;
 const checks: string[] = [];
+const fields: SettingsFieldResult[] = [];
 const panels = ['general', 'advanced', 'hls', 'masked', 'gamepad', 'heatsync'] as const;
 const panel = (name: string): string => `window.__settingsQuery('[data-fw-settings="${name}"]')`;
-async function check(session: CdpSession, expression: string, label: string, timeout = 8000): Promise<void> {
+export async function check(session: CdpSession, expression: string, label: string, timeout = 8000): Promise<void> {
   const deadline = Date.now() + timeout;
   do {
     if (await evaluate(session, expression)) {
@@ -23,14 +43,14 @@ async function mouse(session: CdpSession, x: number, y: number): Promise<void> {
   await session.send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, x, y });
   await session.send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, x, y });
 }
-async function clickInside(session: CdpSession, name: string, selector: string): Promise<void> {
+export async function clickInside(session: CdpSession, name: string, selector: string): Promise<void> {
   const point = (await evaluate(
     session,
     `(()=>{const e=window.__settingsQuery(${JSON.stringify(selector)},${panel(name)});if(!e||e.disabled)throw Error('Missing control'); e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),s=getComputedStyle(e);const x=r.x+r.width/2,y=r.y+r.height/2;const hit=e.getRootNode().elementFromPoint(x,y);if(!r.width||!r.height||s.visibility!=='visible'||!hit||!e.contains(hit))throw Error('Control not visible');return{x,y}})()`
   )) as { x: number; y: number };
   await mouse(session, point.x, point.y);
 }
-async function open(session: CdpSession, name: string): Promise<void> {
+export async function open(session: CdpSession, name: string): Promise<void> {
   await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 10, y: 150 });
   await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 12, y: 150 });
   await Bun.sleep(180);
@@ -102,32 +122,17 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
   );
   if (width === 1280) {
     await clickInside(session, 'general', '[data-settings-tab="data"]');
-    await evaluate(
-      session,
-      `window.__settingsAnchorClick=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download.endsWith('.config.json')){window.__settingsExportUrl=this.href;return;}return window.__settingsAnchorClick.call(this);}`
-    );
-    try {
-      await clickInside(session, 'general', '.export-config-button');
-      await check(session, `!!window.__settingsExportUrl`, '入出力タブから設定書き出しを操作（ダウンロードは捕捉）');
-      const valid = await evaluateAsync(
-        session,
-        `fetch(window.__settingsExportUrl).then(r=>r.text()).then(text=>JSON.stringify(JSON.parse(text))===JSON.stringify(JSON.parse(window.FutatsumeWatch.config.exportJson())))`
-      );
-      if (!valid) throw Error('設定書き出しの内容が一致しません');
-      checks.push('設定書き出しのJSONが保存設定に一致');
-    } finally {
-      await evaluate(
-        session,
-        `HTMLAnchorElement.prototype.click=window.__settingsAnchorClick;URL.revokeObjectURL(window.__settingsExportUrl);delete window.__settingsExportUrl;delete window.__settingsAnchorClick;`
-      );
-    }
+    await captureSettingsExport(session, { open, clickInside, check });
   }
   await mouse(session, 3, 3);
 }
 async function main(): Promise<void> {
   const browser = await attachBrowser();
   const { targetId } = (await browser.send('Target.createTarget', { url: 'about:blank' })) as { targetId: string };
-  browser.close();
+  const { targetInfo } = (await browser.send('Target.getTargetInfo', { targetId })) as {
+    targetInfo: { browserContextId?: string };
+  };
+  const browserContextId = targetInfo.browserContextId;
   const target = (await listTargets()).find((t) => t.id === targetId);
   if (!target) throw Error('検証タブなし');
   const session = await attach(target);
@@ -149,6 +154,7 @@ async function main(): Promise<void> {
       mobile: false,
     });
     const source = await Bun.file(new URL('../dist/FutatsumeWatch.user.js', import.meta.url)).text();
+    await session.send('Page.addScriptToEvaluateOnNewDocument', { source: settingsDetectorFixture });
     await session.send('Page.addScriptToEvaluateOnNewDocument', {
       source: `document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true})`,
     });
@@ -162,10 +168,7 @@ async function main(): Promise<void> {
     );
     await clickVisible(session, '[data-futatsume-open]');
     await check(session, `document.querySelector('futatsume-video')?.currentTime>1`, '起動導線から動画再生', 30000);
-    await evaluate(
-      session,
-      `window.__settingsQuery=function find(selector,root=document){const e=root.querySelector(selector);if(e)return e;for(const host of root.querySelectorAll('*')){if(host.shadowRoot){const e=find(selector,host.shadowRoot);if(e)return e;}}return null;}`
-    );
+    await evaluate(session, settingsQuerySource);
     for (const name of panels) {
       await open(session, name);
       await check(
@@ -210,6 +213,22 @@ async function main(): Promise<void> {
       await check(session, `!${panel(name)}.open`, `${name}: 共通の閉じるボタン`);
     }
     await verifyTabs(session, 1280);
+    // The all-fields pass outlasts the generated media. Pause through the real
+    // transport button so end-of-video transitions cannot replace its subject.
+    if (!(await evaluate(session, `document.querySelector('futatsume-video').paused`))) {
+      await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 100, y: 160 });
+      await clickVisible(session, '[data-shell-action="togglePlay"]');
+    }
+    await check(session, `document.querySelector('futatsume-video').paused`, 'P2: 全設定の走査中は実ボタンで一時停止');
+    await verifySettingsFields(session, { open, clickInside, check }, fields);
+    await verifySettingsStorage(session, { open, clickInside, check });
+    await verifySettingsImportFailures(session, { open, clickInside, check });
+    await verifySettingsHlsActions(session, { open, clickInside, check });
+    await verifyPlayerSettingEffects(session, { open, clickInside, check });
+    await verifyGamepadEffects(session, { open, clickInside, check });
+    await verifyHeatSyncEffects(session, { open, clickInside, check });
+    await verifyMaskedEffects(session, { open, clickInside, check });
+    await verifyMaskedUnavailable(session, { open, clickInside, check });
     for (const [name, selector, storage] of [
       ['general', '[data-setting-name="autoPlay"]', 'FutatsumeWatch_autoPlay'],
       [
@@ -293,6 +312,7 @@ async function main(): Promise<void> {
       }
       if (width === 390) await verifyTabs(session, width);
     }
+    await verifySettingsRoundtrip(session, { open, clickInside, check });
     await open(session, 'heatsync');
     await evaluate(session, `window.FutatsumeWatch.external.execCommand('close')`);
     await check(
@@ -303,17 +323,25 @@ async function main(): Promise<void> {
     if (errors.length) throw Error(errors.join('\n'));
     await Bun.write(
       new URL('settings-report.json', output),
-      JSON.stringify({ completed: true, checks, errors }, null, 2)
+      JSON.stringify({ completed: true, browserContextId, checks, fields, errors }, null, 2)
     );
   } catch (error) {
     await capture(session, 'failure');
     await Bun.write(
       new URL('settings-report.json', output),
-      JSON.stringify({ completed: false, checks, errors, failure: String(error) }, null, 2)
+      JSON.stringify({ completed: false, browserContextId, checks, fields, errors, failure: String(error) }, null, 2)
     );
     throw error;
   } finally {
-    session.close();
+    await cleanupCdp(
+      () => session.close(),
+      // Disposing an owned context already closes all of its pages.
+      () =>
+        process.env.FUTATSUME_TEST_OFFLINE === '1' && browserContextId
+          ? browser.send('Target.disposeBrowserContext', { browserContextId })
+          : browser.send('Target.closeTarget', { targetId }),
+      () => browser.close()
+    );
   }
 }
-await main();
+if (import.meta.main) await main();

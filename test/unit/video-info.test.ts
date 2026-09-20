@@ -5,7 +5,7 @@ import type { RawVideoInfoData } from '../../src/video-info';
 
 // 旧テスト（flvInfo・session_api・import_version による smile/dmc 判定）は、
 // Domand 対応で判定ロジックが置き換えられたため仕様変更として書き直す。
-// 現行の maybeBetterQualityServerType は domand/dmc の有無と高さ比較のみを見る。
+// 現行の maybeBetterQualityServerType は domand/dmc の有無と利用可能な画質の高さを比較する。
 
 const FIXTURE_PATH = './test/fixtures/video-info-raw-data.json';
 
@@ -290,6 +290,61 @@ describe('DmcInfo', () => {
     expect(dmc.transferPreset).toBe('');
     expect(dmc.importVersion).toBe(0);
   });
+  it('Domandの利用不可高画質は方式比較へ含めず利用可画質だけで選ぶ', () => {
+    const data = buildDmc();
+    data.isDomand = true;
+    data.domandInfo = {
+      audios: [],
+      isStoryboardAvailable: false,
+      videos: [
+        { id: 'unavailable-1080', height: 1080, qualityLevel: 2, isAvailable: false },
+        { id: 'available-360', height: 360, qualityLevel: 1, isAvailable: true },
+      ],
+    };
+    const info = new VideoInfoModel(data);
+    expect(info.domandInfo!.availableVideoIds).toEqual(['available-360']);
+    expect(info.maybeBetterQualityServerType).toBe('dmc');
+  });
+  it('片側の利用可画質が0件なら利用可画質を持つ側を優先する', () => {
+    for (const dmcAvailable of [false, true]) {
+      const data = buildDmc();
+      data.isDomand = true;
+      data.dmcInfo!.movie!.videos![0]!.isAvailable = dmcAvailable;
+      data.domandInfo = {
+        audios: [],
+        isStoryboardAvailable: false,
+        videos: [{ id: 'current', height: 1080, qualityLevel: 2, isAvailable: !dmcAvailable }],
+      };
+      const info = new VideoInfoModel(data);
+      expect(info.maybeBetterQualityServerType).toBe(dmcAvailable ? 'dmc' : 'domand');
+      expect(dmcAvailable ? info.domandInfo!.availableVideoIds : info.dmcInfo!.availableVideoIds).toEqual([]);
+    }
+  });
+  it('両方式の利用可画質が0件でも高画質推定でDMC優先へ変更しない', () => {
+    const data = buildDmc();
+    data.isDomand = true;
+    data.dmcInfo!.movie!.videos = [];
+    data.domandInfo = { audios: [], isStoryboardAvailable: false, videos: [] };
+    const info = new VideoInfoModel(data);
+    expect(info.domandInfo!.availableVideoIds).toEqual([]);
+    expect(info.dmcInfo!.availableVideoIds).toEqual([]);
+    expect(info.maybeBetterQualityServerType).toBe('domand');
+  });
+});
+
+it('Domand画質は入力順に依存せず高品質順で利用可能なものを返す', () => {
+  const raw = loadRaw();
+  const videos = [
+    { id: 'low', height: 180, label: '180p', qualityLevel: 0, isAvailable: true },
+    { id: 'unavailable', height: 1080, label: '1080p', qualityLevel: 3, isAvailable: false },
+    { id: 'high', height: 720, label: '720p', qualityLevel: 2, isAvailable: true },
+    { id: 'middle', height: 360, label: '360p', qualityLevel: 1, isAvailable: true },
+  ];
+  raw.domandInfo = { videos, audios: [], isStoryboardAvailable: false };
+  raw.isDomand = true;
+  const model = new VideoInfoModel(raw);
+  expect(model.domandInfo?.availableVideoIds).toEqual(['high', 'middle', 'low']);
+  expect(videos.map((video) => video.id)).toEqual(['low', 'unavailable', 'high', 'middle']);
 });
 
 describe('VideoFilter', () => {

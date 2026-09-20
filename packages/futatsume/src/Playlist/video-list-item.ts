@@ -186,6 +186,8 @@ class VideoListItem {
       });
     }
 
+    if (item.content === null && typeof item.watchId === 'string') return VideoListItem.createBlankInfo(item.watchId);
+
     if (item.item_data) {
       const item_data = item.item_data || {};
       return new VideoListItem({
@@ -265,7 +267,7 @@ class VideoListItem {
       isPocketResolved: false,
       timestamp: performance.now(),
     };
-    this._uniq_id = rawData.uniqId || this.watchId;
+    this._uniq_id = rawData.uniqId || rawData.uniq_id || this.watchId;
     rawData.first_retrieve = (textUtil as unknown as TextUtilLike).dateToString(rawData.first_retrieve);
 
     this.notifyUpdate = (throttle as unknown as ThrottleLike).raf(this.notifyUpdate.bind(this));

@@ -64,7 +64,14 @@ type SearchPlaylistOptions = SearchQueryParams & PlaylistOptions;
 interface PlaylistDescriptor {
   type: string;
   id?: unknown;
-  options?: { tag?: unknown; keyword?: unknown } | null;
+  options?: {
+    tag?: unknown;
+    keyword?: unknown;
+    pageSize?: string;
+    page?: string;
+    sortKey?: string;
+    sortOrder?: string;
+  } | null;
 }
 
 export type { PlayListParams, SerializedPlayList, PlaylistOptions, PlaylistDescriptor };
@@ -80,6 +87,7 @@ export type { PlayListParams, SerializedPlayList, PlaylistOptions, PlaylistDescr
 //@require playlist-view
 
 class PlayList extends VideoList {
+  private loadGeneration = 0;
   declare _index: number;
   declare _isEnable: boolean;
   declare _isLoop: boolean;
@@ -118,18 +126,35 @@ class PlayList extends VideoList {
       loop: this._isLoop,
     };
   }
-  unserialize(data: unknown): void {
-    const list = data as SerializedPlayList | null;
-    if (!list) {
-      return;
+  unserialize(data: unknown): boolean {
+    if (data === null || data === undefined) return false;
+    if (typeof data !== 'object' || !('items' in data) || !Array.isArray(data.items)) {
+      this.emit('command', 'alert', 'プレイリストの形式が不正です。ファイルを確認してください。');
+      return false;
     }
+    const items: VideoRawData[] = [];
+    for (const item of data.items as unknown[]) {
+      if (
+        typeof item !== 'object' ||
+        item === null ||
+        !('id' in item) ||
+        typeof item.id !== 'string' ||
+        !item.id.trim() ||
+        ('title' in item && typeof item.title !== 'string')
+      ) {
+        this.emit('command', 'alert', 'プレイリストの動画情報が不正です。ファイルを確認してください。');
+        return false;
+      }
+      items.push(item);
+    }
+    const list = data as SerializedPlayList;
     this._initializeView();
-    console.log('unserialize: ', list);
-    this.model.unserialize(list.items as VideoRawData[]);
-    this._isEnable = list.enable as boolean;
-    this._isLoop = list.loop as boolean;
+    this.model.unserialize(items);
+    this._isEnable = list.enable === true;
+    this._isLoop = list.loop === true;
     this.emit('update');
-    this.setIndex(list.index);
+    this.setIndex(list.index, true);
+    return true;
   }
   restoreFromSession(): void {
     this.unserialize(PlayListSession.restore());
@@ -161,6 +186,7 @@ class PlayList extends VideoList {
         break;
       case 'reverse':
         this.model.reverse();
+        this._refreshIndex();
         break;
       case 'sortBy': {
         const [key, order] = (param as string).split(':');
@@ -172,8 +198,9 @@ class PlayList extends VideoList {
         break;
       case 'select':
         item = this.model.findByItemId(itemId as string | number);
+        if (!item) return;
         this.setIndex(this.model.indexOf(item));
-        this.emit('command', 'openNow', (item as VideoListItem).watchId);
+        this.emit('command', 'openNow', item.watchId);
         break;
       case 'playlistRemove':
         item = this.model.findByItemId(itemId as string | number);
@@ -216,7 +243,7 @@ class PlayList extends VideoList {
 
     const data = JSON.stringify(this.serialize(), null, 2);
 
-    const blob = new Blob([data], { type: 'text/html' });
+    const blob = new Blob([data], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     Object.assign(a, {
@@ -226,26 +253,22 @@ class PlayList extends VideoList {
     });
     document.body.append(a);
     a.click();
-    setTimeout(() => a.remove(), 1000);
+    setTimeout(() => {
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    }, 1000);
   }
   _onImportFileCommand(fileData: unknown): void {
     const text = textUtil as unknown as TextUtilLike;
     if (!text.isValidJson(fileData)) {
+      this.emit('command', 'alert', 'プレイリストの形式が不正です。ファイルを確認してください。');
       return;
     }
-
+    if (!this.unserialize(JSON.parse(fileData as string))) return;
     this.emit('command', 'pause');
     this.emit('command', 'notify', 'プレイリストを復元');
-    this.unserialize(JSON.parse(fileData as string));
-
-    window.setTimeout(() => {
-      const index = Math.max(0, ((fileData as { index?: unknown }).index || 0) as number);
-      const item = this.model.getItemByIndex(index);
-      if (item) {
-        this.setIndex(index, true);
-        this.emit('command', 'openNow', item.watchId);
-      }
-    }, 2000);
+    const item = this.model.getItemByIndex(this.getIndex());
+    if (item) this.emit('command', 'openNow', item.watchId);
   }
   _onMoveItem(fromItemId: unknown, toItemId: unknown): void {
     const fromItem = this.model.findByItemId(fromItemId as string | number);
@@ -317,6 +340,7 @@ class PlayList extends VideoList {
     msgInfo: unknown
   ): Promise<{ status: string; message: string }> {
     this._initializeView();
+    const generation = ++this.loadGeneration;
 
     if (!this._playlistApiLoader) {
       this._playlistApiLoader = PlaylistApiLoader as unknown as PlaylistApiLoaderLike;
@@ -329,6 +353,12 @@ class PlayList extends VideoList {
 
     return loader.load(playlist, msgInfo).then((items) => {
       window.console.timeEnd(timeKey);
+      if (
+        generation !== this.loadGeneration ||
+        (options.watchId !== undefined && options.watchId !== this._activeItem?.watchId)
+      ) {
+        throw new DOMException('一覧の取得中に対象が切り替わりました。', 'AbortError');
+      }
       const list = items as MylistItemLike[];
       let videoListItems = list.map((item) => VideoListItem.createByMylistItem(item));
 
@@ -367,6 +397,7 @@ class PlayList extends VideoList {
     limit = 300
   ): Promise<{ status: string; message: string }> {
     this._initializeView();
+    const generation = ++this.loadGeneration;
 
     if (!this._nicoSearchApiLoader) {
       this._nicoSearchApiLoader = NicoSearchApiV2Loader;
@@ -378,6 +409,11 @@ class PlayList extends VideoList {
 
     return loader.searchMore(word, opts, limit).then((result) => {
       window.console.timeEnd('loadSearchVideos' + word);
+      if (
+        generation !== this.loadGeneration ||
+        (opts.watchId !== undefined && opts.watchId !== this._activeItem?.watchId)
+      )
+        throw new DOMException('一覧の取得中に対象が切り替わりました。', 'AbortError');
       const items = result.list || [];
       let videoListItems = items
         .filter((item) => {
@@ -533,7 +569,8 @@ class PlayList extends VideoList {
     return this._activeItem ? this._index : -1;
   }
   setIndex(v: unknown, force?: unknown): void {
-    const index = parseInt(v as string, 10);
+    const parsed = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : -1;
+    const index = Number.isInteger(parsed) && parsed >= 0 && parsed < this.model.length ? parsed : -1;
     if (this._index !== index || force) {
       this._index = index;
       if (this._activeItem) {

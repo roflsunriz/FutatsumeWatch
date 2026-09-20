@@ -32,7 +32,10 @@ class VideoListModel extends Emitter {
   initialize(params: VideoListModelParams): void {
     this.isUniq = params.uniq as boolean;
     this.items = [];
-    this.maxItems = (params.maxItems as number) || 100;
+    this.maxItems =
+      typeof params.maxItems === 'number' && Number.isFinite(params.maxItems) && params.maxItems > 0
+        ? Math.max(1, Math.trunc(params.maxItems))
+        : 100;
   }
 
   setItemData(itemData: unknown): void {
@@ -47,15 +50,21 @@ class VideoListModel extends Emitter {
     let list: VideoListItem[] = Array.isArray(items) ? items : [items];
     if (this.isUniq) {
       const uset = new Set(),
-        iset = new Set();
+        iset = new Set(),
+        wset = new Set<string>();
       list = list.filter((item) => {
-        const has = uset.has(item.uniqId) || iset.has(item.itemId);
+        const has = uset.has(item.uniqId) || iset.has(item.itemId) || wset.has(item.watchId);
         uset.add(item.uniqId);
         iset.add(item.itemId);
+        wset.add(item.watchId);
         return !has;
       });
     }
 
+    list = list.slice(0, this.maxItems);
+    for (const item of this.items) {
+      if (!list.includes(item)) item.groupList = null;
+    }
     this.items = list;
     this._refreshMaps();
     this.onUpdate();
@@ -86,17 +95,27 @@ class VideoListModel extends Emitter {
     //window.console.log('insertItem', itemList, index);
     let list: VideoListItem[] = Array.isArray(items) ? items : [items];
     if (this.isUniq) {
-      list = list.filter((item) => !this.includes(item));
+      const ids = new Set(this.uset);
+      const watchIds = new Set(this.watchIds.keys());
+      list = list.filter((item) => {
+        if (ids.has(item.uniqId) || watchIds.has(item.watchId)) return false;
+        ids.add(item.uniqId);
+        watchIds.add(item.watchId);
+        return true;
+      });
     }
     if (!list.length) {
       return;
     }
 
-    const at = Math.min(this.items.length, _.isNumber(index) ? index : 0);
+    const at = Math.max(
+      0,
+      Math.min(this.items.length, typeof index === 'number' && Number.isFinite(index) ? Math.trunc(index) : 0)
+    );
 
     this.items.splice(at, 0, ...list);
 
-    this.items.splice(this.maxItems);
+    for (const item of this.items.splice(this.maxItems)) item.groupList = null;
     this._refreshMaps();
     this.onUpdate();
 
@@ -106,7 +125,14 @@ class VideoListModel extends Emitter {
   appendItem(items: VideoListItem | VideoListItem[]): number | undefined {
     let list: VideoListItem[] = Array.isArray(items) ? items : [items];
     if (this.isUniq) {
-      list = list.filter((item) => !this.includes(item));
+      const ids = new Set(this.uset);
+      const watchIds = new Set(this.watchIds.keys());
+      list = list.filter((item) => {
+        if (ids.has(item.uniqId) || watchIds.has(item.watchId)) return false;
+        ids.add(item.uniqId);
+        watchIds.add(item.watchId);
+        return true;
+      });
     }
     if (!list.length) {
       return;
@@ -115,7 +141,8 @@ class VideoListModel extends Emitter {
     this.items = this.items.concat(list);
 
     while (this.items.length > this.maxItems) {
-      this.items.shift();
+      const removed = this.items.shift();
+      if (removed) removed.groupList = null;
     }
 
     this._refreshMaps();
@@ -125,6 +152,7 @@ class VideoListModel extends Emitter {
   }
 
   moveItemTo(fromItem: VideoListItem, toItem: VideoListItem): void {
+    if (fromItem === toItem || this.indexOf(fromItem) < 0 || this.indexOf(toItem) < 0) return;
     fromItem.isUpdating = true;
     toItem.isUpdating = true;
     // console.nicoru('before moveItemTo',

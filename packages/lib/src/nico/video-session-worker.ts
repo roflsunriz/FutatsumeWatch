@@ -530,10 +530,23 @@ const VideoSessionWorker = (() => {
             credentials: 'include',
             body: JSON.stringify(this._buildOutputsMatrix(videos, audioFormat)),
           })
-          .then((res: Response) => res.json());
-        const result = rawResult as { meta: { status?: number }; data?: { contentUrl?: string; expireTime?: string } };
-        if (result.meta.status == null || result.meta.status >= 300) {
-          throw new Error('cannot create domand session', result as unknown as ErrorOptions);
+          .then((res: Response) => {
+            if (!res.ok) throw new Error(`動画配信APIの取得失敗: HTTP ${res.status}`);
+            return res.json();
+          });
+        const result = rawResult as {
+          meta?: { status?: number };
+          data?: { contentUrl?: string; expireTime?: string };
+        } | null;
+        if (
+          !result ||
+          typeof result.meta?.status !== 'number' ||
+          result.meta.status < 200 ||
+          result.meta.status >= 300 ||
+          typeof result.data?.contentUrl !== 'string' ||
+          !/^https?:\/\//.test(result.data.contentUrl)
+        ) {
+          throw new Error('動画配信APIの応答が不正です');
         }
 
         this._lastResponse = result.data || {};

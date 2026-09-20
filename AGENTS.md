@@ -1,5 +1,15 @@
 # AGENTS.md
 
+## オフライン検証の終了と設定効果（2026-09-20）
+
+- オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。
+- HeatSyncは動画切替の除外判定より前に適用済み速度を上書きしない。短動画・除外タグへ切替時は自分の加速だけ戻し、手動速度は残す。除外語・タグを同じ大文字化で照合する。回帰は`settings-heatsync.test.ts`。
+- 動画情報パネルへ届くイベント名は`canPlay`。小文字の`canplay`では関連取得と説明欄の自動YouTube切替が接続されない。自動切替の遅延と提供者取得は、設定OFF・新動画・hideで古い応答を無効化する。`settings-video-events.test.ts`は実Emitterからの接続も確認する。
+- 配信方式の高さ比較は両方の`availableVideos`を使う。利用不可の1080pを比較へ含めると、利用可360pの旧方式を720pの現行方式より優先する。旧DMCの条件テストと現行サービスの配信検証を区別する。
+- 新規タブとService Workerは専用BrowserContextに限定したbrowser-level監視で初回要求から捕捉する。初期化前popupではFetch・Runtime監視を先にキューへ送り、resumeと全応答を待つ。初回がchrome-errorになったリンクを再読み込みで成功へ変えない。guardはページ・専用Worker・iframe・popup・Service Workerの未登録5要求とWorker先頭例外2件を照合する。
+- Service Workerのエントリーはtarget生成前に取得されるため、guardだけ専用loopbackサーバーの完全一致GETで供給する。別ポート・外部への禁止プロキシは維持する。映像は`test/fixtures/functionality/media-spec.ts`を正本にID別の長さ・比率・色を持ち、表示IDだけで切替成功にしない。
+- 再読み込みの一時的な自動再生指定は、その再読み込みが完了する前に別動画を開いた場合にも解除する。`verify-media-switch.ts`は通信境界でA応答を保留→Bの実映像を確認→A応答の受信完了→Bを維持、という順序を固定する。
+
 ## 作業開始前の必須手順（最優先・例外なし）
 
 1. エージェントは、調査、計画、コマンド実行、スキル利用、ファイル編集、コミット、プッシュを始める前に、必ずリポジトリ直下の `.\COMMON-AGENTS.md` を開き、先頭から末尾まで全文を読む。
@@ -161,6 +171,20 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - ブラウザ検証は`dev-verify-comment-input.ts`を`test:browser ui`から呼ぶ。専用タブのaddChat境界だけを一時的に置換し、送信成功・失敗を制御する。公開APIへの投稿成功や認証検証とは区別する。IME・重複・文字数境界・投稿不可状態は`test/unit/comment-input-panel.test.ts`で確認する。
 - フォーム内のfocusoutはrelatedTargetで判定する。実Chromeではblur/focusout後のmicrotask時点でもactiveElementがbodyのことがあり、microtaskだけで外へ移動したと判断するとパレットの次ボタンをクリックする前に閉じる。移動先不明時はsetTimeout後に判定する。
 
-## 機能テスト計画の調査（2026-09-20、実装承認待ち）
+## 機能テスト計画の調査と実装（2026-09-20、承認済み）
 
-- `test/fixtures/cdp/offline.ts`はBun内のfetch/XHR差し替えで、ブラウザ全体の通信遮断ではない。`scene.ts`は要求本文を照合せず、URLのパス一致へフォールバックするため、投稿・タグ更新の要求検証へそのまま流用しない。通常の`test:browser`は実サイトへ接続する。拡充方針は`docs/plan-functionality-test.md`を参照し、計画中のオプションを実装済みと扱わない。
+- `test/fixtures/cdp/offline.ts`はBun内のfetch/XHR差し替え。要求照合はURLの意味あるクエリと本文を比較し、パスだけのフォールバックを撤去した。無視するクエリはフィクスチャ側で明示する。本文未記録は空本文だけに一致する。
+- `test:browser`はオフラインが既定。`dev-offline.ts`でページ・iframe・Worker通信を監査し、専用Chromeの禁止プロキシを併用する。配布物の通信境界で`offline-site.ts`と`offline-library.ts`が固定応答を返す。実サイトは`--live`を明示し、投稿・タグ・マイリストの書き込みスイートではliveを拒否する。
+- WorkerはFetch/Target domainを持たない場合がある。親ページでFetchとauto-attach、子でRuntime/Networkを監視し、子を必ずresumeする。CdpSession.closeはPromiseを返し、未完了の監査を回収してから閉じるため必ずawaitする。通信遮断の負例は`guard`スイートで確認する。
+- スイート終了はWebSocketを閉じるだけで済ませず、自分が作成したTargetとBrowserContextも破棄する。`cleanupCdp`で一つの後始末が失敗しても残りを実行する。guardで異なるContext間のlocalStorageとBroadcastChannel隔離も確認する。
+- 生成HLSは`test/fixtures/functionality/media`に置く。MPEG-TSを`.ts`にすると型検査でTypeScriptと誤認するため`.mpegts`を使う。生成手順と採取・加工根拠は同ディレクトリのREADMEを参照する。
+- 設定の全項目検証は`verify-settings-fields.ts`。描画エンジンはコメントdurationを整数msに正規化するため、速度変更の期待値は導入版の公開実装と照合する。全入力の保存成功を、実機・外部サービスを含む全機能効果の保証としない。
+- コメント行メニューの`.menuButton`はiframeへ注入する共通CSSと衝突して実寸法が潰れたため`.comment-row-action`に変更した。新しい標準dialogも、ホストページの背景操作抑止CSSに巻き込まれないよう`futatsume-family`へ所属させる。
+- 一覧のソート描画と関連動画追加には遅延処理がある。内部ソートキーの変化や開始前の`isUpdating=false`を完了判定に使わず、表示行ID／開始から終了への遷移と再取得結果を確認する。
+- 計画と親ケースの対応は`docs/plan-functionality-test.md`・`docs/functionality-test-matrix.md`、実行済み結果は`verification.md`と実行ごとの`run.json`を正本にする。
+- 視聴フィクスチャは採取元の`server-response`と`okReason`も保持する。これがないと視聴ページを検索等として初期化し、前回状態・視聴用設定の検証が実サイトと異なる経路を通る。
+- DataStorageとBaseStateの変更通知はbatchを分離し、配送時の現行値を確認する。遅い旧通知やリスナー内の再入更新で、保存値が1なのに実速度だけ0.4という不整合を生まない。`Config`のimport前検査は`config-validation.ts`、永続化と失敗時復元はDataStorageが担当する。
+- 大百科はwatchの`isNicodicArticleExists=false`だけで不存在を確定しない。`api.dic.nicovideo.jp/v1/articles/article/<タグ>`の404と通信失敗を区別し、成功した有無だけを共有キャッシュする。根拠は2026-09-12公式資産採取と2026-09-20公開GET実測。記事本文はフィクスチャに保存しない。
+- 投稿者一覧は`totalCount`と`page`/`pageSize`で全件取得を判定し、途中失敗や古い動画への応答では現在の一覧を置換しない。マイリスト選択画面の再取得はキャッシュを越える明示経路を使う。
+- `setNextAutoPlay`は次の実srcだけに適用し、空映像への切替で消費しない。最新の明示シーク位置はloadingフラグだけに依存せず保持し、close後のmetadata・接続応答・エラー再試行を破棄する。
+- Firefoxの代表検証は`dev-verify-firefox.ts`でraw BiDi、9340、毎回新しい専用プロファイルを使う。既存`firefox-debug.ps1`は利用者プロファイルを編集するためこの用途で使わない。launcher PIDと実Browser PIDが異なる場合があり、listenerの実PID・起動時刻・実行ファイル・専用profileを照合して停止する。マネージャ導入の保証とは区別する。

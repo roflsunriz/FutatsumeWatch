@@ -1,9 +1,11 @@
+import { verificationDirectory } from './dev-verification-output';
 import { verifyCommentInput } from './dev-verify-comment-input';
-import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
+import { attach, attachBrowser, cleanupCdp, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
+import { verifyMediaIdentity } from './verify-media-identity';
 
-const out = new URL('../dev-assets/verification/', import.meta.url);
+const out = verificationDirectory;
 const checks: string[] = [];
 const root = 'window.FutatsumeWatch';
 const container = `document.querySelector('.fw-player')`;
@@ -63,7 +65,10 @@ async function deepClick(session: CdpSession, selector: string, rootSelector?: s
 async function main(): Promise<void> {
   const browser = await attachBrowser();
   const { targetId } = (await browser.send('Target.createTarget', { url: 'about:blank' })) as { targetId: string };
-  browser.close();
+  const { targetInfo } = (await browser.send('Target.getTargetInfo', { targetId })) as {
+    targetInfo: { browserContextId?: string };
+  };
+  const browserContextId = targetInfo.browserContextId;
   const target = (await listTargets()).find((t) => t.id === targetId);
   if (!target) throw new Error('検証タブがありません');
   const session = await attach(target);
@@ -337,6 +342,7 @@ async function main(): Promise<void> {
     for (const [width, height] of [
       [390, 844],
       [640, 480],
+      [1200, 800],
       [1920, 1080],
       [844, 390],
       [3840, 2160],
@@ -363,6 +369,21 @@ async function main(): Promise<void> {
     await session.send('Emulation.setDeviceMetricsOverride', {
       width: 1280,
       height: 800,
+      deviceScaleFactor: 2,
+      mobile: false,
+    });
+    await reveal(session);
+    await check(
+      session,
+      `(()=>{const c=document.querySelector('[data-futatsume-comment-canvas]'),r=c?.getBoundingClientRect();return devicePixelRatio===2&&r?.width>0&&Math.abs(c.width-r.width*2)<3&&Math.abs(c.height-r.height*2)<3;})()`,
+      'DPR 2でコメントCanvasの画素数と表示寸法を一致'
+    );
+    await click(session, 'togglePlay');
+    await click(session, 'togglePlay');
+    await screenshot(session, 'dpr-2-controls');
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 800,
       deviceScaleFactor: 1,
       mobile: false,
     });
@@ -381,6 +402,7 @@ async function main(): Promise<void> {
       `document.querySelector('[data-shell-action="ab"]').dataset.repeat==='off'`,
       '動画切替でAB指定を解除'
     );
+    if (process.env.FUTATSUME_TEST_OFFLINE === '1') await verifyMediaIdentity(session, 'sm2057168', check);
     await click(session, 'playPreviousVideo');
     await check(
       session,
@@ -395,16 +417,27 @@ async function main(): Promise<void> {
       '閉じるボタンで終了'
     );
     if (errors.length) throw new Error(errors.join('\n'));
-    await Bun.write(new URL('shell-report.json', out), JSON.stringify({ completed: true, checks, errors }, null, 2));
+    await Bun.write(
+      new URL('shell-report.json', out),
+      JSON.stringify({ completed: true, browserContextId, checks, errors }, null, 2)
+    );
   } catch (error) {
     await screenshot(session, 'failure');
     await Bun.write(
       new URL('shell-report.json', out),
-      JSON.stringify({ completed: false, checks, errors, failure: String(error) }, null, 2)
+      JSON.stringify({ completed: false, browserContextId, checks, errors, failure: String(error) }, null, 2)
     );
     throw error;
   } finally {
-    session.close();
+    await cleanupCdp(
+      () => session.close(),
+      // Disposing an owned context already closes all of its pages.
+      () =>
+        process.env.FUTATSUME_TEST_OFFLINE === '1' && browserContextId
+          ? browser.send('Target.disposeBrowserContext', { browserContextId })
+          : browser.send('Target.closeTarget', { targetId }),
+      () => browser.close()
+    );
   }
 }
 await main();

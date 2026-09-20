@@ -1,9 +1,10 @@
 import { FutatsumeWatch } from './futatsume-watch-index';
 import { BaseViewComponent } from '../packages/futatsume/src/parts/base-view-component';
-import { TagEditApi } from '../packages/lib/src/nico/tag-edit-api';
+import { TagEditApi, type TagApiResult } from '../packages/lib/src/nico/tag-edit-api';
 import { Config } from './config';
 import { textUtil } from '../packages/lib/src/text/text-util';
 import { nicoUtil } from '../packages/lib/src/nico/nico-util';
+import { getNicodicArticleExists } from '../packages/lib/src/nico/nico-dic-api';
 
 export interface TagListTagData {
   name: string;
@@ -16,7 +17,7 @@ export interface TagListUpdateParams {
   watchId?: string | null;
   videoId?: string | null;
   token?: string | null;
-  tagEdit?: { editKey: string } | null;
+  tagEdit?: { editKey: string; isEditable?: boolean } | null;
 }
 
 interface TagListViewState {
@@ -31,6 +32,7 @@ interface TagListElmTable {
   videoTagsInner: HTMLElement;
   tagInput: HTMLInputElement;
   form: HTMLFormElement;
+  status: HTMLElement;
 }
 
 interface TagListBaseView {
@@ -43,17 +45,6 @@ interface TagListBaseView {
 
 interface TagListBaseViewCtor {
   new (options: Record<string, unknown>): TagListBaseView;
-}
-
-interface TagApiResult {
-  tags?: TagListTagData[];
-  error_msg?: string;
-}
-
-interface TagEditApiLike {
-  add(request: Record<string, unknown>): Promise<TagApiResult>;
-  remove(request: Record<string, unknown>): Promise<TagApiResult>;
-  load(videoId: unknown, editKey: unknown): Promise<TagApiResult>;
 }
 
 interface TagTextUtil {
@@ -72,11 +63,12 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   protected _shadow!: ShadowRoot | null;
   protected _view!: Element;
   protected _boundOnBodyClick!: (e: Event) => void;
-  private _tagEditApi!: TagEditApiLike;
+  private _tagEditApi!: TagEditApi;
+  private _generation = 0;
+  private _tags: TagListTagData[] = [];
   private _watchId!: string;
   private _videoId!: string;
-  private _token!: string;
-  private _tagEdit!: { editKey: string };
+  private _tagEdit: { editKey: string; isEditable?: boolean } | null = null;
   constructor({ parentNode }: { parentNode: Element }) {
     super({
       parentNode,
@@ -92,7 +84,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
       isEditing: false,
     };
 
-    this._tagEditApi = new (TagEditApi as unknown as new () => TagEditApiLike)();
+    this._tagEditApi = new TagEditApi();
   }
 
   _initDom(...args: unknown[]): void {
@@ -104,6 +96,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
       videoTagsInner: v.querySelector('.videoTagsInner') as HTMLElement,
       tagInput: v.querySelector('.tagInputText') as HTMLInputElement,
       form: v.querySelector('form') as HTMLFormElement,
+      status: v.querySelector('[data-tag-status]') as HTMLElement,
     });
 
     this._elm.tagInput.addEventListener('keydown', this._onTagInputKeyDown.bind(this));
@@ -123,6 +116,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   }
 
   _onCommand(command: string, param: unknown): void {
+    if (this._state.isUpdating && command !== 'tag-search') return;
     switch (command) {
       case 'refresh':
         void this._refreshTag();
@@ -151,11 +145,12 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
         void this._addTag(param as string);
         break;
       case 'removeTag': {
-        const elm = this._elm.videoTags.querySelector(`.tagItem[data-tag-id="${param as string}"]`);
-        if (!elm) {
+        const elm = Array.from(this._elm.videoTags.querySelectorAll<HTMLElement>('.tagItem')).find(
+          (item) => item.dataset.tagId === param
+        );
+        if (!elm || elm.classList.contains('is-Locked')) {
           return;
         }
-        elm.classList.add('is-Removing');
         const data = JSON.parse(elm.getAttribute('data-tag') as string) as { name: string };
         void this._removeTag(param as string, data.name);
         break;
@@ -195,20 +190,14 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     super._onCommand('playlistSetSearchVideo', { word, option });
   }
 
-  update({ tagList = [], watchId = null, videoId = null, token = null, tagEdit = null }: TagListUpdateParams): void {
-    if (watchId) {
-      this._watchId = watchId;
-    }
-    if (videoId) {
-      this._videoId = videoId;
-    }
-    if (token) {
-      this._token = token;
-    }
-    if (tagEdit) {
-      this._tagEdit = tagEdit;
-    }
-
+  update({ tagList = [], watchId = null, videoId = null, tagEdit = null }: TagListUpdateParams): void {
+    this._generation++;
+    document.body.removeEventListener('click', this._boundOnBodyClick);
+    this._watchId = watchId || '';
+    this._videoId = videoId || '';
+    this._tagEdit = tagEdit;
+    this._elm.tagInput.value = '';
+    this._elm.status.textContent = '';
     this.setState({
       isInputing: false,
       isUpdating: false,
@@ -228,17 +217,35 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   }
 
   _update(tagList: TagListTagData[] = []): void {
+    this._tags = tagList.map((tag) => ({ ...tag }));
     const tags: string[] = [];
     tagList.forEach((tag) => {
       tags.push(this._createTag(tag));
     });
-    if (nicoUtil.isLogin()) {
+    if (this._canEdit()) {
       tags.push(this._createToggleInput());
     } else {
-      tags.push(`<span class="text">ログインしていません</span>`);
+      tags.push(
+        `<span class="text">${nicoUtil.isLogin() ? 'この動画のタグは編集できません' : 'ログインしていません'}</span>`
+      );
     }
     this.setState({ isEmpty: tagList.length < 1 });
     this._elm.videoTagsInner.innerHTML = tags.join('');
+    const generation = this._generation;
+    for (const tag of this._tags) {
+      if (tag.isNicodicArticleExists === true) continue;
+      void getNicodicArticleExists(tag.name).then((exists) => {
+        if (generation !== this._generation) return;
+        const current = this._tags.find((value) => value.name === tag.name);
+        const item = Array.from(this._elm.videoTagsInner.querySelectorAll<HTMLElement>('.tagItem')).find(
+          (node) => node.dataset.tagId === tag.name
+        );
+        if (!current || !item) return;
+        current.isNicodicArticleExists = exists;
+        const menu = item.querySelector('futatsume-tag-item-menu');
+        if (menu) menu.outerHTML = this._createDicIcon(tag.name, exists);
+      });
+    }
   }
 
   _createToggleInput() {
@@ -251,124 +258,70 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
         </div>`.trim();
   }
 
-  _onApiResult(watchId: string, result: TagApiResult): void {
-    if (watchId !== this._watchId) {
-      return; // 通信してる間に動画変わったぽい
-    }
-    const err = result.error_msg;
-    if (err) {
-      this.emit('command', 'alert', err);
-    }
+  private _canEdit(): boolean {
+    return nicoUtil.isLogin() && !!this._videoId && !!this._tagEdit?.editKey && this._tagEdit.isEditable !== false;
+  }
 
-    this.update(result.tags as unknown as TagListUpdateParams);
+  private async _runUpdate(operation: () => Promise<TagApiResult>, clearInput = false): Promise<void> {
+    if (this._state.isUpdating) return;
+    const generation = this._generation;
+    this._elm.status.textContent = '';
+    this.setState({ isUpdating: true });
+    try {
+      const result = await operation();
+      if (generation !== this._generation) return;
+      this._update(result.tags);
+      if (clearInput) this._elm.tagInput.value = '';
+      this._endInput();
+      this._endEdit();
+    } catch (error) {
+      if (generation !== this._generation) return;
+      this._elm.status.textContent =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : 'タグの処理に失敗しました。再試行してください。';
+    } finally {
+      if (generation === this._generation) this.setState({ isUpdating: false });
+    }
   }
 
   _addTag(tag: string): Promise<void> {
-    this.setState({ isUpdating: true });
-
-    const wait3s = this._makeWait(3000);
-    const watchId = this._watchId;
-    const videoId = this._videoId;
-    const csrfToken = this._token;
-    const editKey = this._tagEdit?.editKey;
-    const addTag = (): Promise<TagApiResult> => {
-      return this._tagEditApi.add({
-        videoId,
-        tag,
-        csrfToken,
-        editKey,
-      });
-    };
-
-    return Promise.all([addTag(), wait3s]).then((results) => {
-      const result = results[0];
-      if (watchId !== this._watchId) {
-        return;
-      } // 待ってる間に動画が変わったぽい
-      if (result && result.tags) {
-        this._update(result.tags);
-      }
-      this.setState({ isInputing: false, isUpdating: false, isEditing: false });
-
-      if (result.error_msg) {
-        this.emit('command', 'alert', result.error_msg);
-      }
-    });
+    const value = tag.trim();
+    if (!this._canEdit() || !value || this._tags.some((item) => item.name === value)) return Promise.resolve();
+    return this._runUpdate(
+      () => this._tagEditApi.add({ videoId: this._videoId, tag: value, editKey: this._tagEdit!.editKey }),
+      true
+    );
   }
 
-  _removeTag(tagId: string, tag = ''): Promise<void> {
-    this.setState({ isUpdating: true });
-
-    const wait3s = this._makeWait(3000);
-    const watchId = this._watchId;
-    const videoId = this._videoId;
-    const csrfToken = this._token;
-    const editKey = this._tagEdit?.editKey;
-    const removeTag = (): Promise<TagApiResult> => {
-      return this._tagEditApi.remove({
-        videoId,
-        tag,
-        id: tagId,
-        csrfToken,
-        editKey,
-      });
-    };
-
-    return Promise.all([removeTag(), wait3s]).then((results) => {
-      const result = results[0];
-      if (watchId !== this._watchId) {
-        return;
-      } // 待ってる間に動画が変わったぽい
-      if (result && result.tags) {
-        this._update(result.tags);
-      }
-      this.setState({ isUpdating: false });
-
-      if (result.error_msg) {
-        this.emit('command', 'alert', result.error_msg);
-      }
-    });
+  _removeTag(_tagId: string, tag = ''): Promise<void> {
+    if (!this._canEdit() || this._tags.some((item) => item.name === tag && item.isLocked)) return Promise.resolve();
+    return this._runUpdate(() =>
+      this._tagEditApi.remove({ videoId: this._videoId, tag, editKey: this._tagEdit!.editKey })
+    );
   }
 
   _refreshTag(): Promise<void> {
-    this.setState({ isUpdating: true });
-    const watchId = this._watchId;
-    const wait1s = this._makeWait(1000);
-    const load = (): Promise<TagApiResult> => {
-      return this._tagEditApi.load(this._videoId, this._tagEdit.editKey);
-    };
-
-    return Promise.all([load(), wait1s]).then((results) => {
-      const result = results[0];
-      if (watchId !== this._watchId) {
-        return;
-      } // 待ってる間に動画が変わったぽい
-      this._update(result.tags);
-      this.setState({ isUpdating: false, isInputing: false, isEditing: false });
-    });
+    if (!this._videoId) return Promise.resolve();
+    return this._runUpdate(() => this._tagEditApi.load(this._videoId, this._tagEdit?.editKey || ''));
   }
 
-  _makeWait(ms: number): Promise<number> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(ms);
-      }, ms);
-    });
-  }
-
-  _createDicIcon(text: string, hasDic: boolean): string {
+  _createDicIcon(text: string, hasDic?: boolean): string {
     const href = `https://dic.nicovideo.jp/a/${encodeURIComponent(text)}`;
-    // TODO: 本家がHTML5に完全移行したらこのアイコンも消えるかもしれないので代替を探す
     const src = hasDic
       ? 'https://live.nicovideo.jp/img/2012/watch/tag_icon002.png'
       : 'https://live.nicovideo.jp/img/2012/watch/tag_icon003.png';
     const icon = `<img class="dicIcon" src="${src}">`;
 
-    const hasNicodic = hasDic ? 1 : 0;
+    const hasNicodic = hasDic === undefined ? 'unknown' : hasDic ? '1' : '0';
+    const title = hasDic === undefined ? '大百科の有無は未取得' : hasDic ? '大百科あり' : '大百科なし';
     return `<futatsume-tag-item-menu
         class="tagItemMenu"
         data-text="${encodeURIComponent(text)}"
         data-has-nicodic="${hasNicodic}"
+        title="${title}"
       ><a target="_blank" class="nicodic" href="${href}">${icon}</a></futatsume-tag-item-menu>`;
   }
 
@@ -401,14 +354,15 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
 
   _createTag(tag: TagListTagData): string {
     const tagName = tag.name;
-    const dic = this._createDicIcon(tagName, !!tag.isNicodicArticleExists);
-    const del = this._createDeleteButton(tagName);
+    const dic = this._createDicIcon(tagName, tag.isNicodicArticleExists);
+    const escapedName = textUtil.escapeHtml(tagName);
+    const del = this._createDeleteButton(escapedName);
     const link = this._createLink(tagName);
     const search = this._createSearch(tagName);
     const data = (textUtil as unknown as TagTextUtil).escapeHtml(JSON.stringify(tag));
     const className = tag.isLocked ? 'tagItem is-Locked' : 'tagItem';
 
-    return `<li class="${className}" data-tag="${data}" data-tag-id="${tagName}">${dic}${del}${link}${search}</li>`;
+    return `<li class="${className}" data-tag="${data}" data-tag-id="${escapedName}">${dic}${del}${link}${search}</li>`;
   }
 
   _onTagInputKeyDown(e: KeyboardEvent): void {
@@ -426,18 +380,15 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   }
 
   _onTagInputSubmit(e: Event): void {
-    if (this._state.isUpdating) {
-      return;
-    }
     e.preventDefault();
     e.stopPropagation();
+    if (this._state.isUpdating) return;
     const val = (this._elm.tagInput.value || '').trim();
     if (!val) {
       this._endInput();
       return;
     }
     this._onCommand('addTag', val);
-    this._elm.tagInput.value = '';
   }
 
   _onBodyClick(): void {
@@ -446,6 +397,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   }
 
   _beginEdit(): void {
+    if (!this._canEdit() || this._state.isUpdating) return;
     this.setState({ isEditing: true });
     document.body.addEventListener('click', this._boundOnBodyClick);
   }
@@ -456,11 +408,12 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   }
 
   _beginInput(): void {
+    if (!this._canEdit() || this._state.isUpdating) return;
     this.setState({ isInputing: true });
     document.body.addEventListener('click', this._boundOnBodyClick);
     this._elm.tagInput.value = '';
     window.setTimeout(() => {
-      this._elm.tagInput.focus();
+      if (this._state.isInputing) this._elm.tagInput.focus();
     }, 100);
   }
 
@@ -892,6 +845,7 @@ TagListView.__shadow__ = `
           </form>
         </div>
       </div>
+      <div data-tag-status role="status" aria-live="polite"></div>
     </div>
   `.trim();
 
@@ -960,6 +914,9 @@ class TagItemMenu extends HTMLElement {
           left: 0;
           font-size: 0.8em;
           font-weight: bolder;
+        }
+        .has-nicodic .toggle::after {
+          content: '百';
         }
 
         .menu {
@@ -1042,7 +999,7 @@ class TagItemMenu extends HTMLElement {
   }
   constructor() {
     super();
-    this.hasNicodic = parseInt(this.dataset.hasNicodic as string) !== 0;
+    this.hasNicodic = this.dataset.hasNicodic === '1';
     this.text = (textUtil as unknown as TagTextUtil).escapeToZenkaku(this.dataset.text as string);
     const shadow = (this._shadow = this.attachShadow({ mode: 'open' }));
     shadow.innerHTML = (

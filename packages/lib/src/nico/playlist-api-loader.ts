@@ -17,11 +17,6 @@ interface PlaylistUrlPair {
   cacheKey: string;
 }
 
-interface PlaylistApiEnvelope {
-  meta: { status: number };
-  data: { items?: unknown };
-}
-
 interface CacheStorageLike {
   getItem: (key: string) => unknown;
   setItem: (key: string, data: unknown, expireTime?: number) => void;
@@ -81,31 +76,74 @@ const PlaylistApiLoader = (() => {
         throw new Error(`プレイリストの取得失敗(3) ${type}`);
       }
 
-      // nvapi でソートされた結果をもらうのでそのままキャッシュする
-      const cacheData: unknown = cacheStorage.getItem(cacheKey);
-      if (cacheData) {
-        return cacheData;
+      // 旧版は先頭ページだけを保存していたため、完全取得のキャッシュを区別する。
+      const completeKey = `${cacheKey};complete-v1;${url}`;
+      const cacheData: unknown = cacheStorage.getItem(completeKey);
+      if (Array.isArray(cacheData)) return cacheData;
+      const endpoint = new URL(url);
+      const size = Number(endpoint.searchParams.get('pageSize') || 100);
+      const firstPage = Number(endpoint.searchParams.get('page') || 1);
+      if (!Number.isInteger(size) || size < 1 || size > 100 || firstPage !== 1) {
+        throw new Error('プレイリストの全件取得には1ページ目と1〜100件のページサイズを指定してください。');
       }
-
-      // nvapi に X-Frontend-Id header が必要
-      const fetched: unknown = await (netUtil as unknown as NetUtilLike)
-        .fetch(url, {
+      endpoint.searchParams.set('pageSize', String(size));
+      const items: Array<Record<string, unknown>> = [];
+      const ids = new Set<string>();
+      let total: number | undefined;
+      for (let page = 1; ; page++) {
+        endpoint.searchParams.set('page', String(page));
+        const response = await (netUtil as unknown as NetUtilLike).fetch(endpoint.toString(), {
           headers: { 'X-Frontend-Id': frontendId, 'X-Frontend-Version': frontendVersion },
           credentials: 'include',
-        })
-        .then((r: Response) => r.json())
-        .catch((e: unknown) => {
-          throw new Error(`プレイリストの取得失敗(2) ${type}`, e as ErrorOptions);
         });
-
-      const result = fetched as PlaylistApiEnvelope;
-      if (result.meta.status !== 200 || !result.data.items) {
-        throw new Error(`プレイリストの取得失敗(1) ${type}`, result as unknown as ErrorOptions);
+        if (!response.ok)
+          throw new Error(
+            `プレイリストの${page}ページ目を取得できませんでした (HTTP ${response.status})。一覧は変更していません。`
+          );
+        const raw: unknown = await response.json();
+        const record = (value: unknown): value is Record<string, unknown> =>
+          typeof value === 'object' && value !== null && !Array.isArray(value);
+        if (
+          !record(raw) ||
+          !record(raw.meta) ||
+          raw.meta.status !== 200 ||
+          !record(raw.data) ||
+          !Array.isArray(raw.data.items)
+        )
+          throw new Error('プレイリストの応答形式が不正です。一覧は変更していません。');
+        const count = raw.data.totalCount;
+        if (count !== undefined) {
+          if (
+            typeof count !== 'number' ||
+            !Number.isSafeInteger(count) ||
+            count < 0 ||
+            (total !== undefined && total !== count)
+          )
+            throw new Error('取得中にプレイリストの件数が変わりました。再取得してください。');
+          total = count;
+        } else if (type === 'user-uploaded')
+          throw new Error('投稿動画の総件数を確認できません。一覧は変更していません。');
+        for (const entry of raw.data.items as unknown[]) {
+          if (!record(entry)) throw new Error('プレイリストの動画情報が不正です。');
+          const id =
+            typeof entry.watchId === 'string'
+              ? entry.watchId
+              : record(entry.content) && typeof entry.content.id === 'string'
+                ? entry.content.id
+                : null;
+          if (!id || ids.has(id))
+            throw new Error('プレイリストの動画情報が不正または重複しています。再取得してください。');
+          ids.add(id);
+          items.push(entry);
+        }
+        if (total !== undefined && items.length > total)
+          throw new Error('プレイリストの総件数と動画数が一致しません。');
+        if (total !== undefined ? items.length === total : raw.data.items.length < size) break;
+        if (raw.data.items.length === 0 || items.length >= 10000)
+          throw new Error('プレイリストを最後まで取得できません。一覧は変更していません。');
       }
-
-      const data: unknown = result.data.items;
-      cacheStorage.setItem(cacheKey, data, CACHE_EXPIRE_TIME);
-      return data;
+      cacheStorage.setItem(completeKey, items, CACHE_EXPIRE_TIME);
+      return items;
     }
 
     // 動画シリーズ
