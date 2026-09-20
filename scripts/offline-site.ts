@@ -74,7 +74,7 @@ export function createOfflineSite() {
   // 追加機能の固定文書も同じ通信監査を通す。URL単位で明示登録する。
   const documents = new Map<string, string>();
   const resources = new Map<string, FixtureReply>();
-  const auth = { isLogin: true, isPremium: false, postKeyStatus: 200 };
+  const auth = { isLogin: true, isPremium: false, postKeyStatus: 200, pageMetadata: true };
   const faults = {
     postStatus: 200,
     postDelayMs: 0,
@@ -138,14 +138,16 @@ export function createOfflineSite() {
     const markup = path.startsWith('/watch/') ? row : search;
     // 採取元のserver-responseではokReason="PURELY"。視聴ページとして
     // 初期化される契約も保持し、検索ページ扱いで検証をすり抜けない。
-    const watchMeta = path.startsWith('/watch/')
-      ? '<meta name="server-response" content="{&quot;meta&quot;:{&quot;status&quot;:200},&quot;data&quot;:{&quot;response&quot;:{&quot;okReason&quot;:&quot;PURELY&quot;}}}">'
-      : '';
+    const watchMeta =
+      auth.pageMetadata && path.startsWith('/watch/')
+        ? '<meta name="server-response" content="{&quot;meta&quot;:{&quot;status&quot;:200},&quot;data&quot;:{&quot;response&quot;:{&quot;okReason&quot;:&quot;PURELY&quot;}}}">'
+        : '';
     // ページ側の最小SPA契約。製品のopen/seek等には触れない。
     const commonHeader = JSON.stringify({
       initConfig: { user: { isLogin: auth.isLogin, isPremium: auth.isLogin && auth.isPremium } },
     });
-    return `<!doctype html><html lang="ja"><head><meta charset="utf-8">${watchMeta}<link rel="icon" href="data:,"><style>body{margin:0;background:#eee}main{padding:24px}main>div{display:flex;align-items:center;gap:16px}h1{font-size:20px}img{width:48px}article{padding:20px}</style></head><body><header id="CommonHeader" data-common-header='${commonHeader}'></header><div id="root"><main id="fixture-host" aria-label="nicovideo-content">${markup}</main></div><script>const row=${JSON.stringify(row)},search=${JSON.stringify(search)};function render(){document.querySelector('#fixture-host').innerHTML=location.pathname.startsWith('/watch/')?row:search;}document.addEventListener('click',e=>{const a=e.target.closest('main a[href^="/watch/"]');if(a&&!e.defaultPrevented){e.preventDefault();history.pushState({fixture:true},'',a.getAttribute('href'));render();}});addEventListener('popstate',render);</script></body></html>`;
+    const header = auth.pageMetadata ? `<header id="CommonHeader" data-common-header='${commonHeader}'></header>` : '';
+    return `<!doctype html><html lang="ja"><head><meta charset="utf-8">${watchMeta}<link rel="icon" href="data:,"><style>body{margin:0;background:#eee}main{padding:24px}main>div{display:flex;align-items:center;gap:16px}h1{font-size:20px}img{width:48px}article{padding:20px}</style></head><body>${header}<div id="root"><main id="fixture-host" aria-label="nicovideo-content">${markup}</main></div><script>const row=${JSON.stringify(row)},search=${JSON.stringify(search)};function render(){document.querySelector('#fixture-host').innerHTML=location.pathname.startsWith('/watch/')?row:search;}document.addEventListener('click',e=>{const a=e.target.closest('main a[href^="/watch/"]');if(a&&!e.defaultPrevented){e.preventDefault();history.pushState({fixture:true},'',a.getAttribute('href'));render();}});addEventListener('popstate',render);</script></body></html>`;
   }
   return {
     writes,

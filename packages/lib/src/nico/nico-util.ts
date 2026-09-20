@@ -31,6 +31,9 @@ interface CommonHeaderData {
   };
 }
 
+let watchViewerRequest = '';
+let watchViewer: { isLogin: boolean; isPremium: boolean } | undefined;
+
 interface TweetWindowParams {
   watchId: string;
   duration: number;
@@ -42,6 +45,31 @@ interface TweetWindowParams {
 //===BEGIN===
 
 const nicoUtil = {
+  beginWatchViewer: (requestId: string): void => {
+    // Scope API-derived identity to one playback request, never a persistent login override.
+    watchViewerRequest = requestId;
+    watchViewer = undefined;
+  },
+  updateWatchViewer: (requestId: string, viewer: unknown): boolean => {
+    if (!requestId || requestId !== watchViewerRequest) return false;
+    const valid =
+      typeof viewer === 'object' &&
+      viewer !== null &&
+      !Array.isArray(viewer) &&
+      'id' in viewer &&
+      typeof viewer.id === 'number' &&
+      Number.isSafeInteger(viewer.id) &&
+      viewer.id > 0 &&
+      'isPremium' in viewer &&
+      typeof viewer.isPremium === 'boolean';
+    watchViewer = { isLogin: valid, isPremium: valid && viewer.isPremium === true };
+    return true;
+  },
+  clearWatchViewer: (requestId: string): void => {
+    if (requestId !== watchViewerRequest) return;
+    watchViewerRequest = '';
+    watchViewer = undefined;
+  },
   parseWatchQuery: (query: string): WatchQueryResult => {
     try {
       const result = textUtil.parseQuery(query) as unknown as WatchQueryResult;
@@ -129,6 +157,7 @@ const nicoUtil = {
   },
   isLegacyHeader: (): boolean => !document.querySelector('#CommonHeader[data-common-header]'),
   isPremiumLegacy: (): boolean => {
+    if (!document.querySelector('#topline, #CommonHeader')) return false;
     const a = 'a[href^="https://account.nicovideo.jp/premium/register"]';
     return !document.querySelector(`#topline ${a}, #CommonHeader ${a}`);
   },
@@ -143,9 +172,11 @@ const nicoUtil = {
     return !document.querySelector(`#topline ${a}, #CommonHeader ${a}`);
   },
   isPremium: (): boolean =>
-    nicoUtil.isLegacyHeader() ? nicoUtil.isPremiumLegacy() : !!nicoUtil.getCommonHeader().initConfig.user.isPremium,
+    watchViewer?.isPremium ??
+    (nicoUtil.isLegacyHeader() ? nicoUtil.isPremiumLegacy() : !!nicoUtil.getCommonHeader().initConfig?.user?.isPremium),
   isLogin: (): boolean =>
-    nicoUtil.isLegacyHeader() ? nicoUtil.isLoginLegacy() : !!nicoUtil.getCommonHeader().initConfig.user.isLogin,
+    watchViewer?.isLogin ??
+    (nicoUtil.isLegacyHeader() ? nicoUtil.isLoginLegacy() : !!nicoUtil.getCommonHeader().initConfig?.user?.isLogin),
   getPageLanguage: (): string => {
     try {
       const h = document.getElementsByClassName('html')[0] as HTMLElement;

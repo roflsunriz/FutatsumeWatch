@@ -117,6 +117,16 @@ export class CommentInputPanel extends Emitter {
   get isAutoPause(): boolean {
     return this.params.playerConfig.props.autoPauseCommentInput;
   }
+  updateViewer({ isLoggedIn, isPremium }: { isLoggedIn: boolean; isPremium: boolean }): void {
+    this.params.isLoggedIn = isLoggedIn;
+    const template = document.createElement('template');
+    template.innerHTML = commentFormTemplate(this.text, isLoggedIn && isPremium);
+    this.require('.commentColorOptions').replaceChildren(
+      ...template.content.querySelector('.commentColorOptions')!.childNodes
+    );
+    this.updateSelection();
+    this.updateAvailability();
+  }
   private get unavailable(): string {
     const state = this.params.playerState;
     if (!this.params.isLoggedIn) return this.text.login;

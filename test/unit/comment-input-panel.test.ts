@@ -59,6 +59,27 @@ afterEach(() => {
   for (const container of containers.splice(0)) container.remove();
 });
 
+test('遅いviewer到着で投稿可否とプレミアム色を更新し本文と他の禁止条件を保持する', async () => {
+  const f = create(false);
+  f.input.value = '取得前の本文';
+  f.commands.value = 'red ue';
+  expect(f.input.disabled).toBe(true);
+  f.panel.updateViewer({ isLoggedIn: true, isPremium: true });
+  expect(f.input.disabled).toBe(false);
+  expect(f.container.querySelector('[data-comment-command="red2"]')).not.toBeNull();
+  expect(f.input.value).toBe('取得前の本文');
+  expect(f.commands.value).toBe('red ue');
+  f.state.isLoading = true;
+  f.panel.updateViewer({ isLoggedIn: true, isPremium: false });
+  expect(f.input.disabled).toBe(true);
+  expect(f.container.querySelector('[data-comment-command="red2"]')).toBeNull();
+  f.state.isLoading = false;
+  f.panel.updateViewer({ isLoggedIn: false, isPremium: false });
+  await f.panel.submit();
+  expect(f.posts).toHaveLength(0);
+  expect(f.input.value).toBe('取得前の本文');
+});
+
 test('送信中の重複を防ぎ、成功後だけ本文を消しコマンドを保持する', async () => {
   const f = create();
   f.input.value = ' 本文\n次の行 ';

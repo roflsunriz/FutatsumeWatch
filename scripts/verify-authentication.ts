@@ -54,9 +54,14 @@ export async function verifyAuthentication(source: string): Promise<string[]> {
     );
     if (site.writes.length) throw Error('ゲスト表示だけで書込み要求が発生しました');
     site.auth.isLogin = true;
+    site.auth.pageMetadata = false;
     site.auth.postKeyStatus = 401;
     await openDocument();
     await check(`!document.querySelector('.commentInput').disabled`, 'ログイン情報の新文書で投稿入力を有効化');
+    await check(
+      `!document.querySelector('#CommonHeader,meta[name="server-response"]') && !document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-guest') && window.FutatsumeWatch.util.isLogin() && !window.FutatsumeWatch.util.isPremium()`,
+      'ヘッダー不在でも取得した一般会員viewerを入力・guest表示へ反映'
+    );
     await clickVisible(page, '.commentInput');
     await page.send('Input.insertText', { text: '認証拒否からの復帰' });
     for (const type of ['keyDown', 'keyUp'])

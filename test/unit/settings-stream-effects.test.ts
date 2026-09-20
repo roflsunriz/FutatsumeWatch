@@ -224,6 +224,7 @@ async function choose(
   const state: Record<string, unknown> = {};
   const context = {
     _requestId: 'current',
+    _view: { updateViewer() {} },
     _watchId: 'sm9',
     _playerConfig: {
       props: {

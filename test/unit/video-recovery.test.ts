@@ -215,6 +215,7 @@ test('読込・session・NG・YouTube失敗の実経路はcloseで予約を破�
   const context = {
     _requestId: 'a',
     commentRequestSequence: 0,
+    _view: { updateViewer() {} },
     videoRecovery: { schedule: (action: () => void) => tasks.schedule(action, 5), reset: () => tasks.reset() },
     commentPosts: { reset() {} },
     _state: { isError: false, setState() {} },

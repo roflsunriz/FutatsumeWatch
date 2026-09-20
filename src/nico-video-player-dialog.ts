@@ -9,6 +9,7 @@ import type { RawVideoInfoData, ResumeCacheEntry } from './video-info';
 import { CommentInputPanel } from './comment-input-panel';
 import { CommentPostSession, normalizeCommentCommands } from './comment-post-session';
 import { VideoRecoveryTasks } from './video-recovery-tasks';
+import { nicoUtil } from '../packages/lib/src/nico/nico-util';
 import { NicoChat } from '../packages/futatsume/src/commentLayer/nico-chat';
 import { CommentPanel } from './comment-panel';
 import { VideoControlBar } from './video-control-bar';
@@ -187,6 +188,7 @@ interface DialogVideoError {
 }
 
 interface DialogVideoInfo {
+  viewerInfo: unknown;
   watchId: string;
   videoId: string;
   title: string;
@@ -499,16 +501,14 @@ class NicoVideoPlayerDialogView extends Emitter {
       }, 100)
     );
 
-    $dialog
-      .on('dblclick', (e: Event) => {
-        if (!e.target || (e.target as Element).id !== 'futatsumeVideoPlayerDialog') {
-          return;
-        }
-        if (config.props.enableDblclickClose) {
-          this.emit('command', 'close');
-        }
-      })
-      .toggleClass('is-guest', !(util as unknown as DialogUtilView).isLogin());
+    $dialog.on('dblclick', (e: Event) => {
+      if (!e.target || (e.target as Element).id !== 'futatsumeVideoPlayerDialog') {
+        return;
+      }
+      if (config.props.enableDblclickClose) {
+        this.emit('command', 'close');
+      }
+    });
 
     this.hoverMenu = new VideoHoverMenu({
       playerContainer: container,
@@ -521,6 +521,7 @@ class NicoVideoPlayerDialogView extends Emitter {
       playerState: state,
       isLoggedIn: (util as unknown as DialogUtilView).isLogin(),
     });
+    this.updateViewer();
 
     this.commentInput.on('post', (e: unknown, chat: unknown, cmd: unknown) => this.emit('postChat', e, chat, cmd));
 
@@ -727,6 +728,14 @@ class NicoVideoPlayerDialogView extends Emitter {
   _onVideoInfoLoad(videoInfo: unknown): void {
     this.videoInfoPanel.update(videoInfo as Parameters<VideoInfoPanel['update']>[0]);
     this.shell?.updateVideo(videoInfo as VideoInfoModel);
+  }
+  updateViewer(): void {
+    const isLoggedIn = nicoUtil.isLogin(),
+      isPremium = nicoUtil.isPremium();
+    this._state.isRegularUser = !isPremium;
+    if (!this.commentInput) return;
+    this._$dialog.toggleClass('is-guest', !isLoggedIn);
+    this.commentInput.updateViewer({ isLoggedIn, isPremium });
   }
   _onVideoInfoFail(videoInfo: unknown): void {
     if (videoInfo) {
@@ -2381,7 +2390,6 @@ class NicoVideoPlayerDialog extends Emitter {
 
     this.refreshLastPlayerId();
     if (!reload) this.reloadPlayback = undefined;
-    const requestId = (this._requestId = 'play-' + Math.random());
     const videoWatchOptions = (this._videoWatchOptions = new VideoWatchOptions(watchId, options, this._playerConfig));
 
     if (
@@ -2394,8 +2402,11 @@ class NicoVideoPlayerDialog extends Emitter {
       return;
     }
 
+    const requestId = (this._requestId = 'play-' + Math.random());
     this.videoRecovery.reset();
     this.commentPosts.reset();
+    nicoUtil.beginWatchViewer(requestId);
+    this._view.updateViewer();
     window.console.log('%copen video: ', 'color: blue;', watchId);
     window.console.time('動画選択から再生可能までの時間 watchId=' + watchId);
 
@@ -2502,6 +2513,8 @@ class NicoVideoPlayerDialog extends Emitter {
       videoInfoData as RawVideoInfoData,
       localCacheData as { resume?: ResumeCacheEntry[] }
     ) as unknown as DialogVideoInfo);
+    nicoUtil.updateWatchViewer(requestId, videoInfo.viewerInfo);
+    this._view.updateViewer();
     this._watchId = videoInfo.watchId;
     void WatchInfoCacheDb.put(this._watchId, { videoInfo });
     let serverType: string;
@@ -2986,6 +2999,8 @@ class NicoVideoPlayerDialog extends Emitter {
     void global.emitter.emitAsync('DialogPlayerClose');
   }
   _refresh(): void {
+    nicoUtil.clearWatchViewer(this._requestId);
+    this._view.updateViewer();
     this._requestId = '';
     this.commentRequestSequence++;
     this.videoRecovery.reset();
