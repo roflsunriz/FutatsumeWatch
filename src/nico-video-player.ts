@@ -1417,9 +1417,7 @@ class VideoPlayer extends Emitter {
     }
 
     this._changePlayer('normal');
-    if (url.indexOf('dmc.nico') >= 0 && location.host.indexOf('.nicovideo.jp') >= 0) {
-      (this._video as HTMLVideoElement).crossOrigin = 'use-credentials';
-    } else if ((this._video as HTMLVideoElement).crossOrigin) {
+    if ((this._video as HTMLVideoElement).crossOrigin) {
       (this._video as HTMLVideoElement).crossOrigin = null;
     }
 
@@ -1534,10 +1532,6 @@ class VideoPlayer extends Emitter {
    */
   fastSeek(sec: number) {
     if (typeof (this._video as unknown as { fastSeek?: unknown }).fastSeek !== 'function' || this._isYouTube) {
-      return (this.currentTime = sec);
-    }
-    // dmc動画はキーフレーム間隔が1秒とか意味不明な仕様なのでcurrentTimeでいい
-    if (this._src.indexOf('dmc.nico') >= 0) {
       return (this.currentTime = sec);
     }
     (this._video as unknown as { fastSeek(sec: number): void }).fastSeek(sec);

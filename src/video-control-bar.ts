@@ -149,8 +149,8 @@ class VideoControlBar extends Emitter {
   declare _$seekBarContainer: VcbQuery;
   declare _$playbackRateSelectMenu: VcbQuery;
   declare _$playbackRateMenu: VcbQuery;
-  declare _$videoServerTypeMenu: VcbQuery;
-  declare _$videoServerTypeSelectMenu: VcbQuery;
+  declare _$videoQualityMenu: VcbQuery;
+  declare _$videoQualitySelectMenu: VcbQuery;
   declare $resumePointers: VcbQuery;
   declare _pointer: SmoothSeekBarPointer;
   declare _seekBarToolTip: SeekBarToolTip;
@@ -196,7 +196,7 @@ class VideoControlBar extends Emitter {
     this._initializeDom();
     this._initializePlaybackRateSelectMenu();
     this._initializeVolumeControl();
-    this._initializeVideoServerTypeSelectMenu();
+    this._initializeVideoQualitySelectMenu();
 
     global.debug.videoControlBar = this;
   }
@@ -214,8 +214,8 @@ class VideoControlBar extends Emitter {
       _duration: '.duration',
       _playbackRateMenu: '.playbackRateMenu',
       _playbackRateSelectMenu: '.playbackRateSelectMenu',
-      _videoServerTypeMenu: '.videoServerTypeMenu',
-      _videoServerTypeSelectMenu: '.videoServerTypeSelectMenu',
+      _videoQualityMenu: '.videoQualityMenu',
+      _videoQualitySelectMenu: '.videoQualitySelectMenu',
       _resumePointer: 'futatsume-seekbar-label',
       _bufferRange: '.bufferRange',
       _seekRange: '.seekRange',
@@ -390,10 +390,9 @@ class VideoControlBar extends Emitter {
     setVolumeBar(this._playerConfig.props.volume);
     this._playerConfig.onkey('volume', setVolumeBar);
   }
-  _initializeVideoServerTypeSelectMenu(): void {
+  _initializeVideoQualitySelectMenu(): void {
     const config = this._playerConfig;
-    const $button = this._$videoServerTypeMenu;
-    const $select = this._$videoServerTypeSelectMenu;
+    const $select = this._$videoQualitySelectMenu;
 
     const updateDomandVideoQuality = (value: unknown): void => {
       const $dq = $select.find('.domandVideoQuality > li');
@@ -401,30 +400,14 @@ class VideoControlBar extends Emitter {
       $select.find('.select-domand-' + (value as string)).addClass('selected');
     };
 
-    const updateDmcVideoQuality = (value: unknown): void => {
-      const $dq = $select.find('.dmcVideoQuality > li');
-      $dq.removeClass('selected');
-      $select.find('.select-dmc-' + (value as string)).addClass('selected');
-    };
-
-    const onVideoServerType = (type: unknown, videoSessionInfo: unknown): void => {
-      $button.raf
-        .removeClass('is-domand-playing is-dmc-playing')
-        .raf.addClass(`is-${type === 'dmc' ? 'dmc' : 'domand'}-playing`);
-      $select.find('.serverType').removeClass('selected');
-      const $selectServer = $select.find(`.select-server-${type === 'dmc' ? 'dmc' : 'domand'}`);
-      $selectServer.addClass('selected');
-      $selectServer
-        .find('.currentVideoQuality')
-        .raf.text((videoSessionInfo as { video: { label: string } }).video.label);
+    const onVideoQuality = (videoSessionInfo: unknown): void => {
+      $select.find('.currentVideoQuality').raf.text((videoSessionInfo as { video: { label: string } }).video.label);
     };
 
     updateDomandVideoQuality(config.props.domandVideoQuality);
-    updateDmcVideoQuality(config.props.dmcVideoQuality);
     config.onkey('domandVideoQuality', updateDomandVideoQuality);
-    config.onkey('dmcVideoQuality', updateDmcVideoQuality);
 
-    this.player.on('videoServerType', onVideoServerType);
+    this.player.on('videoQuality', onVideoQuality);
   }
   _onCommandEvent(e: Event): void {
     const command = ((e as CustomEvent).detail as { command: string }).command;
@@ -1402,42 +1385,32 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     transform: scale(0.75);
   }
 
-  .videoServerTypeMenu {
+  .videoQualityMenu {
     min-width: 40px;
     font-size: 16px;
     white-space: nowrap;
   }
-  .videoServerTypeMenu.is-dmc-playing  {
-    text-shadow:
-      0px 0px 8px var(--enabled-button-color),
-      0px 0px 6px var(--enabled-button-color),
-      0px 0px 4px var(--enabled-button-color),
-      0px 0px 2px var(--enabled-button-color);
-  }
-  .is-mouseMoving .videoServerTypeMenu.is-dmc-playing {
-    background: #336;
-  }
-  .is-youTube .videoServerTypeMenu {
+  .is-youTube .videoQualityMenu {
     text-shadow:
       0px 0px 8px #fc9, 0px 0px 6px #fc9, 0px 0px 4px #fc9, 0px 0px 2px #fc9 !important;
   }
-  .is-youTube .videoServerTypeMenu:not(.forYouTube),
-  .videoServerTypeMenu.forYouTube {
+  .is-youTube .videoQualityMenu:not(.forYouTube),
+  .videoQualityMenu.forYouTube {
     display: none;
   }
-  .is-youTube .videoServerTypeMenu.forYouTube {
+  .is-youTube .videoQualityMenu.forYouTube {
     display: inline-block;
   }
 
 
-  .videoServerTypeMenu:focus-within {
+  .videoQualityMenu:focus-within {
     background: #888;
   }
-  .videoServerTypeMenu:focus-within .tooltip {
+  .videoQualityMenu:focus-within .tooltip {
     display: none;
   }
 
-  .videoServerTypeSelectMenu  {
+  .videoQualitySelectMenu  {
     bottom: 44px;
     left: 50%;
     transform: translate(-50%, 0);
@@ -1449,76 +1422,47 @@ VideoControlBar.BASE_SEEKBAR_HEIGHT = 10;
     cursor: default;
   }
 
-  .videoServerTypeSelectMenu > ul {
+  .videoQualitySelectMenu > ul {
     margin: 2px 8px;
   }
 
-  .videoServerTypeSelectMenu > ul > li.selected:hover {
+  .videoQualitySelectMenu > ul > li.selected:hover {
     background: none;
   }
 
-  .videoServerTypeSelectMenu li:not(.selected) {
+  .videoQualitySelectMenu li:not(.selected) {
     font-weight: initial;
   }
 
-  .videoServerTypeSelectMenu li.selected > span {
+  .videoQualitySelectMenu li.selected > span {
     pointer-events: none;
     text-shadow: 0 0 4px #99f, 0 0 8px #99f !important;
   }
 
-  .videoServerTypeSelectMenu .domandVideoQuality,
-  .videoServerTypeSelectMenu .dmcVideoQuality {
+  .videoQualitySelectMenu .domandVideoQuality {
     font-size: 80%;
   }
 
-  .videoServerTypeSelectMenu .currentVideoQuality {
+  .videoQualitySelectMenu .currentVideoQuality {
     color: #ccf;
     font-size: 80%;
     text-align: center;
   }
 
-  .videoServerTypeSelectMenu .domandVideoQuality > li,
-  .videoServerTypeSelectMenu .dmcVideoQuality > li {
+  .videoQualitySelectMenu .domandVideoQuality > li {
     margin-right: 0;
     margin-left: 0;
     padding-right: 12px;
     padding-left: 12px;
   }
 
-  .videoServerTypeSelectMenu .domandVideoQuality > li > span,
-  .videoServerTypeSelectMenu .dmcVideoQuality > li > span {
+  .videoQualitySelectMenu .domandVideoQuality > li > span {
     margin-left: 12px;
   }
 
-  .videoServerTypeSelectMenu .domandVideoQuality > li.selected > span::before,
-  .videoServerTypeSelectMenu .dmcVideoQuality > li.selected > span::before {
+  .videoQualitySelectMenu .domandVideoQuality > li.selected > span::before {
     left: 12px;
   }
-
-  /* domandを使用不能の時はdomand画質選択を薄く */
-  .futatsumePlayerContainer:not(.is-domandAvailable) .serverType.select-server-domand {
-    opacity: 0.4;
-    pointer-events: none;
-    text-shadow: none !important;
-  }
-
-  /* dmcを使用不能の時はdmc画質選択を薄く */
-  .futatsumePlayerContainer:not(.is-dmcAvailable) .serverType.select-server-dmc {
-    opacity: 0.4;
-    pointer-events: none;
-    text-shadow: none !important;
-  }
-
-
-  /* 選択していないシステムの画質選択を隠す */
-  .videoServerTypeMenu:not(.is-domand-playing) .domandVideoQuality,
-  .videoServerTypeMenu:not(.is-domand-playing) .serverType.select-server-domand .currentVideoQuality,
-  .videoServerTypeMenu:not(.is-dmc-playing) .dmcVideoQuality,
-  .videoServerTypeMenu:not(.is-dmc-playing) .serverType.select-server-dmc .currentVideoQuality {
-    display: none;
-  }
-
-
 
   @media screen and (max-width: 768px) {
     .controlItemContainer.center {
@@ -1795,19 +1739,18 @@ VideoControlBar.__tpl__ = `
 
         <div class="scalingUI">
 
-          <div class="videoServerTypeMenu controlButton forYouTube" data-command="reload" title="FutatsumeTube解除">
+          <div class="videoQualityMenu controlButton forYouTube" data-command="reload" title="FutatsumeTube解除">
             <div class="controlButtonInner">画</div>
           </div>
-          <div class="videoServerTypeMenu controlButton" tabindex="-1" data-has-submenu="1">
+          <div class="videoQualityMenu controlButton" tabindex="-1" data-has-submenu="1">
             <div class="controlButtonInner">画</div>
 
-            <div class="tooltip">動画サーバー・画質</div>
-            <div class="videoServerTypeSelectMenu futatsumePopupMenu futatsumeSubMenu">
+            <div class="tooltip">画質</div>
+            <div class="videoQualitySelectMenu futatsumePopupMenu futatsumeSubMenu">
               <div class="triangle"></div>
-              <p class="caption">動画サーバー・画質</p>
+              <p class="caption">画質</p>
               <ul>
-                <li class="serverType select-server-domand selected" data-command="update-videoServerType" data-param="domand">
-                  <span>新システムを使用</span>
+                <li class="selected">
                   <p class="currentVideoQuality"></p>
                   <ul class="domandVideoQuality">
                     <li class="select-domand-auto"  data-command="update-domandVideoQuality" data-param="auto"><span>自動(auto)</span><//li>
@@ -1816,18 +1759,6 @@ VideoControlBar.__tpl__ = `
                     <li class="select-domand-480p"  data-command="update-domandVideoQuality" data-param="480p"><span>480p</span><//li>
                     <li class="select-domand-360p"  data-command="update-domandVideoQuality" data-param="360p"><span>360p</span><//li>
                     <li class="select-domand-144p"  data-command="update-domandVideoQuality" data-param="144p"><span>144p</span><//li>
-                  </ul>
-                </li>
-
-                <li class="serverType select-server-dmc" data-command="update-videoServerType" data-param="dmc">
-                  <span>旧システムを使用</span>
-                  <p class="currentVideoQuality"></p>
-                  <ul class="dmcVideoQuality">
-                    <li class="select-dmc-auto"     data-command="update-dmcVideoQuality" data-param="auto"><span>自動(auto)</span><//li>
-                    <li class="select-dmc-veryhigh" data-command="update-dmcVideoQuality" data-param="veryhigh"><span>超(1080) 優先</span><//li>
-                    <li class="select-dmc-high"     data-command="update-dmcVideoQuality" data-param="high"><span>高(720) 優先</span><//li>
-                    <li class="select-dmc-mid"      data-command="update-dmcVideoQuality" data-param="mid"><span>中(480-540)</span><//li>
-                    <li class="select-dmc-low"      data-command="update-dmcVideoQuality" data-param="low"><span>低(360)</span><//li>
                   </ul>
                 </li>
              </ul>

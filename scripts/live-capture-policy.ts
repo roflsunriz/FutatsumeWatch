@@ -104,7 +104,7 @@ export class LiveReadGate {
       if (url.origin !== this.localOrigin) return 'outside-preflight';
     } else {
       if (
-        !['nicovideo.jp', 'nimg.jp', 'dmc.nico', 'smilevideo.jp'].some(
+        !['nicovideo.jp', 'nimg.jp', 'smilevideo.jp'].some(
           (host) => url.hostname === host || url.hostname.endsWith('.' + host)
         )
       )

@@ -131,7 +131,7 @@ export async function initializeHls(): Promise<void> {
 
     const DEFAULT_CONFIG: Record<string, HlsConfigValue> = {
       // hls.js 以外のパラメータ
-      segment_duration: 4000, // dmc!
+      segment_duration: 4000,
       use_native_hls: true, // SafariなどブラウザがHLS対応だったらそっちを使う
       show_video_label: false, //
       autoAbrEwmaDefaultEstimate: true,

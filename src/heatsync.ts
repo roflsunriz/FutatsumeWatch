@@ -82,8 +82,7 @@ interface HeatsyncBoundHandlers {
 }
 interface HeatsyncConfigElements {
   red: HTMLInputElement;
-  dmc: HTMLInputElement;
-  smile: HTMLInputElement;
+  max: HTMLInputElement;
   minDur: HTMLInputElement;
   enabled: HTMLInputElement;
   ignores: HTMLInputElement;
@@ -289,19 +288,25 @@ interface HeatsyncShadowHost extends Element {
 
         'turbo.enabled': true,
         'turbo.red': 1,
-        'turbo.smile-blue': 1.7,
-        'turbo.dmc-blue': 1.7,
+        'turbo.blue': 1.7,
         'turbo.minDuration': 30,
 
         'turbo.ignoreTags': 'VOCALOID 音楽 作業用BGM 演奏してみた 歌ってみた',
       };
+
+      const maxRateStorageKey = prefix + 'turbo.blue';
+      const previousMaxRateStorageKey = prefix + 'turbo.dmc-blue';
+      if (localStorage.getItem(maxRateStorageKey) === null) {
+        const previousMaxRate = localStorage.getItem(previousMaxRateStorageKey);
+        if (previousMaxRate !== null) localStorage.setItem(maxRateStorageKey, previousMaxRate);
+      }
 
       const config: Record<string, HeatsyncConfigValue> = {};
 
       emitter.refresh = (emitChange = false) => {
         Object.keys(defaultConfig).forEach((key) => {
           const storageKey = prefix + key;
-          if (Object.prototype.hasOwnProperty.call(localStorage, storageKey)) {
+          if (localStorage.getItem(storageKey) !== null) {
             try {
               const lastValue = config[key];
               const newValue = JSON.parse(localStorage.getItem(storageKey) as string) as HeatsyncConfigValue;
@@ -531,14 +536,11 @@ interface HeatsyncShadowHost extends Element {
         const current = video.currentTime;
         const per = current / duration;
         const perNear = Math.min(duration, current + 3) / duration;
-        const isDmc = /dmc\.nico/.test(video.src);
         const map = this._map;
         const pos = Math.floor(map.length * per);
         const posNear = Math.floor(map.length * perNear);
 
-        const blue = parseFloat(
-          String(isDmc ? config.getValue('turbo.dmc-blue') : config.getValue('turbo.smile-blue'))
-        );
+        const blue = parseFloat(String(config.getValue('turbo.blue')));
         const red = parseFloat(String(config.getValue('turbo.red')));
 
         const pt = Math.max(map[pos]!, map[posNear]!);
@@ -793,8 +795,7 @@ interface HeatsyncShadowHost extends Element {
         );
 
         this._elm.red = v.querySelector('*[data-config-name="turbo.red"]') as HTMLInputElement;
-        this._elm.dmc = v.querySelector('*[data-config-name="turbo.dmc-blue"]') as HTMLInputElement;
-        this._elm.smile = v.querySelector('*[data-config-name="turbo.smile-blue"]') as HTMLInputElement;
+        this._elm.max = v.querySelector('*[data-config-name="turbo.blue"]') as HTMLInputElement;
         this._elm.minDur = v.querySelector('*[data-config-name="turbo.minDuration"]') as HTMLInputElement;
         this._elm.enabled = v.querySelector('*[data-config-name="turbo.enabled"]') as HTMLInputElement;
         this._elm.ignores = v.querySelector('*[data-config-name="turbo.ignoreTags"]') as HTMLInputElement;
@@ -820,8 +821,7 @@ interface HeatsyncShadowHost extends Element {
           }
         };
         this._elm.red.addEventListener('change', onChange);
-        this._elm.dmc.addEventListener('change', onChange);
-        this._elm.smile.addEventListener('change', onChange);
+        this._elm.max.addEventListener('change', onChange);
         this._elm.minDur.addEventListener('change', onChange);
         this._elm.enabled.addEventListener('change', onChange);
         this._elm.ignores.addEventListener('change', onChange);
@@ -859,8 +859,7 @@ interface HeatsyncShadowHost extends Element {
 
       _onBeforeShow(): void {
         this._elm.red.value = '' + config.getValue('turbo.red');
-        this._elm.dmc.value = '' + config.getValue('turbo.dmc-blue');
-        this._elm.smile.value = '' + config.getValue('turbo.smile-blue');
+        this._elm.max.value = '' + config.getValue('turbo.blue');
         this._elm.minDur.value = '' + config.getValue('turbo.minDuration');
         this._elm.ignores.value = '' + config.getValue('turbo.ignoreTags');
 
@@ -980,36 +979,9 @@ interface HeatsyncShadowHost extends Element {
       <dialog class="root HeatSyncConfigPanel">
         <p class="title">†HeatSync†</p>
 
-        <div class="speedSelect dmc">
-          <span>最高倍率(新仕様サーバー)</span>
-          <select data-config-name="turbo.dmc-blue" data-type="number">
-            <option value="3">3.0</option>
-            <option>2.9</option>
-            <option>2.8</option>
-            <option>2.7</option>
-            <option>2.6</option>
-            <option>2.5</option>
-            <option>2.4</option>
-            <option>2.3</option>
-            <option>2.2</option>
-            <option>2.1</option>
-            <option value="2">2.0</option>
-            <option>1.9</option>
-            <option>1.8</option>
-            <option>1.7</option>
-            <option>1.6</option>
-            <option>1.5</option>
-            <option>1.4</option>
-            <option>1.3</option>
-            <option>1.2</option>
-            <option>1.1</option>
-            <option value="1">1</option>
-          </select>
-        </div>
-
-        <div class="speedSelect smile">
-          <span>最高倍率(旧仕様サーバー)</span>
-          <select data-config-name="turbo.smile-blue" data-type="number">
+        <div class="speedSelect maximum">
+          <span>最高倍率</span>
+          <select data-config-name="turbo.blue" data-type="number">
             <option value="3">3.0</option>
             <option>2.9</option>
             <option>2.8</option>

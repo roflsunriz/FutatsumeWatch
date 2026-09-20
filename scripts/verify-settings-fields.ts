@@ -36,7 +36,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'player',
     panel: 'general',
     id: 'P2-07',
-    keys: 'autoPlay enableResume enableTogglePlayOnClick autoFullScreen enableSingleton enableHeatMap overrideGinza overrideWatchLink enableStoryboard uaa.enable enableAutoMylistComment autoDisableNew enableNicosJumpVideo video.hls.enableOnlyRequired touch.enable bestFutatsumeTube loadLinkedChannelVideo menuScale'.split(
+    keys: 'autoPlay enableResume enableTogglePlayOnClick autoFullScreen enableSingleton enableHeatMap overrideGinza overrideWatchLink enableStoryboard uaa.enable enableAutoMylistComment enableNicosJumpVideo touch.enable bestFutatsumeTube loadLinkedChannelVideo menuScale'.split(
       ' '
     ),
   },
@@ -60,7 +60,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'advanced',
     panel: 'advanced',
     id: 'P2-10',
-    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoDisableNew autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command wordRegFilter wordRegFilterFlags videoTagFilter videoOwnerFilter debug'.split(
+    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command wordRegFilter wordRegFilterFlags videoTagFilter videoOwnerFilter debug'.split(
       ' '
     ),
   },
@@ -83,7 +83,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'heatsync',
     panel: 'heatsync',
     id: 'P2-14',
-    keys: 'turbo.dmc-blue turbo.smile-blue turbo.red turbo.minDuration turbo.ignoreTags turbo.enabled'.split(' '),
+    keys: 'turbo.blue turbo.red turbo.minDuration turbo.ignoreTags turbo.enabled'.split(' '),
   },
 ];
 

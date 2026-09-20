@@ -11,6 +11,8 @@ interface HeatSyncRuntime {
 const previousProduct = Reflect.get(window, 'HeatSync') as unknown;
 const previousWatch = Reflect.get(window, 'FutatsumeWatch') as unknown;
 const previousCustomEvent = globalThis.CustomEvent;
+const previousMaxRate = localStorage.getItem('HeatSync_config_turbo.blue');
+const previousNamedMaxRate = localStorage.getItem('HeatSync_config_turbo.dmc-blue');
 const emitter = new Emitter();
 const dialog = new Emitter();
 const video = document.createElement('video');
@@ -46,13 +48,14 @@ let clear: ReturnType<typeof spyOn<typeof globalThis, 'clearInterval'>>;
 const settings: Record<string, Value> = {
   'turbo.enabled': false,
   'turbo.red': 1,
-  'turbo.smile-blue': 2,
-  'turbo.dmc-blue': 2,
+  'turbo.blue': 2,
   'turbo.minDuration': 30,
   'turbo.ignoreTags': '',
 };
 
 beforeAll(async () => {
+  localStorage.removeItem('HeatSync_config_turbo.blue');
+  localStorage.setItem('HeatSync_config_turbo.dmc-blue', '2.4');
   // 時計だけを固定する。登録された本物のSyncerタイマーを実行し、制御関数は置換しない。
   interval = spyOn(globalThis, 'setInterval').mockImplementation(((callback: TimerHandler, delay?: number) => {
     if (typeof callback !== 'function' || delay !== 500) throw new Error('予期しないタイマー');
@@ -75,6 +78,7 @@ beforeAll(async () => {
   }
   product = Reflect.get(window, 'HeatSync') as HeatSyncRuntime;
   expect(product.isReady).toBe(true);
+  expect(product.config.getValue('turbo.blue')).toBe(2.4);
   for (const key of product.config.getKeys()) {
     originalSettings.set(key, product.config.getValue(key));
     originalStorage.set(key, localStorage.getItem('HeatSync_config_' + key));
@@ -100,6 +104,10 @@ afterAll(() => {
     if (value === null) localStorage.removeItem('HeatSync_config_' + key);
     else localStorage.setItem('HeatSync_config_' + key, value);
   }
+  if (previousMaxRate === null) localStorage.removeItem('HeatSync_config_turbo.blue');
+  else localStorage.setItem('HeatSync_config_turbo.blue', previousMaxRate);
+  if (previousNamedMaxRate === null) localStorage.removeItem('HeatSync_config_turbo.dmc-blue');
+  else localStorage.setItem('HeatSync_config_turbo.dmc-blue', previousNamedMaxRate);
   interval.mockRestore();
   clear.mockRestore();
   globalThis.CustomEvent = previousCustomEvent;

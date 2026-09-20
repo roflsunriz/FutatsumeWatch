@@ -111,7 +111,6 @@ test('実loader完了経路は要求世代照合後にviewerと入力パネル�
   const raw = (await Bun.file('test/fixtures/video-info-raw-data.json').json()) as RawVideoInfoData;
   raw.watchApiData.viewerInfo = { id: 123, isPremium: false };
   const stop = new Error('test stops before media network');
-  raw.isDmc = false;
   const cache = spyOn(WatchInfoCacheDb, 'put').mockResolvedValue({});
   const media = spyOn(MediaSessionApi, 'updateByVideoInfo').mockImplementation(() => undefined);
   const session = spyOn(VideoSessionWorker, 'create').mockRejectedValue(stop);

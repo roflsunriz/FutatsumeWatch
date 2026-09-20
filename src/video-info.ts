@@ -14,50 +14,6 @@ interface DomandVideoItem extends DomandQualityItem {
   label?: string;
 }
 
-interface DmcAudioItem {
-  id: string;
-  isAvailable: boolean;
-  metadata: { levelIndex: number };
-}
-
-interface DmcVideoItem {
-  id: string;
-  isAvailable: boolean;
-  metadata: { levelIndex: number; resolution: { height: number } };
-}
-
-interface DmcSession {
-  urls: { url: string }[];
-  signature: string;
-  token: string;
-  serviceUserId: string;
-  contentId: string;
-  playerId: string;
-  recipeId: string;
-  protocols?: string[];
-  contentKeyTimeout?: number;
-  priority: number;
-  authTypes: string[];
-  transferPresets?: string[];
-  heartbeatLifetime?: number;
-}
-
-interface DmcMovieData {
-  movie: {
-    session: DmcSession;
-    audios: DmcAudioItem[];
-    videos: DmcVideoItem[];
-  };
-  storyboard?: { session: StoryboardSessionData };
-  import_version?: number;
-  trackingId?: string;
-  encryption?: string | null;
-}
-
-interface StoryboardSessionData {
-  [key: string]: unknown;
-}
-
 interface DomandRawData {
   accessRightKey?: string;
   audios: DomandQualityItem[];
@@ -149,7 +105,6 @@ interface RawVideoInfoData {
   viewerInfo: unknown;
   ngFilters: NgFilterItem[];
   msgInfo: MessageInfo;
-  dmcInfo?: (Omit<Partial<DmcMovieData>, 'movie'> & { movie?: Partial<DmcMovieData['movie']> }) | null;
   domandInfo?: DomandRawData;
   linkedChannelVideo?: LinkedChannelVideo | null;
   playlist: { playlist?: RelatedVideoItem[] };
@@ -162,7 +117,6 @@ interface RawVideoInfoData {
   community?: { id?: string; name?: string };
   csrfToken?: string;
   isDomand: boolean;
-  isDmc: boolean;
 }
 //
 class JSONable {
@@ -236,128 +190,6 @@ class DomandInfo extends JSONable {
 
   get isStoryboardAvailable(): boolean {
     return this._rawData.isStoryboardAvailable;
-  }
-}
-
-class DmcInfo extends JSONable {
-  private readonly _rawData: DmcMovieData;
-  private readonly _session: DmcSession;
-  constructor(rawData: DmcMovieData) {
-    super();
-    this._rawData = rawData;
-    this._session = rawData.movie.session;
-  }
-
-  get apiUrl(): string {
-    return this._session.urls[0]!.url;
-  }
-
-  get urls(): { url: string }[] {
-    return this._session.urls;
-  }
-
-  get audios(): DmcAudioItem[] {
-    // 履歴的経緯: 真偽値を返す比較（1/0のみ）。順序は現行通り温存する。
-    return this._rawData.movie.audios.toSorted((a, b) => (b.metadata.levelIndex > a.metadata.levelIndex ? 1 : 0));
-  }
-
-  get availableAudios(): DmcAudioItem[] {
-    return this.audios.filter((a) => a.isAvailable);
-  }
-
-  get availableAudioIds(): string[] {
-    return this.availableAudios.map((a) => a.id);
-  }
-
-  get videos(): DmcVideoItem[] {
-    // 履歴的経緯: 真偽値を返す比較（1/0のみ）。順序は現行通り温存する。
-    return this._rawData.movie.videos.toSorted((a, b) => (b.metadata.levelIndex > a.metadata.levelIndex ? 1 : 0));
-  }
-
-  get availableVideos(): DmcVideoItem[] {
-    return this.videos.filter((v) => v.isAvailable);
-  }
-
-  get availableVideoIds(): string[] {
-    return this.availableVideos.map((v) => v.id);
-  }
-
-  get signature(): string {
-    return this._session.signature;
-  }
-
-  get token(): string {
-    return this._session.token;
-  }
-
-  get serviceUserId(): string {
-    return this._session.serviceUserId;
-  }
-
-  get contentId(): string {
-    return this._session.contentId;
-  }
-
-  get playerId(): string {
-    return this._session.playerId;
-  }
-
-  get recipeId(): string {
-    return this._session.recipeId;
-  }
-
-  get protocols(): string[] {
-    return this._session.protocols ?? [];
-  }
-
-  get isHLSRequired(): boolean {
-    return !this.protocols.includes('http');
-  }
-
-  get contentKeyTimeout(): number {
-    // 重複定義の後勝ち（フォールバック付き）が現行動作のため、こちらに一本化する。
-    return this._session.contentKeyTimeout || 600 * 1000;
-  }
-
-  get priority(): number {
-    return this._session.priority;
-  }
-
-  get authTypes(): string[] {
-    return this._session.authTypes;
-  }
-
-  get videoFormatList(): DmcVideoItem[] {
-    return (this.videos || []).concat();
-  }
-
-  get hasStoryboard(): boolean {
-    return !!this._rawData.storyboard;
-  }
-
-  get storyboardInfo(): StoryboardSessionData | null {
-    const storyboard = this._rawData.storyboard;
-    return storyboard == null ? null : storyboard.session;
-  }
-
-  get transferPreset(): string {
-    return (this._session.transferPresets || [''])[0] || '';
-  }
-
-  get heartbeatLifetime(): number {
-    return this._session.heartbeatLifetime || 120 * 1000;
-  }
-
-  get importVersion(): number {
-    return this._rawData.import_version || 0;
-  }
-
-  get trackingId(): string {
-    return this._rawData.trackingId || '';
-  }
-
-  get encryption(): string | null {
-    return this._rawData.encryption || null;
   }
 }
 
@@ -447,7 +279,6 @@ class VideoInfoModel extends JSONable {
   private _videoDetail!: VideoDetail;
   private _ngFilters!: NgFilterItem[];
   private _msgInfo!: MessageInfo;
-  private _dmcInfo!: DmcInfo | null;
   private _domandInfo!: DomandInfo | null;
   private _relatedVideo!: { playlist?: RelatedVideoItem[] };
   private _playlistToken!: string;
@@ -474,10 +305,6 @@ class VideoInfoModel extends JSONable {
     this._videoDetail = info.watchApiData.videoDetail;
     this._ngFilters = info.ngFilters;
     this._msgInfo = info.msgInfo;
-    this._dmcInfo =
-      info.dmcInfo != null && info.dmcInfo.movie?.session !== undefined
-        ? new DmcInfo(info.dmcInfo as DmcMovieData)
-        : null;
     this._domandInfo =
       info.domandInfo != null
         ? new DomandInfo(info.domandInfo, info.watchApiData.videoDetail, info.linkedChannelVideo)
@@ -639,14 +466,6 @@ class VideoInfoModel extends JSONable {
     return !!this._videoDetail.commons_tree_exists;
   }
 
-  get isHLSRequired(): boolean {
-    if (this.isDmcAvailable) {
-      return this.dmcInfo!.isHLSRequired;
-    } else {
-      return this.isDomandAvailable;
-    }
-  }
-
   get actionTrackId(): string {
     return this._watchApiData.clientTrackId;
   }
@@ -655,44 +474,20 @@ class VideoInfoModel extends JSONable {
     return this._rawData.isDomand;
   }
 
-  get isDmcAvailable(): boolean {
-    return this._rawData.isDmc;
-  }
-
   get domandInfo(): DomandInfo | null {
     return this._domandInfo;
-  }
-
-  get dmcInfo(): DmcInfo | null {
-    return this._dmcInfo;
   }
 
   get msgInfo(): MessageInfo {
     return this._msgInfo;
   }
 
-  get isDomandOnly(): boolean {
-    return this.isDomandAvailable && !this.isDmcAvailable;
-  }
-
-  get isDmcOnly(): boolean {
-    return this.isDmcAvailable && !this.isDomandAvailable;
-  }
-
   get hasDomandStoryboard(): boolean {
     return this._domandInfo?.isStoryboardAvailable ?? false;
   }
 
-  get hasDmcStoryboard(): boolean {
-    return this._dmcInfo?.hasStoryboard ?? false;
-  }
-
-  get dmcStoryboardInfo(): StoryboardSessionData | null {
-    return this.hasDmcStoryboard ? this._dmcInfo!.storyboardInfo : null;
-  }
-
   get hasStoryboard(): boolean {
-    return this.hasDomandStoryboard || this.hasDmcStoryboard;
+    return this.hasDomandStoryboard;
   }
 
   /**
@@ -824,7 +619,7 @@ class VideoInfoModel extends JSONable {
   }
 
   get extension(): string {
-    if (this.isDomandAvailable || this.isDmcAvailable) {
+    if (this.isDomandAvailable) {
       return 'mp4';
     }
     return 'unknown';
@@ -833,44 +628,9 @@ class VideoInfoModel extends JSONable {
   get community(): { id?: string; name?: string } | null {
     return this._rawData.community ?? null;
   }
-
-  get maybeBetterQualityServerType(): string {
-    if (this.isDomandOnly) {
-      return 'domand';
-    }
-    if (this.isDmcOnly) {
-      return 'dmc';
-    }
-    if (!this.isDmcAvailable) {
-      return 'domand';
-    }
-    if (!this.isDomandAvailable) {
-      return 'dmc';
-    }
-
-    const highestDomand = Math.max(
-      ...this.domandInfo!.availableVideos.map((v) => {
-        return v.height;
-      })
-    );
-
-    const highestDmc = Math.max(
-      ...this.dmcInfo!.availableVideos.map((v) => {
-        return v.metadata.resolution.height;
-      })
-    );
-
-    // Domandのほうが高解像度を持っているなら恐らくDomand側が高画質
-    if (highestDomand >= highestDmc) {
-      return 'domand';
-    }
-
-    // それ以外はdmc
-    return 'dmc';
-  }
 }
 
 //===END===
 
-export { DmcInfo, VideoInfoModel, VideoFilter };
+export { VideoInfoModel, VideoFilter };
 export type { RawVideoInfoData, VideoDetail, MessageInfo, ResumeCacheEntry };

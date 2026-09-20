@@ -11,7 +11,7 @@
 - オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。
 - HeatSyncは動画切替の除外判定より前に適用済み速度を上書きしない。短動画・除外タグへ切替時は自分の加速だけ戻し、手動速度は残す。除外語・タグを同じ大文字化で照合する。回帰は`settings-heatsync.test.ts`。
 - 動画情報パネルへ届くイベント名は`canPlay`。小文字の`canplay`では関連取得と説明欄の自動YouTube切替が接続されない。自動切替の遅延と提供者取得は、設定OFF・新動画・hideで古い応答を無効化する。`settings-video-events.test.ts`は実Emitterからの接続も確認する。
-- 配信方式の高さ比較は両方の`availableVideos`を使う。利用不可の1080pを比較へ含めると、利用可360pの旧方式を720pの現行方式より優先する。旧DMCの条件テストと現行サービスの配信検証を区別する。
+- 映像配信は現行のDomand HLSだけを使用する。終了したDMC/HTTP方式の選択設定、フォールバック、Worker、ストーリーボード、HeatSync分岐を復活させず、画質設定と検証はDomandの利用可能な画質を対象にする。
 - 新規タブとService Workerは専用BrowserContextに限定したbrowser-level監視で初回要求から捕捉する。初期化前popupではFetch・Runtime監視を先にキューへ送り、resumeと全応答を待つ。初回がchrome-errorになったリンクを再読み込みで成功へ変えない。guardはページ・専用Worker・iframe・popup・Service Workerの未登録5要求とWorker先頭例外2件を照合する。
 - Service Workerのエントリーはtarget生成前に取得されるため、guardだけ専用loopbackサーバーの完全一致GETで供給する。別ポート・外部への禁止プロキシは維持する。映像は`test/fixtures/functionality/media-spec.ts`を正本にID別の長さ・比率・色を持ち、表示IDだけで切替成功にしない。
 - 再読み込みの一時的な自動再生指定は、その再読み込みが完了する前に別動画を開いた場合にも解除する。`verify-media-switch.ts`は通信境界でA応答を保留→Bの実映像を確認→A応答の受信完了→Bを維持、という順序を固定する。

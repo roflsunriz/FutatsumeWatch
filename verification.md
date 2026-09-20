@@ -260,7 +260,7 @@ bun audit
 
 - TypeScript: strict、allowJs:false、allowUmdGlobalAccess:false。設定ファイルeslint.config.mjsと生成物を除き、製品・テスト・ビルドスクリプトはTypeScript。
 - ビルド: 配布物1件、ヘッダーの版、classic script構文、外部@requireの不在を検査する。
-- 単体テスト: 旧設定の移行・既存値の優先・破損値、空DOM配列、現行APIのdmcInfo:nullを含む119件。
+- 単体テスト: 旧設定の移行・既存値の優先・破損値、空DOM配列、現行Domand HLSの画質選択とセッション作成を確認する。
 - 依存監査: 旧Babel・webpack・mochaを除去し、jsdomを更新。bun auditで脆弱性0件。
 - CI: .github/workflows/ci.ymlに同じ品質確認と生成物の一致検査を追加。リモートへプッシュしていないためGitHub Actions自体は未実行。
 
@@ -307,13 +307,19 @@ scripts/dev-verify-addons.tsは隔離コンテキストで外部通信を遮断�
 - uQueryのArray.fromが引数なしの配列サブクラスを作ると、undefinedのSymbol.toStringTag参照で停止した。空生成とnullish判定を修正しテスト化した。
 - ES2022のクラスフィールド生成が親の初期化済み_viewを消していた。useDefineForClassFields:falseで従来の生成規則を維持する。
 - 未接続だったConfig・共有イベント・デバッグ情報を実モジュールへ接続し、ホストページのlodash/jQueryを上書きしない構成にした。
-- 現行APIのdmcInfo:nullをVideoInfoModelが扱えず停止した。nullを含む退行テストを追加した。
+- 終了したDMC分岐が現行Domand HLSの選択を複雑にしていたため、旧配信方式の設定・モデル・Worker・テストを削除し、現行経路へ一本化した。
 - バンドルで匿名化されたStoryboardクラスを文字列だけでWorkerへ渡すとSyntaxErrorになる。factoryにEmitterを渡して生成する形へ修正し、Worker例外の収集を追加した。
 - HLS先読みの未定義stats/context参照とバッファ長を修正した。配布HLSは固定したnpm依存を同梱する。
 - TMのチェックボックスは行選択であり有効化ではなかった。.enablerの実状態を確認する。旧verifyはグローバルの存在だけで合格したが、現在は実操作で判定する。
 - CapTubeは作者DOM不在で停止し、埋め込みサムネイルでPromiseを返していた。入力欄のキー横取りも含め修正した。
 
 生成物の再ビルドでSHA-256が一致することも確認した。lintはerror 0件（既存の未使用宣言等のwarnは残る）、format・type-check・build・testは成功。
+
+### 旧配信方式の削除（2026-09-21）
+
+- `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test`（411件）に合格した。
+- `bun run test:browser settings`で削除後の84設定について、表示・保存・再表示・復元と複数画面寸法を確認した。
+- `bun run test:browser player`でDomand HLSの時間進行、画質設定、Worker、コメント、再読み込みを含む55項目に合格した。公開サイトへの通信は行っていない。
 
 ## 未確認・制約と再開条件
 

@@ -34,7 +34,7 @@ export function createStoryboardInfoModel(EmitterBase: typeof Emitter) {
     declare primary: StoryboardPrimary;
     static get blankData(): StoryboardRawData {
       return {
-        format: 'dmc',
+        format: 'domand',
         status: 'fail',
         duration: 1,
         storyboard: {
@@ -98,9 +98,6 @@ export function createStoryboardInfoModel(EmitterBase: typeof Emitter) {
     }
     get duration(): number {
       return (this._rawData.duration as number) * 1;
-    }
-    get isDmc(): boolean {
-      return this._rawData.format === 'dmc';
     }
     get urls(): Array<string | undefined> {
       return this.primary.images.map((img) => img.url);

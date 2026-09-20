@@ -521,27 +521,11 @@ SettingPanel.__tpl__ = `
         </label>
       </div>
 
-      <div class="autoDisableDmc control toggle">
-        <label>
-          <input type="checkbox" class="checkbox" data-setting-name="autoDisableDmc">
-          旧システムのほうが画質が良さそうな時は旧システムを使う<br>
-          <small>たまに誤爆することがあります (回転情報の含まれる動画など)</small>
-        </label>
-      </div>
-
       <div class="enableNicosJumpVideo control toggle">
         <label>
           <input type="checkbox" class="checkbox" data-setting-name="enableNicosJumpVideo"
           data-command="toggle-enableNicosJumpVideo">
           ＠ジャンプで指定された動画をプレイリストに入れる
-        </label>
-      </div>
-
-      <div class="enableOnlyRequired control toggle">
-        <label>
-          <input type="checkbox" class="checkbox" data-setting-name="video.hls.enableOnlyRequired"
-          data-command="toggle-video.hls.enableOnlyRequired">
-          HLSが必須の動画だけHLSを使用する (※ HLSが重い環境用)
         </label>
       </div>
 

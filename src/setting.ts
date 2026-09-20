@@ -555,13 +555,6 @@ interface SettingScriptCssUtil {
             </label>
           </div>
 
-          <div class="autoDisableNew control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="autoDisableNew">
-              旧システムのほうが画質が良さそうな時は旧システムにする。(旧システム側が1280x720を超える時)
-            </label>
-          </div>
-
           <div class="autoFutatsumeTube control toggle">
             <label>
               <input type="checkbox" class="checkbox" data-setting-name="autoFutatsumeTube">

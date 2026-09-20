@@ -133,8 +133,6 @@ class PlayerState extends BaseState {
   declare public isCommunity: boolean;
   declare public isWaybackMode: boolean;
   declare public isDebug: boolean;
-  declare public isDomandAvailable: boolean;
-  declare public isDmcAvailable: boolean;
   declare public isError: boolean;
   declare public isEnded: boolean;
   declare public isLoading: boolean;
@@ -185,8 +183,6 @@ class PlayerState extends BaseState {
       isCommunity: false,
       isWaybackMode: false,
       isDebug: config.props.debug,
-      isDomandAvailable: false,
-      isDmcAvailable: false,
       isError: false,
       isEnded: false,
       isLoading: false,

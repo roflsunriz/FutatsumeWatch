@@ -15,7 +15,6 @@ const ALLOW_HOSTS = [
   'nvapi.nicovideo.jp',
   'public.nvcomment.nicovideo.jp',
   'nmsg.nicovideo.jp',
-  'dmc.nico',
   'smilevideo.jp',
   'tn.smilevideo.jp',
   'secure-dcdn-latest.nicovideo.jp',

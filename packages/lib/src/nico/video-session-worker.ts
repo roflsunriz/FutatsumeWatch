@@ -32,27 +32,6 @@ interface WorkerUtilLike {
   createCrossMessageWorker: (func: (self: VideoWorkerScope) => void, options?: { name?: string }) => CrossMessageWorker;
 }
 
-interface WorkerDmcInfo {
-  playerId: string;
-  authTypes: Record<string, string>;
-  contentKeyTimeout: number;
-  serviceUserId: string;
-  contentId: string;
-  heartbeatLifetime: number;
-  priority: number;
-  recipeId: string;
-  signature: string;
-  token: string;
-  transferPreset?: string;
-  encryption?: { encryptedKey: string; keyUri: string };
-  protocols: Array<string>;
-  availableVideoIds: Array<string>;
-  availableAudioIds: Array<string>;
-  availableVideos: Array<{ id: string; metadata: { label: string } }>;
-  urls: Array<{ url: string; is_well_known_port: boolean }>;
-  [key: string]: unknown;
-}
-
 interface WorkerDomandInfo {
   videoId?: string;
   accessRightKey?: string;
@@ -64,21 +43,6 @@ interface WorkerDomandInfo {
 
 interface SessionVideoInfo {
   domandInfo?: WorkerDomandInfo | null;
-  dmcInfo?: WorkerDmcInfo | null;
-  dmcStoryboardInfo?: {
-    playerId: string;
-    authTypes: Record<string, string>;
-    contentKeyTimeout: number;
-    serviceUserId: string;
-    contentId: string;
-    videos: Array<unknown>;
-    heartbeatLifetime: number;
-    priority: number;
-    recipeId: string;
-    signature: string;
-    token: string;
-    urls: Array<{ url: string }>;
-  } | null;
   actionTrackId?: string;
   duration?: number;
   watchId?: string;
@@ -93,7 +57,6 @@ interface VideoSessionParams {
 }
 
 interface VideoSessionCreateParams {
-  serverType: string;
   videoInfo: SessionVideoInfo;
   videoQuality?: string;
   useHLS?: boolean;
@@ -101,12 +64,8 @@ interface VideoSessionCreateParams {
 
 interface SessionInfo {
   url?: string;
-  sessionId?: string;
   video?: { format?: string; label?: string };
   audioFormat?: string;
-  heartBeatUrl?: string;
-  deleteSessionUrl?: string;
-  lastResponse?: unknown;
 }
 
 interface StoryboardShape {
@@ -127,36 +86,10 @@ interface DomandStoryboardRaw {
   [key: string]: unknown;
 }
 
-interface DmcStoryboardRaw {
-  storyboards?: Array<{
-    images: Array<{ timestamp: number; uri: string }>;
-    thumbnail_width: number;
-    thumbnail_height: number;
-    columns: number;
-    rows: number;
-    interval: number;
-    quality: number;
-  }>;
-  version?: number;
-}
 //===BEGIN===
 
 const VideoSessionWorker = (() => {
   const func = function (self: VideoWorkerScope): void {
-    // 10min
-    const DMC_HEART_BEAT_INTERVAL_MS = 30 * 1000; // 30sec
-
-    const SESSION_CLOSE_FAIL_COUNT = 3;
-
-    const VIDEO_QUALITY: Record<string, string> = {
-      auto: 'auto',
-      veryhigh: '1080p',
-      high: '720p',
-      mid: '480p',
-      low: '360p',
-      verylow: '低画質',
-    };
-
     const util: { fetch: (url: string, params?: UtilFetchParams) => Promise<Response> } = {
       fetch(url: string, params: UtilFetchParams = {}): Promise<Response> {
         // ブラウザによっては location.origin は 'blob:' しか入らない
@@ -198,251 +131,34 @@ const VideoSessionWorker = (() => {
       },
     };
 
-    class DmcPostData {
-      _dmcInfo: WorkerDmcInfo;
-      _videoQuality: string;
-      _useHLS: boolean;
-      _useSSL: boolean;
-      _useWellKnownPort: boolean;
-
-      constructor(
-        dmcInfo: WorkerDmcInfo,
-        videoQuality: string | undefined,
-        { useHLS = true, useSSL = false }: { useHLS?: boolean; useSSL?: boolean; useWellKnownPort?: boolean }
-      ) {
-        this._dmcInfo = dmcInfo;
-        this._videoQuality = videoQuality || 'auto';
-        this._useHLS = useHLS;
-        this._useSSL = useSSL;
-        this._useWellKnownPort = true;
-      }
-
-      toString(): string {
-        const dmcInfo = this._dmcInfo;
-
-        const label = VIDEO_QUALITY[this._videoQuality] || VIDEO_QUALITY.auto;
-        let videos: Array<string>;
-        if (label === VIDEO_QUALITY.auto) {
-          videos = dmcInfo.availableVideoIds;
-        } else {
-          const { availableVideos } = dmcInfo;
-          const video = (availableVideos.find((v) => label === v.metadata.label) ?? availableVideos[0])!;
-          videos = [video.id];
-        }
-
-        const audio = dmcInfo.availableAudioIds[0];
-
-        const contentSrcIdSets =
-          this._useHLS && label === VIDEO_QUALITY.auto
-            ? this._buildAbrContentSrcIdSets(videos, audio)
-            : this._buildContentSrcIdSets(videos, audio);
-
-        const http_parameters: { parameters?: unknown } = {};
-        const parameters: {
-          use_ssl: string;
-          use_well_known_port: string;
-          transfer_preset?: string;
-          segment_duration?: number;
-          encryption?: { hls_encryption_v1: { encrypted_key: string; key_uri: string } };
-        } = {
-          use_ssl: this._useSSL ? 'yes' : 'no',
-          use_well_known_port: this._useWellKnownPort ? 'yes' : 'no',
-          transfer_preset: dmcInfo.transferPreset,
-        };
-        if (this._useHLS) {
-          parameters.segment_duration = 6000; //Config.getValue('video.hls.segmentDuration');
-          if (dmcInfo.encryption) {
-            parameters.encryption = {
-              hls_encryption_v1: {
-                encrypted_key: dmcInfo.encryption.encryptedKey,
-                key_uri: dmcInfo.encryption.keyUri,
-              },
-            };
-          }
-        } else if (!dmcInfo.protocols.includes('http')) {
-          throw new Error('HLSに未対応');
-        }
-        http_parameters.parameters = this._useHLS
-          ? { hls_parameters: parameters }
-          : { http_output_download_parameters: parameters };
-
-        const request = {
-          session: {
-            client_info: {
-              player_id: dmcInfo.playerId,
-            },
-            content_auth: {
-              auth_type: dmcInfo.authTypes[this._useHLS ? 'hls' : 'http'] || 'ht2',
-              content_key_timeout: dmcInfo.contentKeyTimeout,
-              service_id: 'nicovideo',
-              service_user_id: dmcInfo.serviceUserId,
-              //max_content_count: 10,
-            },
-            content_id: dmcInfo.contentId,
-            content_src_id_sets: contentSrcIdSets,
-            content_type: 'movie',
-            content_uri: '',
-            keep_method: {
-              heartbeat: { lifetime: dmcInfo.heartbeatLifetime },
-            },
-            priority: dmcInfo.priority,
-            protocol: {
-              name: 'http',
-              parameters: { http_parameters },
-            },
-            recipe_id: dmcInfo.recipeId,
-
-            session_operation_auth: {
-              session_operation_auth_by_signature: {
-                signature: dmcInfo.signature,
-                token: dmcInfo.token,
-              },
-            },
-
-            timing_constraint: 'unlimited',
-          },
-        };
-
-        return JSON.stringify(request, null, 2);
-      }
-
-      _buildContentSrcIdSets(videos: Array<string>, audio: string | undefined) {
-        return [
-          {
-            content_src_ids: [
-              {
-                src_id_to_mux: {
-                  audio_src_ids: [audio],
-                  video_src_ids: videos,
-                },
-              },
-            ],
-          },
-        ];
-      }
-
-      _buildAbrContentSrcIdSets(videos: Array<string>, audio: string | undefined) {
-        const v = videos.concat();
-        const contentSrcIds: Array<{
-          src_id_to_mux: { audio_src_ids: Array<string | undefined>; video_src_ids: Array<string> };
-        }> = [];
-        while (v.length > 0) {
-          contentSrcIds.push({
-            src_id_to_mux: {
-              audio_src_ids: [audio],
-              video_src_ids: v.concat(),
-            },
-          });
-          v.shift();
-        }
-        return [{ content_src_ids: contentSrcIds }];
-      }
-    }
-
     abstract class VideoSession {
       _videoInfo: SessionVideoInfo;
-      _isPlaying: () => boolean;
-      _pauseCount: number;
-      _failCount: number;
-      _lastResponse: unknown;
       _videoQuality: string;
       _videoSessionInfo: SessionInfo;
       _isDeleted: boolean;
-      _isAbnormallyClosed: boolean;
-      _isClosed?: boolean;
-      _createdAt!: number;
-      _heartBeatInterval!: number;
-      _heartBeatTimer: ReturnType<typeof setInterval> | null;
-      _useSSL: boolean;
       _useHLS: boolean;
-      _useWellKnownPort: boolean;
-      _lastUpdate!: number;
-      _heartbeatLifetime!: number;
       abstract _createSession(): Promise<SessionInfo & { type: string }>;
-      _heartBeat(): void {}
       abstract _deleteSession(): Promise<unknown>;
 
-      static create({ serverType, ...params }: VideoSessionCreateParams) {
-        switch (serverType) {
-          case 'domand':
-            return new DomandSession(params);
-          case 'dmc':
-            return new DmcSession(params);
-          default:
-            throw new Error('Unknown server type');
-        }
+      static create(params: VideoSessionCreateParams) {
+        return new DomandSession(params);
       }
 
       constructor({ videoInfo, videoQuality, useHLS }: VideoSessionParams) {
         this._videoInfo = videoInfo;
 
-        this._isPlaying = () => true;
-        this._pauseCount = 0;
-        this._failCount = 0;
-        this._lastResponse = '';
         this._videoQuality = videoQuality || 'auto';
         this._videoSessionInfo = {};
         this._isDeleted = false;
-        this._isAbnormallyClosed = false;
 
-        this._heartBeatTimer = null;
-
-        this._useSSL = true;
         this._useHLS = !!useHLS;
-        this._useWellKnownPort = true;
-
-        this._onHeartBeatSuccess = this._onHeartBeatSuccess.bind(this);
-        this._onHeartBeatFail = this._onHeartBeatFail.bind(this);
       }
 
       async connect() {
-        this._createdAt = Date.now();
         return await this._createSession();
       }
 
-      enableHeartBeat() {
-        this.disableHeartBeat();
-        this._heartBeatTimer = setInterval(this._onHeartBeatInterval.bind(this), this._heartBeatInterval);
-      }
-
-      changeHeartBeatInterval(interval: number) {
-        if (this._heartBeatTimer) {
-          clearInterval(this._heartBeatTimer);
-        }
-        this._heartBeatInterval = interval;
-        this._heartBeatTimer = setInterval(this._onHeartBeatInterval.bind(this), this._heartBeatInterval);
-      }
-
-      disableHeartBeat() {
-        if (this._heartBeatTimer) {
-          clearInterval(this._heartBeatTimer);
-        }
-        this._heartBeatTimer = null;
-      }
-
-      _onHeartBeatInterval() {
-        if (this._isClosed) {
-          return;
-        }
-        this._heartBeat();
-      }
-
-      _onHeartBeatSuccess(result: { data?: unknown }): void {
-        // サブクラスの応答処理と同じ引数契約を保つ。
-        void result;
-      }
-
-      _onHeartBeatFail(): void {
-        this._failCount++;
-        if (this._failCount >= SESSION_CLOSE_FAIL_COUNT) {
-          this._isAbnormallyClosed = true;
-          void this.close();
-        }
-      }
-
       async close() {
-        this._isClosed = true;
-        this.disableHeartBeat();
         return await this._deleteSession();
       }
 
@@ -454,32 +170,16 @@ const VideoSessionWorker = (() => {
         return { ...this._videoSessionInfo, type: this.serverType };
       }
 
-      set info({ url, sessionId, video, audioFormat, heartBeatUrl, deleteSessionUrl, lastResponse }: SessionInfo) {
+      set info({ url, video, audioFormat }: SessionInfo) {
         this._videoSessionInfo = {
           url,
-          sessionId,
           video,
           audioFormat,
-          heartBeatUrl,
-          deleteSessionUrl,
-          lastResponse,
         };
-      }
-
-      get isDomand() {
-        return this.serverType === 'domand';
-      }
-
-      get isDmc() {
-        return this.serverType === 'dmc';
       }
 
       get isDeleted() {
         return !!this._isDeleted;
-      }
-
-      get isAbnormallyClosed() {
-        return this._isAbnormallyClosed;
       }
     }
 
@@ -549,14 +249,12 @@ const VideoSessionWorker = (() => {
           throw new Error('動画配信APIの応答が不正です');
         }
 
-        this._lastResponse = result.data || {};
-        const lastResponse = this._lastResponse as { contentUrl?: string; expireTime?: string };
+        const lastResponse = result.data || {};
         const {
           contentUrl,
           // createTime,
           expireTime,
         } = lastResponse;
-        this._lastUpdate = Date.now();
         this._expireTime = new Date(expireTime as string);
 
         this.info = {
@@ -566,7 +264,6 @@ const VideoSessionWorker = (() => {
             label: videoLabel,
           },
           audioFormat,
-          lastResponse: result,
         };
         console.timeEnd('create Domand session');
         return this.info;
@@ -601,164 +298,12 @@ const VideoSessionWorker = (() => {
       }
     }
 
-    class DmcSession extends VideoSession {
-      _heartBeatInterval: number;
-      _dmcInfo: WorkerDmcInfo;
-      _heartBeatUrl!: string;
-      _deleteSessionUrl!: string;
-
-      constructor(params: VideoSessionParams) {
-        super(params);
-
-        this._heartBeatInterval = DMC_HEART_BEAT_INTERVAL_MS;
-        this._onHeartBeatSuccess = this._onHeartBeatSuccess.bind(this);
-        this._onHeartBeatFail = this._onHeartBeatFail.bind(this);
-        this._lastUpdate = Date.now();
-        this._heartbeatLifetime = this._heartBeatInterval;
-        this._dmcInfo = this._videoInfo.dmcInfo!;
-      }
-
-      _createSession(): Promise<SessionInfo & { type: string }> {
-        const dmcInfo = this._dmcInfo;
-        console.time('create DMC session');
-        const baseUrl = (dmcInfo.urls.find((url) => url.is_well_known_port === this._useWellKnownPort) ||
-          dmcInfo.urls[0])!.url;
-        return new Promise<SessionInfo & { type: string }>((resolve, reject) => {
-          const url = `${baseUrl}?_format=json`;
-
-          this._heartbeatLifetime = dmcInfo.heartbeatLifetime;
-          const postData = new DmcPostData(dmcInfo, this._videoQuality, {
-            useHLS: this.useHLS,
-            useSSL: url.startsWith('https://'),
-            useWellKnownPort: true,
-          });
-
-          util
-            .fetch(url, {
-              method: 'post',
-              timeout: 10000,
-              dataType: 'text',
-              body: postData.toString(),
-            })
-            .then((res: Response) => res.json())
-            .then(
-              (json: {
-                data?: {
-                  session?: {
-                    id?: string;
-                    content_uri?: string;
-                    content_src_id_sets?: Array<{
-                      content_src_ids: Array<{
-                        src_id_to_mux: { video_src_ids: Array<string>; audio_src_ids: Array<string> };
-                      }>;
-                    }>;
-                  };
-                };
-              }) => {
-                const data = json.data || {},
-                  session = data.session || {};
-                const sessionId = session.id;
-                const content_src_id_sets = session.content_src_id_sets!;
-                const {
-                  video_src_ids: [videoFormat],
-                  audio_src_ids: [audioFormat],
-                } = content_src_id_sets[0]!.content_src_ids[0]!.src_id_to_mux;
-
-                this._heartBeatUrl = `${baseUrl}/${sessionId}?_format=json&_method=PUT`;
-                this._deleteSessionUrl = `${baseUrl}/${sessionId}?_format=json&_method=DELETE`;
-
-                this._lastResponse = data;
-
-                this._lastUpdate = Date.now();
-                this.info = {
-                  url: session.content_uri,
-                  sessionId,
-                  video: {
-                    format: videoFormat,
-                    label: dmcInfo.availableVideos.find((v) => videoFormat === v.id)!.metadata.label,
-                  },
-                  audioFormat,
-                  heartBeatUrl: this._heartBeatUrl,
-                  deleteSessionUrl: this._deleteSessionUrl,
-                  lastResponse: json,
-                };
-                this.enableHeartBeat();
-                console.timeEnd('create DMC session');
-                resolve(this.info);
-              }
-            )
-            .catch((err: { message?: unknown }) => {
-              console.error('create api fail', err);
-              reject(err.message || err);
-            });
-        });
-      }
-
-      get useHLS(): boolean {
-        return this._useHLS && this._dmcInfo.protocols.includes('hls');
-      }
-
-      _heartBeat(): void {
-        const url = this.info.heartBeatUrl as string;
-        void util
-          .fetch(url, {
-            method: 'post',
-            dataType: 'text',
-            timeout: 10000,
-            body: JSON.stringify(this._lastResponse),
-          })
-          .then((res: Response) => res.json())
-          .then((result: { data?: unknown }) => this._onHeartBeatSuccess(result))
-          // eslint-disable-next-line @typescript-eslint/unbound-method -- コンストラクタでbind済みのメソッド参照であり、ランタイムは同一
-          .catch(this._onHeartBeatFail);
-      }
-
-      _deleteSession(): Promise<unknown> {
-        if (this._isDeleted) {
-          return Promise.resolve();
-        }
-        this._isDeleted = true;
-        const url = this.info.deleteSessionUrl as string;
-        return new Promise((res) => setTimeout(res, 3000))
-          .then(() => {
-            return util.fetch(url, {
-              method: 'post',
-              dataType: 'text',
-              timeout: 10000,
-              body: JSON.stringify(this._lastResponse),
-            });
-          })
-          .catch((err: unknown) => console.error('delete fail', err));
-      }
-
-      _onHeartBeatSuccess(result: { data?: unknown }): void {
-        const json = result;
-        this._lastResponse = json.data;
-        this._lastUpdate = Date.now();
-      }
-
-      get isDeleted() {
-        return !!this._isDeleted || Date.now() - this._lastUpdate > this._heartbeatLifetime * 1.2;
-      }
-
-      get serverType() {
-        return 'dmc';
-      }
-    }
-
     class StoryboardInfoLoader {
       _url?: string;
       _duration: number;
 
-      static create({ type, ...params }: { type: string; url?: string }) {
-        switch (type) {
-          case 'domand':
-            return new DomandStoryboardInfoLoader(params);
-          case 'dmc':
-            return new DmcStoryboardInfoLoader(params);
-          default:
-            throw new Error('Unknown server type');
-        }
+      static create(params: { type?: string; url?: string }) {
+        return new DomandStoryboardInfoLoader(params);
       }
 
       constructor({ url }: { url?: string }) {
@@ -902,90 +447,11 @@ const VideoSessionWorker = (() => {
       }
     }
 
-    class DmcStoryboardInfoLoader extends StoryboardInfoLoader {
-      _rawData: DmcStoryboardRaw | null;
-
-      constructor(params: { url?: string }) {
-        super(params);
-        this._rawData = null;
-      }
-
-      async load(): Promise<void> {
-        const rawResult: unknown = await util
-          .fetch(this._url as string, { credentials: 'include' })
-          .then((res: Response) => res.json());
-        const result = rawResult as { meta: { status?: number }; data?: DmcStoryboardRaw };
-        if (result.meta.status && result.meta.status >= 300) {
-          throw 'storyboard request fail';
-        }
-        this._rawData = result.data as DmcStoryboardRaw;
-        return;
-      }
-
-      get _storyboards(): Array<StoryboardShape> {
-        const rawStoryboard: DmcStoryboardRaw = this._rawData ?? {};
-        const storyboards = rawStoryboard.storyboards || [];
-        const version = rawStoryboard.version || 0;
-        const ver = version.toString();
-        return storyboards
-          .map((sb) => {
-            const images = sb.images.map((img) => {
-              return {
-                timestamp: img.timestamp,
-                url: img.uri,
-              };
-            });
-            return {
-              version: ver,
-              thumbnail: {
-                width: sb.thumbnail_width,
-                height: sb.thumbnail_height,
-              },
-              columns: sb.columns,
-              rows: sb.rows,
-              interval: sb.interval,
-              quality: sb.quality,
-              images,
-            };
-          })
-          .sort((a, b) => Number(b.quality < a.quality));
-      }
-
-      get storyboard(): StoryboardShape | null {
-        if (this._storyboards.length > 0) {
-          return this._storyboards[0] as StoryboardShape;
-        }
-
-        return null;
-      }
-
-      async getInfo() {
-        return {
-          ...(await this._getInfo()),
-          format: 'dmc',
-        };
-      }
-
-      toJSON() {
-        return {
-          ...this._toJSON(),
-          format: 'dmc',
-        };
-      }
-    }
-
     abstract class StoryboardSession {
       _videoInfo: SessionVideoInfo;
 
-      static create({ serverType, ...params }: { serverType: string; videoInfo: SessionVideoInfo }) {
-        switch (serverType) {
-          case 'domand':
-            return new DomandStoryboardSession(params);
-          case 'dmc':
-            return new DmcStoryboardSession(params);
-          default:
-            throw new Error('Unknown server type');
-        }
+      static create(params: { videoInfo: SessionVideoInfo }) {
+        return new DomandStoryboardSession(params);
       }
 
       constructor({ videoInfo }: { videoInfo: SessionVideoInfo }) {
@@ -1046,110 +512,6 @@ const VideoSessionWorker = (() => {
       }
     }
 
-    class DmcStoryboardSession extends StoryboardSession {
-      _info: NonNullable<SessionVideoInfo['dmcStoryboardInfo']>;
-      _url: string;
-
-      constructor(params: { videoInfo: SessionVideoInfo }) {
-        super(params);
-        this._info = this._videoInfo.dmcStoryboardInfo!;
-        this._url = this._info.urls[0]!.url;
-      }
-
-      async _createSession(): Promise<{ type: string; url?: string }> {
-        const url = `${this._url}?_format=json`;
-        const body = this._createRequestString();
-        try {
-          const rawResult: unknown = await util
-            .fetch(url, {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body,
-            })
-            .then((res: Response) => res.json());
-          const result = rawResult as { meta: { status?: number }; data?: { session?: { content_uri?: string } } };
-          const sessionData = result.data;
-          if ((result.meta.status && result.meta.status >= 300) || !sessionData?.session?.content_uri) {
-            throw 'api_not_exist';
-          }
-          return this._toSessionInfo(sessionData);
-        } catch (err) {
-          if (err === 'api_not_exist') {
-            throw 'DMC storyboard api not exist';
-          }
-          console.error('create dmc session fail', err);
-          throw 'create dmc session fail';
-        }
-      }
-
-      _createRequestString() {
-        const info = this._info;
-
-        // 階層が深くて目が疲れた
-        const request = {
-          session: {
-            client_info: {
-              player_id: info.playerId,
-            },
-            content_auth: {
-              auth_type: info.authTypes.storyboard,
-              content_key_timeout: info.contentKeyTimeout,
-              service_id: 'nicovideo',
-              service_user_id: info.serviceUserId,
-            },
-            content_id: info.contentId,
-            content_src_id_sets: [
-              {
-                content_src_ids: info.videos,
-              },
-            ],
-            content_type: 'video',
-            content_uri: '',
-            keep_method: {
-              heartbeat: {
-                lifetime: info.heartbeatLifetime,
-              },
-            },
-            priority: info.priority,
-            protocol: {
-              name: 'http',
-              parameters: {
-                http_parameters: {
-                  parameters: {
-                    storyboard_download_parameters: {
-                      use_well_known_port: 'yes',
-                      use_ssl: 'yes',
-                    },
-                  },
-                },
-              },
-            },
-            recipe_id: info.recipeId,
-            session_operation_auth: {
-              session_operation_auth_by_signature: {
-                signature: info.signature,
-                token: info.token,
-              },
-            },
-            timing_constraint: 'unlimited',
-          },
-        };
-
-        //console.log('storyboard session request', JSON.stringify(request, null, ' '));
-        return JSON.stringify(request);
-      }
-
-      _toSessionInfo(info: { session?: { content_uri?: string } } | undefined) {
-        return {
-          type: 'dmc',
-          url: info?.session?.content_uri,
-        };
-      }
-    }
-
     const SESSION_ID = Symbol('SESSION_ID');
     const getSessionId = function (this: { id: number }) {
       return `session_${this.id++}`;
@@ -1167,9 +529,6 @@ const VideoSessionWorker = (() => {
 
       // console.log('create', sessionId, current[SESSION_ID]);
       return {
-        serverType: current.serverType,
-        isDomand: current.isDomand,
-        isDmc: current.isDmc,
         sessionId,
       };
     };
@@ -1185,11 +544,8 @@ const VideoSessionWorker = (() => {
       }
       // console.log('getState', sessionId, current[SESSION_ID]);
       return {
-        serverType: current.serverType,
-        isDomand: current.isDomand,
-        isDmc: current.isDmc,
         isDeleted: current.isDeleted,
-        isAbnormallyClosed: current.isAbnormallyClosed,
+        isAbnormallyClosed: false,
         sessionId: (current as unknown as Record<symbol, string>)[SESSION_ID],
       };
     };
@@ -1202,8 +558,8 @@ const VideoSessionWorker = (() => {
       current = null;
     };
 
-    const storyboard = async ({ videoInfo, serverType }: { videoInfo: SessionVideoInfo; serverType: string }) => {
-      const sbSessionInfo = await StoryboardSession.create({ videoInfo, serverType }).create();
+    const storyboard = async ({ videoInfo }: { videoInfo: SessionVideoInfo }) => {
+      const sbSessionInfo = await StoryboardSession.create({ videoInfo }).create();
       const loader = StoryboardInfoLoader.create(sbSessionInfo);
       loader.duration = videoInfo.duration as number;
       await loader.load();
@@ -1233,7 +589,7 @@ const VideoSessionWorker = (() => {
         case 'close':
           return close();
         case 'storyboard':
-          return await storyboard(params as { videoInfo: SessionVideoInfo; serverType: string });
+          return await storyboard(params as { videoInfo: SessionVideoInfo });
       }
     };
   };
@@ -1251,19 +607,16 @@ const VideoSessionWorker = (() => {
   const create = async ({
     videoInfo,
     videoQuality,
-    serverType,
     useHLS,
   }: {
     videoInfo: { toJSON: () => unknown };
     videoQuality?: string;
-    serverType: string;
     useHLS?: boolean;
   }) => {
     initWorker();
     const params = {
       videoInfo: videoInfo.toJSON(),
       videoQuality,
-      serverType,
       useHLS,
     };
     const rawResult: unknown = await worker!.post({ command: 'create', params });
@@ -1276,15 +629,15 @@ const VideoSessionWorker = (() => {
     });
   };
 
-  const storyboard = async ({ type, info }: { type: string; info: { toJSON: () => unknown; watchId?: string } }) => {
+  const storyboard = async ({ info }: { info: { toJSON: () => unknown; watchId?: string } }) => {
     const videoInfo: unknown = info.toJSON();
-    const cacheId = `${info.watchId as string}_${type}`;
+    const cacheId = `${info.watchId as string}_domand`;
     const cache: unknown = await StoryboardCacheDb.get(cacheId);
     if (cache) {
       return cache;
     }
     initWorker();
-    const params = { videoInfo, serverType: type };
+    const params = { videoInfo };
     const result: unknown = await worker!.post({ command: 'storyboard', params });
     void StoryboardCacheDb.put(cacheId, result as { status?: string; [key: string]: unknown });
     return result;

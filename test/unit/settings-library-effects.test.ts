@@ -98,7 +98,7 @@ const raw = (duration: number): StoryboardRawData => ({
   },
 });
 function board() {
-  const props = { enableStoryboard: true, enableStoryboardBar: false, videoServerType: 'domand' };
+  const props = { enableStoryboard: true, enableStoryboardBar: false };
   const state = { isStoryboardAvailable: false };
   const value = new Storyboard({ playerConfig: { props }, state });
   // 準備済みの描画先を前提とする。取得・会員判定・世代・モデル更新は実コード。
@@ -127,7 +127,7 @@ test('P2-07/enableStoryboard: ON・会員・資産ありの条件が揃うとき
   const fixture = board();
   fixture.value.onVideoCanPlay('sm9', info());
   expect(worker).toHaveBeenCalledTimes(1);
-  expect(worker.mock.calls[0]![0].type).toBe('domand');
+  expect(worker.mock.calls[0]![0].info.watchId).toBe('sm9');
   pending[0]!.resolve(raw(60));
   await flush();
   expect(fixture.state.isStoryboardAvailable).toBe(true);

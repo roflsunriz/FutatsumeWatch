@@ -34,14 +34,6 @@ interface WatchThread {
   isOwnerThread?: boolean;
 }
 
-interface DmcDelivery {
-  movie: {
-    session?: unknown;
-    videos?: Array<{ metadata: { resolution: { width: number; height: number }; label: string }; id: string }>;
-  };
-  [key: string]: unknown;
-}
-
 interface DomandDelivery {
   videoId?: string;
   accessRightKey?: string;
@@ -81,7 +73,7 @@ interface WatchApiData {
   community?: { id?: string } | null;
   external: { commons: { hasContentTree: boolean } };
   genre: { key: string };
-  media: { delivery?: DmcDelivery | null; domand?: DomandDelivery | null };
+  media: { domand?: DomandDelivery | null };
   owner?: { iconUrl?: string; id: string | number; nickname?: string } | null;
   payment: { video: { isAdmission: boolean; isPpv: boolean; isPremium: boolean } };
   player: { initialPlayback?: { type?: string; positionSec?: number } | null };
@@ -117,10 +109,8 @@ interface LoadError {
 interface LinkedChannelVideoHolder {
   linkedChannelVideo: LinkedChannelVideo | null | undefined;
   watchApiData: { videoDetail: { id: string } };
-  dmcInfo?: DmcDelivery | null;
   domandInfo?: DomandDelivery | null;
   isPlayable: boolean;
-  isDmc: boolean;
   isDomand: boolean;
 }
 
@@ -170,11 +160,7 @@ const VideoInfoLoader = (function () {
         // label,
       },
       // marquee,
-      media: {
-        delivery: dmcInfo, // nullable
-        // deliveryLegacy,
-        domand: domandInfo, // nullable
-      },
+      media: { domand: domandInfo },
       // okReason,
       owner, // nullable
       payment: {
@@ -276,9 +262,8 @@ const VideoInfoLoader = (function () {
       frontendVersion: 0,
     };
 
-    const isDmc = dmcInfo?.movie.session != null;
     const isDomand = domandInfo != null;
-    const isPlayable = isDmc || isDomand;
+    const isPlayable = isDomand;
 
     cacheStorage.setItem('csrfToken', csrfToken, 30 * 60 * 1000);
 
@@ -364,9 +349,6 @@ const VideoInfoLoader = (function () {
 
         commons_tree_exists: hasContentTree,
 
-        // width: data.video.width, // dmcInfo?.movie.videos[0].metadata.resolution.width
-        // height: data.video.height, // dmcInfo?.movie.videos[0].metadata.resolution.height
-
         isChannel: channel && channel.id,
         isMymemory: false,
         communityId: community?.id ?? null,
@@ -394,12 +376,10 @@ const VideoInfoLoader = (function () {
       _data,
       watchApiData,
       domandInfo,
-      dmcInfo,
       msgInfo,
       playlist,
       isPlayable,
       isDomand,
-      isDmc,
       thumbnailUrl,
       csrfToken,
       watchAuthKey,
@@ -438,10 +418,8 @@ const VideoInfoLoader = (function () {
       .then((json: WatchApiResponse) => {
         const data = parseWatchApiData(json);
         //window.console.info('linkedChannelData', data);
-        originalData.dmcInfo = data.dmcInfo;
         originalData.domandInfo = data.domandInfo;
         originalData.isPlayable = data.isPlayable;
-        originalData.isDmc = data.isDmc;
         originalData.isDomand = data.isDomand;
         return originalData;
       })

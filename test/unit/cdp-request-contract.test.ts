@@ -105,6 +105,7 @@ describe('要求契約の厳密照合', () => {
     for (const value of [
       'https://nvapi.nicovideo.jp.evil.test/v1/watch/sm9',
       'https://evildmc.nico/media',
+      'https://abc.dmc.nico/media',
       'https://domand.evil.test/media',
       'https://evilsmilevideo.jp/media',
       'ftp://nvapi.nicovideo.jp/file',
@@ -112,7 +113,6 @@ describe('要求契約の厳密照合', () => {
       'https://www.nicovideo.jp/watch/sm9?from=test&edit=1',
     ])
       expect(isBlockedUrl(value)).toBe(true);
-    expect(isBlockedUrl('https://abc.dmc.nico/media')).toBe(false);
   });
 });
 

@@ -244,12 +244,12 @@ export async function verifyHeatSyncEffects(session: CdpSession, helpers: Helper
   await helpers.open(session, 'heatsync');
   const original = (await evaluate(
     session,
-    `Object.fromEntries(['turbo.red','turbo.smile-blue','turbo.dmc-blue','turbo.minDuration','turbo.ignoreTags','turbo.enabled'].map(key=>[key,window.HeatSync.config.getValue(key)]))`
+    `Object.fromEntries(['turbo.red','turbo.blue','turbo.minDuration','turbo.ignoreTags','turbo.enabled'].map(key=>[key,window.HeatSync.config.getValue(key)]))`
   )) as Record<string, string | number | boolean>;
   const previousRate = await evaluate(session, `${video}.playbackRate`);
   const previousTime = await evaluate(session, `${video}.currentTime`);
   try {
-    for (const key of ['turbo.smile-blue', 'turbo.dmc-blue']) await select(session, helpers, 'heatsync', key, '2');
+    await select(session, helpers, 'heatsync', 'turbo.blue', '2');
     await select(session, helpers, 'heatsync', 'turbo.red', '1');
     await text(session, helpers, 'heatsync', 'turbo.minDuration', '0');
     await text(session, helpers, 'heatsync', 'turbo.ignoreTags', 'nonmatching-fixture-tag');
@@ -279,7 +279,7 @@ export async function verifyHeatSyncEffects(session: CdpSession, helpers: Helper
     try {
       const observed = await evaluate(
         session,
-        `(()=>{const v=${video},s=window.HeatSync.external.syncer,c=window.HeatSync.config;return {time:v.currentTime,duration:v.duration,paused:v.paused,rate:v.playbackRate,configRate:window.FutatsumeWatch.config.props.playbackRate,stateRate:window.FutatsumeWatch.state.player.playbackRate,wrappedRate:window.FutatsumeWatch.debug.nicoVideoPlayer._videoPlayer.playbackRate,syncRate:s._rate,enabled:s._enabled,lastEnabled:s._lastEnabled,timer:s._timer,map:s._map,red:c.getValue('turbo.red'),blue:c.getValue('turbo.smile-blue'),configuredEnabled:c.getValue('turbo.enabled')}})()`
+        `(()=>{const v=${video},s=window.HeatSync.external.syncer,c=window.HeatSync.config;return {time:v.currentTime,duration:v.duration,paused:v.paused,rate:v.playbackRate,configRate:window.FutatsumeWatch.config.props.playbackRate,stateRate:window.FutatsumeWatch.state.player.playbackRate,wrappedRate:window.FutatsumeWatch.debug.nicoVideoPlayer._videoPlayer.playbackRate,syncRate:s._rate,enabled:s._enabled,lastEnabled:s._lastEnabled,timer:s._timer,map:s._map,red:c.getValue('turbo.red'),blue:c.getValue('turbo.blue'),configuredEnabled:c.getValue('turbo.enabled')}})()`
       );
       await Bun.write(
         new URL('settings-heatsync-failure.json', verificationDirectory),
@@ -293,7 +293,7 @@ export async function verifyHeatSyncEffects(session: CdpSession, helpers: Helper
     throw error;
   } finally {
     await helpers.open(session, 'heatsync');
-    for (const key of ['turbo.red', 'turbo.smile-blue', 'turbo.dmc-blue'])
+    for (const key of ['turbo.red', 'turbo.blue'])
       await select(session, helpers, 'heatsync', key, String(original[key]));
     for (const key of ['turbo.minDuration', 'turbo.ignoreTags'])
       await text(session, helpers, 'heatsync', key, String(original[key]));

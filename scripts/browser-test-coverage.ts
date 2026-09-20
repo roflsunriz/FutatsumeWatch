@@ -307,7 +307,7 @@ function validateSettings(report: Record<string, unknown>, missing: string[]): v
     if (fields.has(value.id)) missing.push(`重複設定:${value.id}`);
     fields.set(value.id, value);
   }
-  if (requiredSettingsFields.length !== 88 || fields.size !== 88) missing.push(`設定88件:実際${fields.size}`);
+  if (requiredSettingsFields.length !== 84 || fields.size !== 84) missing.push(`設定84件:実際${fields.size}`);
   for (const required of requiredSettingsFields) {
     const field = fields.get(required.id);
     if (!field || field.key !== required.key || field.category !== required.category) {

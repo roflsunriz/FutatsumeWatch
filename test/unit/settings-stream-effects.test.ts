@@ -5,7 +5,6 @@ import { VideoInfoModel, VideoFilter } from '../../src/video-info';
 import type { RawVideoInfoData } from '../../src/video-info';
 import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
 import { WatchInfoCacheDb } from '../../packages/lib/src/nico/watch-info-cache-db';
-import { NVWatchCaller } from '../../packages/lib/src/nico/nv-watch-caller';
 import { netUtil } from '../../packages/lib/src/infra/net-util';
 import { global } from '../../src/futatsume-watch-index';
 import captured from '../fixtures/functionality/watch-response.json';
@@ -47,36 +46,10 @@ afterEach(() => {
   global.debug.isHLSSupported = originalHls;
 });
 
-type DmcData = NonNullable<RawVideoInfoData['dmcInfo']>;
-// 現行採取のdeliveryはnull。DMCの分岐は保持している旧形式の条件フィクスチャで検査し、
-// 終了したDMCサービスへの接続・映像配信が成功したとは扱わない。
-function oldDmc(height: number, protocols = ['http', 'hls']): DmcData {
-  return {
-    trackingId: 'fixture-tracking',
-    movie: {
-      session: {
-        urls: [{ url: 'https://fixture.invalid/retired-dmc-session' }],
-        signature: 'fixture',
-        token: 'fixture',
-        serviceUserId: 'fixture',
-        contentId: 'fixture',
-        playerId: 'fixture',
-        recipeId: 'fixture',
-        priority: 1,
-        authTypes: ['ht2'],
-        protocols,
-      },
-      audios: [{ id: 'audio', isAvailable: true, metadata: { levelIndex: 1 } }],
-      videos: [{ id: `old-${height}`, isAvailable: true, metadata: { levelIndex: 1, resolution: { height } } }],
-    },
-  };
-}
 function response(
   options: {
     watchId?: string;
     domand?: boolean;
-    height?: number;
-    dmc?: DmcData | null;
     paid?: boolean;
     anime?: boolean;
   } = {}
@@ -95,17 +68,7 @@ function response(
         payment: { ...data.payment, video: { ...data.payment.video, isPpv: options.paid ?? false } },
         media: {
           ...data.media,
-          delivery: options.dmc ?? null,
-          domand:
-            options.domand === false
-              ? null
-              : {
-                  ...data.media.domand,
-                  videos: data.media.domand.videos.map((video, index) => ({
-                    ...video,
-                    height: options.height === undefined ? video.height : options.height / (index + 1),
-                  })),
-                },
+          domand: options.domand === false ? null : data.media.domand,
         },
       },
     },
@@ -201,26 +164,19 @@ test('P2-10/loadLinkedChannelVideo-membership: 非加入候補だけなら勝手
   expect(requests.some((url) => url.includes('/watch/so9002'))).toBe(false);
 });
 
-async function choose(
-  raw: RawVideoInfoData,
-  options: { autoDisableNew?: boolean; onlyRequired?: boolean; preferred?: string; hlsSupported?: boolean } = {}
-) {
+async function choose(raw: RawVideoInfoData) {
   const creates: Array<Parameters<typeof VideoSessionWorker.create>[0]> = [];
   const mediaUrls: string[] = [];
   const cache = spyOn(WatchInfoCacheDb, 'put').mockResolvedValue({});
-  const tracker = spyOn(NVWatchCaller, 'call').mockResolvedValue(undefined);
   const session = spyOn(VideoSessionWorker, 'create').mockImplementation((params) => {
     creates.push(params);
     return Promise.resolve({
       sessionId: 'fixture',
-      serverType: params.serverType,
-      isDmc: params.serverType === 'dmc',
-      connect: () => Promise.resolve({ url: 'https://fixture.invalid/selected-stream', type: params.serverType }),
+      connect: () => Promise.resolve({ url: 'https://fixture.invalid/selected-stream', type: 'domand' }),
       getState: () => Promise.resolve({}),
       close: () => Promise.resolve(undefined),
     });
   });
-  global.debug.isHLSSupported = options.hlsSupported ?? true;
   const state: Record<string, unknown> = {};
   const context = {
     _requestId: 'current',
@@ -228,14 +184,10 @@ async function choose(
     _watchId: 'sm9',
     _playerConfig: {
       props: {
-        autoDisableNew: options.autoDisableNew ?? false,
-        dmcVideoQuality: 'legacy-quality',
         domandVideoQuality: 'current-quality',
-        'video.hls.enableOnlyRequired': options.onlyRequired ?? true,
         screenMode: 'normal',
       },
     },
-    _videoWatchOptions: { videoServerType: options.preferred ?? 'domand' },
     _state: { setState: (values: Record<string, unknown>) => Object.assign(state, values) },
     _videoFilter: new VideoFilter([], []),
     setVideo: (url: string) => mediaUrls.push(url),
@@ -253,58 +205,12 @@ async function choose(
     return creates[0]!;
   } finally {
     session.mockRestore();
-    tracker.mockRestore();
     cache.mockRestore();
   }
 }
-test('P2-10/autoDisableNew-current: 現行採取のDomand単独は設定ON/OFFでも利用不能なDMCへ切り替えない', async () => {
+test('P2-10/current-stream: 現行Domandを選択画質とHLSで再生する', async () => {
   const data = await load();
-  expect(data.dmcInfo).toBeNull();
-  for (const enabled of [false, true]) {
-    const result = await choose(data, { autoDisableNew: enabled });
-    expect(result.serverType).toBe('domand');
-    expect(result.videoQuality).toBe('current-quality');
-    expect(result.useHLS).toBe(true);
-  }
-});
-test('P2-10/autoDisableNew-legacy: 両方式がある旧条件でDMCが高解像度ならON時だけ選択を変更する', async () => {
-  const data = await load({ height: 720, dmc: oldDmc(1080) });
-  expect(new VideoInfoModel(data).maybeBetterQualityServerType).toBe('dmc');
-  expect((await choose(data, { autoDisableNew: false })).serverType).toBe('domand');
-  const enabled = await choose(data, { autoDisableNew: true });
-  expect(enabled.serverType).toBe('dmc');
-  expect(enabled.videoQuality).toBe('legacy-quality');
-  for (const height of [1080, 1440]) {
-    const currentBetter = await load({ height, dmc: oldDmc(1080) });
-    expect((await choose(currentBetter, { autoDisableNew: true })).serverType).toBe('domand');
-  }
-});
-test('P2-10/autoDisableNew-unavailable: 利用できない高画質候補を理由に配信方式を変更しない', async () => {
-  const old = oldDmc(360);
-  old.movie!.videos!.push({
-    id: 'unavailable-1080',
-    isAvailable: false,
-    metadata: { levelIndex: 2, resolution: { height: 1080 } },
-  });
-  const data = await load({ height: 720, dmc: old });
-  expect((await choose(data, { autoDisableNew: true })).serverType).toBe('domand');
-  const unavailableCurrent = await load({ height: 1080, dmc: oldDmc(720) });
-  unavailableCurrent.domandInfo!.videos[0]!.isAvailable = false;
-  expect((await choose(unavailableCurrent, { autoDisableNew: true })).serverType).toBe('dmc');
-});
-test('P2-10/enableOnlyRequired: 旧DMCのHTTP併用可/必須条件を実セッション作成要求へ反映する', async () => {
-  for (const protocols of [['http', 'hls'], ['hls']]) {
-    const data = await load({ domand: false, dmc: oldDmc(720, protocols) });
-    const required = !protocols.includes('http');
-    expect(new VideoInfoModel(data).isHLSRequired).toBe(required);
-    for (const onlyRequired of [false, true]) {
-      const result = await choose(data, { onlyRequired, preferred: 'dmc' });
-      expect(result.serverType).toBe('dmc');
-      expect(result.useHLS).toBe(required || !onlyRequired);
-    }
-  }
-});
-test('P2-10/enableOnlyRequired-capability: HLS未対応なら設定だけでHLSを利用可能扱いにしない', async () => {
-  const data = await load({ domand: false, dmc: oldDmc(720) });
-  expect((await choose(data, { onlyRequired: false, preferred: 'dmc', hlsSupported: false })).useHLS).toBe(false);
+  const result = await choose(data);
+  expect(result.videoQuality).toBe('current-quality');
+  expect(result.useHLS).toBe(true);
 });

@@ -174,34 +174,27 @@ test('SessionClosedErrorの実ハンドラーは正しいPlayerStateへ到達し
 test('実動画エラーハンドラーも旧sessionの応答で新動画の通知・reloadを変更しない', async () => {
   for (const succeeds of [true, false]) {
     const videoRecovery = new VideoRecoveryTasks();
-    let resolve!: (state: {
-      isDomand: boolean;
-      isDmc: boolean;
-      isDeleted: boolean;
-      isAbnormallyClosed: boolean;
-    }) => void;
+    let resolve!: (state: { isDeleted: boolean; isAbnormallyClosed: boolean }) => void;
     let reject!: (error: Error) => void;
     const messages: string[] = [];
     const context = {
       videoRecovery,
       isOpen: true,
+      _videoInfo: {},
       _state: { setVideoErrorOccurred() {} },
-      _videoInfo: { isDmcAvailable: true, isDomandAvailable: true },
       _videoSession: {
         getState: () =>
-          new Promise<{ isDomand: boolean; isDmc: boolean; isDeleted: boolean; isAbnormallyClosed: boolean }>(
-            (yes, no) => {
-              resolve = yes;
-              reject = no;
-            }
-          ),
+          new Promise<{ isDeleted: boolean; isAbnormallyClosed: boolean }>((yes, no) => {
+            resolve = yes;
+            reject = no;
+          }),
       },
       _setErrorMessage: (message: string) => messages.push(message),
       emit: (name: string) => messages.push(name),
     };
     const pending = NicoVideoPlayerDialog.prototype._onVideoError.call(context, { description: 'old error' });
     videoRecovery.reset();
-    if (succeeds) resolve({ isDomand: true, isDmc: false, isDeleted: true, isAbnormallyClosed: false });
+    if (succeeds) resolve({ isDeleted: true, isAbnormallyClosed: false });
     else reject(new Error('old Worker failure'));
     await pending;
     expect(messages).toEqual([]);
@@ -232,7 +225,7 @@ test('読込・session・NG・YouTube失敗の実経路はcloseで予約を破�
     },
   };
   NicoVideoPlayerDialog.prototype._onVideoInfoLoaderFail.call(context, 'a', { reason: 'forbidden' });
-  NicoVideoPlayerDialog.prototype._onVideoSessionFail.call(context, 'domand', new Error('fixture'));
+  NicoVideoPlayerDialog.prototype._onVideoSessionFail.call(context, new Error('fixture'));
   NicoVideoPlayerDialog.prototype._onVideoFilterMatch.call(context);
   NicoVideoPlayerDialog.prototype._onYouTubeVideoError.call(context, { description: 'fixture', fallback: true });
   NicoVideoPlayerDialog.prototype._refresh.call(context);
@@ -241,7 +234,7 @@ test('読込・session・NG・YouTube失敗の実経路はcloseで予約を破�
   expect(context.commentRequestSequence).toBe(1);
   expect(next).toBe(0);
   expect(reload).toBe(0);
-  NicoVideoPlayerDialog.prototype._onVideoSessionFail.call(context, 'domand', new Error('new fixture'));
+  NicoVideoPlayerDialog.prototype._onVideoSessionFail.call(context, new Error('new fixture'));
   await Bun.sleep(30);
   expect(next).toBe(1);
 });

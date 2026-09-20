@@ -261,7 +261,6 @@ VideoCaptureUtil.capture = function (this: CaptureState, src: string, sec: numbe
   this.lastSrc = src;
   // 連続アクセスでセッションがkillされないように
   let waitTime = 1000;
-  waitTime += src.indexOf('dmc.nico') >= 0 ? 2000 : 0;
   waitTime += src.indexOf('.m3u8') >= 0 ? 2000 : 0;
 
   let resolve!: (value: unknown) => void;

@@ -5,7 +5,6 @@ import { UaaLoader } from './uaa-loader';
 import { CommonsTreeLoader } from './commons-tree-loader';
 import { CrossDomainGate } from '../infra/cross-domain-gate';
 import { RecommendAPILoader } from './recommend-api-loader';
-import { NVWatchCaller } from './nv-watch-caller';
 import { PlaybackPosition } from './playback-position';
 import { VideoInfoLoader } from './video-info-loader';
 import { ThumbInfoLoader } from './thumb-info-loader';
@@ -24,7 +23,6 @@ import { NicoVideoApi } from './nico-video-api';
 //@require commons-tree-loader
 //@require uaa-loader
 //@require recommend-api-loader
-//@require nv-watch-caller
 //@require playback-position
 //@require cross-domain-gate
 //@require nico-video-api
@@ -42,7 +40,6 @@ export {
   PlaybackPosition,
   NicoVideoApi,
   RecommendAPILoader,
-  NVWatchCaller,
   CommonsTreeLoader,
   NicoRssLoader,
   MatrixRankingLoader,

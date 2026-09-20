@@ -6,14 +6,6 @@ import type { TemplateResult } from 'lit/html.js';
 import type { ElementEvents } from './base-command-element.js';
 import type { HtmlTag } from './dialog-element.js';
 
-interface SettingVideoHlsConf {
-  enableOnlyRequired: unknown;
-}
-
-interface SettingVideoConf {
-  hls: SettingVideoHlsConf;
-}
-
 interface SettingTouchConf {
   enable: unknown;
 }
@@ -44,7 +36,6 @@ interface SettingFilterConf {
 }
 
 interface SettingConf {
-  video: SettingVideoConf;
   touch: SettingTouchConf;
   commentLayer: SettingCommentLayerConf;
   filter: SettingFilterConf;
@@ -196,30 +187,10 @@ const { SettingPanelElement } = (() => {
         <div class="control">
           <label>
             <input type="checkbox" class="checkbox"
-              data-setting-name="autoDisableNew"
-              ?checked=${conf.autoDisableNew}>
-              旧システムのほうが画質が良さそうな時は旧システムを使う<br>
-              <small>たまに誤爆することがあります (回転情報の含まれる動画など)</small>
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
               data-setting-name="enableNicosJumpVideo"
               ?checked=${conf.enableNicosJumpVideo}
               data-command="toggle-enableNicosJumpVideo">
               ＠ジャンプで指定された動画をプレイリストに入れる
-          </label>
-        </div>
-
-        <div class="enableOnlyRequired control toggle">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="video.hls.enableOnlyRequired"
-              ?checked=${conf.video.hls.enableOnlyRequired}
-              data-command="toggle-video.hls.enableOnlyRequired">
-              HLSが必須の動画だけHLSを使用する (※ HLSが重い環境用)
           </label>
         </div>
 

@@ -36,7 +36,7 @@ interface StoryboardViewLike {
   readonly isEnable: boolean;
 }
 
-type StoryboardInfoLoadVideoInfo = Parameters<typeof StoryboardInfoLoader.load>[1];
+type StoryboardInfoLoadVideoInfo = Parameters<typeof StoryboardInfoLoader.load>[0];
 
 interface NicoUtilLike {
   isPremium(): boolean;
@@ -110,10 +110,7 @@ class Storyboard extends Emitter {
 
     const resuestId = (this._requestId = Math.random());
 
-    StoryboardInfoLoader.load(
-      this.config.props.videoServerType as string,
-      videoInfo as unknown as StoryboardInfoLoadVideoInfo
-    )
+    StoryboardInfoLoader.load(videoInfo as unknown as StoryboardInfoLoadVideoInfo)
       .then(async (info: unknown) => {
         await this.promise('dom-ready');
         return info;

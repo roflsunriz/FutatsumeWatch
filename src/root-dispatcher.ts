@@ -94,7 +94,6 @@ const RootDispatcher = (() => {
         case 'toggle-useWellKnownPort':
         case 'toggle-bestFutatsumeTube':
         case 'toggle-autoCommentSpeedRate':
-        case 'toggle-video.hls.enableOnlyRequired':
           command = command.replace(/^toggle-/, '');
           config.props[command] = !config.props[command];
           break;
