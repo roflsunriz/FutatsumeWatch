@@ -7,7 +7,7 @@ export default defineConfig({
   define: { VER: JSON.stringify(VERSION), ENV: JSON.stringify('STABLE') },
   build: {
     target: 'es2022',
-    minify: false,
+    minify: true,
     outDir: 'dist',
     rolldownOptions: {
       output: {
