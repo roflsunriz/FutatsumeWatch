@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         FutatsumeWatch
 // @namespace    https://github.com/roflsunriz/FutatsumeWatch/
-// @version      0.0.7
+// @version      0.0.8
 // @author       roflsunriz
-// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。設定の折りたたみを廃止し、固定サイズの画面と左サイドバータブへ変更。背景クリック・Escapeで閉じられます。
+// @description  ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。左メニューを設定・画質・GitHub・その他操作に整理。個別設定は固定サイズの設定画面内のタブから開きます。
 // @license      MIT
 // @homepage     https://github.com/roflsunriz/FutatsumeWatch
 // @homepageURL  https://github.com/roflsunriz/FutatsumeWatch
@@ -100,7 +100,7 @@ var AntiPrototypeJs = exports("A",function() {
 		return Promise.resolve(window.PureArray);
 	}).catch((err) => console.error(err));
 }.bind({ promise: null }));
-var VERSION = exports("V","0.0.7");
+var VERSION = exports("V","0.0.8");
 function watchIdFromUrl(value, base = location.href) {
 	try {
 		const url = new URL(value, base);
@@ -315,11 +315,11 @@ async function start() {
 	if (window === window.top && location.hostname === "www.nicovideo.jp") entry = installWatchEntry();
 	await AntiPrototypeJs();
 	Object.assign(console, { nicoru: console.log.bind(console) });
-	if (window === window.top) await module.import('./_uquery-BQkVQL8Z-BXr_dI0K.js');
+	if (window === window.top) await module.import('./_uquery-bcSHOYE1-DXrjO6LQ.js');
 	const { Config } = await module.import('./Config-CesmpQk0-pkxmxyww.js').then((n) => n.n);
 	await Config.promise("restore");
 	if (location.hostname === "www.youtube.com" || location.hostname === "youtube.com") {
-		await module.import('./_captube-75Ss8bZf-DMjYK81A.js');
+		await module.import('./_captube-xCRHd02C-aCSQsDdY.js');
 		return;
 	}
 	if (location.hostname === "ext.nicovideo.jp" && location.pathname.startsWith("/thumb/")) {
@@ -331,27 +331,27 @@ async function start() {
 		"embed.nicovideo.jp",
 		"sp.nicovideo.jp"
 	].includes(location.hostname)) {
-		await module.import('./_shape-CX8UaIhw-ChAGDuT3.js');
+		await module.import('./_shape-DYoXS3VQ-DOxx9Lhq.js');
 		return;
 	}
-	const { startPlayer, openVideo } = await module.import('./runtime-B35iFzCt-DRyuRwJb.js');
+	const { startPlayer, openVideo } = await module.import('./runtime-DOBCa87Y-BqNWaFKE.js');
 	await startPlayer();
 	entry?.ready(openVideo);
 	if (window === window.top) {
 		if (location.hostname === "www.nicovideo.jp") await module.import('./modernLazyload-ByBNGgi5-BrQvFfLx.js');
-		await module.import('./_pocket-CmRlesV6-BiNCtnZm.js');
+		await module.import('./_pocket-CVW1KA1u-DR9lA4KI.js');
 		await module.import('./_gamepad-BH7f8F2c-BoQgjo4h.js');
 		await module.import('./_heatsync-CUkIqjSe-DjMTDAMW.js');
-		await module.import('./_shape-CX8UaIhw-ChAGDuT3.js');
-		await module.import('./_setting-DUIwAYtE-DQ5nu0GJ.js');
-		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-5cOgBr5H-DBsRelXL.js');
-	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-CmRlesV6-BiNCtnZm.js');
+		await module.import('./_shape-DYoXS3VQ-DOxx9Lhq.js');
+		await module.import('./_setting-yf7pgWZn-CwlwKvmS.js');
+		if (location.hostname === "www.nicovideo.jp" && location.pathname.startsWith("/my/mylist")) await module.import('./_my4-BL31Mazs-Dj9y-lyl.js');
+	} else if (window.name.startsWith("thumbInfoMylistPocket")) await module.import('./_pocket-CVW1KA1u-DR9lA4KI.js');
 }
 start().catch((error) => {
 	entry?.fail(error instanceof Error ? error.message : String(error));
 	console.error("FutatsumeWatch の初期化に失敗しました", error);
 });})}}));
-System.register("./_uquery-BQkVQL8Z-BXr_dI0K.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
+System.register("./_uquery-bcSHOYE1-DXrjO6LQ.js", ['./___monkey.entry.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var AntiPrototypeJs,uQuery$1;return{setters:[function(module){AntiPrototypeJs=module.A;},function(module){uQuery$1=module.u;},null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -383,7 +383,7 @@ AntiPrototypeJs().then(() => {
 	let gname = window.localStorage["uu-global-name"] || "uu";
 	gname = window[gname] ? "$uu" : gname;
 	const $ = util.$ = uQuery;
-	uQuery.fn.uQuery = "0.0.7";
+	uQuery.fn.uQuery = "0.0.8";
 	const docFunc = (text, func) => {
 		func = func || (() => {});
 		if (typeof func !== "function") func = Object.assign(() => {}, func);
@@ -624,7 +624,7 @@ AntiPrototypeJs().then(() => {
   \`! 　!/ﾚi'　(ﾋ_] 　　 　ﾋ_ﾝ ﾚ'i　ﾉ　　　!Y!""　 ,＿__, 　 "" 「 !ﾉ i　|
   ,'　 ﾉ 　 !'"　 　 ,＿__,　 "' i .ﾚ'　　　　L.',.　 　ヽ _ﾝ　　　　L」 ﾉ| .|
   　（　　,ﾊ　　　　ヽ _ﾝ　 　人! 　　　　 | ||ヽ、　　　　　　 ,ｲ| ||ｲ| /
-  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.7
+  ,.ﾍ,）､　　）＞,､ _____,　,.イ　 ハ　　　　レ ル｀ ー--─ ´ルﾚ　ﾚ´         v0.0.8
   `, `
     font-size: 8px;
     font-family:
@@ -634,7 +634,7 @@ AntiPrototypeJs().then(() => {
   `);
 	if (!window.uQuery) window.uQuery = uQuery;
 });})}}));
-System.register("./_captube-75Ss8bZf-DMjYK81A.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_captube-xCRHd02C-aCSQsDdY.js", ['./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BhSsg7dT-CdKClobQ.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var workerUtil,cssUtil;return{setters:[function(module){workerUtil=module.w;},function(module){cssUtil=module.c;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1121,7 +1121,7 @@ SOFTWARE.
 	};
 	blogPartsApi();
 })();})}}));
-System.register("./_shape-CX8UaIhw-ChAGDuT3.js", ['./css-ammxpeFn-CdKClobQ.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css,SettingsDialog;return{setters:[function(module){css=module.a;},function(module){SettingsDialog=module.S;},null,null,null,null,null],execute:(function(){/*!
+System.register("./_shape-DYoXS3VQ-DOxx9Lhq.js", ['./css-BhSsg7dT-CdKClobQ.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(){'use strict';var css,SettingsDialog;return{setters:[function(module){css=module.a;},function(module){SettingsDialog=module.S;},null,null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -1805,14 +1805,14 @@ interval: ${config.interval}        // マスクの更新間隔
 			});
 		};
 		init();
-		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.7`, "\nconfig: ", JSON.stringify({ ...config }));
+		console.log("%cMasked Watch", "font-size: 200%;", `ver 0.0.8`, "\nconfig: ", JSON.stringify({ ...config }));
 	};
 	const loadGm = () => {
 		monkey(PRODUCT);
 	};
 	loadGm();
 })();})}}));
-System.register("./runtime-B35iFzCt-DRyuRwJb.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-COyNPLxQ-B0qEEGcU.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$3,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,closeSettingsDialog,SettingsDialog,SETTINGS_FIELD_THEME,configureSettingsNavigation,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$3=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){closeSettingsDialog=module.c;SettingsDialog=module.S;SETTINGS_FIELD_THEME=module.a;configureSettingsNavigation=module.b;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
+System.register("./runtime-DOBCa87Y-BqNWaFKE.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BhSsg7dT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js','./MylistApiLoader-C0_VupO--tA9SGdTM.js','./uQuery-0YleMoyW-DFBvvOXK.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __exportAll,__toESM,AntiPrototypeJs,VERSION,Config,WindowResizeObserver,objUtil,Emitter,PromiseHandler,bounce,throttle,workerUtil,FutatsumeWatch,ZenzaWatch,global,cssUtil,dll$3,CONSTANT,PRODUCT$1,css,NICORU,x,D$1,html_exports,require_lodash,closeSettingsDialog,SettingsDialog,SETTINGS_FIELD_THEME,configureSettingsNavigation,MylistPocketDetector,MylistApiLoader,netUtil,NicoVideoApi,gate,CrossDomainGate,CacheStorage,textUtil,ThumbInfoCacheDb,parseThumbInfo,WindowMessageEmitter,IndexedDbStorage,nicoUtil,BroadcastEmitter,messageUtil,uQuery,uq;return{setters:[function(module){__exportAll=module._;__toESM=module.a;},function(module){AntiPrototypeJs=module.A;VERSION=module.V;},function(module){Config=module.t;WindowResizeObserver=module.i;objUtil=module.a;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){bounce=module.b;throttle=module.t;},function(module){workerUtil=module.w;},function(module){FutatsumeWatch=module.F;ZenzaWatch=module.Z;global=module.g;cssUtil=module.c;dll$3=module.d;CONSTANT=module.C;PRODUCT$1=module.P;css=module.a;NICORU=module.N;x=module.x;D$1=module.D;html_exports=module.h;},function(module){require_lodash=module.r;},function(module){closeSettingsDialog=module.c;SettingsDialog=module.S;SETTINGS_FIELD_THEME=module.a;configureSettingsNavigation=module.b;},function(module){MylistPocketDetector=module.M;},function(module){MylistApiLoader=module.M;netUtil=module.n;NicoVideoApi=module.N;gate=module.g;CrossDomainGate=module.C;CacheStorage=module.a;textUtil=module.t;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;WindowMessageEmitter=module.W;IndexedDbStorage=module.I;nicoUtil=module.b;BroadcastEmitter=module.B;messageUtil=module.m;},function(module){uQuery=module.u;uq=module.a;},null],execute:(function(){exports({openVideo:openVideo,startPlayer:startPlayer});const s = new Set;
 const _css = async (t) => {
   if (s.has(t)) return;
   s.add(t);
@@ -1846,7 +1846,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-_css("#zenzaVideoPlayerDialog{--fw-panel-width:min(390px, 88vw);--fw-ink:#f1f4f9;--fw-muted:#aab4c6;--fw-accent:#8ddbc7;color:var(--fw-ink);background:#000;font-family:system-ui,sans-serif}#zenzaVideoPlayerDialog.is-open{inset:0}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:none;height:100%;box-shadow:none;position:absolute;inset:0;transform:none}#zenzaVideoPlayerDialog .fw-player{--padding-bottom:0px;--zenza-control-bar-height:24px;isolation:isolate;position:absolute;inset:0;width:100%!important;height:100%!important}#zenzaVideoPlayerDialog .fw-player .videoPlayer,#zenzaVideoPlayerDialog .fw-player .commentLayerFrame,#zenzaVideoPlayerDialog .fw-player .resizeObserver{width:100%;height:100%;top:0;left:0}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoHeaderPanel,#zenzaVideoPlayerDialog .fw-player .videoControlBar>.controlItemContainer,#zenzaVideoPlayerDialog .fw-player .menuItemContainer{display:none}#zenzaVideoPlayerDialog .fw-controls{z-index:400;pointer-events:none;background:linear-gradient(#0009,#0000 24% 73%,#000b);transition:opacity .16s,visibility .16s;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-controls input,#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings{pointer-events:auto}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-settings button{min-width:44px;min-height:44px;color:var(--fw-ink);font:inherit;cursor:pointer;background:0 0;border:1px solid #0000;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;padding:9px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls button:hover,#zenzaVideoPlayerDialog .fw-settings button:hover,#zenzaVideoPlayerDialog .fw-settings a:hover{background:#ffffff18}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) :focus-visible{outline:2px solid var(--fw-accent);outline-offset:-2px}#zenzaVideoPlayerDialog [data-shell-action][aria-pressed=true]{color:var(--fw-accent);background:#8ddbc71c}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) svg{flex-shrink:0;width:24px;height:24px}#zenzaVideoPlayerDialog .fw-header{align-items:flex-start;gap:clamp(8px,1.5vw,28px);padding:clamp(12px,2.5vw,36px);display:flex}#zenzaVideoPlayerDialog .fw-heading{flex:1;min-width:0}#zenzaVideoPlayerDialog .fw-title{overflow-wrap:anywhere;text-shadow:0 2px 8px #000;max-height:2.8em;font-size:clamp(18px,2vw,30px);font-weight:600;line-height:1.4;overflow:hidden}#zenzaVideoPlayerDialog .fw-stats{color:#d0d7e2;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:clamp(11px,1.2vw,14px);display:flex}#zenzaVideoPlayerDialog .fw-stats span{align-items:center;gap:6px;display:inline-flex}#zenzaVideoPlayerDialog .fw-stats svg{width:16px;height:16px}#zenzaVideoPlayerDialog .fw-transport{align-items:center;gap:clamp(24px,7vw,100px);display:flex;position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%)}#zenzaVideoPlayerDialog .fw-transport button{background:#10151da6;border-radius:50%;width:clamp(56px,7vw,88px);height:clamp(56px,7vw,88px);box-shadow:0 2px 16px #0004}#zenzaVideoPlayerDialog .fw-transport svg{filter:drop-shadow(0 1px 4px #000);width:65%;height:65%}#zenzaVideoPlayerDialog .fw-bottom{flex-wrap:wrap;align-items:center;gap:8px;display:flex;position:absolute;bottom:30px;left:clamp(8px,2vw,28px);right:clamp(8px,2vw,28px)}#zenzaVideoPlayerDialog .fw-speed{align-items:center;gap:4px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings select{font:inherit;color:var(--fw-ink);background:#19202ce6;border:1px solid #ffffff30;border-radius:6px;min-height:40px;padding:8px 4px}#zenzaVideoPlayerDialog [data-shell-volume]{width:clamp(64px,10vw,150px);accent-color:var(--fw-accent)}#zenzaVideoPlayerDialog .fw-time{color:#d0d7e2;font-variant-numeric:tabular-nums;margin-inline-start:auto}#zenzaVideoPlayerDialog .fw-announcement{clip-path:inset(50%);width:1px;height:1px;position:absolute;overflow:hidden}#zenzaVideoPlayerDialog .fw-player .videoControlBar{z-index:410;opacity:1;background:0 0;width:100%;height:24px;margin:0;position:absolute;inset:auto 0 0;transform:none}#zenzaVideoPlayerDialog .fw-player .seekBarContainer{width:100%;height:24px;top:auto;bottom:0}#zenzaVideoPlayerDialog .fw-player .seekBar{height:24px;margin:0}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .fw-controls,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoControlBar,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .commentInputPanel{opacity:0;visibility:hidden;pointer-events:none}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoPlayer>*{cursor:none}#zenzaVideoPlayerDialog .fw-backdrop{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:500;cursor:pointer;background:#060a1266;border:0;width:100%;height:100%;display:none;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-backdrop,#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-backdrop{display:block}#zenzaVideoPlayerDialog .fw-settings{overscroll-behavior:contain;z-index:510;background:#131923f5;border-right:1px solid #ffffff20;width:min(280px,88vw);padding:20px 14px;font-size:15px;display:none;position:absolute;inset:0 auto 0 0;overflow-y:auto;box-shadow:12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-settings{display:block}#zenzaVideoPlayerDialog .fw-menu-heading{justify-content:space-between;align-items:center;margin:0 0 24px 8px;display:flex}#zenzaVideoPlayerDialog .fw-menu-heading small{color:var(--fw-muted);margin-top:4px;display:block}#zenzaVideoPlayerDialog .fw-settings>button,#zenzaVideoPlayerDialog .fw-settings details button,#zenzaVideoPlayerDialog .fw-settings>a,#zenzaVideoPlayerDialog .fw-quality{width:100%;min-height:44px;color:var(--fw-ink);border-radius:8px;justify-content:space-between;align-items:center;padding:10px 12px;text-decoration:none;display:flex}#zenzaVideoPlayerDialog .fw-settings details{border-top:1px solid #ffffff20;margin-top:16px;padding-top:16px}#zenzaVideoPlayerDialog .fw-settings summary{cursor:pointer;color:var(--fw-muted);padding:10px}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanel{width:var(--fw-panel-width);opacity:1;height:100%;max-height:none;color:var(--fw-ink);z-index:510;background:#131923f7;border:0;border-left:1px solid #ffffff20;margin:0;padding:0;transition:none;display:none;position:absolute;inset:0 0 0 auto;overflow:hidden;transform:none;box-shadow:-12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel{display:block}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .tabSelectContainer{background:#131923;border-bottom:1px solid #ffffff20;width:100%;height:60px;padding:4px 8px;display:flex;position:absolute;inset:0 0 auto}#zenzaVideoPlayerDialog .fw-player .tabSelect{width:auto;height:52px;color:var(--fw-muted);background:0 0;border:0;border-radius:0;flex:1;justify-content:center;align-items:center;margin:0;padding:8px;display:flex}#zenzaVideoPlayerDialog .fw-player .tabSelect.activeTab{color:var(--fw-accent);box-shadow:inset 0 -2px var(--fw-accent)}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 60px);margin-top:60px;overflow:auto}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelInner,#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelContent{color:var(--fw-ink);background:0 0}#zenzaVideoPlayerDialog .fw-player .videoDescription{color:#d0d7e2;padding:16px;line-height:1.8}#zenzaVideoPlayerDialog .fw-player .videoDescription a{color:#8ddbc7}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer{align-items:center;gap:16px;padding:20px 16px;display:flex}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner{align-items:center;gap:10px;min-width:0;display:flex}#zenzaVideoPlayerDialog .fw-player .ownerIcon{border-radius:12px;width:64px;height:64px}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-header,.playlist-header){color:#d0d7e2;background:#19212e;border-bottom:1px solid #ffffff20}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-menu-button,.playlist-menu-button){color:#d0d7e2;background:#253141;border:0;border-radius:5px;font-size:13px}#zenzaVideoPlayerDialog .fw-player .autoScroll .autoScroll,#zenzaVideoPlayerDialog .fw-player .is-enable .toggleEnable{color:var(--fw-accent);text-shadow:none}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelFoot{background:0 0}#zenzaVideoPlayerDialog .fw-tags{scrollbar-width:thin;scrollbar-color:#526173 #131923}#zenzaVideoPlayerDialog .fw-settings button:disabled{opacity:.4;cursor:wait}#zenzaVideoPlayerDialog .fw-player .seriesList{margin:12px}#zenzaVideoPlayerDialog .fw-tags{inset:0 var(--fw-panel-width) auto 0;z-index:510;background:#131923cc;border-bottom:1px solid #ffffff20;max-height:35%;padding:16px 24px;display:none;position:absolute;overflow:auto}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{display:block}#zenzaVideoPlayerDialog .fw-tags .videoTagsContainer{width:100%;color:var(--fw-ink);background:0 0;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel{z-index:420;width:min(720px,100% - 32px);height:auto;position:absolute;top:auto;bottom:132px;left:50%;transform:translate(-50%)}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{box-shadow:none;opacity:1;background:#131923e6;border-radius:8px;gap:8px;padding:6px;display:flex}#zenzaVideoPlayerDialog .fw-player .commentInputPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .commentInput{opacity:.85;min-width:0;color:var(--fw-ink);text-align:left;box-shadow:none;background:0 0;flex:1;font-size:14px}#zenzaVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput,.commentSubmit){display:none}#zenzaVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput,.commentSubmit){opacity:1;z-index:1;color:var(--fw-ink);box-shadow:none;background:#253141;font-size:13px;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel{color:var(--fw-ink);background:#253141;top:calc(100% + 6px)}@media (max-width:600px){#zenzaVideoPlayerDialog .fw-player .commentInputPanel{bottom:164px}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{grid-template-columns:1fr 100px;display:grid}#zenzaVideoPlayerDialog .fw-player .commentInput{grid-area:1/1/auto/-1}#zenzaVideoPlayerDialog .fw-header{gap:4px;padding:10px 6px}#zenzaVideoPlayerDialog .fw-header button{min-width:36px;padding:6px}#zenzaVideoPlayerDialog .fw-stats{gap:5px 10px}#zenzaVideoPlayerDialog .fw-bottom{gap:3px}#zenzaVideoPlayerDialog .fw-speed svg{display:none}#zenzaVideoPlayerDialog .fw-time{font-size:11px}#zenzaVideoPlayerDialog [data-shell-volume]{width:64px}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{width:var(--fw-panel-width);max-height:100px;padding:8px;inset:60px 0 auto auto}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 160px);margin-top:160px}}@media (max-height:480px){#zenzaVideoPlayerDialog .fw-header{padding:8px}#zenzaVideoPlayerDialog .fw-title{max-height:1.4em;font-size:18px}#zenzaVideoPlayerDialog .fw-transport button{width:48px;height:48px}#zenzaVideoPlayerDialog .fw-settings{padding-top:8px}#zenzaVideoPlayerDialog .fw-menu-heading{margin-bottom:6px}}@media (prefers-reduced-motion:reduce){#zenzaVideoPlayerDialog .fw-controls{transition:none}}");
+_css("#zenzaVideoPlayerDialog{--fw-panel-width:min(390px, 88vw);--fw-ink:#f1f4f9;--fw-muted:#aab4c6;--fw-accent:#8ddbc7;color:var(--fw-ink);background:#000;font-family:system-ui,sans-serif}#zenzaVideoPlayerDialog.is-open{inset:0}#zenzaVideoPlayerDialog .zenzaVideoPlayerDialogInner{width:100%;max-width:none;height:100%;box-shadow:none;position:absolute;inset:0;transform:none}#zenzaVideoPlayerDialog .fw-player{--padding-bottom:0px;--zenza-control-bar-height:24px;isolation:isolate;position:absolute;inset:0;width:100%!important;height:100%!important}#zenzaVideoPlayerDialog .fw-player .videoPlayer,#zenzaVideoPlayerDialog .fw-player .commentLayerFrame,#zenzaVideoPlayerDialog .fw-player .resizeObserver{width:100%;height:100%;top:0;left:0}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoHeaderPanel,#zenzaVideoPlayerDialog .fw-player .videoControlBar>.controlItemContainer,#zenzaVideoPlayerDialog .fw-player .menuItemContainer{display:none}#zenzaVideoPlayerDialog .fw-controls{z-index:400;pointer-events:none;background:linear-gradient(#0009,#0000 24% 73%,#000b);transition:opacity .16s,visibility .16s;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-controls input,#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings{pointer-events:auto}#zenzaVideoPlayerDialog .fw-controls button,#zenzaVideoPlayerDialog .fw-settings button{min-width:44px;min-height:44px;color:var(--fw-ink);font:inherit;cursor:pointer;background:0 0;border:1px solid #0000;border-radius:10px;flex-shrink:0;justify-content:center;align-items:center;padding:9px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls button:hover,#zenzaVideoPlayerDialog .fw-settings button:hover,#zenzaVideoPlayerDialog .fw-settings a:hover{background:#ffffff18}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) :focus-visible{outline:2px solid var(--fw-accent);outline-offset:-2px}#zenzaVideoPlayerDialog [data-shell-action][aria-pressed=true]{color:var(--fw-accent);background:#8ddbc71c}#zenzaVideoPlayerDialog :is(.fw-controls,.fw-settings,.tabSelectContainer) svg{flex-shrink:0;width:24px;height:24px}#zenzaVideoPlayerDialog .fw-header{align-items:flex-start;gap:clamp(8px,1.5vw,28px);padding:clamp(12px,2.5vw,36px);display:flex}#zenzaVideoPlayerDialog .fw-heading{flex:1;min-width:0}#zenzaVideoPlayerDialog .fw-title{overflow-wrap:anywhere;text-shadow:0 2px 8px #000;max-height:2.8em;font-size:clamp(18px,2vw,30px);font-weight:600;line-height:1.4;overflow:hidden}#zenzaVideoPlayerDialog .fw-stats{color:#d0d7e2;flex-wrap:wrap;gap:6px 18px;margin-top:8px;font-size:clamp(11px,1.2vw,14px);display:flex}#zenzaVideoPlayerDialog .fw-stats span{align-items:center;gap:6px;display:inline-flex}#zenzaVideoPlayerDialog .fw-stats svg{width:16px;height:16px}#zenzaVideoPlayerDialog .fw-transport{align-items:center;gap:clamp(24px,7vw,100px);display:flex;position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%)}#zenzaVideoPlayerDialog .fw-transport button{background:#10151da6;border-radius:50%;width:clamp(56px,7vw,88px);height:clamp(56px,7vw,88px);box-shadow:0 2px 16px #0004}#zenzaVideoPlayerDialog .fw-transport svg{filter:drop-shadow(0 1px 4px #000);width:65%;height:65%}#zenzaVideoPlayerDialog .fw-bottom{flex-wrap:wrap;align-items:center;gap:8px;display:flex;position:absolute;bottom:30px;left:clamp(8px,2vw,28px);right:clamp(8px,2vw,28px)}#zenzaVideoPlayerDialog .fw-speed{align-items:center;gap:4px;display:inline-flex}#zenzaVideoPlayerDialog .fw-controls select,#zenzaVideoPlayerDialog .fw-settings select{font:inherit;color:var(--fw-ink);background:#19202ce6;border:1px solid #ffffff30;border-radius:6px;min-height:40px;padding:8px 4px}#zenzaVideoPlayerDialog [data-shell-volume]{width:clamp(64px,10vw,150px);accent-color:var(--fw-accent)}#zenzaVideoPlayerDialog .fw-time{color:#d0d7e2;font-variant-numeric:tabular-nums;margin-inline-start:auto}#zenzaVideoPlayerDialog .fw-announcement{clip-path:inset(50%);width:1px;height:1px;position:absolute;overflow:hidden}#zenzaVideoPlayerDialog .fw-player .videoControlBar{z-index:410;opacity:1;background:0 0;width:100%;height:24px;margin:0;position:absolute;inset:auto 0 0;transform:none}#zenzaVideoPlayerDialog .fw-player .seekBarContainer{width:100%;height:24px;top:auto;bottom:0}#zenzaVideoPlayerDialog .fw-player .seekBar{height:24px;margin:0}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .fw-controls,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoControlBar,#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .commentInputPanel{opacity:0;visibility:hidden;pointer-events:none}#zenzaVideoPlayerDialog .fw-player[data-controls=hidden] .videoPlayer>*{cursor:none}#zenzaVideoPlayerDialog .fw-backdrop{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);z-index:500;cursor:pointer;background:#060a1266;border:0;width:100%;height:100%;display:none;position:absolute;inset:0}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-backdrop,#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-backdrop{display:block}#zenzaVideoPlayerDialog .fw-settings{overscroll-behavior:contain;z-index:510;background:#131923f5;border-right:1px solid #ffffff20;width:min(280px,88vw);padding:20px 14px;font-size:15px;display:none;position:absolute;inset:0 auto 0 0;overflow-y:auto;box-shadow:12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=settings] .fw-settings{display:block}#zenzaVideoPlayerDialog .fw-menu-heading{justify-content:space-between;align-items:center;margin:0 0 24px 8px;display:flex}#zenzaVideoPlayerDialog .fw-menu-heading small{color:var(--fw-muted);margin-top:4px;display:block}#zenzaVideoPlayerDialog .fw-settings>button,#zenzaVideoPlayerDialog .fw-settings details button,#zenzaVideoPlayerDialog .fw-settings>a,#zenzaVideoPlayerDialog .fw-quality{width:100%;min-height:44px;color:var(--fw-ink);border-radius:8px;justify-content:space-between;align-items:center;padding:10px 12px;text-decoration:none;display:flex}#zenzaVideoPlayerDialog .fw-settings details{border-top:1px solid #ffffff20;margin-top:16px;padding-top:16px}#zenzaVideoPlayerDialog .fw-settings summary{cursor:pointer;color:var(--fw-muted);padding:10px}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanel{width:var(--fw-panel-width);opacity:1;height:100%;max-height:none;color:var(--fw-ink);z-index:510;background:#131923f7;border:0;border-left:1px solid #ffffff20;margin:0;padding:0;transition:none;display:none;position:absolute;inset:0 0 0 auto;overflow:hidden;transform:none;box-shadow:-12px 0 48px #0005}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel{display:block}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .zenzaWatchVideoInfoPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .tabSelectContainer{background:#131923;border-bottom:1px solid #ffffff20;width:100%;height:60px;padding:4px 8px;display:flex;position:absolute;inset:0 0 auto}#zenzaVideoPlayerDialog .fw-player .tabSelect{width:auto;height:52px;color:var(--fw-muted);background:0 0;border:0;border-radius:0;flex:1;justify-content:center;align-items:center;margin:0;padding:8px;display:flex}#zenzaVideoPlayerDialog .fw-player .tabSelect.activeTab{color:var(--fw-accent);box-shadow:inset 0 -2px var(--fw-accent)}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 60px);margin-top:60px;overflow:auto}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelInner,#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelContent{color:var(--fw-ink);background:0 0}#zenzaVideoPlayerDialog .fw-player .videoDescription{color:#d0d7e2;padding:16px;line-height:1.8}#zenzaVideoPlayerDialog .fw-player .videoDescription a{color:#8ddbc7}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer{align-items:center;gap:16px;padding:20px 16px;display:flex}#zenzaVideoPlayerDialog .fw-player .videoOwnerInfoContainer .owner{align-items:center;gap:10px;min-width:0;display:flex}#zenzaVideoPlayerDialog .fw-player .ownerIcon{border-radius:12px;width:64px;height:64px}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-header,.playlist-header){color:#d0d7e2;background:#19212e;border-bottom:1px solid #ffffff20}#zenzaVideoPlayerDialog .fw-player :is(.commentPanel-menu-button,.playlist-menu-button){color:#d0d7e2;background:#253141;border:0;border-radius:5px;font-size:13px}#zenzaVideoPlayerDialog .fw-player .autoScroll .autoScroll,#zenzaVideoPlayerDialog .fw-player .is-enable .toggleEnable{color:var(--fw-accent);text-shadow:none}#zenzaVideoPlayerDialog .fw-player .zenzaWatchVideoInfoPanelFoot{background:0 0}#zenzaVideoPlayerDialog .fw-tags{scrollbar-width:thin;scrollbar-color:#526173 #131923}#zenzaVideoPlayerDialog .fw-player .seriesList{margin:12px}#zenzaVideoPlayerDialog .fw-tags{inset:0 var(--fw-panel-width) auto 0;z-index:510;background:#131923cc;border-bottom:1px solid #ffffff20;max-height:35%;padding:16px 24px;display:none;position:absolute;overflow:auto}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{display:block}#zenzaVideoPlayerDialog .fw-tags .videoTagsContainer{width:100%;color:var(--fw-ink);background:0 0;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel{z-index:420;width:min(720px,100% - 32px);height:auto;position:absolute;top:auto;bottom:132px;left:50%;transform:translate(-50%)}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{box-shadow:none;opacity:1;background:#131923e6;border-radius:8px;gap:8px;padding:6px;display:flex}#zenzaVideoPlayerDialog .fw-player .commentInputPanel>*{pointer-events:auto}#zenzaVideoPlayerDialog .fw-player .commentInput{opacity:.85;min-width:0;color:var(--fw-ink);text-align:left;box-shadow:none;background:0 0;flex:1;font-size:14px}#zenzaVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput,.commentSubmit){display:none}#zenzaVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput,.commentSubmit){opacity:1;z-index:1;color:var(--fw-ink);box-shadow:none;background:#253141;font-size:13px;display:block;position:static}#zenzaVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel{color:var(--fw-ink);background:#253141;top:calc(100% + 6px)}@media (max-width:600px){#zenzaVideoPlayerDialog .fw-player .commentInputPanel{bottom:164px}#zenzaVideoPlayerDialog .fw-player .commentInputOuter{grid-template-columns:1fr 100px;display:grid}#zenzaVideoPlayerDialog .fw-player .commentInput{grid-area:1/1/auto/-1}#zenzaVideoPlayerDialog .fw-header{gap:4px;padding:10px 6px}#zenzaVideoPlayerDialog .fw-header button{min-width:36px;padding:6px}#zenzaVideoPlayerDialog .fw-stats{gap:5px 10px}#zenzaVideoPlayerDialog .fw-bottom{gap:3px}#zenzaVideoPlayerDialog .fw-speed svg{display:none}#zenzaVideoPlayerDialog .fw-time{font-size:11px}#zenzaVideoPlayerDialog [data-shell-volume]{width:64px}#zenzaVideoPlayerDialog .fw-player[data-panel=details] .fw-tags{width:var(--fw-panel-width);max-height:100px;padding:8px;inset:60px 0 auto auto}#zenzaVideoPlayerDialog .fw-player .tabs.activeTab{height:calc(100% - 160px);margin-top:160px}}@media (max-height:480px){#zenzaVideoPlayerDialog .fw-header{padding:8px}#zenzaVideoPlayerDialog .fw-title{max-height:1.4em;font-size:18px}#zenzaVideoPlayerDialog .fw-transport button{width:48px;height:48px}#zenzaVideoPlayerDialog .fw-settings{padding-top:8px}#zenzaVideoPlayerDialog .fw-menu-heading{margin-bottom:6px}}@media (prefers-reduced-motion:reduce){#zenzaVideoPlayerDialog .fw-controls{transition:none}}");
 var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 var browser = {
 	window};
@@ -23832,8 +23832,6 @@ var ja = {
 	settings: "設定",
 	details: "動画の詳細",
 	close: "閉じる",
-	general: "一般設定",
-	advanced: "詳細設定",
 	quality: "画質",
 	previous: "前の動画",
 	play: "再生",
@@ -23860,7 +23858,7 @@ var ja = {
 	mylists: "マイリスト数",
 	likes: "いいね数",
 	auto: "自動",
-	more: "その他の操作",
+	more: "その他操作",
 	reload: "再読み込み",
 	capture: "コメント付き画像を保存",
 	original: "公式視聴ページ",
@@ -23871,8 +23869,6 @@ var en = {
 	settings: "Settings",
 	details: "Video details",
 	close: "Close",
-	general: "General",
-	advanced: "Advanced",
 	quality: "Video quality",
 	previous: "Previous video",
 	play: "Play",
@@ -24030,8 +24026,7 @@ var PlayerShell = class {
 		this.menu.className = "fw-settings";
 		this.menu.setAttribute("aria-label", t.settings);
 		this.menu.innerHTML = `<div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton("dismiss", t.close, "close")}</div>
-      <button type="button" data-shell-action="general">${t.general}</button>
-      <button type="button" data-shell-action="advanced">${t.advanced}</button>
+      <button type="button" data-shell-action="general">${t.settings}</button>
       <label class="fw-quality">${t.quality}<select data-shell-quality aria-label="${t.quality}">
         ${[
 			"auto",
@@ -24042,10 +24037,6 @@ var PlayerShell = class {
 			"144p"
 		].map((v) => `<option value="${v}">${v === "auto" ? t.auto : v}</option>`).join("")}
       </select></label>
-      <button type="button" data-shell-action="toggleHLSDebug">HLS</button>
-      <button type="button" data-shell-action="masked">MaskedWatch</button>
-      <button type="button" data-shell-action="toggleZenzaGamePadConfig">GamePad</button>
-      <button type="button" data-shell-action="toggleHeatSyncDialog">HeatSync</button>
       <a href="https://github.com/roflsunriz/FutatsumeWatch" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       <details><summary>${t.more}</summary>
         <button type="button" data-shell-action="reload">${t.reload}</button>
@@ -24128,15 +24119,6 @@ var PlayerShell = class {
 		state.onkey("isOpen", () => state.isOpen ? this.open() : this.close());
 		this.decorateTabs();
 		new MutationObserver(() => this.decorateTabs()).observe(this.require(".tabSelectContainer"), { childList: true });
-		const syncAddons = () => {
-			this.require("[data-shell-action=\"advanced\"]").disabled = !container.querySelector("[data-command=\"toggleAdvancedSettings\"]");
-			this.require("[data-shell-action=\"masked\"]").disabled = !container.querySelector("maskedwatch-toggle-button");
-		};
-		new MutationObserver(syncAddons).observe(container, {
-			childList: true,
-			subtree: true
-		});
-		syncAddons();
 		this.sync();
 	}
 	require(selector) {
@@ -24160,14 +24142,6 @@ var PlayerShell = class {
 			case "general":
 				this.setPanel(null);
 				this.generalSettings();
-				break;
-			case "advanced":
-				this.setPanel(null);
-				this.container.querySelector("[data-command=\"toggleAdvancedSettings\"]")?.click();
-				break;
-			case "masked":
-				this.setPanel(null);
-				this.container.querySelector("maskedwatch-toggle-button")?.shadowRoot?.querySelector("[data-command],button,.root")?.click();
 				break;
 			case "ab": {
 				const accepted = this.ab.advance(this.player.currentTime);
@@ -66061,7 +66035,7 @@ SOFTWARE.
 		bubbles: true
 	});
 })();})}}));
-System.register("./_pocket-CmRlesV6-BiNCtnZm.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-COyNPLxQ-B0qEEGcU.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
+System.register("./_pocket-CVW1KA1u-DR9lA4KI.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BhSsg7dT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./MylistApiLoader-C0_VupO--tA9SGdTM.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(){'use strict';var __toESM,AntiPrototypeJs,DataStorage,Emitter,bounce,workerUtil,css,require_lodash,gate,ThumbInfoCacheDb,parseThumbInfo,nicoUtil,netUtil,textUtil,CrossDomainGate,MylistApiLoader;return{setters:[function(module){__toESM=module.a;},function(module){AntiPrototypeJs=module.A;},function(module){DataStorage=module.r;},function(module){Emitter=module.E;},function(module){bounce=module.b;},function(module){workerUtil=module.w;},function(module){css=module.a;},function(module){require_lodash=module.r;},function(module){gate=module.g;ThumbInfoCacheDb=module.T;parseThumbInfo=module.p;nicoUtil=module.b;netUtil=module.n;textUtil=module.t;CrossDomainGate=module.C;MylistApiLoader=module.M;},null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -69481,7 +69455,7 @@ AntiPrototypeJs().then(() => {
 	if ((window.location.host || "") === "ext.nicovideo.jp" && window.name.indexOf(`thumbInfo${PRODUCT}Loader`) >= 0) thumbInfoApi();
 	else if (window === top) loadGm();
 });})}}));
-System.register("./MylistApiLoader-COyNPLxQ-B0qEEGcU.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
+System.register("./MylistApiLoader-C0_VupO--tA9SGdTM.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./workerUtil-BlKG5z7B-DzPTCpVf.js','./css-BhSsg7dT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./jquery-BTPTXiGT-DrgtaNFc.js'],(function(exports){'use strict';var __toESM,Config,Emitter,PromiseHandler,workerUtil,PRODUCT$2,global,require_lodash,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){Emitter=module.E;PromiseHandler=module.P;},function(module){workerUtil=module.w;},function(module){PRODUCT$2=module.P;global=module.g;},function(module){require_lodash=module.r;},function(module){require_jquery=module.r;}],execute:(function(){exports("p",parseThumbInfo);/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -74120,7 +74094,7 @@ var import_lodash = /* @__PURE__ */ __toESM(require_lodash());
 	};
 	monkey(PRODUCT);
 })();})}}));
-System.register("./_setting-DUIwAYtE-DQ5nu0GJ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-ammxpeFn-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,SettingsDialog,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
+System.register("./_setting-yf7pgWZn-CwlwKvmS.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./Config-CesmpQk0-pkxmxyww.js','./css-BhSsg7dT-CdKClobQ.js','./lodash-iCWT3gA4-DPJF93lo.js','./settings-dialog-caHHZLpM-CS1lY6d5.js','./ZenzaDetector-BW2R4lUE-8oKWOkcI.js','./uQuery-0YleMoyW-DFBvvOXK.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js','./___monkey.entry.js','./MylistPocketDetector-GLQNM3GT-O21KDJi8.js'],(function(){'use strict';var __toESM,Config,FutatsumeWatch,cssUtil,require_lodash,SettingsDialog,ZenzaDetector,uq;return{setters:[function(module){__toESM=module.a;},function(module){Config=module.t;},function(module){FutatsumeWatch=module.F;cssUtil=module.c;},function(module){require_lodash=module.r;},function(module){SettingsDialog=module.S;},function(module){ZenzaDetector=module.Z;},function(module){uq=module.a;},null,null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -90301,7 +90275,7 @@ var require_lodash = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		} else root._ = _;
 	}).call(exports);
 })));})}}));
-System.register("./_my4-5cOgBr5H-DBsRelXL.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-ammxpeFn-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
+System.register("./_my4-BL31Mazs-Dj9y-lyl.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./bounce-CPTmGP_1-DP3baqZ6.js','./css-BhSsg7dT-CdKClobQ.js','./jquery-BTPTXiGT-DrgtaNFc.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js'],(function(){'use strict';var __toESM,bounce,html_exports,cssUtil,D,require_jquery;return{setters:[function(module){__toESM=module.a;},function(module){bounce=module.b;},function(module){html_exports=module.h;cssUtil=module.c;D=module.D;},function(module){require_jquery=module.r;},null,null,null],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors
@@ -95195,7 +95169,7 @@ var require_jquery = exports("r",/* @__PURE__ */ __commonJSMin(((exports, module
 		return jQuery;
 	});
 })));})}}));
-System.register("./css-ammxpeFn-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
+System.register("./css-BhSsg7dT-CdKClobQ.js", ['./rolldown-runtime-rGwgtX8a-DeYSsb9Y.js','./___monkey.entry.js','./Config-CesmpQk0-pkxmxyww.js','./Emitter-Dgv1h9Zz-C7VdQTj3.js','./bounce-CPTmGP_1-DP3baqZ6.js'],(function(exports){'use strict';var __exportAll,VERSION,Config,Emitter,Handler,throttle;return{setters:[function(module){__exportAll=module._;},function(module){VERSION=module.V;},function(module){Config=module.t;},function(module){Emitter=module.E;Handler=module.H;},function(module){throttle=module.t;}],execute:(function(){/*!
 MIT License
 
 Copyright (c) 2025 roflsunriz/comment-overlay contributors

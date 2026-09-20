@@ -401,10 +401,6 @@
   scrollbar-width: thin;
   scrollbar-color: #526173 #131923;
 }
-#zenzaVideoPlayerDialog .fw-settings button:disabled {
-  opacity: 0.4;
-  cursor: wait;
-}
 #zenzaVideoPlayerDialog .fw-player .seriesList {
   margin: 12px;
 }

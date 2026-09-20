@@ -130,3 +130,4 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 設定画面の内側は960×720pxを基本とし、小さい画面だけ利用可能な幅・高さへ収める。Shadow DOM内と通常DOM内のパネルで外枠寸法をそろえるため、共通テーマでbox-sizingを明示する。本文とサイドバーは別々にスクロールする。
 - 一般設定の`data-settings-section`を持つ4区画は同じDOMを保持してhiddenを切り替える。ほかの5設定への移動は`configureSettingsNavigation`から既存の開閉処理へ接続する。タブ・区画の識別は表示文言に依存させない。
 - Generalのコマンド付きボタンのclick処理はformに置く。共通ダイアログがclickの外部伝播を止めるため、外側の#rootへ置くと設定書き出しなどのコマンドが届かない。書き出し検証ではダウンロードを捕捉し、生成JSONと現在の設定を比較する。
+- 0.0.8では設定前の左メニューを設定・画質・GitHub・その他操作の4項目に集約した。個別設定への実操作検証も「設定」→設定内タブを通る。削除した入口の有効化監視やclick分岐は残さず、`configureSettingsNavigation`の接続を使う。

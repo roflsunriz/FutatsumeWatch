@@ -114,15 +114,10 @@ export class PlayerShell {
     this.menu.className = 'fw-settings';
     this.menu.setAttribute('aria-label', t.settings);
     this.menu.innerHTML = `<div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton('dismiss', t.close, 'close')}</div>
-      <button type="button" data-shell-action="general">${t.general}</button>
-      <button type="button" data-shell-action="advanced">${t.advanced}</button>
+      <button type="button" data-shell-action="general">${t.settings}</button>
       <label class="fw-quality">${t.quality}<select data-shell-quality aria-label="${t.quality}">
         ${['auto', '1080p', '720p', '480p', '360p', '144p'].map((v) => `<option value="${v}">${v === 'auto' ? t.auto : v}</option>`).join('')}
       </select></label>
-      <button type="button" data-shell-action="toggleHLSDebug">HLS</button>
-      <button type="button" data-shell-action="masked">MaskedWatch</button>
-      <button type="button" data-shell-action="toggleZenzaGamePadConfig">GamePad</button>
-      <button type="button" data-shell-action="toggleHeatSyncDialog">HeatSync</button>
       <a href="https://github.com/roflsunriz/FutatsumeWatch" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
       <details><summary>${t.more}</summary>
         <button type="button" data-shell-action="reload">${t.reload}</button>
@@ -207,15 +202,6 @@ export class PlayerShell {
     state.onkey('isOpen', () => (state.isOpen ? this.open() : this.close()));
     this.decorateTabs();
     new MutationObserver(() => this.decorateTabs()).observe(this.require('.tabSelectContainer'), { childList: true });
-    const syncAddons = (): void => {
-      this.require<HTMLButtonElement>('[data-shell-action="advanced"]').disabled = !container.querySelector(
-        '[data-command="toggleAdvancedSettings"]'
-      );
-      this.require<HTMLButtonElement>('[data-shell-action="masked"]').disabled =
-        !container.querySelector('maskedwatch-toggle-button');
-    };
-    new MutationObserver(syncAddons).observe(container, { childList: true, subtree: true });
-    syncAddons();
     this.sync();
   }
   private require<T extends HTMLElement = HTMLElement>(selector: string): T {
@@ -240,17 +226,6 @@ export class PlayerShell {
         this.setPanel(null);
         this.generalSettings();
         break;
-      case 'advanced': {
-        this.setPanel(null);
-        this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
-        break;
-      }
-      case 'masked': {
-        this.setPanel(null);
-        const button = this.container.querySelector<HTMLElement>('maskedwatch-toggle-button');
-        button?.shadowRoot?.querySelector<HTMLElement>('[data-command],button,.root')?.click();
-        break;
-      }
       case 'ab': {
         const accepted = this.ab.advance(this.player.currentTime);
         if (accepted && this.ab.start !== null && this.state.isLoop) this.command('toggle-loop');

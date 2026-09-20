@@ -4,14 +4,7 @@ import { clickVisible } from './dev-ui';
 
 const output = new URL('../dev-assets/verification/', import.meta.url);
 const checks: string[] = [];
-const panels = [
-  ['general', 'general'],
-  ['advanced', 'advanced'],
-  ['hls', 'toggleHLSDebug'],
-  ['masked', 'masked'],
-  ['gamepad', 'toggleZenzaGamePadConfig'],
-  ['heatsync', 'toggleHeatSyncDialog'],
-] as const;
+const panels = ['general', 'advanced', 'hls', 'masked', 'gamepad', 'heatsync'] as const;
 const panel = (name: string): string => `window.__settingsQuery('[data-fw-settings="${name}"]')`;
 async function check(session: CdpSession, expression: string, label: string, timeout = 8000): Promise<void> {
   const deadline = Date.now() + timeout;
@@ -37,12 +30,14 @@ async function clickInside(session: CdpSession, name: string, selector: string):
   )) as { x: number; y: number };
   await mouse(session, point.x, point.y);
 }
-async function open(session: CdpSession, name: string, action: string): Promise<void> {
+async function open(session: CdpSession, name: string): Promise<void> {
   await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 10, y: 150 });
   await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 12, y: 150 });
   await Bun.sleep(180);
   await clickVisible(session, '[data-shell-action="settings"]');
-  await clickVisible(session, `[data-shell-action="${action}"]`);
+  await clickVisible(session, '[data-shell-action="general"]');
+  await check(session, `${panel('general')}?.open`, '設定の入口から共通画面を開く');
+  if (name !== 'general') await clickInside(session, 'general', `[data-settings-tab="${name}"]`);
   await check(session, `${panel(name)}?.open && ${panel(name)}.matches(':modal')`, `${name}: 共通モーダルを開く`);
 }
 async function capture(session: CdpSession, name: string): Promise<void> {
@@ -50,7 +45,7 @@ async function capture(session: CdpSession, name: string): Promise<void> {
   await Bun.write(new URL(`settings-${name}.png`, output), Buffer.from(shot.data, 'base64'));
 }
 async function verifyTabs(session: CdpSession, width: number): Promise<void> {
-  await open(session, 'general', 'general');
+  await open(session, 'general');
   const frame = await evaluate(
     session,
     `${panel('general')}.querySelector('.fw-modal-content').getBoundingClientRect().toJSON()`
@@ -171,8 +166,8 @@ async function main(): Promise<void> {
       session,
       `window.__settingsQuery=function find(selector,root=document){const e=root.querySelector(selector);if(e)return e;for(const host of root.querySelectorAll('*')){if(host.shadowRoot){const e=find(selector,host.shadowRoot);if(e)return e;}}return null;}`
     );
-    for (const [name, action] of panels) {
-      await open(session, name, action);
+    for (const name of panels) {
+      await open(session, name);
       await check(
         session,
         `getComputedStyle(${panel(name)},'::backdrop').backdropFilter==='blur(12px)' && getComputedStyle(${panel(name)}.querySelector('.fw-modal-content')).backgroundColor==='rgb(19, 25, 35)'`,
@@ -192,7 +187,7 @@ async function main(): Promise<void> {
         `!${panel(name)}.open && !document.querySelector('zenza-video').paused`,
         `${name}: 背景クリックで閉じ、動画へクリックを通さない`
       );
-      await open(session, name, action);
+      await open(session, name);
       await session.send('Input.dispatchKeyEvent', {
         type: 'keyDown',
         key: 'Escape',
@@ -210,24 +205,23 @@ async function main(): Promise<void> {
         `!${panel(name)}.open && document.querySelector('#zenzaVideoPlayerDialog').classList.contains('is-open')`,
         `${name}: Escapeは設定だけを閉じる`
       );
-      await open(session, name, action);
+      await open(session, name);
       await clickInside(session, name, '[data-settings-close]');
       await check(session, `!${panel(name)}.open`, `${name}: 共通の閉じるボタン`);
     }
     await verifyTabs(session, 1280);
-    for (const [name, action, selector, storage] of [
-      ['general', 'general', '[data-setting-name="autoPlay"]', 'FutatsumeWatch_autoPlay'],
+    for (const [name, selector, storage] of [
+      ['general', '[data-setting-name="autoPlay"]', 'FutatsumeWatch_autoPlay'],
       [
-        'advanced',
         'advanced',
         '[data-setting-name="enableFullScreenOnDoubleClick"]',
         'FutatsumeWatch_enableFullScreenOnDoubleClick',
       ],
-      ['hls', 'toggleHLSDebug', 'input[name="capLevelToPlayerSize"]', 'ZenzaWatch_video.hls.capLevelToPlayerSize'],
-      ['gamepad', 'toggleZenzaGamePadConfig', '[data-config-name="needFocus"]', 'ZenzaGamePad_config_needFocus'],
-      ['heatsync', 'toggleHeatSyncDialog', '[data-config-name="turbo.enabled"]', 'HeatSync_config_turbo.enabled'],
+      ['hls', 'input[name="capLevelToPlayerSize"]', 'ZenzaWatch_video.hls.capLevelToPlayerSize'],
+      ['gamepad', '[data-config-name="needFocus"]', 'ZenzaGamePad_config_needFocus'],
+      ['heatsync', '[data-config-name="turbo.enabled"]', 'HeatSync_config_turbo.enabled'],
     ] as const) {
-      await open(session, name, action);
+      await open(session, name);
       if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
       const checked = `window.__settingsQuery(${JSON.stringify(selector)},${panel(name)}).checked`;
       const before = await evaluate(session, checked);
@@ -246,7 +240,7 @@ async function main(): Promise<void> {
         `${name}: 設定の実入力と保存`
       );
       await mouse(session, 3, 3);
-      await open(session, name, action);
+      await open(session, name);
       if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
       await check(session, `${checked}===${String(!before)}`, `${name}: 再表示後の保存値`);
       await clickInside(session, name, selector);
@@ -254,11 +248,11 @@ async function main(): Promise<void> {
       await check(session, `${checked}===${String(before)}`, `${name}: 設定値を復元`);
       await mouse(session, 3, 3);
     }
-    await open(session, 'masked', 'masked');
+    await open(session, 'masked');
     const fast = await evaluate(session, `${panel('masked')}.querySelector('input[name="fastMode"]:checked').value`);
     await clickInside(session, 'masked', `input[name="fastMode"][value="${fast === 'true' ? 'false' : 'true'}"]`);
     await mouse(session, 3, 3);
-    await open(session, 'masked', 'masked');
+    await open(session, 'masked');
     await check(
       session,
       `${panel('masked')}.querySelector('input[name="fastMode"]:checked').value!==${JSON.stringify(fast)}`,
@@ -270,8 +264,8 @@ async function main(): Promise<void> {
     await Bun.sleep(180);
     await clickVisible(session, '[data-shell-action="fullscreen"]');
     await check(session, '!!document.fullscreenElement', '全画面へ移行');
-    for (const [name, action] of panels) {
-      await open(session, name, action);
+    for (const name of panels) {
+      await open(session, name);
       await mouse(session, 3, 3);
       await check(
         session,
@@ -286,8 +280,8 @@ async function main(): Promise<void> {
       [1920, 1080],
     ]) {
       await session.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
-      for (const [name, action] of panels) {
-        await open(session, name, action);
+      for (const name of panels) {
+        await open(session, name);
         await check(
           session,
           `(()=>{const p=${panel(name)}.querySelector('.fw-modal-content'),b=p.querySelector('.fw-modal-body'),r=p.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1&&b.scrollWidth<=b.clientWidth+1})()`,
@@ -299,7 +293,7 @@ async function main(): Promise<void> {
       }
       if (width === 390) await verifyTabs(session, width);
     }
-    await open(session, 'heatsync', 'toggleHeatSyncDialog');
+    await open(session, 'heatsync');
     await evaluate(session, `window.FutatsumeWatch.external.execCommand('close')`);
     await check(
       session,

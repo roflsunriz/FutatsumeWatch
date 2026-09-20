@@ -26,6 +26,24 @@ async function reveal(session: CdpSession): Promise<void> {
 }
 async function click(session: CdpSession, action: string): Promise<void> {
   await reveal(session);
+  const settingsTabs: Record<string, string> = {
+    advanced: 'advanced',
+    masked: 'masked',
+    toggleHLSDebug: 'hls',
+    toggleZenzaGamePadConfig: 'gamepad',
+    toggleHeatSyncDialog: 'heatsync',
+  };
+  const tab = settingsTabs[action];
+  if (tab) {
+    await clickVisible(session, '[data-shell-action="general"]');
+    await check(
+      session,
+      `window.__fwQuery('[data-fw-settings="general"]')?.open && !!window.__fwQuery('[data-fw-settings="general"] [data-settings-tab="${tab}"]')`,
+      `設定から${tab}タブへ進む`
+    );
+    await deepClick(session, `[data-fw-settings="general"] [data-settings-tab="${tab}"]`);
+    return;
+  }
   await clickVisible(session, `[data-shell-action="${action}"]`);
 }
 async function screenshot(session: CdpSession, name: string): Promise<void> {
@@ -189,6 +207,18 @@ async function main(): Promise<void> {
       '左メニューを開く'
     );
     await screenshot(session, '1280-settings');
+    await check(
+      session,
+      `(()=>{const menu=document.querySelector('.fw-settings');return menu.querySelectorAll(':scope > button').length===1&&menu.querySelectorAll(':scope > .fw-quality').length===1&&menu.querySelectorAll(':scope > a').length===1&&menu.querySelectorAll(':scope > details').length===1&&menu.querySelectorAll('[data-shell-action="advanced"],[data-shell-action="masked"],[data-shell-action="toggleHLSDebug"],[data-shell-action="toggleZenzaGamePadConfig"],[data-shell-action="toggleHeatSyncDialog"]').length===0})()`,
+      '設定前のメニューを4項目に集約'
+    );
+    await clickVisible(session, '.fw-settings > details > summary');
+    await check(
+      session,
+      `document.querySelector('.fw-settings > details').open && document.querySelectorAll('.fw-settings > details [data-shell-action]').length===3`,
+      'その他操作の既存3操作を開く'
+    );
+    await clickVisible(session, '.fw-settings > details > summary');
     await Bun.sleep(3300);
     await check(session, `${container}.dataset.controls==='visible'`, 'メニュー操作中は自動で隠さない');
     await clickVisible(session, '.fw-backdrop');
