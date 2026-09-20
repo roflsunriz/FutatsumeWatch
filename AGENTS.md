@@ -189,6 +189,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `test/fixtures/cdp/offline.ts`はBun内のfetch/XHR差し替え。要求照合はURLの意味あるクエリと本文を比較し、パスだけのフォールバックを撤去した。無視するクエリはフィクスチャ側で明示する。本文未記録は空本文だけに一致する。
 - `test:browser`はオフラインが既定。`dev-offline.ts`でページ・iframe・Worker通信を監査し、専用Chromeの禁止プロキシを併用する。配布物の通信境界で`offline-site.ts`と`offline-library.ts`が固定応答を返す。実サイトは`--live`を明示し、投稿・タグ・マイリストの書き込みスイートではliveを拒否する。
 - WorkerはFetch/Target domainを持たない場合がある。親ページでFetchとauto-attach、子でRuntime/Networkを監視し、子を必ずresumeする。CdpSession.closeはPromiseを返し、未完了の監査を回収してから閉じるため必ずawaitする。通信遮断の負例は`guard`スイートで確認する。
+- 短命なWorkerはRuntime/Network購読の開始中に終了し、`Target.sendMessageToTarget: No session with given id`になることがある。対象子セッションの消滅だけは正常終了として未完了要求を解放し、それ以外のCDPエラー・未捕捉通信・製品例外は失敗のまま維持する。回帰は`offline-site.test.ts`。
 - スイート終了はWebSocketを閉じるだけで済ませず、自分が作成したTargetとBrowserContextも破棄する。`cleanupCdp`で一つの後始末が失敗しても残りを実行する。guardで異なるContext間のlocalStorageとBroadcastChannel隔離も確認する。
 - 生成HLSは`test/fixtures/functionality/media`に置く。MPEG-TSを`.ts`にすると型検査でTypeScriptと誤認するため`.mpegts`を使う。生成手順と採取・加工根拠は同ディレクトリのREADMEを参照する。
 - 設定の全項目検証は`verify-settings-fields.ts`。描画エンジンはコメントdurationを整数msに正規化するため、速度変更の期待値は導入版の公開実装と照合する。全入力の保存成功を、実機・外部サービスを含む全機能効果の保証としない。

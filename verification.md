@@ -321,6 +321,11 @@ scripts/dev-verify-addons.tsは隔離コンテキストで外部通信を遮断�
 - `bun run test:browser settings`で削除後の84設定について、表示・保存・再表示・復元と複数画面寸法を確認した。
 - `bun run test:browser player`でDomand HLSの時間進行、画質設定、Worker、コメント、再読み込みを含む55項目に合格した。公開サイトへの通信は行っていない。
 
+### CIの短命Worker終了競合（2026-09-21）
+
+- GitHub ActionsのWindowsブラウザ検証で、製品の55項目合格後に終了済みWorkerへの購読要求が`No session with given id`となり、releaseジョブがスキップされた。
+- 子セッションの消滅時だけ未完了の購読要求を正常終了させる。ほかのCDPエラーを同じ扱いにしないことを`test/unit/offline-site.test.ts`で固定する。
+
 ## 未確認・制約と再開条件
 
 | 対象                 | 確認できない理由・次に必要な検証                                                                                                                                                                    |

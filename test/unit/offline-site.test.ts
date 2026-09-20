@@ -315,9 +315,15 @@ class FakeSession implements CdpSession {
   handlers: Array<(method: string, params: Record<string, unknown>) => void> = [];
   closed = 0;
   closeError: Error | undefined;
+  missingTargetSessions = new Set<string>();
+  targetSessionErrors = new Map<string, string>();
   send = (method: string, params: Record<string, unknown> = {}): Promise<unknown> => {
     this.calls.push({ method, params });
     if (method === 'Target.sendMessageToTarget') {
+      if (this.missingTargetSessions.has(String(params.sessionId)))
+        return Promise.reject(new Error('Target.sendMessageToTarget: No session with given id'));
+      const targetSessionError = this.targetSessionErrors.get(String(params.sessionId));
+      if (targetSessionError) return Promise.reject(new Error(targetSessionError));
       const message = JSON.parse(String(params.message)) as { id: number; method: string };
       queueMicrotask(() =>
         this.emit('Target.receivedMessageFromTarget', {
@@ -426,6 +432,24 @@ describe('Phase0 非同期通信監査と終了処理', () => {
     expect(report.requests).toHaveLength(2);
     expect(report.requests.find((value) => value.requestId === 'shared')?.sources).toHaveLength(3);
     expect(report.errors).toHaveLength(1);
+  });
+
+  test('購読開始中に終了したWorkerのセッション消滅だけは監査失敗にしない', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    session.missingTargetSessions.add('gone-worker');
+    session.emit('Target.attachedToTarget', { sessionId: 'gone-worker', targetInfo: { type: 'worker' } });
+    expect(await closeError(session)).toBe('');
+    expect(offlineReports.get(session)).toMatchObject({ completed: true, errors: [] });
+  });
+
+  test('子セッションの消滅以外のCDPエラーは監査失敗として保持する', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    session.targetSessionErrors.set('broken-worker', 'Target.sendMessageToTarget: unexpected protocol failure');
+    session.emit('Target.attachedToTarget', { sessionId: 'broken-worker', targetInfo: { type: 'worker' } });
+    expect(await closeError(session)).toContain('unexpected protocol failure');
+    expect(offlineReports.get(session)?.completed).toBe(false);
   });
 
   test('close中の製品例外・socket終了失敗を隠さず監査結果を失敗にする', async () => {

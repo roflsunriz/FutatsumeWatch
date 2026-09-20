@@ -331,7 +331,18 @@ function childChannel(parent: CdpSession, sessionId: string): CdpSession {
     { resolve: (value: unknown) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }
   >();
   const handlers: Array<(method: string, params: Record<string, unknown>) => void> = [];
+  const finishDetachedReplies = (): void => {
+    for (const reply of replies.values()) {
+      clearTimeout(reply.timer);
+      reply.resolve(undefined);
+    }
+    replies.clear();
+  };
   parent.onEvent((method, params) => {
+    if (method === 'Target.detachedFromTarget' && params.sessionId === sessionId) {
+      finishDetachedReplies();
+      return;
+    }
     if (method !== 'Target.receivedMessageFromTarget' || params.sessionId !== sessionId) return;
     const message = JSON.parse(String(params.message)) as {
       id?: number;
@@ -364,7 +375,11 @@ function childChannel(parent: CdpSession, sessionId: string): CdpSession {
           .catch((error: unknown) => {
             clearTimeout(timer);
             replies.delete(id);
-            reject(error instanceof Error ? error : new Error(String(error)));
+            const message = error instanceof Error ? error.message : String(error);
+            // Workerなどの短命な子ターゲットは購読開始中にも終了し得る。
+            // 対象自体が消えた場合だけ正常終了とし、ほかのCDP失敗は隠さない。
+            if (/^Target\.sendMessageToTarget: No session with given id$/.test(message)) resolve(undefined);
+            else reject(error instanceof Error ? error : new Error(message));
           });
       });
     },
@@ -372,11 +387,7 @@ function childChannel(parent: CdpSession, sessionId: string): CdpSession {
       handlers.push(handler);
     },
     close() {
-      for (const reply of replies.values()) {
-        clearTimeout(reply.timer);
-        reply.reject(new Error('Worker session closed'));
-      }
-      replies.clear();
+      finishDetachedReplies();
       return Promise.resolve();
     },
   };
