@@ -160,3 +160,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - filter-matomeの`video-player/ui/comment-post-form.ts`を参考にパレット・文字数・送信状態を実装した。既存`post`→`postChat`→`addChat`へ接続し、rejectの理由をフォームへ返す。本文は成功後だけ消し、動画切替・closeで世代を更新して古い送信結果の干渉を防ぐ。
 - ブラウザ検証は`dev-verify-comment-input.ts`を`test:browser ui`から呼ぶ。専用タブのaddChat境界だけを一時的に置換し、送信成功・失敗を制御する。公開APIへの投稿成功や認証検証とは区別する。IME・重複・文字数境界・投稿不可状態は`test/unit/comment-input-panel.test.ts`で確認する。
 - フォーム内のfocusoutはrelatedTargetで判定する。実Chromeではblur/focusout後のmicrotask時点でもactiveElementがbodyのことがあり、microtaskだけで外へ移動したと判断するとパレットの次ボタンをクリックする前に閉じる。移動先不明時はsetTimeout後に判定する。
+
+## 機能テスト計画の調査（2026-09-20、実装承認待ち）
+
+- `test/fixtures/cdp/offline.ts`はBun内のfetch/XHR差し替えで、ブラウザ全体の通信遮断ではない。`scene.ts`は要求本文を照合せず、URLのパス一致へフォールバックするため、投稿・タグ更新の要求検証へそのまま流用しない。通常の`test:browser`は実サイトへ接続する。拡充方針は`docs/plan-functionality-test.md`を参照し、計画中のオプションを実装済みと扱わない。
