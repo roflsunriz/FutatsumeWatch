@@ -1,5 +1,5 @@
 // CDPシーン型とオフラインマッチャー。
-// scripts/cdp-capture.ts が実ページから採取し、bun:test がオフラインで再生する共通契約。
+// scripts/dev-verify-live-once.ts の採取結果をレビュー・加工した後、bun:testで再生する契約。
 
 import { isDeepStrictEqual } from 'node:util';
 

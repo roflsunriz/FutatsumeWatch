@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## 実サイトの単発検証（2026-09-20）
+
+- 利用者の指定は「対象操作1回＋必要な関連通信の採取。再試行は追加承認後」。HTTP1件という意味ではない。`dev-verify-live-once.ts`の試行IDは開始前に消費し、別IDで無断再実行しない。失敗後は保存データとローカル検証を使う。
+- 公式プレイヤーと本体の再生権取得をURLだけで同一視すると、本体の初回preflightを止める。採取済みinitiatorのBlob Worker `_createSession`とpreflightの元requestIdで区別する。`__retry=0`付きURLも重複キーへ正規化する。根拠・制約は`docs/live-once-verification.md`。
+- 旧`cdp-capture.ts`はURLを仮値にし最終的に全件除外する雛形だったため退役。新しい採取はメソッド・URL・失敗・本文欠落を記録するが、CdpSceneへ自動変換したことにはしない。
+
 ## オフライン検証の終了と設定効果（2026-09-20）
 
 - オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。

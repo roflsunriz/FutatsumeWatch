@@ -6,6 +6,8 @@ BunとGitを用意し、リポジトリ直下で作業します。ブラウザ�
 
 ## ビルドと検証
 
+実サイトへの通信回数を制限する検証では、通常の`--live`スイートをそのまま実行しません。[1操作だけの採取手順](docs/live-once-verification.md)に従い、開始前に監視と再試行遮断を用意します。失敗後に新しい試行IDで再実行するには利用者の追加承認が必要です。
+
 1. `git status --short` で他の未コミット変更を確認します。
 2. `bun install --frozen-lockfile` で依存を揃えます。
 3. `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test`、`bun audit` を実行します。
