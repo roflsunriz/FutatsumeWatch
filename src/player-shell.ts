@@ -146,6 +146,7 @@ export class PlayerShell {
     this.volume = this.require('[data-shell-volume]');
     this.speed = this.require('[data-shell-speed]');
     this.timeLabel = this.require('.fw-time');
+    this.volume.after(this.require('.commentInputPanel'));
     for (const root of [this.controls, this.menu]) {
       root.addEventListener('click', (e) => this.onClick(e));
       root.addEventListener('keydown', (e) => e.stopPropagation());
@@ -327,7 +328,15 @@ export class PlayerShell {
         active instanceof HTMLElement &&
         this.container.contains(active) &&
         (active.matches('input,select,textarea,[contenteditable="true"]') || this.keyboardFocus);
-      if (this.panel || this.pointerDown || editing) return;
+      if (
+        this.panel ||
+        this.pointerDown ||
+        editing ||
+        this.container.querySelector(
+          '.commentInputPanel[data-posting="true"], [data-comment-palette][aria-expanded="true"]'
+        )
+      )
+        return;
       this.container.dataset.controls = 'hidden';
     }, 3000);
   }

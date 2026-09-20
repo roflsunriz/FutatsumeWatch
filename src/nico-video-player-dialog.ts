@@ -516,8 +516,10 @@ class NicoVideoPlayerDialogView extends Emitter {
     });
 
     this.commentInput = new CommentInputPanel({
-      $playerContainer: $container,
+      playerContainer: container as HTMLElement,
       playerConfig: config,
+      playerState: state,
+      isLoggedIn: (util as unknown as DialogUtilView).isLogin(),
     });
 
     this.commentInput.on('post', (e: unknown, chat: unknown, cmd: unknown) => this.emit('postChat', e, chat, cmd));
@@ -718,6 +720,7 @@ class NicoVideoPlayerDialogView extends Emitter {
     this.emit('error', e);
   }
   _onBeforeVideoOpen(): void {
+    this.commentInput.reset();
     this.shell?.reset();
     this._setThumbnail();
   }
@@ -897,6 +900,7 @@ class NicoVideoPlayerDialogView extends Emitter {
   }
   hide(): void {
     closeSettingsDialog();
+    this.commentInput.reset();
     this.shell?.close();
     ClassList(this._$dialog[0] as Element).remove('is-open');
     if (this.settingPanel) {
@@ -1633,10 +1637,10 @@ class NicoVideoPlayerDialog extends Emitter {
 
     this._$playerContainer = this._view.get$Container();
     this._view.on('command', this._onCommand.bind(this) as EmitterCallback);
-    this._view.on('postChat', ((e: { resolve(): void; reject(): void }, chat: unknown, cmd: unknown) => {
+    this._view.on('postChat', ((e: { resolve(): void; reject(error: unknown): void }, chat: unknown, cmd: unknown) => {
       this.addChat(chat, cmd)
         .then(() => e.resolve())
-        .catch(() => e.reject());
+        .catch((error: unknown) => e.reject(error));
     }) as EmitterCallback);
     MediaSessionApi.onCommand(this._onCommand.bind(this) as EmitterCallback);
   }

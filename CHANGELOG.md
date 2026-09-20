@@ -4,6 +4,10 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+### Added
+
+- 再生中に手元で投稿できるよう、音量バー横へコメント投稿フォームを配置した。色・サイズ・位置のパレット、75文字カウンター、Enter送信・Shift+Enter改行、送信中の重複防止、失敗時の本文保持と再送に対応する。未ログイン・読み込み中・過去ログ等では投稿できない理由を表示する。
+
 ### Changed
 
 - 手動検証中の操作を妨げないよう、`bun run dev`をheadedブラウザとTampermonkey・ユーザースクリプトの導入までに限定した。自動テストは`bun run test:browser`へ分離し、別のheadlessブラウザで実行する。既存タブの自動再読み込みも廃止した。

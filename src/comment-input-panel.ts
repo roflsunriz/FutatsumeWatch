@@ -1,379 +1,215 @@
-import * as _ from 'lodash';
 import { Emitter } from './baselib';
-import { css } from '../packages/lib/src/css/css';
-import { uq } from '../packages/lib/src/u-query';
 import type { ConfigStore } from './config';
-
-interface CommentInputEmitter {
-  on(event: string, listener: (...args: unknown[]) => void): unknown;
-  emit(event: string, ...args: unknown[]): unknown;
-}
-
-interface CommentInputEmitterCtor {
-  new (): CommentInputEmitter;
-}
-
-export interface CommentInputUq {
-  append(content: unknown): CommentInputUq;
-  find(selector: string): CommentInputUq;
-  on(event: string, listener: (e: unknown) => void, options?: unknown): CommentInputUq;
-  addClass(name: string): CommentInputUq;
-  removeClass(name: string): CommentInputUq;
-  hasClass(name: string): boolean;
-  hasFocus(): boolean;
-  toggleClass(name: string, force?: boolean): CommentInputUq;
-  val(): string;
-  val(value: string): CommentInputUq;
-  focus(): CommentInputUq;
-  blur(): CommentInputUq;
-  prop(name: string, value?: unknown): unknown;
-}
+import type { PlayerState } from './state';
+import { commentFormText, commentFormTemplate, commandGroups } from './comment-input-view';
 
 export interface CommentInputPanelParams {
-  $playerContainer: CommentInputUq;
-  playerConfig: ConfigStore;
+  playerContainer: HTMLElement;
+  playerConfig: {
+    props: Pick<ConfigStore['props'], 'autoPauseCommentInput'>;
+    onkey(key: string, listener: () => void): unknown;
+  };
+  playerState: Pick<
+    PlayerState,
+    'isRegularUser' | 'isOpen' | 'isLoading' | 'isCommentReady' | 'isWaybackMode' | 'isMymemory' | 'isError'
+  > & { onkey(key: string, listener: () => void): unknown };
+  isLoggedIn: boolean;
 }
 
-interface CommentInputCss {
-  addStyle(cssText: string): void;
-}
+export class CommentInputPanel extends Emitter {
+  readonly element: HTMLFormElement;
+  private readonly text = commentFormText(navigator.language);
+  private readonly input: HTMLTextAreaElement;
+  private readonly commands: HTMLInputElement;
+  private readonly palette: HTMLElement;
+  private readonly toggle: HTMLButtonElement;
+  private readonly autoPause: HTMLInputElement;
+  private readonly status: HTMLElement;
+  private posting = false;
+  private composing = false;
+  private hasFocus = false;
+  private revision = 0;
 
-interface CommentInputUqStatic {
-  html(tpl: string): unknown;
-}
-//===BEGIN===
-class CommentInputPanel extends (Emitter as unknown as CommentInputEmitterCtor) {
-  static __css__: string;
-  static __tpl__: string;
-  private _$playerContainer!: CommentInputUq;
-  private config!: ConfigStore;
-  private _$view!: CommentInputUq;
-  private _$input!: CommentInputUq;
-  private _$form!: CommentInputUq;
-  private _$autoPause!: CommentInputUq;
-  private _$commandInput!: CommentInputUq;
-  private _$commentInput!: CommentInputUq;
-  private _$commentSubmit!: CommentInputUq;
-  private _hasFocus!: boolean;
-  constructor(params: CommentInputPanelParams) {
+  constructor(private readonly params: CommentInputPanelParams) {
     super();
-
-    this._$playerContainer = params.$playerContainer;
-    this.config = params.playerConfig;
-
-    this._initializeDom();
-
-    this.config.onkey('autoPauseCommentInput', this._onAutoPauseCommentInputChange.bind(this));
-  }
-  _initializeDom(): void {
-    const $container = this._$playerContainer;
-    const config = this.config;
-
-    (css as unknown as CommentInputCss).addStyle(CommentInputPanel.__css__);
-    $container.append((uq as unknown as CommentInputUqStatic).html(CommentInputPanel.__tpl__));
-
-    const $view = (this._$view = $container.find('.commentInputPanel'));
-    const $input = (this._$input = $view.find('.commandInput, .commentInput'));
-    this._$form = $container.find('form');
-    const $autoPause = (this._$autoPause = $container.find('.autoPause'));
-    this._$commandInput = $container.find('.commandInput');
-    const $cmt = (this._$commentInput = $container.find('.commentInput'));
-    this._$commentSubmit = $container.find('.commentSubmit');
-    const preventEsc = (e: unknown): void => {
-      if ((e as { keyCode?: number }).keyCode === 27) {
-        // ESC
-        (e as { preventDefault(): void }).preventDefault();
-        (e as { stopPropagation(): void }).stopPropagation();
-        this.emit('esc');
-        (e as { target: { blur(): void } }).target.blur();
-      }
-    };
-
-    $input
-      .on('focus', this._onFocus.bind(this))
-      .on('blur', _.debounce(this._onBlur.bind(this), 500))
-      .on('keydown', preventEsc)
-      .on('keyup', preventEsc);
-
-    $autoPause.prop('checked', config.props.autoPauseCommentInput);
-    this._$autoPause.on('change', (ev: unknown) => {
-      config.props.autoPauseCommentInput = (ev as { target: HTMLInputElement }).target.checked;
-      $cmt.focus();
+    this.element = document.createElement('form');
+    this.element.className = 'commentInputPanel';
+    this.element.setAttribute('aria-label', this.text.comment);
+    this.element.innerHTML = commentFormTemplate(this.text, !params.playerState.isRegularUser);
+    params.playerContainer.append(this.element);
+    this.input = this.require('.commentInput');
+    this.commands = this.require('.commandInput');
+    this.palette = this.require('.commentCommandPalette');
+    this.toggle = this.require('[data-comment-palette]');
+    this.autoPause = this.require('.autoPause');
+    this.status = this.require('.commentPostStatus');
+    this.autoPause.checked = this.isAutoPause;
+    params.playerConfig.onkey('autoPauseCommentInput', () => (this.autoPause.checked = this.isAutoPause));
+    for (const key of ['isOpen', 'isLoading', 'isCommentReady', 'isWaybackMode', 'isMymemory', 'isError'])
+      params.playerState.onkey(key, () => this.updateAvailability());
+    this.autoPause.addEventListener('change', () => {
+      params.playerConfig.props.autoPauseCommentInput = this.autoPause.checked;
     });
-    this._$view.find('label').on('click', (e: unknown) => (e as { stopPropagation(): void }).stopPropagation());
-    this._$form.on('submit', this._onSubmit.bind(this));
-    this._$commentSubmit.on('click', this._onSubmitButtonClick.bind(this));
-    $view
-      .on('click', (e: unknown) => (e as { stopPropagation(): void }).stopPropagation())
-      .on('paste', (e: unknown) => (e as { stopPropagation(): void }).stopPropagation());
+    this.element.addEventListener('submit', (event) => {
+      event.preventDefault();
+      void this.submit();
+    });
+    this.input.addEventListener('input', () => this.updateCount());
+    this.input.addEventListener('compositionstart', () => (this.composing = true));
+    this.input.addEventListener('compositionend', () => (this.composing = false));
+    this.input.addEventListener('focus', () => this.setPalette(false));
+    this.element.addEventListener('keydown', (event) => {
+      event.stopPropagation();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.emit('esc');
+        if (!this.palette.hidden) {
+          this.setPalette(false);
+          this.toggle.focus();
+        } else this.blur();
+      } else if (event.key === 'Enter' && !event.shiftKey && event.target === this.input) {
+        if (event.isComposing || this.composing || event.keyCode === 229) return;
+        event.preventDefault();
+        void this.submit();
+      }
+    });
+    this.element.addEventListener('keyup', (event) => event.stopPropagation());
+    for (const name of ['click', 'dblclick', 'paste'])
+      this.element.addEventListener(name, (event) => event.stopPropagation());
+    this.element.addEventListener('focusin', () => {
+      if (!this.hasFocus) this.emit('focus', this.isAutoPause);
+      this.hasFocus = true;
+    });
+    this.element.addEventListener('focusout', (event) => {
+      if (event.relatedTarget instanceof Node && this.element.contains(event.relatedTarget)) return;
+      setTimeout(() => {
+        if (this.element.contains(document.activeElement)) return;
+        this.setPalette(false);
+        this.endFocus();
+      }, 0);
+    });
+    this.toggle.addEventListener('click', () => this.setPalette(this.palette.hidden));
+    this.commands.addEventListener('input', () => this.updateSelection());
+    this.palette.addEventListener('click', (event) => {
+      const button =
+        event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[data-comment-command]') : null;
+      if (!button) return;
+      const command = button.dataset.commentCommand!;
+      const group = Object.values(commandGroups).find((values) => values.some(([value]) => value === command));
+      const current = this.commands.value.split(/\s+/).filter(Boolean);
+      this.commands.value =
+        command === 'reset'
+          ? ''
+          : [...current.filter((value) => !group?.some(([item]) => item === value)), command].join(' ');
+      this.updateSelection();
+    });
+    params.playerContainer.addEventListener('pointerdown', (event) => {
+      if (event.target instanceof Node && !this.element.contains(event.target)) this.setPalette(false);
+    });
+    this.updateAvailability();
   }
-  _onFocus(): void {
-    if (!this._hasFocus) {
-      this.emit('focus', this.isAutoPause);
-    }
-    this._hasFocus = true;
-  }
-  _onBlur(): void {
-    if (this._$commandInput.hasFocus() || this._$commentInput.hasFocus()) {
-      return;
-    }
-    this.emit('blur', this.isAutoPause);
 
-    this._hasFocus = false;
-  }
-  _onSubmit(): void {
-    this.submit();
-  }
-  _onSubmitButtonClick(): void {
-    this.submit();
-  }
-  _onAutoPauseCommentInputChange(val: unknown): void {
-    this._$autoPause.prop('checked', !!val);
-  }
-  submit(): void {
-    const chat = this._$commentInput.val().trim();
-    const cmd = this._$commandInput.val().trim();
-    if (!chat.length) {
-      return;
-    }
-
-    setTimeout(() => {
-      this._$commentInput.val('').blur();
-      this._$commandInput.blur();
-
-      const $view = this._$view.addClass('updating');
-      new Promise((resolve, reject) => this.emit('post', { resolve, reject }, chat, cmd))
-        .then(() => $view.removeClass('updating'))
-        .catch(() => $view.removeClass('updating'));
-    }, 0);
+  private require<T extends HTMLElement>(selector: string): T {
+    const element = this.element.querySelector<T>(selector);
+    if (!element) throw new Error(`Comment form missing: ${selector}`);
+    return element;
   }
   get isAutoPause(): boolean {
-    return this.config.props.autoPauseCommentInput;
+    return this.params.playerConfig.props.autoPauseCommentInput;
+  }
+  private get unavailable(): string {
+    const state = this.params.playerState;
+    if (!this.params.isLoggedIn) return this.text.login;
+    if (state.isWaybackMode || state.isMymemory) return this.text.readOnly;
+    if (!state.isOpen || state.isLoading || !state.isCommentReady || state.isError) return this.text.notReady;
+    return '';
+  }
+  private updateAvailability(): void {
+    this.input.disabled = this.posting || !!this.unavailable;
+    this.require<HTMLButtonElement>('.commentSubmit').disabled = this.input.disabled;
+    this.element.setAttribute('aria-busy', String(this.posting));
+    this.element.dataset.posting = String(this.posting);
+    this.palette.querySelectorAll<HTMLInputElement | HTMLButtonElement>('input,button').forEach((element) => {
+      element.disabled = this.posting;
+    });
+    if (this.unavailable) this.setStatus(this.unavailable);
+    else if (this.status.dataset.state === 'unavailable') this.setStatus('');
+    if (this.unavailable) this.status.dataset.state = 'unavailable';
+  }
+  private setStatus(message: string, error = false): void {
+    this.status.textContent = message;
+    this.status.dataset.state = error ? 'error' : 'info';
+  }
+  private updateCount(): void {
+    this.require('.commentCount').textContent = `${this.input.value.length}/75`;
+  }
+  private updateSelection(): void {
+    const commands = this.commands.value.split(/\s+/);
+    this.palette.querySelectorAll<HTMLButtonElement>('[data-comment-command]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(commands.includes(button.dataset.commentCommand!)));
+    });
+    this.toggle.title = this.commands.value || this.text.palette;
+  }
+  private setPalette(open: boolean): void {
+    this.palette.hidden = !open;
+    this.toggle.setAttribute('aria-expanded', String(open));
+  }
+  private endFocus(): void {
+    if (!this.hasFocus) return;
+    this.hasFocus = false;
+    this.emit('blur', this.isAutoPause);
+  }
+  async submit(): Promise<void> {
+    if (this.posting || this.composing || this.unavailable) return;
+    const body = this.input.value;
+    if (!body.trim() || body.length > 75) {
+      this.setStatus(body.length > 75 ? this.text.tooLong : this.text.empty, true);
+      this.input.focus();
+      return;
+    }
+    const revision = this.revision;
+    this.posting = true;
+    this.setPalette(false);
+    this.setStatus(this.text.posting);
+    this.updateAvailability();
+    try {
+      await new Promise<void>((resolve, reject) =>
+        this.emit('post', { resolve, reject }, body, this.commands.value.trim())
+      );
+      if (revision !== this.revision) return;
+      this.input.value = '';
+      this.updateCount();
+      this.setStatus(this.text.success);
+    } catch (error) {
+      if (revision !== this.revision) return;
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
+            ? error.message
+            : this.text.failure;
+      this.setStatus(message || this.text.failure, true);
+    } finally {
+      this.posting = false;
+      this.updateAvailability();
+      if (revision === this.revision && !this.unavailable) this.input.focus();
+    }
+  }
+  reset(): void {
+    this.revision++;
+    this.blur();
+    this.input.value = '';
+    this.updateCount();
+    this.setStatus('');
+    this.updateAvailability();
   }
   focus(): void {
-    this._$commentInput.focus();
-    this._onFocus();
+    this.input.focus();
   }
-  blur() {
-    this._$commandInput.blur();
-    this._$commentInput.blur();
-    this._onBlur();
+  blur(): void {
+    this.setPalette(false);
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && this.element.contains(active)) active.blur();
+    this.endFocus();
   }
 }
-
-CommentInputPanel.__css__ = `
-  .commentInputPanel {
-    position: fixed;
-    top:  calc(-50vh + 50% + 100vh);
-    left: 50vw;
-    box-sizing: border-box;
-
-    width: 200px;
-    height: 50px;
-    z-index: 30000;
-    transform: translate(-50%, -170px);
-    overflow: visible;
-  }
-  .is-notPlayed .commentInputPanel,
-  .is-waybackMode .commentInputPanel,
-  .is-mymemory .commentInputPanel,
-  .is-loading  .commentInputPanel,
-  .is-error    .commentInputPanel {
-    display: none;
-  }
-
-  .commentInputPanel:focus-within {
-    width: 500px;
-    z-index: 100000;
-  }
-  .futatsumeScreenMode_wide .commentInputPanel,
-  .is-fullscreen           .commentInputPanel {
-    position: absolute !important; /* fixedだとFirefoxのバグで消える */
-    top:  auto !important;
-    bottom: 120px !important;
-    transform: translate(-50%, 0);
-    left: 50%;
-  }
-
-  .commentInputPanel>* {
-    pointer-events: none;
-  }
-
-  .commentInputPanel input {
-    font-size: 18px;
-  }
-
-  .commentInputPanel:focus-within>*,
-  .commentInputPanel:hover>* {
-    pointer-events: auto;
-  }
-
-  .is-mouseMoving .commentInputOuter {
-    border: 1px solid #888;
-    box-sizing: border-box;
-    border-radius: 8px;
-    opacity: 0.5;
-  }
-  .is-mouseMoving:not(:focus-within) .commentInputOuter {
-    box-shadow: 0 0 8px #fe9, 0 0 4px #fe9 inset;
-  }
-
-  .commentInputPanel:focus-within .commentInputOuter,
-  .commentInputPanel:hover  .commentInputOuter {
-    border: none;
-    opacity: 1;
-  }
-
-  .commentInput {
-    width: 100%;
-    height: 30px !important;
-    font-size: 24px;
-    background: transparent;
-    border: none;
-    opacity: 0;
-    transition: opacity 0.3s ease, box-shadow 0.4s ease;
-    text-align: center;
-    line-height: 26px !important;
-    padding-right: 32px !important;
-    margin-bottom: 0 !important;
-  }
-
-  .commentInputPanel:hover  .commentInput {
-    opacity: 0.5;
-  }
-  .commentInputPanel:focus-within .commentInput {
-    opacity: 0.9 !important;
-  }
-  .commentInputPanel:focus-within .commentInput,
-  .commentInputPanel:hover  .commentInput {
-    box-sizing: border-box;
-    border: 1px solid #888;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 0 8px #fff;
-    color: #000;
-  }
-  .commentInputPanel:focus-within :where(.commandInput, .commentSubmit) {
-    background: #fff;
-    color: #000;
-  }
-
-  .commentInputPanel .autoPauseLabel {
-    position: absolute;
-    width: 145px;
-    height: 21px !important;
-    font-size: 13px;
-    top: 9px;
-    left: 50%;
-    transform: translate(-50%, 0);
-    background: #336;
-    z-index: -1;
-    opacity: 0;
-    transition: top 0.2s ease, opacity 0.2s ease;
-    text-align: center;
-    color: #ccc;
-  }
-  .commentInputPanel:focus-within .autoPauseLabel {
-    top: 36px;
-    z-index: 100;
-    opacity: 1;
-  }
-
-  .commandInput {
-    position: absolute;
-    width: 100px;
-    height: 30px !important;
-    font-size: 24px;
-    top: 0;
-    left: 0;
-    border-radius: 8px;
-    z-index: -1;
-    opacity: 0;
-    transition: left 0.2s ease, opacity 0.2s ease;
-    text-align: center;
-    line-height: 26px !important;
-    padding: 0 !important;
-    margin-bottom: 0 !important;
-  }
-  .commentInputPanel:focus-within .commandInput {
-    left: -108px;
-    z-index: 1;
-    opacity: 0.9;
-    border: none;
-    pointer-evnets: auto;
-    box-shadow: 0 0 8px #fff;
-    padding: 0;
-  }
-
-  .commentSubmit {
-    position: absolute;
-    width: 100px !important;
-    height: 30px !important;
-    font-size: 24px;
-    top: 0;
-    right: 0;
-    border: none;
-    border-radius: 8px;
-    z-index: -1;
-    opacity: 0;
-    transition: right 0.2s ease, opacity 0.2s ease;
-    line-height: 26px;
-    letter-spacing: 0.2em;
-  }
-  .commentInputPanel:focus-within .commentSubmit {
-    right: -108px;
-    z-index: 1;
-    opacity: 0.9;
-    box-shadow: 0 0 8px #fff;
-  }
-  .commentInputPanel:focus-within .commentSubmit:active {
-    color: #000;
-    background: #fff;
-    box-shadow: 0 0 16px #ccf;
-  }
-`.trim();
-
-CommentInputPanel.__tpl__ = `
-  <div class="commentInputPanel forMember" autocomplete="new-password">
-    <form action="javascript: void(0);">
-      <div class="commentInputOuter">
-        <input
-          type="text"
-          value=""
-          autocomplete="on"
-          name="mail"
-          placeholder="コマンド"
-          class="commandInput"
-          maxlength="30"
-        >
-        <input
-          type="text"
-          value=""
-          autocomplete="off"
-          name="chat"
-          accesskey="c"
-          placeholder="コメント入力(C)"
-          class="commentInput"
-          maxlength="75"
-          >
-        <input
-          type="submit"
-          value="送信"
-          name="post"
-          class="commentSubmit"
-          >
-        <div class="recButton" title="音声入力">
-        </div>
-    </div>
-    </form>
-    <label class="autoPauseLabel">
-      <input type="checkbox" class="autoPause" checked="checked">
-      入力時に一時停止
-    </label>
-  </div>
-`.trim();
-
-//===END===
-//
-
-export { CommentInputPanel };

@@ -1,4 +1,5 @@
 import './player-layout.css';
+import './comment-input-panel.css';
 import { FutatsumeWatch, global } from './futatsume-watch-index';
 import { Config } from './config';
 import { util } from './util';

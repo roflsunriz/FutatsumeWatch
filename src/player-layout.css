@@ -425,68 +425,7 @@
   background: transparent;
   color: var(--fw-ink);
 }
-#futatsumeVideoPlayerDialog .fw-player .commentInputPanel {
-  z-index: 420;
-  position: absolute;
-  top: auto;
-  left: 50%;
-  bottom: 132px;
-  width: min(720px, calc(100% - 32px));
-  height: auto;
-  transform: translateX(-50%);
-}
-#futatsumeVideoPlayerDialog .fw-player .commentInputOuter {
-  display: flex;
-  gap: 8px;
-  background: #131923e6;
-  border-radius: 8px;
-  padding: 6px;
-  box-shadow: none;
-  opacity: 1;
-}
-#futatsumeVideoPlayerDialog .fw-player .commentInputPanel > * {
-  pointer-events: auto;
-}
-#futatsumeVideoPlayerDialog .fw-player .commentInput {
-  min-width: 0;
-  flex: 1;
-  opacity: 0.85;
-  color: var(--fw-ink);
-  font-size: 14px;
-  text-align: left;
-  background: transparent;
-  box-shadow: none;
-}
-#futatsumeVideoPlayerDialog .fw-player .commentInputPanel :is(.commandInput, .commentSubmit) {
-  display: none;
-}
-#futatsumeVideoPlayerDialog .fw-player .commentInputPanel:focus-within :is(.commandInput, .commentSubmit) {
-  display: block;
-  position: static;
-  opacity: 1;
-  z-index: 1;
-  font-size: 13px;
-  background: #253141;
-  color: var(--fw-ink);
-  box-shadow: none;
-}
-#futatsumeVideoPlayerDialog .fw-player .commentInputPanel .autoPauseLabel {
-  top: calc(100% + 6px);
-  background: #253141;
-  color: var(--fw-ink);
-}
 @media (max-width: 600px) {
-  #futatsumeVideoPlayerDialog .fw-player .commentInputPanel {
-    bottom: 164px;
-  }
-  #futatsumeVideoPlayerDialog .fw-player .commentInputOuter {
-    display: grid;
-    grid-template-columns: 1fr 100px;
-  }
-  #futatsumeVideoPlayerDialog .fw-player .commentInput {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
   #futatsumeVideoPlayerDialog .fw-header {
     gap: 4px;
     padding: 10px 6px;

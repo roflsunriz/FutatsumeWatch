@@ -1,3 +1,4 @@
+import { verifyCommentInput } from './dev-verify-comment-input';
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
@@ -332,6 +333,7 @@ async function main(): Promise<void> {
     await check(session, `!!document.fullscreenElement`, '全画面ボタンで全画面へ');
     await click(session, 'fullscreen');
     await check(session, `!document.fullscreenElement`, '全画面から復帰');
+    await verifyCommentInput(session, check);
     for (const [width, height] of [
       [390, 844],
       [640, 480],
@@ -357,27 +359,6 @@ async function main(): Promise<void> {
       );
       await screenshot(session, `${width}-details`);
       await clickVisible(session, '.fw-backdrop');
-      // Guest page: expose only the local input layout; do not submit or alter authentication.
-      await evaluate(session, `document.querySelector('.commentInputPanel').classList.remove('forMember')`);
-      await reveal(session);
-      await clickVisible(session, '.commentInput');
-      await session.send('Input.insertText', { text: '表示確認（送信しません）' });
-      await check(
-        session,
-        `['.commentInput','.commandInput','.commentSubmit'].every(s=>{const r=document.querySelector(s).getBoundingClientRect();return r.width>0&&r.x>=0&&r.right<=innerWidth+1&&r.y>=0&&r.bottom<innerHeight})`,
-        `${width}×${height}でコメント入力・コマンド・送信が画面内（送信なし）`
-      );
-      await check(
-        session,
-        `document.querySelector('.autoPauseLabel').getBoundingClientRect().bottom < document.querySelector('.fw-bottom').getBoundingClientRect().top`,
-        `${width}×${height}で入力補助が再生操作に重ならない`
-      );
-      await screenshot(session, `${width}-input`);
-      await evaluate(
-        session,
-        `document.querySelector('.commentInput').value='';document.querySelector('.commentInput').blur();document.querySelector('.commentInputPanel').classList.add('forMember')`
-      );
-      await Bun.sleep(600);
     }
     await session.send('Emulation.setDeviceMetricsOverride', {
       width: 1280,

@@ -153,3 +153,10 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 - 製品・テスト・開発スクリプトのファイル名は小文字のケバブケースを使う。`.test.ts`・`.d.ts`・`.config.mts`の接尾辞は維持する。ESLintの`file-naming/kebab-case`で違反をエラーにする。
 - 改名では静的/動的import、`.js`指定から`.ts`へ解決する参照、ファイル読み込み、文書のパスを更新する。Windowsで大文字小文字だけを変える際は一時名を経由した`git mv`でGitにも新しい綴りを記録する。識別子・公開API名と配布物`dist/FutatsumeWatch.user.js`の購読先はファイル名規則とは分ける。
+
+## 音量バー横のコメント投稿（2026-09-20、未リリース）
+
+- `CommentInputPanel`は通常DOMのformで、`PlayerShell`が音量スライダー直後へ同じDOMを移す。旧絶対配置CSS・uQuery用フォーム処理は廃止し、`comment-input-panel.css`をruntimeから同梱する。狭幅では下段へ折り返す。
+- filter-matomeの`video-player/ui/comment-post-form.ts`を参考にパレット・文字数・送信状態を実装した。既存`post`→`postChat`→`addChat`へ接続し、rejectの理由をフォームへ返す。本文は成功後だけ消し、動画切替・closeで世代を更新して古い送信結果の干渉を防ぐ。
+- ブラウザ検証は`dev-verify-comment-input.ts`を`test:browser ui`から呼ぶ。専用タブのaddChat境界だけを一時的に置換し、送信成功・失敗を制御する。公開APIへの投稿成功や認証検証とは区別する。IME・重複・文字数境界・投稿不可状態は`test/unit/comment-input-panel.test.ts`で確認する。
+- フォーム内のfocusoutはrelatedTargetで判定する。実Chromeではblur/focusout後のmicrotask時点でもactiveElementがbodyのことがあり、microtaskだけで外へ移動したと判断するとパレットの次ボタンをクリックする前に閉じる。移動先不明時はsetTimeout後に判定する。
