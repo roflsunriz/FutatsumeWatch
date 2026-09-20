@@ -131,3 +131,10 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 一般設定の`data-settings-section`を持つ4区画は同じDOMを保持してhiddenを切り替える。ほかの5設定への移動は`configureSettingsNavigation`から既存の開閉処理へ接続する。タブ・区画の識別は表示文言に依存させない。
 - Generalのコマンド付きボタンのclick処理はformに置く。共通ダイアログがclickの外部伝播を止めるため、外側の#rootへ置くと設定書き出しなどのコマンドが届かない。書き出し検証ではダウンロードを捕捉し、生成JSONと現在の設定を比較する。
 - 0.0.8では設定前の左メニューを設定・画質・GitHub・その他操作の4項目に集約した。個別設定への実操作検証も「設定」→設定内タブを通る。削除した入口の有効化監視やclick分岐は残さず、`configureSettingsNavigation`の接続を使う。
+
+## 不要ファイル整理（2026-09-20、0.0.9）
+
+- 未使用判定はTypeScriptのモジュール解決で`.js`指定から`.ts`への解決も確認する。`components/src/index.ts`と`util/util.ts`、`LikeApi.ts`は現行製品から参照される。単純な拡張子一致やファイル名検索だけで削除しない。
+- 旧`test/browser`のイベント検証は`test/unit/uquery.test.ts`へ移した。DOMは同じイベント・関数のリスナーを共有するため、uQueryの名前空間を一つ解除しても別の登録が残る間は実リスナーを消さない。`sample/`は旧コメントアートの比較資料で、実行済みのテストと混同しない。
+- `v<version>`タグでは`.github/workflows/ci.yml`が品質検証後にCHANGELOGの対象版と配布物をリリースへ掲載する。mainの通常プッシュではリリースしない。
+- 既定の`minify: true`はWorker内で`ReferenceError: e/t is not defined`を生み再生を止めた。`rolldownOptions.output.minify`で`mangle:false`・`compress:false`・`codegen.removeWhitespace:true`を指定し、名前と関数構造を保持する。変更時は実配布物の再生・Worker・保存HTMLを再検証する。

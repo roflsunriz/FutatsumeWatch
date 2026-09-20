@@ -6,10 +6,6 @@ subagents
 /lib
 /**/dist
 test/fixtures
-# 実 API スナップショットの TS モック（本文は検証用データのため整形対象外。
-# 注釈行の追加時は手で prettier 準拠を保つ）
-packages/components/mock
-
 # 意図的に壊れた HTML フィクスチャ等（パーサーが読めない検証用データ）
 sample
 **/*.html

@@ -22,3 +22,32 @@ jobs:
       - run: bun run test
       - run: bun audit
       - run: git diff --exit-code -- dist
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: CHANGELOGから対象版の変更点を抽出
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, re
+          version = json.loads(pathlib.Path('package.json').read_text())['version']
+          assert os.environ['RELEASE_TAG'] == f'v{version}', 'タグとpackage.jsonの版が不一致'
+          changelog = pathlib.Path('CHANGELOG.md').read_text()
+          section = re.search(r'^## \[' + re.escape(version) + r'\][^\n]*\n(.*?)(?=^## |\Z)', changelog, re.M | re.S)
+          assert section and section[1].strip(), '対象版の変更履歴がありません'
+          pathlib.Path('release-notes.md').write_text(section[1].strip() + '\n')
+          PY
+      - name: 配布物と変更点を公開
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" dist/FutatsumeWatch.user.js --verify-tag --title "$RELEASE_TAG" --notes-file release-notes.md

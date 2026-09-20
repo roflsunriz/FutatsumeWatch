@@ -4,7 +4,7 @@
 
 ## インストールと使い方
 
-配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（ローカル開発版 **0.0.8**。公開リンクへの反映はプッシュ後です）。
+配布ファイルは **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)** だけです（**0.0.9**）。過去の配布物は[リリース一覧](https://github.com/roflsunriz/FutatsumeWatch/releases)から取得できます。
 
 Tampermonkey / Violentmonkey / Greasemonkeyでこのリンクを開いて登録します。今回の実動作確認はTampermonkeyで実施しています。Violentmonkey・Greasemonkeyは未検証です。
 

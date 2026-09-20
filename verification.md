@@ -1,5 +1,15 @@
 # 検証記録
 
+## 2026-09-20：不要ファイル整理と公開（0.0.9）
+
+- 現行のimport・ビルド・CI・文書とGit履歴を照合し、旧バッチ・ローダー・mailmap・JSHint設定・未参照部品・旧デモ・モック・旧テスト入口の34ファイルを削除した。`sample/`はコメントアートの比較資料として保持した。
+- 旧ブラウザテストを`test/unit/uquery.test.ts`へ移し、同じハンドラーの名前空間を一つ解除すると他の登録まで失われる不具合を再現して修正した。名前空間単独の解除・全解除も確認した。
+- `bun install --frozen-lockfile`、型検査、整形、ビルド、単体150件（607アサーション）が成功。lintはエラー0件・既存の未使用変数等の警告192件。`bun audit`は243パッケージを検査し脆弱性0件。配布物は`bun run build`で再生成した。
+- 初回の実配布物検証では既定のminifyがWorker内で`ReferenceError: e/t is not defined`を起こし、HLS再生で停止した。`rolldownOptions.output.minify`を名前変更・構造変換なしの空白圧縮へ変更すると、Worker例外なしで再生と保存まで成功した。設定は[Rolldownのminifyオプション](https://rolldown.rs/reference/OutputOptions.minify)と導入版の型定義で確認した。
+- 専用Chrome for Testingのヘッドレスプロファイル`dev-assets/cleanup-profile`、ポート9338で`FUTATSUME_DEV_PORT=9338`を指定し、`bun run dev:verify --bundle`の55項目が成功。実導線からの起動、HLS時間進行、コメント描画・保存、シーク、設定、プレイリスト、3画面寸法、終了と再表示を確認した。
+- `bun run dev:verify:addons`の9項目も成功。CapTubeの映像生成・速度・画像保存とブログパーツの操作は固定HTML・外部通信遮断で確認した。初回の圧縮版ではCapTubeの保存導線も失敗し、設定変更後は通過した。
+- ログは`dev-assets/verification/cleanup-*.log`、本体レポートと画像は同じディレクトリの`report.json`・`player.png`・`viewport-*.png`。配布物注入の検証であり、今回のマネージャ再登録・Firefox・認証操作・実機器入力は未検証。既存の機能別制約は下記を引き継ぐ。
+
 ## 2026-09-20：設定前メニューの整理（0.0.8）
 
 設定を開く前の左サイドバーを「設定」「画質」「GitHub」「その他操作」に集約した。詳細設定・HLS・MaskedWatch・GamePad・HeatSyncは設定画面内のタブから開く。削除した入口の有効化監視・click分岐・未使用文言も除去した。

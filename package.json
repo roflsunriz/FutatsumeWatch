@@ -1,7 +1,8 @@
 {
   "name": "FutatsumeWatch",
   "description": "niconico HTML5 Player (ZenzaWatch successor)",
-  "version": "0.0.8",
+  "version": "0.0.9",
+  "private": true,
   "author": "roflsunriz",
   "bugs": {
     "url": "https://github.com/roflsunriz/FutatsumeWatch/issues"
@@ -29,22 +30,8 @@
     "vite": "8.3.0",
     "vite-plugin-monkey": "8.1.1"
   },
-  "directories": {
-    "test": "test/"
-  },
-  "files": [
-    "README.MD",
-    "package.json",
-    "lib",
-    "test"
-  ],
   "homepage": "https://github.com/roflsunriz/FutatsumeWatch",
-  "keywords": [
-    "ES6",
-    "test"
-  ],
   "license": "MIT",
-  "main": "src/FutatsumeWatchIndex.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/roflsunriz/FutatsumeWatch.git"
