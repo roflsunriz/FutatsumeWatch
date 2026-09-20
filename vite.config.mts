@@ -11,6 +11,8 @@ export default defineConfig({
     outDir: 'dist',
     rolldownOptions: {
       output: {
+        // WorkerへtoString()で渡す関数の束縛を保ち、空白・コメントのみ圧縮する。
+        minify: { mangle: false, compress: false, codegen: { removeWhitespace: true } },
         banner: `/*!\n${readFileSync(new URL('./node_modules/comment-overlay/LICENSE', import.meta.url), 'utf8')}\n*/`,
       },
     },
@@ -24,7 +26,7 @@ export default defineConfig({
         version: VERSION,
         author: 'roflsunriz',
         description:
-          'ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。左メニューを設定・画質・GitHub・その他操作に整理。個別設定は固定サイズの設定画面内のタブから開きます。',
+          'ニコニコ動画の外付けプレイヤー。動画情報欄・検索結果の重なった四角形アイコンから起動。中央で再生、左上で設定、右上で詳細。不要な旧開発ファイルを整理。イベント処理の解除と、圧縮による再生停止を修正しました。',
         match: [
           ...[
             'www',
