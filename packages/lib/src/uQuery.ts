@@ -32,8 +32,6 @@ import type { AnyPromiseHandler } from './Emitter';
 //===BEGIN===
 const uQuery = (() => {
   const endMap: WeakMap<object, $Array> = new WeakMap();
-  const emptyMap: Map<string, Set<UQueryCallback>> = new Map();
-  const emptySet: Set<UQueryCallback> = new Set();
   const elementsEventMap: WeakMap<object, Map<string, Set<UQueryCallback>>> = new WeakMap();
   const HAS_CSSTOM = window.CSS && (CSS as unknown as { number?: unknown }).number ? true : false;
   const toCamel = (p: string): string => p.replace(/-./g, (s) => s.charAt(1).toUpperCase());
@@ -568,59 +566,35 @@ const uQuery = (() => {
     }
 
     off(eventName: string | typeof UNDEF = UNDEF, callback: UQueryCallback | typeof UNDEF = UNDEF): this {
-      if (eventName === UNDEF) {
-        for (const element of this.filter(isEventTarget)) {
-          const eventListenerMap = elementsEventMap.get(element) || emptyMap;
-          for (const [eventName, listenerSet] of eventListenerMap) {
-            for (const listener of listenerSet) {
-              element.removeEventListener(eventName, listener);
-            }
-            listenerSet.clear();
-          }
-          eventListenerMap.clear();
-          elementsEventMap.delete(element);
-        }
-        return this;
-      }
-
-      eventName = eventName.trim();
-      const [elementEventName, eventKey] = eventName.split('.');
-      if (callback === UNDEF) {
-        for (const element of this.filter(isEventTarget)) {
-          const eventListenerMap = elementsEventMap.get(element) || emptyMap;
-          const listenerSet = eventListenerMap.get(eventName) || emptySet;
-          for (const listener of listenerSet) {
-            element.removeEventListener(elementEventName as string, listener);
-          }
-
-          listenerSet.clear();
-          eventListenerMap.delete(eventName);
-
-          for (const [key] of eventListenerMap) {
-            if (
-              (!eventKey && key.startsWith(`${elementEventName}.`)) ||
-              (!elementEventName && key.endsWith(`.${eventKey}`))
-            ) {
-              this.off(key);
-            }
-          }
-        }
-        return this;
-      }
-
+      if (eventName !== UNDEF && !eventName.trim()) return this;
+      const [eventType, namespace] = eventName === UNDEF ? [] : eventName.trim().split('.');
       for (const element of this.filter(isEventTarget)) {
-        const eventListenerMap = elementsEventMap.get(element) || new Map<string, Set<UQueryCallback>>();
-        eventListenerMap.set(eventName, eventListenerMap.get(eventName) || new Set<UQueryCallback>());
-        for (const [key, listenerSet] of eventListenerMap) {
-          if (key !== eventName && !key.startsWith(`${elementEventName}.`)) {
-            continue;
+        const eventListenerMap = elementsEventMap.get(element);
+        if (!eventListenerMap) continue;
+        const removed = new Map<string, Set<UQueryCallback>>();
+        for (const [key, listeners] of eventListenerMap) {
+          const [type, keyNamespace] = key.split('.');
+          if (eventType && type !== eventType) continue;
+          if (namespace && keyNamespace !== namespace) continue;
+          for (const listener of listeners) {
+            if (callback !== UNDEF && listener !== callback) continue;
+            listeners.delete(listener);
+            const callbacks = removed.get(type!) || new Set<UQueryCallback>();
+            callbacks.add(listener);
+            removed.set(type!, callbacks);
           }
-          if (!listenerSet.has(callback)) {
-            continue;
-          }
-          listenerSet.delete(callback);
-          element.removeEventListener(elementEventName as string, callback);
+          if (!listeners.size) eventListenerMap.delete(key);
         }
+        // DOMは同じイベント・関数の登録を共有する。別名の登録が残れば解除しない。
+        for (const [type, callbacks] of removed) {
+          for (const listener of callbacks) {
+            const retained = [...eventListenerMap].some(
+              ([key, listeners]) => key.split('.')[0] === type && listeners.has(listener)
+            );
+            if (!retained) element.removeEventListener(type, listener);
+          }
+        }
+        if (!eventListenerMap.size) elementsEventMap.delete(element);
       }
 
       return this;
