@@ -76,3 +76,12 @@
 この実測では`www`の一般的なコメント取得失敗は再現しなかった。Nアニメの修正後実サイトコメント取得も単発制約により未再試行であり、成功扱いにしない。追加実測には新たな承認が必要。
 
 0.0.13ではfilter-matomeの契約と公式通信を照合し、nv-commentだけを信頼済みHTTPSホストへの直接XMLHttpRequestへ変更した。通常取得は`{params,threadKey}`、過去ログ時だけ`additionals.when`を送る。Nアニメ相当の外部ホストから映像・コメント描画までオフライン実ブラウザで確認したが、上記実サイト試行は再実行していない。
+
+## 2026-09-21：追加承認後のNアニメ・ニコ百再試行
+
+利用者から再試行の追加承認を受け、各試行IDを開始前に消費して実行した。操作前に終了した試行も成功扱いにせず、原因を修正してローカル回帰を通してから別IDで再試行した。
+
+- Nアニメは`live-anime-free-comments-2026-09-21-2`が旧候補選択、`-3`／`-4`が透明リンク層、`-5`がログ削減時に露呈した`console.nicoru`初期化依存により、いずれも起動操作前に終了した。依存を除去し、表示ボタン矩形内の実クリックをcapture段階で処理した`live-anime-free-comments-2026-09-21-6`は、`so46805846`の起動、HLSデコード・時間進行、コメント描画まで成功した。
+- ニコ百は`live-dic-sm9-comments-2026-09-21-2`で`ext.nicovideo.jp/thumb/sm9`内の起動ボタンが埋め込みリンクに覆われ、操作前に終了した。埋め込み文書側にも同じ実クリック処理を入れた`live-dic-sm9-comments-2026-09-21-3`は、埋め込み内ボタンの操作、sm9のHLSデコード・時間進行、コメント描画まで成功した。
+- Nアニメのnv-commentは`Origin: https://anime.nicovideo.jp`のOPTIONSがHTTP 200、資格情報なしPOSTがHTTP 200。ニコ百も`Origin: https://dic.nicovideo.jp`のOPTIONSがHTTP 200、POSTがHTTP 200だった。どちらも標準XMLHttpRequestであり、GM API未使用は400原因ではない。
+- 0.0.13より前の通常取得は`Content-Type: text/plain; charset=UTF-8`、通常時も`additionals: {}`を含み、client OSヘッダーも欠けていた。現行の実測成功は、`application/json`・`{params,threadKey}`・OS/frontendヘッダーへ公式契約どおり修正し、通常時の空`additionals`と別threadKey自動再送を除去した後の結果である。過去に観測した400はこの要求契約不一致と整合し、GM APIへ切り替える必要はない。

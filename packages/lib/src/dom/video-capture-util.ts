@@ -181,7 +181,6 @@ const VideoCaptureUtil = (() => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
 
-    window.console.info('download fileName: ', fileName);
     a.setAttribute('download', fileName);
     a.setAttribute('href', url);
     a.setAttribute('rel', 'noopener');

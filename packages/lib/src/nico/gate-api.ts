@@ -93,7 +93,6 @@ const GateAPI = (() => {
       }
       const p = parseUrl(params.url as string);
       if (TOKEN !== token || p.hostname !== location.host || !p.pathname.startsWith('/api/getthumbinfo/')) {
-        console.log('invalid msg: ', { origin: e.origin, TOKEN, token, body });
         return;
       }
       params.options = params.options || {};
@@ -306,14 +305,13 @@ const GateAPI = (() => {
       const { body, sessionId, token } = data;
       const { command, params } = body;
       if (TOKEN !== token) {
-        console.log('invalid msg: ', { origin: e.origin, TOKEN, token, body });
+        console.warn('invalid message origin or token');
         return;
       }
       try {
         let result: unknown;
         switch (command) {
           case 'ok':
-            window.console.info('%cCrossDomainGate initialize OK!', 'color: red;');
             isOk = true;
             break;
           case 'fetch':
@@ -330,7 +328,6 @@ const GateAPI = (() => {
             return sendMessage(body, sessionId);
           case 'ping':
             result = { now: Date.now(), NAME: window.name, PID, url: location.href };
-            console.log('pong!: %smsec', Date.now() - (params.now as number), params);
             break;
         }
         post({ status: 'ok', command: 'commandResult', params: { command, result } }, { sessionId });
@@ -396,7 +393,6 @@ const GateAPI = (() => {
         return;
       }
       if (TOKEN !== token) {
-        window.console.log('invalid msg: ', { origin: e.origin, TOKEN, token, body });
         return;
       }
 
@@ -420,7 +416,7 @@ const GateAPI = (() => {
       }
       const p = parseUrl(params.url as string);
       if (TOKEN !== token || p.hostname !== location.host) {
-        console.log('invalid msg: ', { origin: e.origin, TOKEN, token, body });
+        console.warn('invalid message origin or token');
         return;
       }
       params.options = params.options || {};

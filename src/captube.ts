@@ -70,23 +70,19 @@ export interface CapTubeShotParams {
         initCanvas();
         (canvas as CapTubeCanvas).width = bitmap.width;
         (canvas as CapTubeCanvas).height = bitmap.height;
-        console.time('bitmap to ObjectURL');
         (ctx as CapTubeCanvasContext).drawImage(bitmap, 0, 0);
         const blob = (canvas as CapTubeCanvas).convertToBlob
           ? await (canvas as CapTubeCanvas).convertToBlob!({ type, quality })
           : (canvas as CapTubeCanvas).toDataURL!(type, quality);
         const url = URL.createObjectURL(blob as Blob);
-        console.timeEnd('bitmap to ObjectURL');
         setTimeout(() => URL.revokeObjectURL(url), 60 * 1000);
         return { status: 'ok', command: 'commandResult', params: { url } };
       };
 
       // eslint-disable-next-line @typescript-eslint/require-await
       const fromDataURL = async ({ dataURL }: CapTubeWorkerParams): Promise<Record<string, unknown>> => {
-        console.time('dataURL to objectURL');
         const blob = fetch(dataURL as string).then((r) => r.blob());
         const url = URL.createObjectURL(blob as unknown as Blob);
-        console.timeEnd('dataURL to objectURL');
         setTimeout(() => URL.revokeObjectURL(url), 60 * 1000);
         return { status: 'ok', command: 'commandResult', params: { url } };
       };
@@ -255,7 +251,6 @@ export interface CapTubeShotParams {
     thumbnail: HTMLCanvasElement;
     bitmap: ImageBitmap | undefined | null;
   } => {
-    console.time('createCanvasFromVideo');
     const width = video.videoWidth;
     const height = video.videoHeight;
     const { canvas, ctx } = getTransferCanvas();
@@ -274,7 +269,6 @@ export interface CapTubeShotParams {
       thumbnail.width,
       thumbnail.height
     );
-    console.timeEnd('createCanvasFromVideo');
 
     return { canvas, thumbnail, bitmap };
   };
@@ -298,9 +292,7 @@ export interface CapTubeShotParams {
     if (bitmap) {
       ({ url } = await DataUrlConv.fromBitmap(bitmap));
     } else {
-      console.time('canvas to DataURL');
       const dataURL = canvas.toDataURL!('image/png');
-      console.timeEnd('canvas to DataURL');
 
       ({ url } = await DataUrlConv.fromDataURL(dataURL));
     }
@@ -490,11 +482,9 @@ export interface CapTubeShotParams {
   const initializeEmbed = (): void => {
     const parentHost = parseUrl(document.referrer).hostname;
     if (!HOST_REG.test(parentHost)) {
-      console.log('disable bridge');
       return;
     }
     const origin = new URL(document.referrer).origin;
-    console.log('%cinit embed CapTube', 'background: lightgreen;');
     window.addEventListener('message', (e) => {
       if (e.source !== parent || e.origin !== origin) {
         return;

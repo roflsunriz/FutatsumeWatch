@@ -192,7 +192,7 @@ const { YouTubeWrapper } = (() => {
           events: {
             onReady: () => resolve(),
             onStateChange: this._onPlayerStateChange.bind(this),
-            onPlaybackQualityChange: (e: YTStateEvent) => window.console.info('video quality: ', e.data),
+            onPlaybackQualityChange: () => undefined,
             onError: (e: YTStateEvent) => this.emit('error', e),
           },
           playerVars: {
@@ -298,7 +298,6 @@ const { YouTubeWrapper } = (() => {
       this._player.pauseVideo();
       this._player.setPlaybackQuality(best);
       this._player.playVideo();
-      window.console.info('bestQuality', { levels, best, current: this._player.getPlaybackQuality() });
     }
 
     _onSeekEnd(): void {

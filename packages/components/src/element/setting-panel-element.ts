@@ -162,16 +162,7 @@ const { SettingPanelElement } = (() => {
             <input type="checkbox" class="checkbox"
               data-setting-name="enableStoryboard"
               ?checked=${conf.enableStoryboard}>
-              シークバーにサムネイルを表示 <small>(※ プレミアム)</small>
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="uaa.enable"
-              ?checked=${conf['uaa.enable']}>
-              ニコニ広告の情報を取得する(対応ブラウザのみ)
+              シークバーにサムネイルを表示
           </label>
         </div>
 
@@ -224,19 +215,6 @@ const { SettingPanelElement } = (() => {
           </label>
         </div>
 
-        <div class="control">
-          <label>
-            <select class="menuScale" data-setting-name="menuScale" data-type="number">
-              <option value="0.8" ?selected=${conf.menuScale == 0.8}>0.8倍</option>
-              <option value="1"   ?selected=${conf.menuScale == 1}>標準</option>
-              <option value="1.2" ?selected=${conf.menuScale == 1.2}>1.2倍</option>
-              <option value="1.5" ?selected=${conf.menuScale == 1.5}>1.5倍</option>
-              <option value="2.0" ?selected=${conf.menuScale == 2}>2倍</option>
-            </select>
-            ボタンの大きさ(倍率)
-            <small>※ 一部レイアウトが崩れます</small>
-          </label>
-        </div>
       </section>
       `;
     }
@@ -248,43 +226,10 @@ const { SettingPanelElement } = (() => {
               <input
                 type="checkbox"
                 class="checkbox"
-                data-setting-name="autoCommentSpeedRate"
-                ?checked=${conf.autoCommentSpeedRate}
-              />
-              倍速再生でもコメントは速くしない
-              <small>※ コメントのレイアウトが一部崩れます</small>
-            </label>
-          </div>
-          <div class="control">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="backComment" ?checked=${conf.backComment} />
-              コメントを動画の後ろに流す
-            </label>
-          </div>
-          <div class="control">
-            <label>
-              <input
-                type="checkbox"
-                class="checkbox"
                 data-setting-name="baseFontBolder"
                 ?checked=${conf.baseFontBolder}
               />
               フォントを太くする
-            </label>
-          </div>
-
-          <div class="control">
-            <label>
-              <select class="commentSpeedRate" data-setting-name="commentSpeedRate" data-type="number">
-                <option value="0.5" ?selected=${conf.commentSpeedRate == 0.5}>0.5倍</option>
-                <option value="0.8" ?selected=${conf.commentSpeedRate == 0.8}>0.8倍</option>
-                <option value="1" ?selected=${conf.commentSpeedRate == 1}>標準</option>
-                <option value="1.2" ?selected=${conf.commentSpeedRate == 1.2}>1.2倍</option>
-                <option value="1.5" ?selected=${conf.commentSpeedRate == 1.5}>1.5倍</option>
-                <option value="2.0" ?selected=${conf.commentSpeedRate == 2.0}>2倍</option>
-              </select>
-              コメントの速度(倍率)
-              <small>※ コメントのレイアウトが一部崩れます</small>
             </label>
           </div>
 
@@ -397,28 +342,6 @@ const { SettingPanelElement } = (() => {
               />
               ぼかし (重い)
             </label>
-
-            <label>
-              <input
-                type="radio"
-                name="textShadowType"
-                data-setting-name="commentLayer.textShadowType"
-                ?checked=${conf.commentLayer.textShadowType == 'shadow-stroke'}
-                value="shadow-stroke"
-              />
-              縁取り2 (対応ブラウザのみ。やや重い)
-            </label>
-
-            <label style="font-family: 'dokaben_ver2_1' !important;">
-              <input
-                type="radio"
-                name="textShadowType"
-                data-setting-name="commentLayer.textShadowType"
-                ?checked=${conf.commentLayer.textShadowType == 'shadow-dokaben'}
-                value="shadow-dokaben"
-              />
-              ドカベン <s>(飽きたら消します)</s>
-            </label>
           </div>
         </section>
       `;
@@ -427,6 +350,8 @@ const { SettingPanelElement } = (() => {
       const word = Array.isArray(conf.wordFilter) ? conf.wordFilter.join('\n') : conf.wordFilter;
       const command = Array.isArray(conf.commandFilter) ? conf.commandFilter.join('\n') : conf.commandFilter;
       const userId = Array.isArray(conf.userIdFilter) ? conf.userIdFilter.join('\n') : conf.userIdFilter;
+      const videoTag = typeof conf.videoTagFilter === 'string' ? conf.videoTagFilter : '';
+      const videoOwner = typeof conf.videoOwnerFilter === 'string' ? conf.videoOwnerFilter : '';
       return html`
         <style>
           .filterEdit {
@@ -636,6 +561,16 @@ const { SettingPanelElement } = (() => {
             <label>
               <textarea class="filterEdit" data-setting-name="userIdFilter" data-type="array">${userId}</textarea>
             </label>
+            <h3>NGタグ</h3>
+            <p class="info">連続再生中に、このタグがある動画をスキップします。</p>
+            <label>
+              <textarea class="filterEdit" data-setting-name="videoTagFilter">${videoTag}</textarea>
+            </label>
+            <h3>NG投稿者</h3>
+            <p class="info">連続再生中に、この投稿者IDの動画をスキップします。チャンネルはchから入力します。</p>
+            <label>
+              <textarea class="filterEdit" data-setting-name="videoOwnerFilter">${videoOwner}</textarea>
+            </label>
           </div>
         </section>
       `;
@@ -785,6 +720,10 @@ const { SettingPanelElement } = (() => {
       const path = (e as unknown as { path?: EventTarget[] }).path;
       const elm = ((path && path[0] ? path[0] : e.target) || {}) as SettingControlElement;
       const elmDataset: DOMStringMap | undefined = (elm as { dataset?: DOMStringMap }).dataset;
+      if (elmDataset?.ngRegexpInput !== undefined) {
+        e.stopPropagation();
+        return;
+      }
       const settingName = elmDataset?.settingName;
       const type = elmDataset?.type;
       if (!settingName) {

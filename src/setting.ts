@@ -6,6 +6,7 @@ import { cssUtil } from '../packages/lib/src/css/css';
 import { Config } from './config';
 import type { ConfigStore } from './config';
 import { FutatsumeWatch } from './futatsume-watch-index';
+import { formatNgRegexpInput, parseNgRegexpInput } from './ng-regexp-input';
 
 interface SettingScriptLodash {
   debounce<T extends (...args: never[]) => unknown>(func: T, wait: number): T;
@@ -201,8 +202,13 @@ interface SettingScriptCssUtil {
         const $input = $panel.find('input[type=text], select, .textAreaInput');
         $input.forEach((input) => {
           const { settingName } = input.dataset;
-          const val = config.props[settingName as string];
-          input.value = val as string;
+          input.value =
+            settingName === 'wordRegFilter'
+              ? formatNgRegexpInput(String(config.props.wordRegFilter), String(config.props.wordRegFilterFlags))
+              : typeof config.props[settingName as string] === 'string' ||
+                  typeof config.props[settingName as string] === 'number'
+                ? String(config.props[settingName as string])
+                : '';
         });
         $input.on('change', onInputItemChange);
 
@@ -220,7 +226,14 @@ interface SettingScriptCssUtil {
             break;
           case 'wordRegFilter':
           case 'wordRegFilterFlags':
-            this._$panel.find('.' + (key as string) + 'Input').val(value as string);
+            this._$panel
+              .find('.wordRegFilterInput')
+              .val(
+                formatNgRegexpInput(
+                  String(this._playerConfig.props.wordRegFilter),
+                  String(this._playerConfig.props.wordRegFilterFlags)
+                )
+              );
             break;
           case 'enableFullScreenOnDoubleClick':
           case 'autoCloseFullScreen':
@@ -248,6 +261,7 @@ interface SettingScriptCssUtil {
         target.closest('.control')!.classList.toggle('checked', saved);
       }
       _onInputItemChange(e: unknown): void {
+        (e as { stopPropagation(): void }).stopPropagation();
         const target = (e as { target: HTMLInputElement }).target;
         const $target = $((e as { target: Element }).target);
         const { settingName } = target.dataset;
@@ -255,30 +269,22 @@ interface SettingScriptCssUtil {
 
         window.setTimeout(() => $target.removeClass('update error'), 300);
 
-        console.log('onInputItemChange', settingName, val);
         switch (settingName) {
           case 'wordRegFilter':
             try {
-              new RegExp(val);
+              const parsed = parseNgRegexpInput(val);
+              this._playerConfig.props.wordRegFilter = parsed.pattern;
+              this._playerConfig.props.wordRegFilterFlags = parsed.flags;
               $target.addClass('update');
             } catch {
               $target.addClass('error');
-              //alert('正規表現にエラーがあります');
               return;
             }
-            break;
-          case 'wordRegFilterFlags':
-            {
-              try {
-                new RegExp(/./, val);
-                $target.addClass('update');
-              } catch {
-                $target.addClass('error');
-                //alert('正規表現にエラーがあります');
-                return;
-              }
-            }
-            break;
+            target.value = formatNgRegexpInput(
+              String(this._playerConfig.props.wordRegFilter),
+              String(this._playerConfig.props.wordRegFilterFlags)
+            );
+            return;
           default:
             $target.addClass('update');
             break;
@@ -515,7 +521,6 @@ interface SettingScriptCssUtil {
       <option value="fullScreen">フルスクリーン ON/OFF</option>
       <option value="toggle-mute">ミュート ON/OFF</option>
       <option value="toggle-showComment">コメント表示 ON/OFF</option>
-      <option value="toggle-backComment">コメントの背面表示 ON/OFF</option>
       <option value="toggle-loop">ループ ON/OFF</option>
       <option value="toggle-enableFilter">NG設定 ON/OFF</option>
       <option value="screenShot">スクリーンショット</option>
@@ -599,25 +604,10 @@ interface SettingScriptCssUtil {
           </div>
 
 
-          <p class="caption sub">NGワード正規表現</p>
-          <span class="example">入力例: <code>([wWｗＷ]+$|^ん[？?]$|洗った？$)</code> 文法エラーがある時は更新されません</span>
+          <p class="caption sub">NG正規表現</p>
+          <span class="example">入力例: <code>/([wWｗＷ]+$|^ん[？?]$|洗った？$)/i</code> 文法エラーがある時は更新されません</span>
           <input type="text" class="textInput wordRegFilterInput"
-            data-setting-name="wordRegFilter">
-
-          <p class="caption sub">NGワード正規表現フラグ</p>
-          <span class="example">入力例: <code>i</code></span>
-          <input type="text" class="textInput wordRegFilterFlagsInput"
-            data-setting-name="wordRegFilterFlags">
-
-          <p class="caption sub">NG tag</p>
-          <span class="example">連続再生中にこのタグのある動画があったらスキップ</span>
-          <textarea class="videoTagFilter textAreaInput"
-            data-setting-name="videoTagFilter"></textarea>
-
-          <p class="caption sub">NG owner</p>
-          <span class="example">連続再生中にこの投稿者IDがあったらスキップ。 チャンネルの場合はchをつける 数字の後に 入力例<code>2525 #コメント</code></span>
-          <textarea class="videoOwnerFilter textAreaInput"
-            data-setting-name="videoOwnerFilter"></textarea>
+            data-setting-name="wordRegFilter" data-ng-regexp-input>
 
           <div class="debugControl control toggle">
             <label>

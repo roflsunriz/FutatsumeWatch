@@ -21,14 +21,12 @@ export interface ConfigProps {
   autoFullScreen: boolean;
   autoCloseFullScreen: boolean;
   continueNextPage: boolean;
-  backComment: boolean;
   autoPauseCommentInput: boolean;
   sharedNgLevel: string;
   enablePushState: boolean;
   enableHeatMap: boolean;
   enableCommentPreview: boolean;
   enableAutoMylistComment: boolean;
-  menuScale: number;
   enableTogglePlayOnClick: boolean;
   enableDblclickClose: boolean;
   enableFullScreenOnDoubleClick: boolean;
@@ -62,8 +60,6 @@ export interface ConfigProps {
   videoOwnerFilter: string;
   enableCommentPanel: boolean;
   enableCommentPanelAutoScroll: boolean;
-  commentSpeedRate: number;
-  autoCommentSpeedRate: boolean;
   playlistLoop: boolean;
   commentLanguage: string;
   baseFontFamily: string;
@@ -96,7 +92,6 @@ export interface ConfigProps {
   'videoSearch.order': string;
   'videoSearch.sort': string;
   'videoSearch.word': string;
-  'uaa.enable': boolean;
   'screenshot.prefix': string;
   'search.limit': number;
   'touch.enable': boolean;
@@ -204,14 +199,12 @@ const Config = (() => {
     autoFullScreen: false,
     autoCloseFullScreen: true, // 再生終了時に自動でフルスクリーン解除するかどうか
     continueNextPage: false, // 動画再生中にリロードやページ切り替えしたら続きから開き直す
-    backComment: false, // コメントの裏流し
     autoPauseCommentInput: true, // コメント入力時に自動停止する
     sharedNgLevel: 'MID', // NG共有の強度 NONE, LOW, MID, HIGH, MAX
     enablePushState: true, // ブラウザの履歴に乗せる
     enableHeatMap: true,
     enableCommentPreview: false,
     enableAutoMylistComment: false, // マイリストコメントに投稿者を入れる
-    menuScale: 1.0,
     enableTogglePlayOnClick: false, // 画面クリック時に再生/一時停止するかどうか
     enableDblclickClose: true, //
     enableFullScreenOnDoubleClick: true,
@@ -252,9 +245,6 @@ const Config = (() => {
 
     enableCommentPanel: true,
     enableCommentPanelAutoScroll: true,
-
-    commentSpeedRate: 1.0,
-    autoCommentSpeedRate: false,
 
     playlistLoop: false,
     commentLanguage: 'ja-jp',
@@ -302,8 +292,6 @@ const Config = (() => {
     'videoSearch.order': 'desc',
     'videoSearch.sort': 'playlist',
     'videoSearch.word': '',
-
-    'uaa.enable': true,
 
     'screenshot.prefix': '', // スクリーンショットのファイル名の先頭につける文字
 
@@ -373,12 +361,10 @@ const Config = (() => {
 
   if (navigator && navigator.userAgent && navigator.userAgent.match(/(Android|iPad;|CriOS)/i)) {
     DEFAULT_CONFIG.overrideWatchLink = true;
-    DEFAULT_CONFIG.enableTogglePlayOnClick = true;
     DEFAULT_CONFIG.autoFullScreen = true;
     DEFAULT_CONFIG.autoCloseFullScreen = false;
     DEFAULT_CONFIG.volume = 1.0;
     DEFAULT_CONFIG.enableVideoSession = true;
-    DEFAULT_CONFIG['uaa.enable'] = false;
   }
 
   if (location.host === 'www.nicovideo.jp') migrateConfig(localStorage, Object.keys(DEFAULT_CONFIG));

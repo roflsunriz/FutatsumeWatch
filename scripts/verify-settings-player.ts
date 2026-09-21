@@ -1,7 +1,6 @@
 import { evaluate } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
-import { offlineSites } from './dev-offline';
 
 interface Helpers {
   open(session: CdpSession, name: string): Promise<void>;
@@ -9,13 +8,7 @@ interface Helpers {
   check(session: CdpSession, expression: string, label: string, timeout?: number): Promise<void>;
 }
 const video = `document.querySelector('futatsume-video')`;
-const keys = [
-  'enableTogglePlayOnClick',
-  'enableFullScreenOnDoubleClick',
-  'autoFullScreen',
-  'touch.enable',
-  'uaa.enable',
-] as const;
+const keys = ['enableTogglePlayOnClick', 'enableFullScreenOnDoubleClick', 'autoFullScreen', 'touch.enable'] as const;
 
 export async function verifyPlayerSettingEffects(session: CdpSession, helpers: Helpers): Promise<void> {
   const previous = (await evaluate(
@@ -92,7 +85,6 @@ export async function verifyPlayerSettingEffects(session: CdpSession, helpers: H
 
     await pageTouch(false);
     await pageTouch(true);
-    if (offlineSites.has(session)) await sponsors();
 
     await setting('autoFullScreen', true);
     await reopen();
@@ -139,70 +131,6 @@ export async function verifyPlayerSettingEffects(session: CdpSession, helpers: H
       }
     } finally {
       await session.send('Emulation.setTouchEmulationEnabled', { enabled: false });
-    }
-  }
-
-  async function sponsors(): Promise<void> {
-    const site = offlineSites.get(session)!;
-    const reply = site.reply.bind(site);
-    site.reply = async (request) =>
-      new URL(request.url).pathname === '/v1/contents/video/sm9/thanks'
-        ? {
-            status: 200,
-            mime: 'application/json',
-            body: JSON.stringify({
-              data: { sponsors: [{ advertiserName: '検証提供者', message: '検証', auxiliary: {} }] },
-            }),
-          }
-        : reply(request);
-    try {
-      await setting('uaa.enable', false);
-      await helpers.check(
-        session,
-        `!window.FutatsumeWatch.debug.uaa._state.isExist`,
-        'P2-07: 提供者表示OFFで既存の表示を消す'
-      );
-      await setting('uaa.enable', true);
-      await clickVisible(session, '[data-shell-action="details"]');
-      await clickVisible(session, '[data-shell-tab="videoInfoTab"]');
-      await helpers.check(
-        session,
-        `window.FutatsumeWatch.debug.uaa._state.isExist && window.FutatsumeWatch.debug.uaa._elm.body.textContent.includes('検証提供者')`,
-        'P2-07: 提供者表示ONで取得結果を描画',
-        10000
-      );
-      const summary = `window.FutatsumeWatch.debug.uaa._shadow.querySelector('summary')`;
-      const point = (await evaluate(
-        session,
-        `(()=>{const e=${summary};e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;if(!r.width||!r.height||e.getRootNode().elementFromPoint(x,y)!==e)throw Error('提供者の表示が覆われています');return{x,y}})()`
-      )) as { x: number; y: number };
-      for (const type of ['mousePressed', 'mouseReleased'])
-        await session.send('Input.dispatchMouseEvent', { type, button: 'left', clickCount: 1, ...point });
-      await helpers.check(
-        session,
-        `window.FutatsumeWatch.debug.uaa._elm.body.querySelector('.contact').getBoundingClientRect().height>0`,
-        'P2-07: 提供者欄を実クリックして名前を可視表示'
-      );
-      for (const type of ['keyDown', 'keyUp'])
-        await session.send('Input.dispatchKeyEvent', {
-          type,
-          key: 'Escape',
-          code: 'Escape',
-          windowsVirtualKeyCode: 27,
-        });
-      await helpers.check(
-        session,
-        `document.querySelector('.futatsumePlayerContainer').dataset.panel===''`,
-        'P2-07: 提供者欄からEscapeで動画へ戻る'
-      );
-      await setting('uaa.enable', false);
-      await helpers.check(
-        session,
-        `!window.FutatsumeWatch.debug.uaa._state.isExist && window.FutatsumeWatch.debug.uaa._elm.body.textContent===''`,
-        'P2-07: 提供者表示の再OFFでDOMと表示状態を消す'
-      );
-    } finally {
-      site.reply = reply;
     }
   }
 }

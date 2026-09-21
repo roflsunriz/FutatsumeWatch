@@ -40,6 +40,7 @@ interface DomandDelivery {
   availableVideos?: Array<{ id: string; label: string }>;
   availableVideoIds?: Array<string>;
   availableAudioIds?: Array<string>;
+  isStoryboardAvailable?: boolean;
   [key: string]: unknown;
 }
 
@@ -160,7 +161,7 @@ const VideoInfoLoader = (function () {
         // label,
       },
       // marquee,
-      media: { domand: domandInfo },
+      media: { domand: rawDomandInfo },
       // okReason,
       owner, // nullable
       payment: {
@@ -222,6 +223,10 @@ const VideoInfoLoader = (function () {
       viewer, // nullable
       // waku,
     } = _data;
+
+    // 公式レスポンスの会員別フラグだけを上書きし、実際の資産可否は
+    // access-rights/storyboard の応答で判定する。
+    const domandInfo = rawDomandInfo ? { ...rawDomandInfo, isStoryboardAvailable: true } : rawDomandInfo;
 
     const csrfToken = null;
     const watchAuthKey = null;
@@ -409,7 +414,6 @@ const VideoInfoLoader = (function () {
     }
 
     const url = `https://www.nicovideo.jp/watch/${videoId}?responseType=json`;
-    window.console.info('%cloadLinkedChannelVideoInfo', 'background: cyan', linkedChannelVideo);
     return new Promise((r) => {
       setTimeout(r, 1000);
     })
@@ -515,7 +519,6 @@ const VideoInfoLoader = (function () {
 
   const loadPromise = function (watchId: string, options: WatchLoadOptions, isRetry = false): Promise<unknown> {
     let url = `https://www.nicovideo.jp/watch/${watchId}`;
-    console.log('%cloadFromWatchApiData...', 'background: lightgreen;', watchId, url);
     const query = ['responseType=json'];
     if (options.economy === true) {
       query.push('eco=1');
@@ -548,12 +551,10 @@ const VideoInfoLoader = (function () {
           });
         } else if (err.reason === 'flv' && !options.economy) {
           options.economy = true;
-          window.console.log('%cエコノミーにフォールバック(flv)', 'background: cyan; color: red;');
           return createSleep(500).then(() => {
             return loadPromise(watchId, options, true);
           });
         } else {
-          window.console.info('watch api fail', err);
           return Promise.reject({
             watchId,
             message: err.message || '動画情報の取得に失敗',
@@ -565,16 +566,12 @@ const VideoInfoLoader = (function () {
 
   return {
     load: function (watchId: string, options: WatchLoadOptions) {
-      const timeKey = `watchAPI:${watchId}`;
-      window.console.time(timeKey);
       return loadPromise(watchId, options).then(
         (result) => {
-          window.console.timeEnd(timeKey);
           return result;
         },
         (err: LoadError & { watchId?: string }) => {
           err.watchId = watchId;
-          window.console.timeEnd(timeKey);
           return Promise.reject(err);
         }
       );

@@ -85,10 +85,8 @@ interface VideoHoverMenuParams {
 }
 
 interface VariablesMapperState {
-  menuScale: number;
   commentLayerOpacity: number;
   fullscreenControlBarMode: string;
-  scale?: number;
   [key: string]: unknown;
 }
 
@@ -595,7 +593,6 @@ class NicoVideoPlayerDialogView extends Emitter {
   async _onPaste(e: ClipboardEvent): Promise<void> {
     const isFutatsume = !!(e.target as unknown as Element).closest('.futatsumeVideoPlayerDialog');
     const target = ((e as Event & { path?: EventTarget[] }).path?.[0] ?? e.target) as HTMLElement;
-    window.console.log('onPaste', { e, target, isFutatsume });
     if (!isFutatsume && ['INPUT', 'TEXTAREA'].includes(target.tagName)) {
       return;
     }
@@ -756,7 +753,6 @@ class NicoVideoPlayerDialogView extends Emitter {
       this._classNameTable ||
       (objUtil.toMap({
         isAbort: 'is-abort',
-        isBackComment: 'is-backComment',
         isShowComment: 'is-showComment',
         isDebug: 'is-debug',
         isError: 'is-error',
@@ -1037,18 +1033,6 @@ class NicoVideoPlayerDialogView extends Emitter {
     z-index: 101 !important;
   }
 
-  .is-showComment.is-backComment .videoPlayer
-  {
-    top:  25% !important;
-    left: 25% !important;
-    width:  50% !important;
-    height: 50% !important;
-    right:  0 !important;
-    bottom: 0 !important;
-    border: 0 !important;
-    z-index: 102 !important;
-  }
-
   body[data-screen-mode="3D"] .futatsumePlayerContainer .videoPlayer {
     transform: perspective(700px) rotateX(10deg);
     margin-top: -5%;
@@ -1059,14 +1043,6 @@ class NicoVideoPlayerDialogView extends Emitter {
     width: 100vw;
     height: 100vh;
     box-shadow: none;
-  }
-
-  .is-backComment .videoPlayer {
-    left: 25%;
-    top:  25%;
-    width:  50%;
-    height: 50%;
-    z-index: 102;
   }
 
   body[data-screen-mode="3D"] .futatsumePlayerContainer .videoPlayer {
@@ -1355,25 +1331,6 @@ NicoVideoPlayerDialogView.__css__ = `
     opacity: var(--futatsume-comment-layer-opacity);
   }
 
-  .futatsumePlayerContainer.is-backComment .commentLayerFrame {
-    position: fixed;
-    top:  0;
-    left: 0;
-    width:  100vw;
-    height: calc(100vh - 40px);
-    right: auto;
-    bottom: auto;
-    z-index: 1;
-  }
-
-  .is-showComment.is-backComment .videoPlayer {
-    opacity: 0.90;
-  }
-
-  .is-showComment.is-backComment .videoPlayer:hover {
-    opacity: 1;
-  }
-
   .loadingMessageContainer {
     display: none;
     pointer-events: none;
@@ -1614,10 +1571,6 @@ class NicoVideoPlayerDialog extends Emitter {
     this._savePlaybackPosition = _.throttle(this._savePlaybackPosition.bind(this), 1000, { trailing: false });
 
     this._onToggleLike = _.debounce(this._onToggleLike.bind(this), 1000);
-
-    void this.promise('firstVideoInitialized').then(() =>
-      (console as unknown as { nicoru(...args: unknown[]): void }).nicoru('firstVideoInitialized')
-    );
   }
   async _initializeDom() {
     this._view = new NicoVideoPlayerDialogView({
@@ -1971,7 +1924,6 @@ class NicoVideoPlayerDialog extends Emitter {
       case 'ESC':
         // ESCキーは連打にならないようブロック期間を設ける
         if (Date.now() < this._escBlockExpiredAt) {
-          window.console.log('block ESC');
           break;
         }
         this._escBlockExpiredAt = Date.now() + 1000 * 2;
@@ -2330,7 +2282,6 @@ class NicoVideoPlayerDialog extends Emitter {
   }
   _onNicosSeek(time: number): void {
     const ct = this.currentTime;
-    window.console.info('nicosSeek!', time);
     if (this.isPlaylistEnable) {
       // 連続再生中は後方へのシークのみ有効にする
       if (ct < time) {
@@ -2374,8 +2325,6 @@ class NicoVideoPlayerDialog extends Emitter {
     this.commentPosts.reset();
     nicoUtil.beginWatchViewer(requestId);
     this._view.updateViewer();
-    window.console.log('%copen video: ', 'color: blue;', watchId);
-    window.console.time('動画選択から再生可能までの時間 watchId=' + watchId);
 
     let nicoVideoPlayer = this._nicoVideoPlayer;
     if (!nicoVideoPlayer) {
@@ -2472,7 +2421,6 @@ class NicoVideoPlayerDialog extends Emitter {
     requestId: string,
     [videoInfoData, localCacheData]: [unknown, unknown, unknown]
   ): Promise<void> {
-    console.log('VideoInfoLoader.load!', requestId, this._watchId, videoInfoData);
     if (this._requestId !== requestId) {
       return;
     }
@@ -2706,7 +2654,6 @@ class NicoVideoPlayerDialog extends Emitter {
     if (!this._state.isLoading) {
       return;
     }
-    window.console.timeEnd('動画選択から再生可能までの時間 watchId=' + this._watchId);
     this._playerConfig.props.lastWatchId = this._watchId;
     void WatchInfoCacheDb.put(this._watchId, { watchCount: 1 });
 
@@ -2721,7 +2668,6 @@ class NicoVideoPlayerDialog extends Emitter {
       option.append = this.isPlaying && this._playlist.isEnable;
 
       // //www.nicovideo.jp/watch/sm20353707 // プレイリスト開幕用動画
-      console.log('playlist option:', option);
 
       option.limit = this._playerConfig.props['search.limit'];
 
@@ -2895,7 +2841,6 @@ class NicoVideoPlayerDialog extends Emitter {
       return;
     }
     const dr = this.duration;
-    console.info('%csave PlaybackPosition:', 'background: cyan', ct, dr, vi.csrfToken);
     if (vi.contextWatchId !== contextWatchId) {
       return;
     }
@@ -3127,20 +3072,15 @@ class NicoVideoPlayerDialog extends Emitter {
       return Promise.reject(new Error('ログインしてから再試行してください。'));
     }
 
-    window.console.time('コメント削除');
-
     const msgInfo = this._videoInfo.msgInfo;
     return this.threadLoader
       .deleteChat(msgInfo, chat as { no: number; fork?: number; text?: string; [key: string]: unknown })
       .then(() => {
-        window.console.timeEnd('コメント削除');
         this.execCommand('notify', 'コメント削除成功');
         this._nicoVideoPlayer.removeChat(chat);
       })
       .catch((err: unknown) => {
         err = err || {};
-        window.console.log('_onFail: ', err);
-        window.console.timeEnd('コメント削除');
         throw new Error(
           typeof err === 'object' && err !== null && 'message' in err
             ? String(err.message)
@@ -4047,23 +3987,19 @@ class VariablesMapper {
   declare private element: Element;
   declare private emitter: InstanceType<typeof Emitter>;
   get nextState(): VariablesMapperState {
-    const { menuScale, commentLayerOpacity, fullscreenControlBarMode } = this.config.props;
-    return { menuScale, commentLayerOpacity, fullscreenControlBarMode };
+    const { commentLayerOpacity, fullscreenControlBarMode } = this.config.props;
+    return { commentLayerOpacity, fullscreenControlBarMode };
   }
 
   get videoControlBarHeight(): number {
     const base = VideoControlBar as unknown as { BASE_HEIGHT: number };
-    return (
-      (base.BASE_HEIGHT - VideoControlBar.BASE_SEEKBAR_HEIGHT) * this.state.menuScale +
-      VideoControlBar.BASE_SEEKBAR_HEIGHT
-    );
+    return base.BASE_HEIGHT;
   }
 
   constructor({ config, element }: { config: DialogPlayerConfig; element?: Element }) {
     this.config = config;
 
     this.state = {
-      menuScale: 0,
       commentLayerOpacity: 0,
       fullscreenControlBarMode: 'auto',
     };
@@ -4096,14 +4032,12 @@ class VariablesMapper {
       return;
     }
 
-    const { menuScale, commentLayerOpacity, fullscreenControlBarMode } = nextState;
+    const { commentLayerOpacity, fullscreenControlBarMode } = nextState;
 
     this.state = nextState;
     Object.assign((this.element as HTMLElement).dataset, { fullscreenControlBarMode });
-    if (state.scale !== menuScale) {
-      this.setVar('--futatsume-ui-scale', menuScale);
-      this.setVar('--futatsume-control-bar-height', css.px(this.videoControlBarHeight));
-    }
+    this.setVar('--futatsume-ui-scale', 1);
+    this.setVar('--futatsume-control-bar-height', css.px(this.videoControlBarHeight));
     if (state.commentLayerOpacity !== commentLayerOpacity) {
       this.setVar('--futatsume-comment-layer-opacity', commentLayerOpacity);
     }

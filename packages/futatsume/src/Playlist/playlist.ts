@@ -346,13 +346,7 @@ class PlayList extends VideoList {
       this._playlistApiLoader = PlaylistApiLoader as unknown as PlaylistApiLoaderLike;
     }
     const loader = this._playlistApiLoader;
-    const listOptions = playlist.options as { tag?: unknown; keyword?: unknown };
-    const targetLabel = (playlist.id || listOptions.tag || listOptions.keyword) as string;
-    const timeKey = `loadPlaylist: ${playlist.type} ${targetLabel}`;
-    window.console.time(timeKey);
-
     return loader.load(playlist, msgInfo).then((items) => {
-      window.console.timeEnd(timeKey);
       if (
         generation !== this.loadGeneration ||
         (options.watchId !== undefined && options.watchId !== this._activeItem?.watchId)
@@ -404,11 +398,9 @@ class PlayList extends VideoList {
     }
     const loader = this._nicoSearchApiLoader;
 
-    window.console.time('loadSearchVideos' + word);
     const opts = options || {};
 
     return loader.searchMore(word, opts, limit).then((result) => {
-      window.console.timeEnd('loadSearchVideos' + word);
       if (
         generation !== this.loadGeneration ||
         (opts.watchId !== undefined && opts.watchId !== this._activeItem?.watchId)

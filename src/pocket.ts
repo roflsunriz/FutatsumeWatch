@@ -215,10 +215,6 @@ void AntiPrototypeJs().then(() => {
     const console = window.console;
     const { workerUtil } = (window as unknown as PocketWindow).MylistPocketLib;
     //const $ = window.jQuery;
-    console.log(
-      `%c${PRODUCT}`,
-      'font-family: "Apple LiGothic"; padding: 4px; background: red; color: white; font-size: 150%;'
-    );
 
     const CONSTANT = {
       BASE_Z_INDEX: 100000,
@@ -2068,11 +2064,9 @@ void AntiPrototypeJs().then(() => {
           (window as unknown as PocketWindow).FutatsumeWatch &&
           (window as unknown as PocketWindow).FutatsumeWatch!.ready
         ) {
-          window.console.log('FutatsumeWatch is Ready');
           onFutatsumeReady();
         } else {
           document.body.addEventListener('FutatsumeWatchInitialize', function () {
-            window.console.log('FutatsumeWatchInitialize MylistPocket');
             onFutatsumeReady();
           });
         }
@@ -2288,11 +2282,8 @@ void AntiPrototypeJs().then(() => {
           }
 
           emitter.emit('onMessage', data.body, data.type);
-        } catch (e) {
-          console.log('%cMylistPocket.Error: window.onMessage  - ', 'color: red; background: yellow', e, event);
-          console.log('%corigin: ', 'background: yellow;', event.origin);
-          console.log('%cdata: ', 'background: yellow;', event.data);
-          console.trace();
+        } catch {
+          // 別製品や壊れたwindowメッセージは処理対象外。
         }
       };
 
@@ -3639,16 +3630,10 @@ void AntiPrototypeJs().then(() => {
         const isContain = ngs.includes(value);
 
         if (isContain || cmd === 'remove') {
-          ngs = ngs.filter((line) => {
-            if (line === value) {
-              window.console.info('%c-%s:%s', 'background: cyan', key, value);
-            }
-            return line !== value;
-          });
+          ngs = ngs.filter((line) => line !== value);
           cmd = 'remove';
         } else if (!isContain || cmd === 'add') {
           ngs.push(value);
-          window.console.info('%c+%s:%s', 'background: cyan', key, value);
           cmd = 'add';
         }
 
@@ -3865,7 +3850,6 @@ void AntiPrototypeJs().then(() => {
             return;
           }
           const dom = document.querySelector(query);
-          console.log('waitForDom', query, dom, now + timeout, Date.now());
           if (dom) {
             ok(dom);
             return;
@@ -4254,7 +4238,6 @@ void AntiPrototypeJs().then(() => {
       }
       const p = gateApi.parseUrl(params.url);
       if (TOKEN !== token || p.hostname !== location.host || !p.pathname.startsWith('/api/getthumbinfo/')) {
-        console.log('invalid msg: ', { origin: e.origin, TOKEN, token, body });
         return;
       }
       params.options = params.options || {};

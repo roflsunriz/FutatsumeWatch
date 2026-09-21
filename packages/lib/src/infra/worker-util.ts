@@ -153,15 +153,10 @@ const workerUtil = (() => {
               });
               bindFunc(port as unknown as WorkerProxy, 'MessageChannel');
               if (params.ping) {
-                console.time('ping:' + sessionId);
                 (port as unknown as WorkerProxy)
                   .ping()
-                  .then(() => {
-                    console.timeEnd('ping:' + sessionId);
-                    console.log('ok %smec', Date.now() - Number(params.now), params);
-                  })
+                  .then(() => {})
                   .catch((err: unknown) => {
-                    console.timeEnd('ping:' + sessionId);
                     const detail: { err: unknown; data: unknown } = { err, data: (e as MessageEvent).data };
                     console.warn('ping fail', detail);
                   });
@@ -259,19 +254,14 @@ const workerUtil = (() => {
         void self.post({ command: 'alert', params: { message } });
       };
       const ping = async function (self: WorkerProxy, options: PostOptions = {}) {
-        const timekey = `PING "${self.name}"`;
-        console.log(timekey);
         let result: unknown;
         options.timeout = options.timeout || 10000;
         try {
-          console.time(timekey);
           result = await self.post(
             { command: 'ping', params: { now: Date.now(), NAME, PID, url: location.href } },
             options
           );
-          console.timeEnd(timekey);
         } catch (e) {
-          console.timeEnd(timekey);
           console.warn('ping fail', e);
         }
         return result;
@@ -336,7 +326,6 @@ const workerUtil = (() => {
       if (!cache) {
         const src = `
         const PID = '${(window && window.name) || 'self'}:${location.href.replace(/'/g, "\\'")}:${name}:${Date.now().toString(16).toUpperCase()}';
-        console.log('%cinit %s %s', 'font-weight: bold;', self.name || '', '${PRODUCT}', location.origin);
         (${func.toString()})(self);
         `;
         const blob = new Blob([src], { type: 'text/javascript' });
@@ -397,9 +386,6 @@ const workerUtil = (() => {
               return;
             case 'ping':
               result = { now: Date.now(), NAME, PID, url: location.href };
-              if (console.timeLog) {
-                console.timeLog(params.NAME, 'PONG');
-              }
               // console.log('pong!: %sms', Date.now() - params.now, params);
               break;
             case 'emit':
@@ -470,19 +456,14 @@ const workerUtil = (() => {
           });
         };
         const ping = async function (self: WorkerProxy, options: PostOptions = {}) {
-          const timekey = `PING "${self.name}" total time`;
-          window.console.log(`PING "${self.name}"...`);
           let result: unknown;
           options.timeout = options.timeout || 10000;
           try {
-            window.console.time(timekey);
             result = await self.post(
               { command: 'ping', params: { now: Date.now(), NAME: self.name, PID, url: location.href } },
               options
             );
-            window.console.timeEnd(timekey);
           } catch (e) {
-            console.timeEnd(timekey);
             console.warn('ping fail', e);
           }
           return result;
@@ -519,8 +500,6 @@ const workerUtil = (() => {
         const channel = new MessageChannel();
         await self.addPort(channel.port1, { name: worker.name || name });
         await worker.addPort(channel.port2, { name: self.name || name });
-        console.log('ping self -> other', await (channel.port1 as unknown as WorkerProxy).ping());
-        console.log('ping other -> self', await (channel.port2 as unknown as WorkerProxy).ping());
       };
 
       self.BroadcastChannel = (basename?: string) => {

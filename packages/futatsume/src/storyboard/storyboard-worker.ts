@@ -275,7 +275,6 @@ const StoryboardWorker = (() => {
         if (!info.isAvailable) {
           return this.cls();
         }
-        console.time('BoardView setInfo');
         const cols = info.cols;
         const rows = info.rows;
         const pageWidth = info.pageWidth;
@@ -323,7 +322,6 @@ const StoryboardWorker = (() => {
         this.height = info.cellHeight;
         this._currentTime = -1;
         this.cls();
-        console.timeEnd('BoardView setInfo');
         this.isReady = true;
         this.reDraw();
       }

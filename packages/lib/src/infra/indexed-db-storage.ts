@@ -51,9 +51,7 @@ const IndexedDbStorage = (() => {
               for (const idx of indexes) {
                 store.createIndex(idx.name, idx.keyPath, idx.params);
               }
-              store.transaction.oncomplete = () => {
-                console.log('store.transaction.complete', JSON.stringify({ name, ver, store: meta }));
-              };
+              store.transaction.oncomplete = () => {};
             }
           };
           req.onsuccess = (e) => {
@@ -179,11 +177,9 @@ const IndexedDbStorage = (() => {
         return new Promise((resolve, reject) => {
           const req = store.clear();
           req.onsuccess = () => {
-            console.timeEnd('storage clear');
             resolve();
           };
           req.onerror = (e) => {
-            console.timeEnd('storage clear');
             // IDB の失敗はイベントオブジェクトのまま透過させるため Error 限定しない
             // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(e);
@@ -207,7 +203,6 @@ const IndexedDbStorage = (() => {
         const expiresAt = index !== 'expiresAt' ? now - expireTime : now;
         const expireDateTime = new Date(expiresAt).toLocaleString();
         const timekey = `GC [DELETE FROM ${name}.${storeName} WHERE ${index} < '${expireDateTime}'] `;
-        console.time(timekey);
         let count = 0;
         return new Promise<{ status: string; count: number; time: number } | undefined>((resolve, reject) => {
           const range = IDBKeyRange.upperBound(expiresAt);
@@ -220,11 +215,7 @@ const IndexedDbStorage = (() => {
               cursor.delete();
               return cursor.continue();
             }
-            console.timeEnd(timekey);
             resolve({ status: 'ok', count, time: performance.now() - ptime });
-            if (count) {
-              console.log('deleted %s records.', count);
-            }
           };
           req.onerror = reject as (e: Event) => void;
         }).catch((e) => {

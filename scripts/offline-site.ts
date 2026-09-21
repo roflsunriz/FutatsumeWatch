@@ -193,6 +193,7 @@ export function createOfflineSite() {
       const libraryReply = await library.reply(request);
       if (libraryReply) return libraryReply;
       const hlsPath = /^\/v1\/watch\/(sm9|sm2057168|sm100)\/access-rights\/hls$/.exec(path);
+      const storyboardPath = /^\/v1\/watch\/(sm9|sm2057168|sm100)\/access-rights\/storyboard$/.exec(path);
       const postPath = /^\/v1\/threads\/(117310878[012])\/comments$/.exec(path);
       const actionPath = /^\/v1\/threads\/(117310878[012])\/(nicorus|comment-comment-owner-deletions)$/.exec(path);
       const requestedThread = url.searchParams.get('threadId') ?? '';
@@ -200,7 +201,7 @@ export function createOfflineSite() {
       if (method === 'OPTIONS') {
         const registered =
           (url.origin === 'https://nvapi.nicovideo.jp' &&
-            ((hlsPath && query(url, { actionTrackId: 'fixture-track' })) ||
+            (((hlsPath || storyboardPath) && query(url, { actionTrackId: 'fixture-track' })) ||
               (path === '/v1/comment/keys/post' &&
                 videoForThread(requestedThread) &&
                 query(url, { threadId: requestedThread, pc: '1' })) ||
@@ -306,6 +307,26 @@ export function createOfflineSite() {
       }
       if (method === 'GET' && url.origin === 'https://fixture.invalid' && query(url)) {
         if (path === '/poster.svg') return { status: 200, mime: 'image/svg+xml', body: poster };
+        if (/^\/(sm9|sm2057168|sm100)\/storyboard\/poster\.png$/.test(path))
+          return {
+            status: 200,
+            mime: 'image/png',
+            body: Buffer.from(
+              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+              'base64'
+            ),
+          };
+        const storyboard = /^\/(sm9|sm2057168|sm100)\/storyboard\/storyboard\.json$/.exec(path);
+        if (storyboard)
+          return json({
+            thumbnailWidth: 160,
+            thumbnailHeight: 90,
+            columns: 4,
+            rows: 4,
+            count: 480,
+            interval: 1000,
+            images: Array.from({ length: 30 }, () => ({ url: 'poster.png' })),
+          });
         const media = /^\/(sm9|sm2057168|sm100)\/((?:master|low|high)\.m3u8|(?:low|high)-\d{2}\.mpegts)$/.exec(path);
         if (media) {
           const name = media[2]!;
@@ -318,6 +339,22 @@ export function createOfflineSite() {
           };
         }
       }
+      if (
+        method === 'POST' &&
+        url.origin === 'https://nvapi.nicovideo.jp' &&
+        storyboardPath &&
+        query(url, { actionTrackId: 'fixture-track' })
+      )
+        return json(
+          {
+            meta: { status: 201 },
+            data: {
+              contentUrl: `https://fixture.invalid/${storyboardPath[1]}/storyboard/storyboard.json`,
+              expireTime: '2099-01-01T00:00:00Z',
+            },
+          },
+          201
+        );
       if (
         method === 'POST' &&
         url.origin === 'https://nvapi.nicovideo.jp' &&

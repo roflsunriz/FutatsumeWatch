@@ -16,7 +16,6 @@ async function start(): Promise<void> {
   if (window === window.top && supportsWatchEntryPage()) entry = installWatchEntry();
   await AntiPrototypeJs();
   migrateSharedStorage(localStorage, sessionStorage);
-  Object.assign(console, { nicoru: console.log.bind(console) });
   if (window === window.top) await import('./u-query');
   const { Config } = await import('./config');
   await Config.promise('restore');

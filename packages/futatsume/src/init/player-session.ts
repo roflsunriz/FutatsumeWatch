@@ -35,7 +35,6 @@ const PlayerSession = {
     } catch (e) {
       window.console.error('PlayserSession restore fail: ', this.KEY, e);
     }
-    console.log('lastSession', ss);
     return ss;
   },
   clear(this: PlayerSessionLike): void {

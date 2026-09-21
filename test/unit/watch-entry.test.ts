@@ -139,6 +139,27 @@ describe('初めて使う人の起動導線', () => {
       document.querySelector('#hidden')?.nextElementSibling?.getAttribute('data-futatsume-video') ?? null
     ).toBeNull();
   });
+  it('見える起動アイコンがカードの透明リンクに覆われても、その位置の実クリックで起動する', () => {
+    document.body.innerHTML =
+      '<article><a href="https://www.nicovideo.jp/watch/sm9">表示中の動画</a><div id="cover"></div></article>';
+    const open = mock((id: string) => id);
+    ui = installWatchEntry();
+    ui.ready(open);
+    const control = document.querySelector<HTMLButtonElement>('[data-futatsume-video="sm9"]')!;
+    control.getBoundingClientRect = () =>
+      ({ left: 10, top: 20, right: 54, bottom: 64, width: 44, height: 44 }) as DOMRect;
+    document.querySelector('#cover')!.dispatchEvent(
+      new window.MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        detail: 1,
+        clientX: 32,
+        clientY: 42,
+      })
+    );
+    expect(open).toHaveBeenCalledWith('sm9');
+  });
   it('他ホストや壊れたURLを再生要求にしない', () => {
     expect(watchIdFromUrl('https://example.com/watch/sm9')).toBeNull();
     expect(watchIdFromUrl('/watch/not-a-video')).toBeNull();

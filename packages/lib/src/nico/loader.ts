@@ -1,7 +1,6 @@
 import { CacheStorage } from '../infra/cache-storage';
 import { NicoRssLoader } from './nico-rss-loader';
 import { MatrixRankingLoader } from './matrix-ranking-loader';
-import { UaaLoader } from './uaa-loader';
 import { CommonsTreeLoader } from './commons-tree-loader';
 import { CrossDomainGate } from '../infra/cross-domain-gate';
 import { RecommendAPILoader } from './recommend-api-loader';
@@ -21,7 +20,6 @@ import { NicoVideoApi } from './nico-video-api';
 //@require nico-rss-loader
 //@require matrix-ranking-loader
 //@require commons-tree-loader
-//@require uaa-loader
 //@require recommend-api-loader
 //@require playback-position
 //@require cross-domain-gate
@@ -36,7 +34,6 @@ export {
   MylistApiLoader,
   CacheStorage,
   CrossDomainGate,
-  UaaLoader,
   PlaybackPosition,
   NicoVideoApi,
   RecommendAPILoader,

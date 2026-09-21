@@ -66,13 +66,10 @@ export class CommentOverlayView {
     this.clock.getBoundingClientRect = () => this.surface.getBoundingClientRect();
     for (const key of [
       'commentLayerOpacity',
-      'commentSpeedRate',
-      'autoCommentSpeedRate',
       'playbackRate',
       'baseFontFamily',
       'baseFontBolder',
       'baseChatScale',
-      'backComment',
       'commentLayer.textShadowType',
       'commentLayer.easyCommentOpacity',
       'commentLayer.aiCommentOpacity',
@@ -85,10 +82,7 @@ export class CommentOverlayView {
     settings.isCommentVisible = this._isShow;
     settings.useContainerResizeObserver = true;
     settings.commentOpacity = Number(Config.props.commentLayerOpacity);
-    const rate =
-      Math.max(0.1, Number(Config.props.commentSpeedRate)) /
-      (Config.props.autoCommentSpeedRate ? Math.max(this.media.playbackRate, 1) : 1);
-    settings.scrollVisibleDurationMs = rate === 1 ? null : 4000 / rate;
+    settings.scrollVisibleDurationMs = null;
     const shadow = Config.props['commentLayer.textShadowType'];
     settings.shadowIntensity = shadow === 'shadow-type3' ? 'strong' : 'medium';
     settings.renderStyle = 'classic';

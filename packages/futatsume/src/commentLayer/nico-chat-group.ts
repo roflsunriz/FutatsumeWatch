@@ -79,7 +79,6 @@ class NicoChatGroup extends Emitter {
     return this._members;
   }
   onChange(e: { chat: unknown } | null): void {
-    console.log('NicoChatGroup.onChange: ', e);
     this._filteredMembers = [];
     this.emit('change', {
       chat: e,

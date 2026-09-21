@@ -52,7 +52,6 @@ interface NicoWindow {
       return;
     }
     const isInitialized = !!LazyImage.pageObserver;
-    console.log('override Nico.LazyImage...', { isInitialized });
     if (isInitialized) {
       clearInterval(LazyImage.pageObserver);
     }
@@ -77,7 +76,6 @@ interface NicoWindow {
         if (this.isInitialized) {
           return;
         }
-        console.log('reset and initialize');
         this.initialize();
       },
       enqueue(this: LazyImageShape): void {

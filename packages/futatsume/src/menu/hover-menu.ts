@@ -50,9 +50,6 @@ interface HoverPlayer {
   open(watchId: string, options: unknown): void;
 }
 
-interface ConsoleWithNicoru {
-  nicoru(...args: unknown[]): void;
-}
 //===BEGIN===
 
 class HoverMenu {
@@ -212,13 +209,11 @@ class HoverMenu {
     futatsumeWatch.external.send(watchId, Object.assign({ query: this._query }, params));
   }
   _overrideWatchLink(): void {
-    const nicoruConsole = console as unknown as ConsoleWithNicoru;
     const nicoUtilLike = nicoUtil as unknown as NicoUtilLike;
     const futatsumeWatch = FutatsumeWatch as unknown as FutatsumeWatchLike;
     const uqFn = uq as unknown as UqStatic;
     let userPageIntercept: ((e: MouseEvent) => void) | undefined;
     if (document.querySelector('.UserPageHeader') != null) {
-      nicoruConsole.nicoru('user page');
       const blockNavigation = (e: Event): void => {
         if ((e as MouseEvent).ctrlKey) {
           return;
@@ -242,7 +237,6 @@ class HoverMenu {
       location.pathname.startsWith('/search') ||
       location.pathname.startsWith('/tag')
     ) {
-      nicoruConsole.nicoru('ranking/search/tag page');
       requireIntercepts.push((e) => {
         const target = (e.target as unknown as Element).closest('button');
         return target != null && this._closest(target) != null;

@@ -123,7 +123,6 @@ class BaseState extends (Emitter as unknown as StateEmitterCtor) {
 class PlayerState extends BaseState {
   static instance: PlayerState | undefined;
   declare public isAbort: boolean;
-  declare public isBackComment: boolean;
   declare public isChanging: boolean;
   declare public isCanPlay: boolean;
   declare public isChannel: boolean;
@@ -173,7 +172,6 @@ class PlayerState extends BaseState {
   constructor(config: PlayerConfigLike) {
     super({
       isAbort: false,
-      isBackComment: config.props.backComment,
       isChanging: false,
       isCanPlay: false,
       isChannel: false,

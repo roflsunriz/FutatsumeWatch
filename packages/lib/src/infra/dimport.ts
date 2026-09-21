@@ -21,11 +21,8 @@ const dimport: DynamicImport = (() => {
         const callbackName = `dimport_${now}_${count++}`;
         const loader = `
           import * as module${now} from "${url}";
-          console.log('%cdynamic import from "${url}"',
-            'font-weight: bold; background: #333; color: #ff9; display: block; padding: 4px; width: 100%;');
           window.${callbackName}(module${now});
           `.trim();
-        window.console.time(`"${url}" import time`);
         const p = new Promise((ok, ng) => {
           const s = document.createElement('script');
           s.type = 'module';
@@ -33,7 +30,6 @@ const dimport: DynamicImport = (() => {
           s.append(loader);
           s.dataset.import = url;
           (window as unknown as Record<string, unknown>)[callbackName] = (module: unknown) => {
-            window.console.timeEnd(`"${url}" import time`);
             ok(module);
             delete (window as unknown as Record<string, unknown>)[callbackName];
           };

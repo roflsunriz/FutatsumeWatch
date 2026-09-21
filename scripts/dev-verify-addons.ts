@@ -105,6 +105,20 @@ await withPage(
   '<!doctype html><link rel="icon" href="data:,"><title>Embed fixture</title><body></body>',
   async (page) => {
     await check(page, `!!document.querySelector('#futatsumeButton')`, 'ブログパーツの起動ボタン');
+    await page.send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 2,
+      mobile: true,
+    });
+    await page.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    await page.send('Page.reload');
+    await check(page, `!!document.querySelector('#futatsumeButton')`, 'モバイル文書でもブログパーツを初期化');
+    await check(
+      page,
+      `(()=>{const e=document.querySelector('#futatsumeButton'),r=e.getBoundingClientRect();return getComputedStyle(e).display!=='none'&&r.width>=44&&r.height>=44})()`,
+      'モバイルではホバーなしでブログパーツの起動ボタンを表示'
+    );
     await evaluate(
       page,
       `window.postMessage=(data,origin)=>{window.__packet={data:JSON.parse(data),origin};};document.querySelector('#futatsumeButton').click();`

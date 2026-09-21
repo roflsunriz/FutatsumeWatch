@@ -223,12 +223,6 @@ const gate = () => {
 
     type = type || window.name.replace(new RegExp(`/(${PRODUCT}|)Loader$/`), '');
     const origin: string = document.referrer || (window.name.split('#')[1] as string);
-    console.log(
-      '%cCrossDomainPort: host:%s window:%s',
-      'background: lightgreen;',
-      location.host,
-      window.name.split('#')[0]
-    );
 
     if (!isWhiteHost(origin)) {
       throw new Error(`disable bridge "${origin}"`);

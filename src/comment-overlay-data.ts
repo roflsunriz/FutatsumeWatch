@@ -62,11 +62,7 @@ export function decorateOverlayComment(
   comment.draw = (context, x) => {
     context.save();
     const color = presentation.shadowColor;
-    if (presentation.shadow === 'shadow-dokaben') context.filter = `drop-shadow(3px 4px 0 ${color})`;
-    else if (presentation.shadow === 'shadow-stroke')
-      context.filter = `drop-shadow(1px 0 0 ${color}) drop-shadow(-1px 0 0 ${color})`;
-    else if (presentation.shadow === 'shadow-type2' || presentation.owner)
-      context.filter = `drop-shadow(0 0 1px ${color})`;
+    if (presentation.shadow === 'shadow-type2' || presentation.owner) context.filter = `drop-shadow(0 0 1px ${color})`;
     draw(context, x);
     context.restore();
   };

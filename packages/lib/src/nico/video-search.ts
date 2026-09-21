@@ -559,7 +559,6 @@ const { NicoSearchApiV2Query, NicoSearchApiV2Loader } = (function () {
       for (let i = 1; i <= searchCount; i++) {
         await sleep(300 * i);
         const page = currentPage + i * (ONCE_LIMIT / PER_PAGE);
-        console.log('searchNext: "%s"', word, page, params);
         const res = await NicoSearchApiV2Loader.search(word, Object.assign(params, { page }));
         if (res && res.list && res.list.length) {
           result.list = result.list.concat(res.list);

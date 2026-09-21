@@ -82,30 +82,25 @@ const PopupMessage = (() => {
     (target ?? document.body).prepend(msg);
   };
 
-  const nt = (msg: unknown, allowHtml: boolean, type: string, consoleStyle: string): void => {
+  const nt = (msg: unknown, allowHtml: boolean, type: string): void => {
     let body: string;
     if (msg === undefined) {
       body = '不明なエラー';
       window.console.error('undefined message sent');
-      window.console.trace();
     } else if (typeof msg === 'string') {
       body = msg;
     } else {
       // DOM セッターと %s 整形が元のまま文字列化するため、そのまま渡す。
       body = msg as string;
     }
-    console.log('%c%s', consoleStyle, body);
     show(create(body, type, allowHtml));
   };
 
-  const notify = (msg: unknown, allowHtml = false): void =>
-    nt(msg, allowHtml, 'notify', 'background: #080; color: #fff; padding: 8px;');
+  const notify = (msg: unknown, allowHtml = false): void => nt(msg, allowHtml, 'notify');
 
-  const alert = (msg: unknown, allowHtml = false): void =>
-    nt(msg, allowHtml, 'alert', 'background: #800; color: #fff; padding: 8px;');
+  const alert = (msg: unknown, allowHtml = false): void => nt(msg, allowHtml, 'alert');
 
-  const debug = (msg: unknown, allowHtml = false): void =>
-    nt(msg, allowHtml, 'debug', 'background: #333; color: #fff; padding: 8px;');
+  const debug = (msg: unknown, allowHtml = false): void => nt(msg, allowHtml, 'debug');
 
   return { notify, alert, debug };
 })();

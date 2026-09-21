@@ -5,7 +5,6 @@ import { StoryboardInfoModel } from './storyboard-info-model';
 import { SeekBarThumbnail } from './seek-bar-thumbnail';
 import { StoryboardWorker } from './storyboard-worker';
 import { global } from '../../../../src/futatsume-watch-index';
-import { nicoUtil } from '../../../lib/src/nico/nico-util';
 import type { StoryboardRawData } from './storyboard-info-model';
 
 interface PlayerConfigLike {
@@ -37,10 +36,6 @@ interface StoryboardViewLike {
 }
 
 type StoryboardInfoLoadVideoInfo = Parameters<typeof StoryboardInfoLoader.load>[0];
-
-interface NicoUtilLike {
-  isPremium(): boolean;
-}
 
 interface GlobalDebugLike {
   debug: Record<string, unknown>;
@@ -103,8 +98,7 @@ class Storyboard extends Emitter {
   onVideoCanPlay(watchId: string, videoInfo: StoryboardVideoInfo): void {
     this.reset();
     this._watchId = watchId;
-    const nicoUtilLike = nicoUtil as unknown as NicoUtilLike;
-    if (!this.config.props.enableStoryboard || !videoInfo.hasStoryboard || !nicoUtilLike.isPremium()) {
+    if (!this.config.props.enableStoryboard || !videoInfo.hasStoryboard) {
       return;
     }
 
@@ -121,7 +115,7 @@ class Storyboard extends Emitter {
     this._initializeStoryboard();
   }
   _onStoryboardInfoLoad(resuestId: unknown, rawData: unknown): void {
-    if (resuestId !== this._requestId || !this.config.props.enableStoryboard || !nicoUtil.isPremium()) {
+    if (resuestId !== this._requestId || !this.config.props.enableStoryboard) {
       return;
     } // video changed
     this.model.update(rawData as StoryboardRawData);

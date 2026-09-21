@@ -401,7 +401,6 @@ class VideoListView extends Emitter {
 
     const fileReader = new FileReader();
     fileReader.onload = (ev: ProgressEvent<FileReader>) => {
-      window.console.log('file data: ', (ev.target as FileReader).result);
       this.emit('filedrop', (ev.target as FileReader).result, file.name);
     };
 
@@ -427,10 +426,7 @@ class VideoListView extends Emitter {
     const dllLike = dll as unknown as DllLike;
     const globalLike = global as unknown as GlobalEmitterLike;
     const lit = dllLike.lit || ((await globalLike.emitter.promise('lit-html')) as DllLitLike);
-    const timeLabel = `update playlistView items = ${targets.length}`;
-    console.time(timeLabel);
     lit.render(await this._buildList(targets), list);
-    console.timeEnd(timeLabel);
     this._updateCSSVars();
     this._setInviewObserver();
   }

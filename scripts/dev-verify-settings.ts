@@ -213,6 +213,11 @@ async function main(): Promise<void> {
       await check(session, `!${panel(name)}.open`, `${name}: 共通の閉じるボタン`);
     }
     await verifyTabs(session, 1280);
+    await check(
+      session,
+      `window.FutatsumeWatch.config.props.enableTogglePlayOnClick===false&&window.__settingsQuery('[data-config-name="enabled"]',${panel('gamepad')}).checked===false&&window.__settingsQuery('[data-config-name="turbo.enabled"]',${panel('heatsync')}).checked===false`,
+      '画面クリック・GamePad・HeatSyncの初期値はOFF'
+    );
     // The all-fields pass outlasts the generated media. Pause through the real
     // transport button so end-of-video transitions cannot replace its subject.
     if (!(await evaluate(session, `document.querySelector('futatsume-video').paused`))) {

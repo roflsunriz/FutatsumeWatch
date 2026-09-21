@@ -120,14 +120,9 @@ export async function initializeHls(): Promise<void> {
   ): void => {
     const window: Window & typeof globalThis = globalThis.window;
     const console = window.console;
-    const VER = '0.0.1';
 
     const Array = (window as unknown as HlsWindowExtension).PureArray || window.Array;
     let primaryVideo: (HTMLElement & { hlsConfig?: unknown }) | null = null;
-
-    console.log(`%c${PRODUCT} v:%s`, 'background: cyan;', VER);
-
-    console.time('FutatsumeWatch HLS');
 
     const DEFAULT_CONFIG: Record<string, HlsConfigValue> = {
       // hls.js 以外のパラメータ
@@ -143,11 +138,8 @@ export async function initializeHls(): Promise<void> {
       // 以下、 hls.js 関連
 
       // Domand動画にはcookiesが必要
-      xhrSetup: (xhr: XMLHttpRequest, url: string): void => {
+      xhrSetup: (xhr: XMLHttpRequest): void => {
         xhr.withCredentials = true;
-        xhr.ontimeout = () => {
-          window.console.log('xhr timeout', xhr, url);
-        };
       },
 
       // なんとなくわかる物
@@ -229,18 +221,14 @@ export async function initializeHls(): Promise<void> {
         const callbackName = `dimport_${now}`;
         const loader = `
         import * as module${now} from "${url}";
-        console.log('%cdynamic import from "${url}"',
-          'font-weight: bold; background: #333; color: #ff9; display: block; padding: 4px; width: 100%;');
         window.${callbackName}(module${now});
         `.trim();
-        console.time(`"${url}" import time`);
         const p: Promise<unknown> = new Promise((res: (value: unknown) => void) => {
           const s = document.createElement('script');
           s.type = 'module';
           s.append(document.createTextNode(loader));
           s.dataset.import = url;
           (window as unknown as Record<string, (module: unknown) => void>)[callbackName] = (module: unknown): void => {
-            console.timeEnd(`"${url}" import time`);
             res(module);
             delete (window as unknown as Record<string, unknown>)[callbackName];
           };
@@ -592,15 +580,12 @@ export async function initializeHls(): Promise<void> {
           const now = Date.now();
           const { store, transaction } = await this.getStore();
           this.isBusy = true;
-          const timekey = `storage gc:${new Date().toLocaleString()}`;
-          console.time(timekey);
           return new Promise<void>((resolve, reject) => {
             const range = IDBKeyRange.upperBound(now);
             const req = store.delete(range);
             req.onsuccess = (): void => {
               this.isBusy = false;
               (this.constructor as typeof IndexDBStorage).close();
-              console.timeEnd(timekey);
               if (transaction.commit) {
                 transaction.commit();
               }
@@ -619,16 +604,13 @@ export async function initializeHls(): Promise<void> {
         }
 
         async clear(): Promise<unknown> {
-          console.time('storage clear');
           const { store } = await this.getStore();
           return new Promise<void>((resolve, reject) => {
             const req = store.clear();
             req.onsuccess = (): void => {
-              console.timeEnd('storage clear');
               resolve();
             };
             req.onerror = (e: Event): void => {
-              console.timeEnd('storage clear');
               // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- 既存プロトコルの拒否値を温存する
               reject(e);
             };
@@ -1004,7 +986,6 @@ export async function initializeHls(): Promise<void> {
           // eslint-disable-next-line @typescript-eslint/no-misused-promises -- hls.js が戻り値を待たない loader 規約のため async を維持する
           async load(context: HlsLoadContext, config: unknown, callbacks: HlsLoadCallbacks): Promise<void> {
             if (!context.frag || !/\.(ts|cmfa|cmfv)/.test(context.url)) {
-              window.console.info('unknown context', context.url, context);
               return super.load(context, config, callbacks);
             }
 
@@ -1723,15 +1704,6 @@ export async function initializeHls(): Promise<void> {
             return this._onHLSJSFatalError(e, data);
           }
 
-          console.info(
-            '%cHls.Events.ERROR: WARN',
-            'background: cyan;',
-            this._id,
-            data.type,
-            // data,
-            `isForbidden403: ${this._isForbidden403}, isStalledBy403: ${this._isStalledBy403}, isSeeking: ${this._isSeeking}`
-          );
-
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
               {
@@ -1824,13 +1796,10 @@ export async function initializeHls(): Promise<void> {
         const s = document.createElement('script');
         s.onload = (): void => {
           Hls = (window as unknown as { Hls?: HlsStatic }).Hls as HlsStatic;
-          console.info('hls.js loaded:', (window as unknown as { Hls?: HlsStatic }).Hls!.version);
         };
         s.src = `https://cdn.jsdelivr.net/npm/hls.js@${String(Config.get('hls_js_ver'))}`;
         // console.info('load hls.js from', s.src);
         (document.head || document.documentElement).append(s);
-      } else {
-        console.info('hls.js ready:', Hls.version);
       }
       return FutatsumeVideoElement;
     })({ Hls, throttle });
@@ -2703,8 +2672,6 @@ export async function initializeHls(): Promise<void> {
     };
 
     const init = (): void => {
-      console.log('%cinit FutatsumeWatch HLS', 'background: cyan');
-
       const hlsConfig: Record<string, unknown> = Object.assign({}, Config.raw);
       Config.on('update', (key: unknown, value: unknown): void => {
         hlsConfig[key as string] = value;
@@ -2791,7 +2758,6 @@ export async function initializeHls(): Promise<void> {
         })
         .then((FutatsumeWatch: HlsLocalFutatsumeWatch) => {
           initDebug({ hlsConfig, html, render, FutatsumeWatch });
-          console.timeEnd('FutatsumeWatch HLS');
         });
     };
 

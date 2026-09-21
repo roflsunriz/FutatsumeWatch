@@ -80,8 +80,6 @@ const AsyncEmitter = (() => {
 util.fullscreen = Fullscreen;
 
 const dummyConsole: Record<string, (...args: unknown[]) => void> = {};
-// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-window.console.timeLog || (window.console.timeLog = () => {});
 for (const k of Object.keys(window.console)) {
   if (typeof (window.console as unknown as Record<string, unknown>)[k] !== 'function') {
     continue;
@@ -89,7 +87,7 @@ for (const k of Object.keys(window.console)) {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   dummyConsole[k] = _.noop;
 }
-['assert', 'error', 'warn', 'nicoru'].forEach(
+['assert', 'error', 'warn'].forEach(
   (k) =>
     (dummyConsole[k] = (window.console as unknown as Record<string, (...args: unknown[]) => void>)[k]!.bind(
       window.console

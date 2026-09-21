@@ -1,8 +1,7 @@
 import _ from 'lodash';
-import { FutatsumeWatch, global } from './futatsume-watch-index';
+import { global } from './futatsume-watch-index';
 import { CONSTANT } from './constant';
 import { Config } from './config';
-import { UaaLoader } from '../packages/lib/src/nico/loader';
 import { RelatedVideoList } from '../packages/futatsume/src/Playlist/related-video-list';
 import { TagListView } from './tag-list-view';
 import { BaseViewComponent } from '../packages/futatsume/src/parts/base-view-component';
@@ -85,40 +84,6 @@ interface VideoSearchFormControls {
 interface VideoSearchFormInit {
   parentNode?: Element | DocumentFragment | null;
 }
-interface UaaProps {
-  enable: boolean;
-}
-interface UaaConfig {
-  props: UaaProps;
-}
-interface UaaSponsorAuxiliary {
-  bgVideoPosition?: string | number | null;
-}
-interface UaaSponsor {
-  advertiserName: string;
-  message: string;
-  title: string;
-  added?: boolean;
-  auxiliary: UaaSponsorAuxiliary;
-}
-interface UaaSponsorsData {
-  sponsors: UaaSponsor[];
-}
-interface UaaLoadResult {
-  data: UaaSponsorsData | null;
-}
-type UaaPropsState = {
-  videoId?: string;
-  videoInfo: VideoInfoModel;
-};
-type UaaElm = {
-  body: Element | null;
-};
-type UaaState = {
-  isUpdating: boolean;
-  isExist: boolean;
-  isSpeaking: boolean;
-};
 interface RelatedMenuParams {
   parentNode: Element | null;
   isHeader?: boolean;
@@ -146,13 +111,6 @@ interface RecommendVideoInfoLike {
   thumbnail: unknown;
   postedAt: unknown;
   owner: unknown;
-}
-interface VideoCaptureScreenshot {
-  width: number;
-  height: number;
-}
-interface VideoCaptureUtilApi {
-  capture(url: string, sec: number): Promise<VideoCaptureScreenshot>;
 }
 interface UqRafHandle {
   addClass(className: string): UqResult;
@@ -203,8 +161,6 @@ class VideoInfoPanel extends Emitter {
   _tagListView!: TagListView;
   _relatedInfoMenu!: RelatedInfoMenu;
   _videoMetaInfo!: VideoMetaInfo;
-  _uaaContainer!: Element;
-  _uaaView!: UaaView;
   _videoInfo!: VideoInfoModel;
   _futatsumeTubeUrl: string | null | undefined;
   _relatedVideoList?: RelatedVideoList;
@@ -253,9 +209,6 @@ class VideoInfoPanel extends Emitter {
     this._videoMetaInfo = new VideoMetaInfo({
       parentNode: view.querySelector('.videoMetaInfoContainer')!,
     });
-
-    this._uaaContainer = view.querySelector('.uaaContainer')!;
-    this._uaaView = new UaaView({ parentNode: this._uaaContainer });
 
     view.addEventListener('mousemove', (e) => e.stopPropagation());
     view.addEventListener('command', this._onCommandEvent.bind(this));
@@ -316,9 +269,6 @@ class VideoInfoPanel extends Emitter {
     classList.toggle('is-community', this._videoInfo.isCommunityVideo);
     classList.toggle('is-mymemory', this._videoInfo.isMymemory);
     classList.add(videoInfo.isChannel ? 'channelVideo' : 'userVideo');
-
-    this._uaaView.clear();
-    this._uaaView.update(videoInfo);
 
     this._relatedInfoMenu.update(videoInfo);
   }
@@ -471,7 +421,6 @@ class VideoInfoPanel extends Emitter {
           !this._config.props.autoFutatsumeTube
         )
           return;
-        window.console.info('%cAuto FutatsumeTube', url);
         this.emit('command', 'setVideo', url);
       });
     }
@@ -485,7 +434,6 @@ class VideoInfoPanel extends Emitter {
   }
   cancelPending(): void {
     this.playbackGeneration++;
-    this._uaaView?.clear();
   }
   _onVideoCountUpdate(...args: [VideoCountInfo]) {
     if (!this._videoHeaderPanel) {
@@ -894,11 +842,6 @@ css.addStyle(
     padding: 0 8px;
   }
 
-  .futatsumeScreenMode_normal .is-backComment .futatsumeWatchVideoInfoPanel,
-  .futatsumeScreenMode_big    .is-backComment .futatsumeWatchVideoInfoPanel {
-    opacity: 0.7;
-  }
-
 
   .futatsumeWatchVideoInfoPanel .relatedVideoTab .relatedVideoContainer {
     box-sizing: border-box;
@@ -1016,8 +959,7 @@ css.addStyle(
 
   futatsume-video-item,
   futatsume-video-series-label,
-  futatsume-vieo-description,
-  .UaaView {
+  futatsume-vieo-description {
     content-visibility: auto;
   }
 
@@ -1352,9 +1294,6 @@ VideoInfoPanel.__tpl__ = `
             <div class="videoDescription"></div>
           </div>
           <div class="futatsumeWatchVideoInfoPanelFoot">
-            <div class="uaaContainer"></div>
-
-
             <div class="videoTagsContainer sideTab"></div>
           </div>
         </div>
@@ -1719,11 +1658,6 @@ VideoHeaderPanel.__css__ = `
 
     .videoMetaInfoContainer {
       display: inline-block;
-    }
-
-    .futatsumeScreenMode_normal .is-backComment .futatsumeWatchVideoHeaderPanel,
-    .futatsumeScreenMode_big    .is-backComment .futatsumeWatchVideoHeaderPanel {
-      opacity: 0.7;
     }
 
     .futatsumeWatchVideoHeaderPanel .relatedInfoMenuContainer {
@@ -2251,420 +2185,6 @@ VideoSearchForm.__tpl__ = `
     </div>
   `.toString();
 
-// typoじゃなくてブロック回避のため名前を変えてる
-class UaaView extends BaseViewComponent {
-  declare static __tpl__: string;
-  declare static __css__: string;
-  declare static _shadow_: string;
-  declare _state: UaaState;
-  _config: UaaConfig;
-  declare _props: UaaPropsState;
-  declare _elm: UaaElm;
-  declare _shadow: Element | null;
-  df?: DocumentFragment;
-  private loadGeneration = 0;
-  private loadTimer?: number;
-  readonly onEnabledChange = (): void => {
-    const info = this._props.videoInfo;
-    this.clear();
-    if (info && this._config.props.enable) this.update(info);
-  };
-  constructor({ parentNode }: { parentNode: Element | null }) {
-    super({
-      parentNode,
-      name: 'UaaView',
-      template: UaaView.__tpl__,
-      shadow: UaaView._shadow_,
-      css: UaaView.__css__,
-    });
-
-    this._state = {
-      isUpdating: false,
-      isExist: false,
-      isSpeaking: false,
-    };
-
-    this._config = Config.namespace('uaa') as unknown as UaaConfig;
-    Config.onkey('uaa.enable', this.onEnabledChange);
-
-    this._bound.load = this.load.bind(this) as unknown as (e: Event) => void;
-    this._bound.update = this.update.bind(this) as unknown as (e: Event) => void;
-  }
-
-  _initDom(...args: [Record<string, unknown>]) {
-    super._initDom(...args);
-    (FutatsumeWatch.debug as unknown as { uaa?: unknown }).uaa = this;
-
-    if (!this._shadow) {
-      return;
-    } // ShadowDOM使えなかったらバイバイ
-    const shadow = this._shadow || this._view;
-    this._elm = { body: shadow.querySelector('.UaaDetailBody') };
-  }
-
-  update(videoInfo: VideoInfoModel) {
-    if (!this._shadow || !this._config.props.enable) {
-      return;
-    }
-    if (!this._elm.body) {
-      return;
-    }
-
-    if (this._state.isUpdating) {
-      return;
-    }
-    this.setState({ isUpdating: true });
-    this._props.videoInfo = videoInfo;
-    this._props.videoId = videoInfo.videoId;
-
-    const generation = ++this.loadGeneration;
-    this.loadTimer = window.setTimeout(() => {
-      this.loadTimer = undefined;
-      if (generation === this.loadGeneration && this._config.props.enable) void this.load(videoInfo);
-    }, 5000);
-  }
-
-  load(videoInfo: VideoInfoModel) {
-    const videoId = videoInfo.videoId;
-    const generation = this.loadGeneration;
-
-    return UaaLoader.load(videoId, { limit: 50 })
-      .then((result) => {
-        if (generation === this.loadGeneration && this._config.props.enable) this._onLoad(videoId, result);
-      })
-      .catch(() => {
-        if (generation === this.loadGeneration) this._onFail(videoId);
-      });
-  }
-
-  clear(): undefined {
-    this.loadGeneration++;
-    window.clearTimeout(this.loadTimer);
-    this.loadTimer = undefined;
-    this._props.videoId = undefined;
-    this.setState({ isUpdating: false, isExist: false, isSpeaking: false });
-    if (!this._elm.body) {
-      return;
-    }
-    this._elm.body.textContent = '';
-  }
-
-  _onLoad(videoId: string, result: unknown) {
-    if (this._props.videoId !== videoId) {
-      return;
-    }
-    this.setState({ isUpdating: false });
-    const data = result ? (result as UaaLoadResult).data : null;
-    if (!data || data.sponsors.length < 1) {
-      return;
-    }
-
-    const df = (this.df = this.df || document.createDocumentFragment());
-    const div = document.createElement('div');
-    div.className = 'screenshots';
-    let idx = 0,
-      screenshots = 0;
-    data.sponsors.forEach((u) => {
-      if (!u.auxiliary.bgVideoPosition || idx >= 4) {
-        return;
-      }
-      u.added = true;
-      div.append(this._createItem(u, idx++));
-      screenshots++;
-    });
-    div.setAttribute('data-screenshot-count', `${screenshots}`);
-    df.append(div);
-
-    data.sponsors.forEach((u) => {
-      if (!u.auxiliary.bgVideoPosition || u.added) {
-        return;
-      }
-      u.added = true;
-      df.append(this._createItem(u, idx++));
-    });
-    data.sponsors.forEach((u) => {
-      if (u.added) {
-        return;
-      }
-      u.added = true;
-      df.append(this._createItem(u, idx++));
-    });
-
-    this._elm.body!.innerHTML = '';
-    this._elm.body!.append(df);
-
-    this.setState({ isExist: true });
-  }
-
-  _createItem(data: UaaSponsor, idx: number) {
-    const df = document.createElement('div');
-    const contact = document.createElement('span');
-    contact.textContent = data.advertiserName;
-    contact.className = 'contact';
-    df.className = 'item';
-    const aux = data.auxiliary;
-    const bgkeyframe = aux.bgVideoPosition || 0;
-    if (data.message) {
-      data.title = data.message;
-    }
-
-    df.setAttribute('data-index', `${idx}`);
-    if (bgkeyframe && idx < 4) {
-      const sec = parseFloat(bgkeyframe as string);
-      df.setAttribute('data-time', textUtil.secToTime(sec));
-      df.classList.add('clickable', 'command', 'other');
-      Object.assign(df.dataset, { command: 'seek', type: 'number', param: sec });
-      contact.setAttribute('title', `${data.message}(${textUtil.secToTime(sec)})`);
-
-      this._props.videoInfo
-        .getCurrentVideo()
-        .then((url) =>
-          (FutatsumeWatch.util as unknown as { VideoCaptureUtil: VideoCaptureUtilApi }).VideoCaptureUtil.capture(
-            url,
-            sec
-          )
-        )
-        .then((screenshot) => {
-          const cv = document.createElement('canvas');
-          const ct = cv.getContext('2d')!;
-          cv.width = screenshot.width;
-          cv.height = screenshot.height;
-
-          cv.className = 'screenshot command clickable';
-          Object.assign(cv.dataset, { command: 'seek', type: 'number', param: sec });
-          ct.fillStyle = 'rgb(32, 32, 32)';
-          ct.fillRect(0, 0, cv.width, cv.height);
-          ct.drawImage(screenshot as unknown as CanvasImageSource, 0, 0);
-          df.classList.add('has-screenshot');
-          df.classList.remove('clickable', 'other');
-
-          df.append(cv);
-        })
-        .catch(() => {});
-    } else if (bgkeyframe) {
-      const sec = parseFloat(bgkeyframe as string);
-      df.classList.add('clickable', 'command', 'other');
-      Object.assign(df.dataset, { command: 'seek', type: 'number', param: sec });
-      contact.setAttribute('title', `${data.message}(${textUtil.secToTime(sec)})`);
-    } else {
-      df.classList.add('other');
-    }
-    df.append(contact);
-    return df;
-  }
-
-  _onFail(videoId: string) {
-    if (this._props.videoId !== videoId) {
-      return;
-    }
-    this.setState({ isUpdating: false });
-  }
-
-  _onCommand(command: string, param: unknown) {
-    switch (command) {
-      default:
-        super._onCommand(command, param);
-    }
-  }
-}
-
-UaaView._shadow_ = `
-    <style>
-      .UaaDetails,
-      .UaaDetails * {
-        box-sizing: border-box;
-        user-select: none;
-      }
-
-      .UaaDetails .clickable {
-        cursor: pointer;
-      }
-
-        .UaaDetails .clickable:active {
-          transform: translate(0, 2px);
-          box-shadow: none;
-        }
-
-      .UaaDetails {
-        opacity: 0;
-        pointer-events: none;
-        max-height: 0;
-        margin: 0 8px 0;
-        color: #ccc;
-        overflow: hidden;
-        text-align: center;
-        word-break: break-all;
-      }
-        .UaaDetails.is-Exist {
-          display: block;
-          pointer-events: auto;
-          max-height: 800px;
-          padding: 4px;
-          opacity: 1;
-          transition: opacity 0.4s linear 0.4s, max-height 1s ease-in, margin 0.4s ease-in;
-        }
-        .UaaDetails.is-Exist[open] {
-          border: 1px solid #666;
-          border-radius: 4px;
-          overflow: auto;
-        }
-
-      .UaaDetails .uaaSummary {
-        height: 38px;
-        margin: 4px 4px 8px;
-        color: inherit;
-        outline: none;
-        border: 1px solid #ccc;
-        letter-spacing: 12px;
-        line-height: 38px;
-        font-size: 24px;
-        text-align: center;
-        cursor: pointer;
-        border-radius: 8px;
-      }
-
-      .UaaDetails .uaaDetailBody {
-        margin: auto;
-      }
-
-      .UaaDetails .item {
-        display: inline;
-        width: inherit;
-        margin: 0 4px 0 0;
-      }
-
-        .UaaDetails .item.has-screenshot {
-          position: relative;
-          display:inline-block;
-          margin: 4px;
-        }
-        .UaaDetails .item.has-screenshot::after {
-          content: attr(data-time);
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          padding: 2px 4px;
-          background: #000;
-          color: #ccc;
-          font-size: 12px;
-          line-height: 14px;
-        }
-        .UaaDetails .item.has-screenshot:hover::after {
-          opacity: 0;
-        }
-
-      .UaaDetails .contact {
-        display: inline-block;
-        color: #fff;
-        font-weight: bold;
-        font-size: 16px;
-        text-align: center;
-        user-select: none;
-        word-break: break-all;
-      }
-
-        .UaaDetails .item.has-screenshot .contact {
-          position: absolute;
-          text-align: center;
-          width: 100%;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          color: #fff;
-          text-shadow: 1px 1px 1px #000;
-          text-stroke: 1px #000;
-          -webkit-text-stroke: 1px #000;
-          pointer-events: none;
-          font-size: 16px;
-        }
-       .UaaDetails .item.has-screenshot:hover .contact {
-          display: none;
-        }
-
-        .UaaDetails .item.other {
-          display: inline-block;
-          border: none;
-          width: inherit;
-          margin: 0;
-          padding: 2px 4px;
-          line-height: normal;
-          min-height: inherit;
-          text-align: left;
-        }
-
-          .UaaDetails .item.is-speaking {
-            text-decoration: underline;
-          }
-          .UaaDetails .item.has-screenshot.is-speaking {
-            outline: none;
-            transition: transform 0.2s ease;
-            transform: scale(1.2);
-            z-index: 1000;
-          }
-          .UaaDetails .item .contact {
-            display: inline;
-            padding: 2px 4px;
-            width: auto;
-            font-size: 12px;
-            text-stroke: 0;
-            color: inherit; /*#ccc;*/
-            outline-offset: -2px;
-          }
-
-        .UaaDetails .item.other.clickable {
-          display: inline-block;
-          padding: 2px 4px;
-          margin: 0 4px;
-        }
-        .UaaDetails .item.other.clickable .contact {
-          display: inline-block;
-          color: #ffc;
-        }
-        .UaaDetails .item.other.clickable .contact::after {
-          content: attr(title);
-          color: #ccc;
-          font-weight: normal;
-          margin: 0 4px;
-        }
-
-
-      .UaaDetails .screenshot {
-        display: block;
-        width: 128px;
-        margin: 0;
-        vertical-align: middle;
-        cursor: pointer;
-      }
-
-      .screenshots[data-screenshot-count="1"] .screenshot {
-        width: 192px;
-      }
-
-      .futatsumeScreenMode_sideView .is-notFullscreen .UaaDetails {
-        color: #000;
-      }
-      :host-context(.futatsumeScreenMode_sideView .is-notFullscreen) .UaaDetails {
-        color: #000;
-      }
-
-    </style>
-    <details class="root UaaDetails">
-      <summary class="uaaSummary clickable">提供</summary>
-      <div class="UaaDetailBody"></div>
-    </details>
-  `.trim();
-
-UaaView.__tpl__ = '<div class="uaaView"></div>'.trim();
-
-UaaView.__css__ = `
-    uaaView {
-      display: none;
-    }
-    uaaView.is-Exist {
-     display: block;
-    }
-  `.trim();
-
 class RelatedInfoMenu extends BaseViewComponent {
   declare static _shadow_: string;
   declare static _css_: string;
@@ -3032,4 +2552,4 @@ VideoMetaInfo._shadow_ = `
 
 //===END===
 
-export { VideoInfoPanel, VideoHeaderPanel, VideoSearchForm, UaaView, RelatedInfoMenu, VideoMetaInfo };
+export { VideoInfoPanel, VideoHeaderPanel, VideoSearchForm, RelatedInfoMenu, VideoMetaInfo };

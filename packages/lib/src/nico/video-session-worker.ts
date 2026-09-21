@@ -194,7 +194,6 @@ const VideoSessionWorker = (() => {
       }
 
       async _createSession(): Promise<SessionInfo & { type: string }> {
-        console.time('create Domand session');
         if (!this._useHLS) {
           throw new Error('HLSに未対応');
         }
@@ -265,7 +264,6 @@ const VideoSessionWorker = (() => {
           },
           audioFormat,
         };
-        console.timeEnd('create Domand session');
         return this.info;
       }
 

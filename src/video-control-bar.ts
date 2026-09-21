@@ -317,7 +317,6 @@ class VideoControlBar extends Emitter {
         (watchElement as Element).addEventListener(
           'contextmenu',
           (e: Event) => {
-            window.console.log('contextmenu', e);
             e.preventDefault();
             e.stopPropagation();
           },
@@ -416,13 +415,11 @@ class VideoControlBar extends Emitter {
         this.storyboard.toggle();
         break;
       case 'wheelSeek-start':
-        window.console.log('start-seek-start');
         this.state.isWheelSeeking = true;
         this._wheelSeeker.currentTime = this.player.currentTime;
         this.classList.add('is-wheelSeeking');
         break;
       case 'wheelSeek-end':
-        window.console.log('start-seek-end');
         this.state.isWheelSeeking = false;
         this.classList.remove('is-wheelSeeking');
         break;

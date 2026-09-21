@@ -474,15 +474,6 @@ class NicoChatFilter extends Emitter {
         }
         const score = nicoChat.score;
         if (score <= threthold) {
-          window.console.log(
-            '%cNG共有適用: %s <= %s %s %s秒 %s',
-            'background: yellow;',
-            score,
-            threthold,
-            nicoChat.type,
-            nicoChat.vpos / 100,
-            nicoChat.text
-          );
           return false;
         }
         let m: RegExpExecArray | boolean | null = null;
@@ -490,14 +481,6 @@ class NicoChatFilter extends Emitter {
           m = wordReg.exec(nicoChat.text);
         }
         if (m) {
-          window.console.log(
-            '%cNGワード: "%s" %s %s秒 %s',
-            'background: yellow;',
-            m[1],
-            nicoChat.type,
-            nicoChat.vpos / 100,
-            nicoChat.text
-          );
           return false;
         }
 
@@ -506,42 +489,16 @@ class NicoChatFilter extends Emitter {
           m = wordRegReg.exec(nicoChat.text);
         }
         if (m) {
-          window.console.log(
-            '%cNGワード(正規表現): "%s" %s %s秒 %s',
-            'background: yellow;',
-            m[1],
-            nicoChat.type,
-            nicoChat.vpos / 100,
-            nicoChat.text
-          );
           return false;
         }
 
         if (umatch && umatch.includes(nicoChat.userId as string)) {
-          window.console.log(
-            '%cNGID: "%s" %s %s秒 %s %s',
-            'background: yellow;',
-            nicoChat.userId,
-            nicoChat.type,
-            nicoChat.vpos / 100,
-            nicoChat.userId,
-            nicoChat.text
-          );
           return false;
         }
         if (commandReg) {
           m = commandReg.test(nicoChat.cmd);
         }
         if (m) {
-          window.console.log(
-            '%cNG command: "%s" %s %s秒 %s %s',
-            'background: yellow;',
-            (m as unknown as RegExpExecArray)[1],
-            nicoChat.type,
-            nicoChat.vpos / 100,
-            nicoChat.cmd,
-            nicoChat.text
-          );
           return false;
         }
 
@@ -572,8 +529,6 @@ class NicoChatFilter extends Emitter {
     if (before < 1) {
       return nicoChatArray;
     }
-    const timeKey = 'applyNgFilter: ' + (nicoChatArray[0] as NicoChat).type;
-    window.console.time(timeKey);
     const filterFunc = this.getFilterFunc();
     let result = nicoChatArray.filter(filterFunc);
     const removedUserIds =
@@ -602,8 +557,6 @@ class NicoChatFilter extends Emitter {
       }
       return !denyTypes.includes(chat.fork) && !denyThreadTypes.includes(chat.threadLabel as string);
     });
-    window.console.timeEnd(timeKey);
-    window.console.log('NG判定結果: %s/%s', result.length, before);
     return result;
   }
   isSafe(nicoChat: NicoChat): boolean {
@@ -626,7 +579,6 @@ class NicoChatFilter extends Emitter {
     return new RegExp('^(' + r.join('|') + ')$');
   }
   _onChange(): void {
-    console.log('NicoChatFilter.onChange');
     this.emit('change');
   }
 }

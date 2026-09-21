@@ -81,6 +81,12 @@ async function load(options: Parameters<typeof response>[0] = {}): Promise<RawVi
   return (await VideoInfoLoader.load(options.watchId ?? 'sm9', {})) as RawVideoInfoData;
 }
 
+test('P2-07/enableStoryboard: 会員別の応答値に関係なくStoryboard取得を試せる情報へ正規化する', async () => {
+  const data = await load();
+  expect(data.domandInfo?.isStoryboardAvailable).toBe(true);
+  expect(new VideoInfoModel(data).hasStoryboard).toBe(true);
+});
+
 test('P2-10/loadLinkedChannelVideo: ON時だけ加入済みの関連動画を取得し、その配信資産へ切り替える', async () => {
   for (const enabled of [false, true]) {
     Config.setValue('loadLinkedChannelVideo', enabled);

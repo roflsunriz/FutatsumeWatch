@@ -22,7 +22,11 @@ async function until(page: CdpSession, expression: string, label: string): Promi
     }
     await Bun.sleep(200);
   }
-  throw new Error(`導線の検証失敗: ${label}`);
+  const diagnostic = await evaluate(
+    page,
+    `({ready:window.FutatsumeWatch?.ready,marker:document.querySelector('[data-futatsume-entry]')?.dataset.state,buttons:[...document.querySelectorAll('[data-futatsume-video],[data-futatsume-open]')].slice(0,3).map(e=>({state:e.dataset.state,disabled:e.disabled,title:e.title}))})`
+  );
+  throw new Error(`導線の検証失敗: ${label}: ${JSON.stringify(diagnostic)}`);
 }
 async function shot(page: CdpSession, name: string): Promise<void> {
   const image = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
@@ -112,7 +116,7 @@ try {
     );
     site.documents.set(
       'https://anime.nicovideo.jp/',
-      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}a{display:inline-block;padding:20px}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a></main></body></html>'
+      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}main{position:relative}a{display:inline-block;padding:20px}.card-cover{position:absolute;inset:0;z-index:100}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a><div class="card-cover"></div></main></body></html>'
     );
     await page.send('Page.navigate', { url: 'https://anime.nicovideo.jp/' });
     await until(

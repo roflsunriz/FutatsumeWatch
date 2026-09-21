@@ -449,7 +449,6 @@ class CommentListView extends Emitter {
     }
     this._isFrameReady = true;
 
-    window.console.time('update commentlistView');
     this.addClass('updating');
     itemList = Array.isArray(itemList) ? itemList : [itemList];
     this.isActive = false;
@@ -483,8 +482,6 @@ class CommentListView extends Emitter {
       this.removeClass('updating');
       this.emit('update');
     }, 100);
-
-    window.console.timeEnd('update commentlistView');
   }
   _onClick(e: Event): void {
     e.stopPropagation();

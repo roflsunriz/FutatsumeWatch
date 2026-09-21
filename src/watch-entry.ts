@@ -123,6 +123,28 @@ export function installWatchEntry(): WatchEntry {
     });
     openVideo(id);
   };
+  const onCoveredControlClick = (event: MouseEvent): void => {
+    if (event.button !== 0 || event.detail === 0) return;
+    const target = event.target;
+    for (const [id, { control }] of mounted) {
+      if (target && control.contains(target as Node)) return;
+      const rect = control.getBoundingClientRect();
+      if (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      ) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        open(id);
+        return;
+      }
+    }
+  };
+  document.addEventListener('click', onCoveredControlClick, true);
   button.addEventListener('click', (event) => {
     event.stopPropagation();
     const id = watchIdFromUrl(location.href);
@@ -137,7 +159,7 @@ export function installWatchEntry(): WatchEntry {
     [data-futatsume-launch]:disabled{opacity:.55;cursor:wait}
     [data-futatsume-launch][data-state=failed]{border-color:#e66;cursor:help}
     [data-futatsume-open]{width:40px;height:40px;padding:8px;align-self:center;margin-inline:auto}
-    [data-futatsume-video]{margin:4px 6px 4px 0;position:relative;z-index:2}
+    [data-futatsume-video]{margin:4px 6px 4px 0;position:relative;z-index:2147483646;isolation:isolate;pointer-events:auto}
     @media(max-width:700px){[data-futatsume-open]{width:32px;height:32px;padding:4px;margin-inline:6px}}
   `;
   document.head.append(marker, style);
@@ -250,6 +272,7 @@ export function installWatchEntry(): WatchEntry {
       observer.disconnect();
       if (scheduled !== undefined) window.cancelAnimationFrame(scheduled);
       window.removeEventListener('popstate', schedule);
+      document.removeEventListener('click', onCoveredControlClick, true);
       if (history.pushState === pushWrapper) history.pushState = push;
       if (history.replaceState === replaceWrapper) history.replaceState = replace;
       for (const { control } of mounted.values()) control.remove();

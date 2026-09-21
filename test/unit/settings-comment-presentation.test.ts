@@ -43,7 +43,7 @@ describe('コメント設定から描画データへの反映', () => {
       expect(comment!.opacity).toBeCloseTo(0.5 * (fork === 2 ? 0.4 : fork === 3 ? 0.7 : 1));
     });
   }
-  for (const shadow of ['', 'shadow-type2', 'shadow-type3', 'shadow-stroke', 'shadow-dokaben']) {
+  for (const shadow of ['', 'shadow-type2', 'shadow-type3']) {
     test(`影 ${shadow || 'default'} と投稿者専用の色を通常コメントへ混入させない`, () => {
       Config.setValue('commentLayer.textShadowType', shadow);
       Config.setValue('commentLayer.ownerCommentShadowColor', '#123456');

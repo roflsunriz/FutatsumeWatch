@@ -150,9 +150,6 @@ const MylistApiLoader = (() => {
       }
       if (!token) {
         token = cacheStorage.getItem('csrfToken') as string;
-        if (token) {
-          console.log('cached token exists', token);
-        }
       }
     }
     setCsrfToken(t: string) {
@@ -175,9 +172,7 @@ const MylistApiLoader = (() => {
       token = cacheStorage.getItem('csrfToken') as string;
 
       //キャッシュにあったらそこで返す
-      if (token) {
-        console.log('cached token exists', token);
-      } else {
+      if (!token) {
         //そもそもemit元からは取れる物がないんだから、
         //マイリストページからトークン持ってくるしかないでしょ
         const tokenUrl = 'https://www.nicovideo.jp/my/mylist';

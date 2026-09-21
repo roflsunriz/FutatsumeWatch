@@ -508,7 +508,6 @@ class NicoVideoPlayer extends Emitter {
       return;
     }
     const nicoChat = this._commentPlayer.addChat(text, cmd, vpos, options);
-    console.log('addChat:', text, cmd, vpos, options, nicoChat);
     return nicoChat;
   }
   removeChat(nicoChat: unknown): void {
@@ -516,7 +515,6 @@ class NicoVideoPlayer extends Emitter {
       return;
     }
     this._commentPlayer.removeChat(nicoChat);
-    console.log('removeChat:', nicoChat);
   }
   /**
    * @returns {NicoChatFilter}
@@ -537,26 +535,20 @@ class NicoVideoPlayer extends Emitter {
     return this._commentPlayer.getMymemory();
   }
   getScreenShot(): Promise<unknown> {
-    window.console.time('screenShot');
-
     const fileName = this._getSaveFileName();
     const video = this._videoPlayer.videoElement;
 
     return VideoCaptureUtil.videoToCanvas(video).then(({ canvas }: { canvas: HTMLCanvasElement }) => {
       VideoCaptureUtil.saveToFile(canvas, fileName);
-      window.console.timeEnd('screenShot');
     });
   }
   getScreenShotWithComment(): Promise<unknown> {
-    window.console.time('screenShotWithComment');
-
     const fileName = this._getSaveFileName({ suffix: 'C' });
     const video = this._videoPlayer.videoElement;
     const overlay = this._commentPlayer.canvas;
     return VideoCaptureUtil.videoToCanvas(video).then(({ canvas }: { canvas: HTMLCanvasElement }) => {
       if (overlay) canvas.getContext('2d')?.drawImage(overlay, 0, 0, canvas.width, canvas.height);
       VideoCaptureUtil.saveToFile(canvas, fileName);
-      window.console.timeEnd('screenShotWithComment');
     });
   }
   _getSaveFileName({ suffix = '' }: { suffix?: string } = {}): string {
@@ -1135,7 +1127,6 @@ class VideoPlayer extends Emitter {
 
   _initializeEvents(): void {
     const eventBridge = function (this: VideoPlayer, name: string, ...args: Array<unknown>): void {
-      console.log('%c_on-%s:', 'background: cyan;', name, ...args);
       this.emit(name, ...args);
     };
 
@@ -1175,8 +1166,6 @@ class VideoPlayer extends Emitter {
   }
 
   _onCanPlay(...args: Array<unknown>): void {
-    console.log('%c_onCanPlay:', 'background: cyan; color: blue;', ...args);
-
     // eslint-disable-next-line no-self-assign -- setter 再適用のため意図的な自己代入
     this.playbackRate = this.playbackRate;
     // リピート時にも飛んでくるっぽいので初回だけにする
@@ -1205,8 +1194,6 @@ class VideoPlayer extends Emitter {
   }
 
   _onDurationChange(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onDurationChange:', 'background: cyan;', arguments);
     this.emit('durationChange', this._video.duration);
   }
 
@@ -1233,8 +1220,6 @@ class VideoPlayer extends Emitter {
       return;
     }
     window.console.error('error src', this._video.src);
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    window.console.error('%c_onError:', 'background: cyan; color: red;', arguments);
     this.addClass('is-error');
     this._canPlay = false;
     const target = e.target as HTMLMediaElement | null;
@@ -1281,8 +1266,6 @@ class VideoPlayer extends Emitter {
   }
 
   _onPause(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onPause:', 'background: cyan;', arguments);
     //this.removeClass('is-play');
 
     this._isPlaying = false;
@@ -1290,16 +1273,12 @@ class VideoPlayer extends Emitter {
   }
 
   _onPlay(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onPlay:', 'background: cyan;', arguments);
     this.addClass('is-play');
     this._isPlaying = true;
     this.emit('play');
   }
 
   _onPlaying(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onPlaying:', 'background: cyan;', arguments);
     this._isPlaying = true;
 
     if (!this._isAspectRatioFixed) {
@@ -1311,27 +1290,18 @@ class VideoPlayer extends Emitter {
   }
 
   _onSeeking(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onSeeking:', 'background: cyan;', arguments);
     this.emit('seeking', this._video.currentTime);
   }
 
   _onSeeked(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onSeeked:', 'background: cyan;', arguments);
-
     this.emit('seeked', this._video.currentTime);
   }
 
   _onVolumeChange(): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onVolumeChange:', 'background: cyan;', arguments);
     this.emit('volumeChange', this.volume, this.muted);
   }
 
   _onDoubleClick(e: Event): void {
-    // eslint-disable-next-line prefer-rest-params -- arguments オブジェクトの表示を温存するため
-    console.log('%c_onDoubleClick:', 'background: cyan;', arguments);
     e.preventDefault();
     e.stopPropagation();
     this.emit('dblclick');
@@ -1341,7 +1311,6 @@ class VideoPlayer extends Emitter {
     if (e.buttons || e.shiftKey) {
       return;
     }
-    console.log('%c_onMouseWheel:', 'background: cyan;', e);
     e.stopPropagation();
     const delta = e.deltaY * -1;
     if (Number.isNaN(delta)) {
@@ -1381,8 +1350,6 @@ class VideoPlayer extends Emitter {
     return this._video.paused;
   }
   set thumbnail(url: string) {
-    console.log('%csetThumbnail: %s', 'background: cyan;', url);
-
     this._thumbnail = url;
     (this._video as HTMLVideoElement).poster = url;
     //this.emit('setThumbnail', url);
@@ -1392,8 +1359,6 @@ class VideoPlayer extends Emitter {
   }
 
   set src(url: string) {
-    console.log('%csetSc: %s', 'background: cyan;', url);
-
     this._reset();
 
     this._src = url;
@@ -1563,7 +1528,6 @@ class VideoPlayer extends Emitter {
     this._video.loop = !!v;
   }
   set playbackRate(v: number) {
-    console.log('setPlaybackRate', v);
     //if (!FutatsumeWatch.util.isPremium()) { v = Math.min(1, v); }
     // たまにリセットされたり反映されなかったりする？
     this._playbackRate = v;
@@ -1931,7 +1895,6 @@ class TouchWrapper extends Emitter {
     if (!this._isMoved && this.touchCount === 0) {
       const config = this._config;
       this._lastTap = this._maxCount;
-      window.console.info('touchEnd', this._maxCount, this._isMoved);
       switch (this._maxCount) {
         case 2:
           this._execCommand(config.props.tap2command);
@@ -1958,7 +1921,6 @@ class TouchWrapper extends Emitter {
     const identifiers = Array.from(e.changedTouches).map((touch) => {
       return touch.identifier;
     });
-    window.console.log('onTouchCancel', this._isMoved, e.changedTouches.length);
     const currentTouches: Array<Touch> = this._currentPointers.filter((touch) => {
       return !identifiers.includes(touch.identifier);
     });

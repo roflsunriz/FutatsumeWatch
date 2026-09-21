@@ -101,7 +101,7 @@ function board() {
   const props = { enableStoryboard: true, enableStoryboardBar: false };
   const state = { isStoryboardAvailable: false };
   const value = new Storyboard({ playerConfig: { props }, state });
-  // 準備済みの描画先を前提とする。取得・会員判定・世代・モデル更新は実コード。
+  // 準備済みの描画先を前提とする。取得・世代・モデル更新は実コード。
   value.view = { isEnable: false, setCurrentTime() {}, toggle() {} };
   void value.emitResolve('dom-ready');
   return { value, props, state };
@@ -110,20 +110,18 @@ function info(watchId = 'sm9', hasStoryboard = true) {
   return { watchId, hasStoryboard, hasDomandStoryboard: true, toJSON: () => ({ watchId }) };
 }
 
-test('P2-07/enableStoryboard: ON・会員・資産ありの条件が揃うときだけWorkerへ取得を要求する', async () => {
-  for (const [enabled, premium, available] of [
-    [false, true, true],
-    [true, false, true],
-    [true, true, false],
+test('P2-07/enableStoryboard: 会員状態に関係なくON・資産ありのときだけWorkerへ取得を要求する', async () => {
+  for (const [enabled, available] of [
+    [false, true],
+    [true, false],
   ]) {
     const fixture = board();
     fixture.props.enableStoryboard = enabled!;
-    header.dataset.commonHeader = JSON.stringify({ initConfig: { user: { isLogin: true, isPremium: premium } } });
     fixture.value.onVideoCanPlay('sm9', info('sm9', available));
     expect(pending).toHaveLength(0);
     expect(fixture.state.isStoryboardAvailable).toBe(false);
   }
-  header.dataset.commonHeader = JSON.stringify({ initConfig: { user: { isLogin: true, isPremium: true } } });
+  header.dataset.commonHeader = JSON.stringify({ initConfig: { user: { isLogin: true, isPremium: false } } });
   const fixture = board();
   fixture.value.onVideoCanPlay('sm9', info());
   expect(worker).toHaveBeenCalledTimes(1);

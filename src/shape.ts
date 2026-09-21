@@ -388,7 +388,6 @@ interval: ${config.interval}        // マスクの更新間隔
             }
             break;
           case 'init':
-            console.log('initialized');
             isBusy = false;
             break;
           case 'data':
@@ -512,9 +511,6 @@ interval: ${config.interval}        // マスクの更新間隔
             const input = e.target as HTMLInputElement;
             const name = input.name;
             const value = JSON.parse(input.value) as unknown;
-            if (config.debug) {
-              console.log('update config', { name, value });
-            }
             (config as unknown as Record<string, unknown>)[name] = value;
           });
         }
@@ -858,7 +854,6 @@ interval: ${config.interval}        // マスクの更新間隔
             type = 'HIMAWARI';
           }
 
-          console.log('%ctype: "%s"', 'font-weight: bold', layer ? type : 'UNKNOWN???');
           if (layer) {
             Object.assign((layer as HTMLElement).style, {
               backgroundSize: 'contain',
@@ -917,7 +912,6 @@ interval: ${config.interval}        // マスクの更新間隔
       );
 
       void FutatsumeDetector.detect().then((futatsume) => {
-        console.log('FutatsumeWatch found ver.%s', (futatsume as { version?: unknown })?.version);
         FutatsumeWatch = futatsume as MaskedWatchFutatsume;
         void FutatsumeWatch.emitter.promise('videoControBar.addonMenuReady').then((result) => {
           const { container } = result as { container: Element };
@@ -951,8 +945,6 @@ interval: ${config.interval}        // マスクの更新間隔
       });
     };
     init();
-
-    console.log('%cMasked Watch', 'font-size: 200%;', `ver ${VER}`, '\nconfig: ', JSON.stringify({ ...config }));
   };
 
   const loadGm = (): void => {

@@ -508,8 +508,7 @@ class NicoScripter extends Emitter {
     // どうせ全動画の1%も使われていないので
     // 最適化もへったくれもない
     const eventFunc: Record<string, (p: ParsedScript, nicos: NicoChat) => void> = {
-      JUMP: (p, nicos) => {
-        console.log('@ジャンプ: ', p, nicos);
+      JUMP: (p) => {
         const target = String((p.params as NicoScriptJumpParams).target);
         if (/^([a-z]{2}|)[0-9]+$/.test(target)) {
           this._nextVideo = target;
@@ -528,11 +527,9 @@ class NicoScripter extends Emitter {
         }
         assigned[p.id] = true;
 
-        console.log('SEEK_MARKER: ', p, nicos);
         this._eventScript.push({ p, nicos });
       },
       MARKER: (p, nicos) => {
-        console.log('@ジャンプマーカー: ', p, nicos);
         this._marker[String((p.params as NicoScriptMarkerParams).name)] = nicos.vpos / 100;
       },
     };

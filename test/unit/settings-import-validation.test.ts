@@ -10,7 +10,6 @@ const defaults = {
   wordFilter: '',
   commandFilter: '',
   userIdFilter: '',
-  menuScale: 1,
   sharedNgLevel: 'MID',
   'commentLayer.textShadowType': '',
   'commentLayer.easyCommentOpacity': 0.5,
@@ -30,7 +29,6 @@ describe('設定ファイルの型と範囲', () => {
       { autoPlay: 'false' },
       { wordFilter: [3] },
       { commandFilter: {} },
-      { menuScale: Infinity },
       { sharedNgLevel: 'invalid' },
       { 'commentLayer.textShadowType': 'invalid' },
       { 'commentLayer.easyCommentOpacity': 0 },
@@ -43,11 +41,10 @@ describe('設定ファイルの型と範囲', () => {
     const source = {
       volume: '0.3',
       baseChatScale: '1.2',
-      menuScale: '2.0',
       wordFilter: ['a', 'b'],
       commandFilter: 'red',
       sharedNgLevel: 'NONE',
-      'commentLayer.textShadowType': 'shadow-dokaben',
+      'commentLayer.textShadowType': 'shadow-type3',
       autoZenTube: true,
       retiredKey: 'ignored',
     };
@@ -55,11 +52,10 @@ describe('設定ファイルの型と範囲', () => {
     expect(result).toEqual({
       volume: 0.3,
       baseChatScale: 1.2,
-      menuScale: 2,
       wordFilter: ['a', 'b'],
       commandFilter: 'red',
       sharedNgLevel: 'NONE',
-      'commentLayer.textShadowType': 'shadow-dokaben',
+      'commentLayer.textShadowType': 'shadow-type3',
       autoFutatsumeTube: true,
     });
     expect(source.baseChatScale).toBe('1.2');

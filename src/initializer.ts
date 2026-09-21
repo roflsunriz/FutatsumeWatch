@@ -202,20 +202,17 @@ const { initialize, initializeExternal, initializeMessage, initializeLastSession
         return;
       }
       (ThumbInfoLoader as unknown as { load(id: string): unknown }).load('sm9');
-      console.time('init Workers');
       return Promise.all([
         (StoryboardWorker as unknown as { initWorker(): Promise<unknown> }).initWorker(),
         (VideoSessionWorker as unknown as { initWorker(): Promise<unknown> }).initWorker(),
         (StoryboardCacheDb as unknown as { initWorker(): Promise<unknown> }).initWorker(),
         (WatchInfoCacheDb as unknown as { initWorker(): Promise<unknown> }).initWorker(),
-      ]).then(() => console.timeEnd('init Workers'));
+      ]);
     };
 
     //@require replace-redirect-links
 
     const initialize = async function (): Promise<void> {
-      console.log('%cinitialize FutatsumeWatch...', 'background: lightgreen; ');
-
       (
         domEvent as unknown as {
           dispatchCustomEvent(target: Element, name: string, detail: unknown, options?: Record<string, unknown>): void;
@@ -303,22 +300,11 @@ const { initialize, initializeExternal, initializeMessage, initializeLastSession
         const localNow = Date.now();
 
         if (command === 'hello') {
-          console.log(
-            '%cHELLO! \ntime: %s (%smsec)\nmessage: %s \nfrom: %s\nurl: %s\n',
-            'font-weight: bold;',
-            new Date(params.now as number).toLocaleString(),
-            localNow - now,
-            params.message,
-            params.from,
-            params.url,
-            { command, isLast, isOpen }
-          );
           result = { status: 'ok' };
         } else if (command === 'sendExecCommand' && (params.command === 'echo' || (isLast && isOpen))) {
           // window.console.log('execCommand', {params});
           result = player.execCommand(params.command as string, params.params);
         } else if (command === 'ping' && (params.force || (isLast && isOpen))) {
-          console.info('pong!');
           result = { status: 'ok' };
         } else if (command === 'pong') {
           result = bcast.emitResolve('ping', params) as Record<string, unknown>;
@@ -544,7 +530,6 @@ const { initialize, initializeExternal, initializeMessage, initializeLastSession
     };
 
     const initializeDialogPlayer = (config: ConfigStore, offScreenLayer?: unknown): InitializerDialog => {
-      console.log('initializeDialog');
       const playerConfig = PlayerConfig.getInstance(config) as ConfigStore;
       const state = PlayerState.getInstance(playerConfig);
       FutatsumeWatch.state.player = state;

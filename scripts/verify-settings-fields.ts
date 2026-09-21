@@ -36,7 +36,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'player',
     panel: 'general',
     id: 'P2-07',
-    keys: 'autoPlay enableResume enableTogglePlayOnClick autoFullScreen enableSingleton enableHeatMap overrideGinza overrideWatchLink enableStoryboard uaa.enable enableAutoMylistComment enableNicosJumpVideo touch.enable bestFutatsumeTube loadLinkedChannelVideo menuScale'.split(
+    keys: 'autoPlay enableResume enableTogglePlayOnClick autoFullScreen enableSingleton enableHeatMap overrideGinza overrideWatchLink enableStoryboard enableAutoMylistComment enableNicosJumpVideo touch.enable bestFutatsumeTube loadLinkedChannelVideo'.split(
       ' '
     ),
   },
@@ -44,7 +44,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'comments',
     panel: 'general',
     id: 'P2-08',
-    keys: 'autoCommentSpeedRate backComment baseFontBolder commentSpeedRate baseFontFamily commentLayer.ownerCommentShadowColor baseChatScale commentLayerOpacity commentLayer.easyCommentOpacity commentLayer.aiCommentOpacity commentLayer.textShadowType'.split(
+    keys: 'baseFontBolder baseFontFamily commentLayer.ownerCommentShadowColor baseChatScale commentLayerOpacity commentLayer.easyCommentOpacity commentLayer.aiCommentOpacity commentLayer.textShadowType'.split(
       ' '
     ),
   },
@@ -52,7 +52,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'filters',
     panel: 'general',
     id: 'P2-09',
-    keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordFilter commandFilter userIdFilter'.split(
+    keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordFilter commandFilter userIdFilter videoTagFilter videoOwnerFilter'.split(
       ' '
     ),
   },
@@ -60,7 +60,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'advanced',
     panel: 'advanced',
     id: 'P2-10',
-    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command wordRegFilter wordRegFilterFlags videoTagFilter videoOwnerFilter debug'.split(
+    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command wordRegFilter debug'.split(
       ' '
     ),
   },
@@ -197,7 +197,7 @@ function candidates(field: Field): (string | boolean)[] {
     return field.min && field.max
       ? [field.min, field.max].filter((v) => v !== field.value)
       : [String(Number(field.value) + 1)];
-  if (field.key === 'wordRegFilterFlags') return [field.value === 'i' ? 'g' : 'i'];
+  if (field.key === 'wordRegFilter') return ['/futatsume-settings-fixture/g'];
   if (field.key.includes('ShadowColor')) return ['#123456'];
   if (field.key === 'baseFontFamily') return ['monospace'];
   if (field.key === 'videoOwnerFilter' || field.key === 'userIdFilter') return ['99999999'];
@@ -205,6 +205,7 @@ function candidates(field: Field): (string | boolean)[] {
   return ['futatsume-settings-fixture'];
 }
 function expected(field: Field, value: string | boolean, panel: Panel): string {
+  if (field.key === 'wordRegFilter') return JSON.stringify(String(value).slice(1, String(value).lastIndexOf('/')));
   return JSON.stringify(
     panel === 'masked'
       ? value === 'true'
@@ -257,12 +258,8 @@ async function verifyEffect(
   const checks: Record<string, string> = {
     autoPlay: `document.querySelector('futatsume-video').autoplay===${String(value)} && window.FutatsumeWatch.debug.nicoVideoPlayer.isAutoPlay===${String(value)} && window.FutatsumeWatch.state.player.isAutoPlay===${String(value)}`,
     enableHeatMap: `document.querySelector('.seekBarContainer')?.classList.contains('noHeatMap')===${String(!value)}`,
-    menuScale: `Number(getComputedStyle(document.querySelector('#futatsumeVideoPlayerDialog')).getPropertyValue('--futatsume-ui-scale'))===${Number(value)}`,
-    backComment: `document.querySelector('.futatsumePlayerContainer')?.classList.contains('is-backComment')===${String(value)}`,
     commentLayerOpacity: `${renderer}.settings.commentOpacity===${Number(value)} && getComputedStyle(window.FutatsumeWatch.debug.nicoCommentPlayer._view.element).opacity==='1'`,
     'commentLayer.textShadowType': `${renderer}.settings.shadowIntensity===${JSON.stringify(value === 'shadow-type3' ? 'strong' : 'medium')}`,
-    // comment-overlay normalizes durations to integer milliseconds (floor).
-    commentSpeedRate: `(()=>{const rate=${Number(value)}/(window.FutatsumeWatch.config.props.autoCommentSpeedRate?Math.max(document.querySelector('futatsume-video').playbackRate,1):1);return ${renderer}.settings.scrollVisibleDurationMs===(rate===1?null:Math.max(1,Math.floor(4000/rate)))})()`,
   };
   const check = checks[field.key];
   if (!check) return false;
@@ -319,17 +316,28 @@ export async function verifySettingsFields(
         const invalid: Record<string, string[]> = {
           baseChatScale: ['', '0.4', '2.1', '0.55'],
           'commentLayer.ownerCommentShadowColor': ['#xyz'],
-          wordRegFilter: ['['],
-          wordRegFilterFlags: ['ii'],
+          wordRegFilter: ['/[/i', '/ok/ii'],
         };
         for (const value of invalid[field.key] ?? []) {
-          await enter(session, panel, field, value);
-          await helpers.check(
+          const preserved = await evaluate(
             session,
-            `localStorage.getItem(${JSON.stringify(storage)})===${JSON.stringify(initialStorage)}`,
-            `${result.id}: 不正入力 ${JSON.stringify(value)} で保存値を維持`
+            field.key === 'wordRegFilter'
+              ? `({value:window.FutatsumeWatch.config.props.wordRegFilter,flags:window.FutatsumeWatch.config.props.wordRegFilterFlags,stored:localStorage.getItem(${JSON.stringify(storage)}),storedFlags:localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags')))})`
+              : `({value:window.FutatsumeWatch.config.props[${JSON.stringify(field.key)}],stored:localStorage.getItem(${JSON.stringify(storage)})})`
           );
+          await enter(session, panel, field, value);
+          const current = await evaluate(
+            session,
+            field.key === 'wordRegFilter'
+              ? `({value:window.FutatsumeWatch.config.props.wordRegFilter,flags:window.FutatsumeWatch.config.props.wordRegFilterFlags,stored:localStorage.getItem(${JSON.stringify(storage)}),storedFlags:localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags')))})`
+              : `({value:window.FutatsumeWatch.config.props[${JSON.stringify(field.key)}],stored:localStorage.getItem(${JSON.stringify(storage)})})`
+          );
+          if (JSON.stringify(current) !== JSON.stringify(preserved))
+            throw Error(
+              `${result.id}: 不正入力 ${JSON.stringify(value)} が設定を変更しました: ${JSON.stringify({ preserved, current })}`
+            );
           result.invalidInputs.push(value);
+          await helpers.check(session, 'true', `${result.id}: 不正入力 ${JSON.stringify(value)} で保存値を維持`);
         }
         if (result.invalidInputs.length) await enter(session, panel, field, original);
         for (const value of values) {
@@ -340,10 +348,26 @@ export async function verifySettingsFields(
           // MaskedWatch deliberately removes default values. Its public getter
           // resolves that contract; absence is never accepted for another panel.
           const persistence =
-            panel === 'masked'
-              ? `JSON.stringify(window.MaskedWatch.config[${JSON.stringify(field.key)}])===${JSON.stringify(expectedJson)} && (${stored}===null || ${stored}===${JSON.stringify(expectedJson)})`
-              : `${stored}!==null && JSON.stringify(JSON.parse(${stored}))===${JSON.stringify(expectedJson)}`;
-          await helpers.check(session, persistence, `${result.id}: ${String(value)}を正しい型で保存`);
+            field.key === 'wordRegFilter'
+              ? `window.FutatsumeWatch.config.props.wordRegFilter===${JSON.stringify(String(value).slice(1, String(value).lastIndexOf('/')))}&&window.FutatsumeWatch.config.props.wordRegFilterFlags===${JSON.stringify(String(value).slice(String(value).lastIndexOf('/') + 1))}&&JSON.parse(${stored})===window.FutatsumeWatch.config.props.wordRegFilter&&JSON.parse(localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags'))))===window.FutatsumeWatch.config.props.wordRegFilterFlags`
+              : panel === 'masked'
+                ? `JSON.stringify(window.MaskedWatch.config[${JSON.stringify(field.key)}])===${JSON.stringify(expectedJson)} && (${stored}===null || ${stored}===${JSON.stringify(expectedJson)})`
+                : `${stored}!==null && JSON.stringify(JSON.parse(${stored}))===${JSON.stringify(expectedJson)}`;
+          if (field.key === 'wordRegFilter') {
+            const deadline = Date.now() + 5000;
+            let snapshot: unknown;
+            do {
+              snapshot = await evaluate(
+                session,
+                `({value:window.FutatsumeWatch.config.props.wordRegFilter,flags:window.FutatsumeWatch.config.props.wordRegFilterFlags,stored:${stored},storedFlags:localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags')))})`
+              );
+              if (await evaluate(session, persistence)) break;
+              await Bun.sleep(100);
+            } while (Date.now() < deadline);
+            if (!(await evaluate(session, persistence)))
+              throw Error(`${result.id}: ${String(value)}の保存が不一致: ${JSON.stringify(snapshot)}`);
+            await helpers.check(session, 'true', `${result.id}: ${String(value)}を正しい型で保存`);
+          } else await helpers.check(session, persistence, `${result.id}: ${String(value)}を正しい型で保存`);
           if (await verifyEffect(session, helpers, field, value, panel)) result.effect = '描画・利用側モデルを確認';
           await helpers.clickInside(session, panel, '[data-settings-close]');
           await show();

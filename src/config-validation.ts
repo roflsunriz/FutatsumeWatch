@@ -3,9 +3,7 @@
 const ranges: Readonly<Record<string, readonly [number, number]>> = {
   volume: [0, 1],
   speakLarkVolume: [0, 1],
-  menuScale: [0.8, 2],
   baseChatScale: [0.5, 2],
-  commentSpeedRate: [0.5, 2],
   commentLayerOpacity: [0.1, 1],
   'commentLayer.easyCommentOpacity': [0.1, 1],
   'commentLayer.aiCommentOpacity': [0.1, 1],
@@ -14,7 +12,7 @@ const ranges: Readonly<Record<string, readonly [number, number]>> = {
 };
 const enums: Readonly<Record<string, readonly string[]>> = {
   sharedNgLevel: ['NONE', 'LOW', 'MID', 'HIGH', 'MAX'],
-  'commentLayer.textShadowType': ['', 'shadow-type2', 'shadow-type3', 'shadow-stroke', 'shadow-dokaben'],
+  'commentLayer.textShadowType': ['', 'shadow-type2', 'shadow-type3'],
   fullscreenControlBarMode: ['auto', 'always-show', 'always-hide'],
 };
 const stringLists = new Set(['wordFilter', 'commandFilter', 'userIdFilter']);

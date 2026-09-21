@@ -86,6 +86,7 @@ let browser: Awaited<ReturnType<typeof attachBrowser>> | undefined;
 let page: CdpSession | undefined;
 let contextId: string | undefined;
 let monitor: Awaited<ReturnType<typeof monitorLiveRead>> | undefined;
+const frameContexts = new Map<number, { frameId?: string; origin?: string }>();
 const result: {
   status: string;
   failure?: string;
@@ -123,6 +124,17 @@ try {
   };
   page = await monitor.page(created.targetId);
   const connection = page;
+  page.onEvent((method, params) => {
+    if (method !== 'Runtime.executionContextCreated') return;
+    const context = params.context as {
+      id?: number;
+      origin?: string;
+      auxData?: { frameId?: string; isDefault?: boolean };
+    };
+    if (typeof context.id === 'number' && context.auxData?.isDefault)
+      frameContexts.set(context.id, { frameId: context.auxData.frameId, origin: context.origin });
+  });
+  await page.send('Runtime.enable');
   const until = async (expression: string, label: string, timeout = 30000): Promise<void> => {
     const deadline = Date.now() + timeout;
     while (Date.now() < deadline) {
@@ -186,24 +198,82 @@ try {
     result.checks.push('同一要求は1回だけ送信', '書込み0件', 'Workerの初回要求を記録');
   } else {
     const watchPage = targetUrl!.hostname === 'www.nicovideo.jp' && initialWatchId !== undefined;
+    const embeddedDic = targetUrl!.hostname === 'dic.nicovideo.jp' && initialWatchId !== undefined;
     const selector = watchPage
       ? '[data-futatsume-open]:not(:disabled)'
       : initialWatchId
         ? `[data-futatsume-video="${initialWatchId}"]:not(:disabled)`
         : '[data-futatsume-video]:not(:disabled)';
-    await until(
-      `!!window.FutatsumeWatch?.ready&&!!document.querySelector(${JSON.stringify(selector)})`,
-      '実ページの起動導線'
-    );
-    const selectedWatchId = watchPage
-      ? initialWatchId
-      : String(await evaluate(page, `document.querySelector(${JSON.stringify(selector)}).dataset.futatsumeVideo`));
-    if (!/^(?:sm|so)\d+$/.test(selectedWatchId)) throw Error('起動導線の動画IDが不正です');
+    let selectedWatchId = initialWatchId;
+    if (embeddedDic) {
+      await until(
+        `!!window.FutatsumeWatch?.ready&&!![...document.querySelectorAll('iframe[src]')].find(e=>new URL(e.src).hostname==='ext.nicovideo.jp'&&new URL(e.src).pathname==='/thumb/${initialWatchId}')`,
+        'ニコ百の埋め込みサムネイル'
+      );
+      const frame = (await evaluate(
+        page,
+        `(()=>{const e=[...document.querySelectorAll('iframe[src]')].find(e=>new URL(e.src).hostname==='ext.nicovideo.jp'&&new URL(e.src).pathname==='/thumb/${initialWatchId}');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x,y:r.y,width:r.width,height:r.height}})()`
+      )) as { x: number; y: number; width: number; height: number };
+      await page.send('Input.dispatchMouseEvent', {
+        type: 'mouseMoved',
+        x: frame.x + frame.width / 2,
+        y: frame.y + frame.height / 2,
+      });
+      let childContext: number | undefined;
+      const deadline = Date.now() + 10000;
+      while (Date.now() < deadline && childContext === undefined) {
+        childContext = [...frameContexts].find(([, context]) => context.origin === 'https://ext.nicovideo.jp')?.[0];
+        if (childContext === undefined) await Bun.sleep(100);
+      }
+      if (childContext === undefined) throw Error('埋め込みサムネイルの実行コンテキストがありません');
+      const childResult = (await page.send('Runtime.evaluate', {
+        contextId: childContext,
+        returnByValue: true,
+        expression:
+          `(()=>{const e=document.querySelector('#futatsumeButton');if(!e)throw Error('埋め込み内の起動ボタンがありません');` +
+          `const r=e.getBoundingClientRect();if(!r.width||!r.height)throw Error('埋め込み内の起動ボタンが表示されていません');` +
+          `return{x:r.x+r.width/2,y:r.y+r.height/2}})()`,
+      })) as { result?: { value?: { x: number; y: number }; description?: string }; exceptionDetails?: unknown };
+      if (childResult.exceptionDetails || !childResult.result?.value)
+        throw Error(childResult.result?.description ?? '埋め込み内の起動ボタンを測定できません');
+      const point = {
+        x: frame.x + childResult.result.value.x,
+        y: frame.y + childResult.result.value.y,
+      };
+      for (const type of ['mousePressed', 'mouseReleased'])
+        await page.send('Input.dispatchMouseEvent', { type, button: 'left', clickCount: 1, ...point });
+      result.checks.push('埋め込みサムネイル内の起動導線');
+    } else {
+      await until(
+        `!!window.FutatsumeWatch?.ready&&[...document.querySelectorAll(${JSON.stringify(selector)})].some(e=>{e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility==='visible'&&Number(s.opacity)!==0})`,
+        '実ページの起動導線'
+      );
+      selectedWatchId = watchPage
+        ? initialWatchId
+        : String(
+            await evaluate(
+              page,
+              `(()=>{for(const e of document.querySelectorAll(${JSON.stringify(selector)})){e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect(),s=getComputedStyle(e);if(r.width>0&&r.height>0&&s.display!=='none'&&s.visibility==='visible'&&Number(s.opacity)!==0)return e.dataset.futatsumeVideo}return ''})()`
+            )
+          );
+    }
+    if (typeof selectedWatchId !== 'string' || !/^(?:sm|so)\d+$/.test(selectedWatchId))
+      throw Error('起動導線の動画IDが不正です');
     if (!initialWatchId) {
       monitor.setWatchId(selectedWatchId);
       result.watchId = selectedWatchId;
     }
-    await clickVisible(page, selector);
+    if (!embeddedDic) {
+      if (watchPage) await clickVisible(page, selector);
+      else {
+        const point = (await evaluate(
+          page,
+          `(()=>{const e=document.querySelector('[data-futatsume-video="${selectedWatchId}"]');e.scrollIntoView({block:'center'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`
+        )) as { x: number; y: number };
+        for (const type of ['mousePressed', 'mouseReleased'])
+          await page.send('Input.dispatchMouseEvent', { type, button: 'left', clickCount: 1, ...point });
+      }
+    }
     await until(
       `(()=>{const v=document.querySelector('futatsume-video')?.shadowRoot.querySelector('video');return v&&v.videoWidth>0&&v.currentTime>1&&!v.paused&&!v.error})()`,
       '実HLSデコードと時間進行',
@@ -225,7 +295,7 @@ try {
     try {
       result.diagnostic = await evaluate(
         page,
-        `(()=>{const d=window.FutatsumeWatch?.debug?.dialog,v=document.querySelector('futatsume-video')?.shadowRoot?.querySelector('video');return {href:location.href,ready:window.FutatsumeWatch?.ready,open:d?.isOpen,watchId:d?._watchId,message:d?._message||d?._errorMessage,threadId:d?._threadInfo?.threadId,video:{readyState:v?.readyState,currentTime:v?.currentTime,error:v?.error&&{code:v.error.code,message:v.error.message}},buttons:[...document.querySelectorAll('[data-futatsume-video],[data-futatsume-open]')].map(b=>({id:b.dataset.futatsumeVideo,state:b.dataset.state,disabled:b.disabled}))}})()`
+        `(()=>{const d=window.FutatsumeWatch?.debug?.dialog,v=document.querySelector('futatsume-video')?.shadowRoot?.querySelector('video');return {href:location.href,ready:window.FutatsumeWatch?.ready,open:d?.isOpen,watchId:d?._watchId,message:d?._message||d?._errorMessage,threadId:d?._threadInfo?.threadId,video:{readyState:v?.readyState,currentTime:v?.currentTime,error:v?.error&&{code:v.error.code,message:v.error.message}},buttons:[...document.querySelectorAll('[data-futatsume-video],[data-futatsume-open]')].map(b=>({id:b.dataset.futatsumeVideo,state:b.dataset.state,disabled:b.disabled,title:b.title}))}})()`
       );
     } catch (diagnosticError) {
       result.diagnostic = { error: String(diagnosticError) };

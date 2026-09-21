@@ -138,7 +138,6 @@ const WindowMessageEmitter = (messageUtil.WindowMessageEmitter = ((safeOrigins: 
       console.error('%cNicoCommentLayer.Error: window.onMessage  - ', 'color: red; background: yellow', err, e);
       console.error('%corigin: ', 'background: yellow;', e.origin);
       console.error('%cdata: ', 'background: yellow;', e.data);
-      console.trace();
     }
   };
 
@@ -176,7 +175,6 @@ const BroadcastEmitter = (messageUtil.BroadcastEmitter = (() => {
     switch (name) {
       case 'message': {
         const { body } = JSON.parse(newValue as string) as { body: MessageBody };
-        console.log('%cmessage', 'background: cyan;', body);
         bcast.emitAsync('message', body, 'broadcast');
         break;
       }
@@ -187,7 +185,6 @@ const BroadcastEmitter = (messageUtil.BroadcastEmitter = (() => {
    * @param {MessageEvent} e
    */
   const onBroadcastMessage = (e: MessageEvent) => {
-    console.log('%cbcast.onBroadcastMessage', 'background: cyan;', e.data);
     const data = (typeof e.data === 'string' ? JSON.parse(e.data) : e.data) as {
       body: MessageBody & { params: CommandBody };
       sessionId?: string | null;
@@ -296,16 +293,12 @@ const BroadcastEmitter = (messageUtil.BroadcastEmitter = (() => {
 
   (global as unknown as GlobalLike).debug.hello = bcast.hello;
   (global as unknown as GlobalLike).debug.ping = ({ timeout, force }: { timeout?: number; force?: unknown } = {}) => {
-    window.console.time('ping');
     return bcast
       .ping({ timeout, force })
       .then((result) => {
-        window.console.timeEnd('ping');
-        window.console.info('ping result: ok', result);
         return result;
       })
       .catch((result: unknown) => {
-        window.console.timeEnd('ping');
         window.console.error('ping fail: ', result);
         return result;
       });

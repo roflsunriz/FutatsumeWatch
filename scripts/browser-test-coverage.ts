@@ -258,8 +258,7 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
 const invalidSettingInputs: Readonly<Record<string, readonly string[]>> = {
   'P2-08/baseChatScale': ['', '0.4', '2.1', '0.55'],
   'P2-08/commentLayer.ownerCommentShadowColor': ['#xyz'],
-  'P2-10/wordRegFilter': ['['],
-  'P2-10/wordRegFilterFlags': ['ii'],
+  'P2-10/wordRegFilter': ['/[/i', '/ok/ii'],
 };
 export const requiredSettingsFields = settingsCategories.flatMap((category) =>
   category.keys.map((key) => ({ id: `${category.id}/${key}`, key, category: category.name }))
@@ -307,7 +306,7 @@ function validateSettings(report: Record<string, unknown>, missing: string[]): v
     if (fields.has(value.id)) missing.push(`重複設定:${value.id}`);
     fields.set(value.id, value);
   }
-  if (requiredSettingsFields.length !== 84 || fields.size !== 84) missing.push(`設定84件:実際${fields.size}`);
+  if (requiredSettingsFields.length !== 78 || fields.size !== 78) missing.push(`設定78件:実際${fields.size}`);
   for (const required of requiredSettingsFields) {
     const field = fields.get(required.id);
     if (!field || field.key !== required.key || field.category !== required.category) {

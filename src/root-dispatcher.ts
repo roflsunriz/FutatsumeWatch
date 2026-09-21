@@ -18,7 +18,6 @@ interface RootPlayerVideoInfo {
 interface RootPlayerState {
   videoInfo: RootPlayerVideoInfo;
   isEnableFilter: boolean;
-  isBackComment: boolean;
   isShowComment: boolean;
   isLoop: boolean;
   isMute: boolean;
@@ -85,7 +84,6 @@ const RootDispatcher = (() => {
           break;
         case 'toggle-comment':
         case 'toggle-showComment':
-        case 'toggle-backComment':
         case 'toggle-mute':
         case 'toggle-loop':
         case 'toggle-debug':
@@ -93,7 +91,6 @@ const RootDispatcher = (() => {
         case 'toggle-enableNicosJumpVideo':
         case 'toggle-useWellKnownPort':
         case 'toggle-bestFutatsumeTube':
-        case 'toggle-autoCommentSpeedRate':
           command = command.replace(/^toggle-/, '');
           config.props[command] = !config.props[command];
           break;
@@ -104,7 +101,6 @@ const RootDispatcher = (() => {
         case 'screenMode':
         case 'update-screenMode':
         case 'update-sharedNgLevel':
-        case 'update-commentSpeedRate':
         case 'update-fullscreenControlBarMode':
           command = command.replace(/^update-/, '');
           if (config.props[command] === params) {
@@ -116,7 +112,6 @@ const RootDispatcher = (() => {
         case 'nop':
           break;
         case 'echo':
-          console.log('%cECHO', 'font-weight: bold;', { params });
           (PopupMessage as RootPopupMessage).notify(
             `ECHO: 「${typeof params === 'string' ? params : JSON.stringify(params)}」`
           );
@@ -132,9 +127,6 @@ const RootDispatcher = (() => {
       switch (key) {
         case 'enableFilter':
           playerState.isEnableFilter = value as boolean;
-          break;
-        case 'backComment':
-          playerState.isBackComment = !!value;
           break;
         case 'showComment':
           playerState.isShowComment = !!value;

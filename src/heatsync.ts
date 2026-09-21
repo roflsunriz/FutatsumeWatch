@@ -94,10 +94,7 @@ interface HeatsyncShadowHost extends Element {
 (() => {
   const PRODUCT = 'HeatSync';
   const monkey = function (PRODUCT: string): void {
-    const console = window.console;
-
     //const $ = window.jQuery;
-    console.log(`exec ${PRODUCT}..`);
 
     const CONSTANT = {
       BASE_Z_INDEX: 150000,
@@ -286,7 +283,7 @@ interface HeatsyncShadowHost extends Element {
       const defaultConfig: Record<string, HeatsyncConfigValue> = {
         debug: false,
 
-        'turbo.enabled': true,
+        'turbo.enabled': false,
         'turbo.red': 1,
         'turbo.blue': 1.7,
         'turbo.minDuration': 30,
@@ -443,7 +440,6 @@ interface HeatsyncShadowHost extends Element {
         if (this._timer) {
           return;
         }
-        console.info('start timer', this._timer, this._rate); //, this._map);
         this._enabled = true;
         this._timer = setInterval(this._onTimer.bind(this), 500);
       }
@@ -491,7 +487,6 @@ interface HeatsyncShadowHost extends Element {
         this._duration = duration;
         if (!config.getValue('turbo.enabled')) return this.disable();
         if (duration < (config.getValue('turbo.minDuration') as number)) {
-          window.console.log('disable HeatSync by duration', duration);
           return this.disable();
         }
         //if (this._videoElement && this._videoElement.playbackRate < this._rate) {
@@ -509,7 +504,6 @@ interface HeatsyncShadowHost extends Element {
             return ignoreTags.includes(t.toUpperCase());
           })
         ) {
-          window.console.log('disable HeatSync by tag'); //, currentTags, ignoreTags);
           return this.disable();
         }
         this._rate = config.getValue('turbo.red') as number;
@@ -1200,7 +1194,6 @@ interface HeatsyncShadowHost extends Element {
 
     const init = (): void => {
       let syncer: Syncer;
-      console.log('init HeatSync...');
       void FutatsumeDetector.detect().then(() => {
         const FutatsumeWatch = (window as unknown as { FutatsumeWatch: HeatsyncFutatsumeWatch }).FutatsumeWatch;
         FutatsumeWatch.emitter.on('DialogPlayerOpen', () => {

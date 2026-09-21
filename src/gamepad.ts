@@ -44,13 +44,6 @@ interface GamepadFutatsumeWatch {
   FutatsumeGamePad?: unknown;
 }
 
-interface GamepadConsole {
-  log(...args: Array<unknown>): void;
-  error(...args: Array<unknown>): void;
-  time(...args: Array<unknown>): void;
-  timeEnd(...args: Array<unknown>): void;
-  trace(...args: Array<unknown>): void;
-}
 interface GamepadStatusButton {
   pressed: boolean;
 }
@@ -108,7 +101,6 @@ interface ActiveGamepad {
 void (async (window: Window & typeof globalThis): Promise<void> => {
   const monkey = (FutatsumeWatch: GamepadFutatsumeWatch): void => {
     if (!window.navigator.getGamepads) {
-      window.console.log('%cGamepad APIがサポートされていません', 'background: red; color: yellow;');
       return;
     }
 
@@ -179,19 +171,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
     let isFutatsumeWatchOpen = false;
 
-    const debugMode = !true;
-
-    /* eslint-disable @typescript-eslint/unbound-method -- _.noop は this を使わないため束縛不要 */
-    const dummyConsole = {
-      log: _.noop,
-      error: _.noop,
-      time: _.noop,
-      timeEnd: _.noop,
-      trace: _.noop,
-    };
-    /* eslint-enable @typescript-eslint/unbound-method */
-    const console: GamepadConsole = debugMode ? window.console : dummyConsole;
-
     let isPauseButtonDown = false;
     let isRate1ButtonDown = false;
     let isMetaButtonDown = false;
@@ -206,7 +185,7 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
       const defaultConfig: Record<string, GamepadConfigValue> = {
         debug: false,
-        enabled: true,
+        enabled: false,
         needFocus: false,
         deviceIndex: 0,
       };
@@ -740,7 +719,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       // TODO:
       // configを直接参照するのはお行儀が悪いのでexternalのインターフェースをつける
       const current = parseFloat(FutatsumeWatch.config.getValue('playbackRate'));
-      window.console.log('speedUp', current);
       execCommand('playbackRate', Math.floor(Math.min(current + 0.1, 3) * 10) / 10);
     };
 
@@ -748,7 +726,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       // TODO:
       // configを直接参照するのはお行儀が悪いのでexternalのインターフェースをつける
       const current = parseFloat(FutatsumeWatch.config.getValue('playbackRate'));
-      window.console.log('speedDown', current);
       execCommand('playbackRate', Math.floor(Math.max(current - 0.1, 0.1) * 10) / 10);
     };
 
@@ -1368,7 +1345,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           }
           window.clearInterval(this._timer);
         }
-        console.log('%cupdate Interval:%s', 'background: lightblue;', interval);
         this._currentInterval = interval;
         this._timer = window.setInterval(this._callback, interval);
       }
@@ -1465,7 +1441,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
           const gamepadStatus = navigator.getGamepads()[this._index] as GamepadStatus | null;
           // gp || this._gamepadStatus;
           if (!gamepadStatus) {
-            console.log('no status');
             return;
           }
           if (!this._isRepeating && this._lastTimestamp === gamepadStatus.timestamp) {
@@ -1654,12 +1629,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
         if (!pad) {
           return;
         }
-        window.console.log(
-          '%cdetect gamepad index: %s, id: "%s"',
-          'background: lightgreen; font-weight: bolder;',
-          pad.index,
-          pad.id
-        );
         const gamepad = new GamePadModel(pad);
         activeGamepad = gamepad;
 
@@ -1705,13 +1674,11 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
 
       const onGamepadConnectStatusChange = (e: GamepadEvent, isConnected: boolean): void => {
         const padIndex = (Config.get('deviceIndex') as number) * 1;
-        console.log('onGamepadConnetcStatusChange', e, e.gamepad.index, isConnected);
         if (e.gamepad.index !== padIndex) {
           return;
         }
 
         if (isConnected) {
-          console.log('%cgamepad connected id:"%s"', 'background: lightblue;', e.gamepad.id);
           detectGamepad();
         } else {
           if (activeGamepad) {
@@ -1719,12 +1686,10 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
             activeGamepad.release();
           }
           activeGamepad = null;
-          console.log('%cgamepad disconneced id:"%s"', 'background: lightblue;', e.gamepad.id);
         }
       };
 
       const initializeTimer = (): void => {
-        console.log('%cinitializeGamepadTimer', 'background: lightgreen;');
         const onTimerInterval = (): void => {
           if (!Config.get('enabled')) {
             return;
@@ -1745,8 +1710,6 @@ void (async (window: Window & typeof globalThis): Promise<void> => {
       };
 
       const initializeGamepadConnectEvent = (): void => {
-        console.log('%cinitializeGamepadConnectEvent', 'background: lightgreen;');
-
         window.addEventListener('gamepadconnected', (e) => onGamepadConnectStatusChange(e, true));
         window.addEventListener('gamepaddisconnected', (e) => onGamepadConnectStatusChange(e, false));
         Config.on('deviceIndex', () => {

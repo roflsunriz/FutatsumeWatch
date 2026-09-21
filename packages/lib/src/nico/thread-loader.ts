@@ -282,7 +282,6 @@ const { ThreadLoader } = (() => {
       }
 
       const url = new URL('/v1/threads', server);
-      console.log('load threads...', url);
       try {
         const response = await (netUtil as unknown as NetUtilLike).fetch(url, {
           method: 'POST',
@@ -309,19 +308,14 @@ const { ThreadLoader } = (() => {
     async load(msgInfo: ThreadMsgInfo): Promise<{ threadInfo: ThreadInfoData; body: ThreadLoadData; format: string }> {
       const { videoId, userId } = msgInfo;
 
-      const timeKey = `loadComment videoId: ${videoId}`;
-      console.time(timeKey);
-
       let result: ThreadLoadData;
       try {
         result = await this._load(msgInfo);
       } catch (error) {
-        console.timeEnd(timeKey);
         window.console.error('loadComment fail: ', error);
         throw { message: 'コメントサーバーの通信失敗' };
       }
 
-      console.timeEnd(timeKey);
       debug.lastMessageServerResult = result;
 
       let totalResCount: number = (result.globalComments ?? result.threads).reduce(
@@ -352,7 +346,6 @@ const { ThreadLoader } = (() => {
 
       msgInfo.threadInfo = threadInfo;
 
-      console.log('threadInfo: ', threadInfo);
       return { threadInfo, body: result, format: 'threads' };
     }
 
@@ -425,7 +418,6 @@ const { ThreadLoader } = (() => {
     async getDeleteKey(threadId: string, options: ThreadLoadOptions = {}): Promise<DeleteKeyData> {
       const url = `https://nvapi.nicovideo.jp/v1/comment/keys/delete?threadId=${threadId}&fork=${options.fork || 'main'}`;
 
-      console.log('getNicoruKey url: ', url);
       try {
         const raw: unknown = await (netUtil as unknown as NetUtilLike)
           .fetch(url, {
@@ -496,7 +488,6 @@ const { ThreadLoader } = (() => {
     async getNicoruKey(threadId: string, options: ThreadLoadOptions = {}): Promise<NicoruKeyData> {
       const url = `https://nvapi.nicovideo.jp/v1/comment/keys/nicoru?threadId=${threadId}`;
 
-      console.log('getNicoruKey url: ', url);
       try {
         const raw: unknown = await (netUtil as unknown as NetUtilLike)
           .fetch(url, {

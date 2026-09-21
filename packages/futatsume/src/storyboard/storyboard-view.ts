@@ -133,7 +133,6 @@ class StoryboardView extends Emitter {
   }
 
   initialize(params: StoryboardViewParams): void {
-    console.log('%c initialize StoryboardView', 'background: lightgreen;');
     this._container = params.container;
 
     /** @type {StoryboardInfoModel} */
@@ -216,7 +215,6 @@ class StoryboardView extends Emitter {
     if (this._view) {
       return;
     }
-    window.console.log('%cStoryboardView.initializeStoryboard', 'background: lightgreen;');
 
     const css = cssUtil as unknown as CssUtilLike;
     const uqFn = uq as unknown as UqStatic;
@@ -420,9 +418,7 @@ class StoryboardView extends Emitter {
     const cl = classListFactory(view);
     cl.add('is-success');
 
-    window.console.time('createStoryboardDOM');
     this._updateSuccessDom();
-    window.console.timeEnd('createStoryboardDOM');
 
     if (!this.isEnable) {
       return;
@@ -466,7 +462,9 @@ class StoryboardView extends Emitter {
   }
   _updateFail(): void {
     const classListFactory = ClassList as unknown as ClassListFactory;
-    classListFactory(this._view!).remove('is-uccess').add('is-fail');
+    const classList = classListFactory(this._view!);
+    classList.remove('is-success');
+    classList.add('is-fail');
   }
   setCurrentTime(sec: number, forceUpdate?: unknown): void {
     const globalLike = global as unknown as GlobalLike;
