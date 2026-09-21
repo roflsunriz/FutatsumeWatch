@@ -101,7 +101,7 @@ await withPage(
 );
 
 await withPage(
-  'https://ext.nicovideo.jp/thumb/sm9',
+  'https://ext.nicovideo.jp/thumb/sm9?from=nicopedia',
   '<!doctype html><link rel="icon" href="data:,"><title>Embed fixture</title><body></body>',
   async (page) => {
     await check(page, `!!document.querySelector('#futatsumeButton')`, 'ブログパーツの起動ボタン');
@@ -111,7 +111,7 @@ await withPage(
     );
     await check(
       page,
-      `window.__packet.data.body.message.command==='open' && window.__packet.data.body.message.watchId==='sm9'`,
+      `window.__packet.data.body.message.command==='open' && window.__packet.data.body.message.watchId==='sm9' && window.__packet.origin==='https://dic.nicovideo.jp'`,
       'ブログパーツから動画を開く要求'
     );
     await evaluate(
@@ -120,7 +120,7 @@ await withPage(
     );
     await check(page, `window.__packet.data.body.message.command==='send'`, 'ブログパーツのShift操作で送る要求');
   },
-  'https://www.nicovideo.jp/watch/sm9'
+  'https://dic.nicovideo.jp/v/sm9'
 );
 
 await Bun.write(

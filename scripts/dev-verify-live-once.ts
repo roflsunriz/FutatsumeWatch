@@ -7,8 +7,29 @@ import { scrubText } from './live-capture-policy';
 
 const preflight = Bun.argv.includes('--preflight');
 const attempt = preflight ? `preflight-${Date.now()}` : Bun.argv[Bun.argv.indexOf('--attempt') + 1];
+const requestedUrl = Bun.argv.includes('--url') ? Bun.argv[Bun.argv.indexOf('--url') + 1] : undefined;
+const requestedWatchId = Bun.argv.includes('--watch-id') ? Bun.argv[Bun.argv.indexOf('--watch-id') + 1] : undefined;
 if (!preflight && (!Bun.argv.includes('--attempt') || !attempt || !/^[a-z0-9-]{4,80}$/.test(attempt)))
   throw Error('--attemptに承認された試行IDが必要です');
+const targetUrl = (() => {
+  if (preflight) return undefined;
+  const parsed = new URL(requestedUrl ?? 'https://www.nicovideo.jp/watch/sm9');
+  if (
+    parsed.protocol !== 'https:' ||
+    (parsed.hostname !== 'nicovideo.jp' && !parsed.hostname.endsWith('.nicovideo.jp')) ||
+    parsed.username ||
+    parsed.password
+  )
+    throw Error('--urlはHTTPSの公式ニコニコ配下だけを指定できます');
+  parsed.hash = '';
+  return parsed;
+})();
+const initialWatchId = (() => {
+  const fromPath = targetUrl ? /^\/watch\/((?:sm|so)\d+)\/?$/.exec(targetUrl.pathname)?.[1] : undefined;
+  const value = requestedWatchId ?? fromPath;
+  if (value !== undefined && !/^(?:sm|so)\d+$/.test(value)) throw Error('--watch-idの動画IDが不正です');
+  return value;
+})();
 const root = resolve(import.meta.dir, '../dev-assets/live-capture');
 mkdirSync(root, { recursive: true });
 const directory = resolve(root, attempt!);
@@ -73,6 +94,9 @@ const result: {
   attempt: string;
   externalOperation: boolean;
   network?: unknown;
+  targetUrl?: string;
+  watchId?: string;
+  diagnostic?: unknown;
   cleanupErrors?: string[];
 } = {
   status: 'preparing',
@@ -80,6 +104,8 @@ const result: {
   bundleSha256: createHash('sha256').update(source).digest('hex'),
   attempt: attempt!,
   externalOperation: !preflight,
+  targetUrl: targetUrl?.href,
+  watchId: initialWatchId,
 };
 try {
   await launch('start');
@@ -91,6 +117,7 @@ try {
   })) as { browserContextId: string };
   contextId = context.browserContextId;
   monitor = await monitorLiveRead(browser, contextId, directory, server ? server.url.origin : undefined);
+  if (initialWatchId) monitor.setWatchId(initialWatchId);
   const created = (await browser.send('Target.createTarget', { url: 'about:blank', browserContextId: contextId })) as {
     targetId: string;
   };
@@ -122,7 +149,8 @@ try {
     resolve(directory, 'attempt-started.json'),
     JSON.stringify({
       attempt,
-      url: server?.url.href ?? 'https://www.nicovideo.jp/watch/sm9',
+      url: server?.url.href ?? targetUrl!.href,
+      watchId: initialWatchId,
       startedAt: new Date().toISOString(),
       maxNavigations: 1,
       maxOpenClicks: 1,
@@ -132,7 +160,7 @@ try {
   );
   result.status = 'running';
   const navigation = (await page.send('Page.navigate', {
-    url: server?.url.href ?? 'https://www.nicovideo.jp/watch/sm9',
+    url: server?.url.href ?? targetUrl!.href,
   })) as { errorText?: string };
   if (navigation.errorText) throw Error('初回ナビゲーション失敗: ' + navigation.errorText);
   await page.send('Page.bringToFront');
@@ -157,11 +185,25 @@ try {
     result.checks.push('公式相当の先行再生要求を遮断し本体Workerの1回だけ許可');
     result.checks.push('同一要求は1回だけ送信', '書込み0件', 'Workerの初回要求を記録');
   } else {
+    const watchPage = targetUrl!.hostname === 'www.nicovideo.jp' && initialWatchId !== undefined;
+    const selector = watchPage
+      ? '[data-futatsume-open]:not(:disabled)'
+      : initialWatchId
+        ? `[data-futatsume-video="${initialWatchId}"]:not(:disabled)`
+        : '[data-futatsume-video]:not(:disabled)';
     await until(
-      `!!window.FutatsumeWatch?.ready&&document.querySelector('[data-futatsume-open]')?.disabled===false`,
+      `!!window.FutatsumeWatch?.ready&&!!document.querySelector(${JSON.stringify(selector)})`,
       '実ページの起動導線'
     );
-    await clickVisible(page, '[data-futatsume-open]');
+    const selectedWatchId = watchPage
+      ? initialWatchId
+      : String(await evaluate(page, `document.querySelector(${JSON.stringify(selector)}).dataset.futatsumeVideo`));
+    if (!/^(?:sm|so)\d+$/.test(selectedWatchId)) throw Error('起動導線の動画IDが不正です');
+    if (!initialWatchId) {
+      monitor.setWatchId(selectedWatchId);
+      result.watchId = selectedWatchId;
+    }
+    await clickVisible(page, selector);
     await until(
       `(()=>{const v=document.querySelector('futatsume-video')?.shadowRoot.querySelector('video');return v&&v.videoWidth>0&&v.currentTime>1&&!v.paused&&!v.error})()`,
       '実HLSデコードと時間進行',
@@ -181,6 +223,15 @@ try {
   result.failure = scrubText(String(error));
   if (page)
     try {
+      result.diagnostic = await evaluate(
+        page,
+        `(()=>{const d=window.FutatsumeWatch?.debug?.dialog,v=document.querySelector('futatsume-video')?.shadowRoot?.querySelector('video');return {href:location.href,ready:window.FutatsumeWatch?.ready,open:d?.isOpen,watchId:d?._watchId,message:d?._message||d?._errorMessage,threadId:d?._threadInfo?.threadId,video:{readyState:v?.readyState,currentTime:v?.currentTime,error:v?.error&&{code:v.error.code,message:v.error.message}},buttons:[...document.querySelectorAll('[data-futatsume-video],[data-futatsume-open]')].map(b=>({id:b.dataset.futatsumeVideo,state:b.dataset.state,disabled:b.disabled}))}})()`
+      );
+    } catch (diagnosticError) {
+      result.diagnostic = { error: String(diagnosticError) };
+    }
+  if (page)
+    try {
       const shot = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
       writeFileSync(resolve(directory, 'failure.png'), Buffer.from(shot.data, 'base64'));
     } catch (captureError) {
@@ -190,7 +241,7 @@ try {
   monitor?.seal();
   const failures: string[] = [];
   try {
-    await monitor?.flush();
+    await monitor?.close();
   } catch (error) {
     failures.push(String(error));
   }
@@ -201,6 +252,7 @@ try {
   try {
     await cleanupCdp(
       () => (contextId ? browser?.send('Target.disposeBrowserContext', { browserContextId: contextId }) : undefined),
+      () => monitor?.flush(),
       () => browser?.close()
     );
   } catch (error) {

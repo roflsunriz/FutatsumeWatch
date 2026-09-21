@@ -27,6 +27,7 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
   const requests = new Map<string, { request: Request; response?: Response; body?: string; failure?: string }>();
   const grants = new Map<string, string>();
   const owners = new Map<string, boolean>();
+  let closing = false;
   let targetWatchId = 'sm9';
   const capturePart = crypto.randomUUID().slice(0, 8);
   let writeGuard: LiveWritePermitGuard | undefined;
@@ -44,6 +45,13 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
       .then(
         () => undefined,
         (error) => {
+          if (
+            closing &&
+            /Fetch\.(?:failRequest|continueRequest).*(?:No session with given id|Session with given id not found|Invalid InterceptionId)/.test(
+              String(error)
+            )
+          )
+            return;
           errors.push(String(error));
           gate.closed = true;
           record('capture-error', String(error));
@@ -265,6 +273,22 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
     },
     seal() {
       gate.closed = true;
+    },
+    async close() {
+      closing = true;
+      gate.closed = true;
+      const failures: string[] = [];
+      try {
+        await browser.send('Target.setAutoAttach', {
+          autoAttach: false,
+          waitForDebuggerOnStart: false,
+          flatten: true,
+        });
+      } catch (error) {
+        failures.push(String(error));
+      }
+      await this.flush();
+      if (failures.length) throw new AggregateError(failures, '単発採取の監視終了に失敗しました');
     },
     async flush() {
       while (jobs.size) await Promise.all([...jobs]);

@@ -102,6 +102,31 @@ try {
     `(()=>{const v=document.querySelector('#futatsumeVideoPlayerDialog futatsume-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
     '戻った検索ページのボタンから再び再生'
   );
+  if (process.env.FUTATSUME_TEST_OFFLINE === '1') {
+    const { offlineSites } = await import('./dev-offline');
+    const site = offlineSites.get(page);
+    if (!site) throw new Error('外部起動経路の固定応答を取得できません');
+    site.documents.set(
+      'https://www.nicovideo.jp/robots.txt',
+      '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body></body></html>'
+    );
+    site.documents.set(
+      'https://anime.nicovideo.jp/',
+      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}a{display:inline-block;padding:20px}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a></main></body></html>'
+    );
+    await page.send('Page.navigate', { url: 'https://anime.nicovideo.jp/' });
+    await until(
+      page,
+      `window.FutatsumeWatch?.ready&&document.querySelectorAll('[data-futatsume-video="sm9"]').length===1&&document.querySelector('#visible-anime')?.nextElementSibling?.dataset.futatsumeVideo==='sm9'`,
+      'Nアニメ相当ページは表示中の同一IDリンクへ1個だけ起動ボタンを表示'
+    );
+    await clickVisible(page, '[data-futatsume-video="sm9"]');
+    await until(
+      page,
+      `(()=>{const v=document.querySelector('futatsume-video')?.shadowRoot.querySelector('video'),r=window.FutatsumeWatch.debug.nicoCommentPlayer?._view.renderer;return v?.currentTime>0.5&&!v.paused&&r?.comments.length>0})()`,
+      'Nアニメ相当の外部ホストから映像とコメントを取得'
+    );
+  }
   report.completed = true;
   console.log(`導線の実操作検証に合格しました（${checks.length}項目）`);
 } catch (error) {

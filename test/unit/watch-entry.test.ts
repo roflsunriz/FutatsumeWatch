@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-import { installWatchEntry, watchIdFromUrl } from '../../src/watch-entry';
+import { installWatchEntry, supportsWatchEntryPage, watchIdFromUrl } from '../../src/watch-entry';
 import type { WatchEntry } from '../../src/watch-entry';
 
 let ui: WatchEntry | undefined;
@@ -71,14 +71,14 @@ describe('初めて使う人の起動導線', () => {
     expect(document.querySelectorAll('[data-futatsume-video]').length).toBe(1);
     expect(document.querySelector('[data-futatsume-video]')?.textContent).toBe('');
     expect(document.body.querySelector('[data-futatsume-entry]')).toBeNull();
-    document.querySelector<HTMLButtonElement>('[data-futatsume-video]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-futatsume-video="sm9"]')!.click();
     expect(open).toHaveBeenLastCalledWith('sm9');
     document.querySelector('#title')!.setAttribute('href', '/watch/so123');
     document.querySelector('#title')!.textContent = '別の動画';
     await flush();
-    document.querySelector<HTMLButtonElement>('[data-futatsume-video]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-futatsume-video="so123"]')!.click();
     expect(open).toHaveBeenLastCalledWith('so123');
-    expect(document.querySelector('[data-futatsume-video]')?.getAttribute('aria-label')).toContain('別の動画');
+    expect(document.querySelector('[data-futatsume-video="so123"]')?.getAttribute('aria-label')).toContain('別の動画');
   });
   it('再読み込みしない検索→視聴→検索でも導線を切り替える', async () => {
     document.body.innerHTML = '<a href="/watch/sm9">動画タイトル</a>';
@@ -110,10 +110,47 @@ describe('初めて使う人の起動導線', () => {
     await flush();
     expect(document.querySelectorAll('[data-futatsume-video]').length).toBe(0);
   });
+  it('同じ動画IDへのリンクが複数あっても代表リンクに1個だけ置く', async () => {
+    document.body.innerHTML =
+      '<a id="image" href="https://www.nicovideo.jp/watch/sm9"><img alt="動画1"></a>' +
+      '<a id="title" href="https://www.nicovideo.jp/watch/sm9">動画1のタイトル</a>' +
+      '<a id="duplicate" href="/watch/sm9">動画1の説明</a>';
+    const open = mock((id: string) => id);
+    ui = installWatchEntry();
+    ui.ready(open);
+    expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
+    expect(document.querySelector('#title')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
+    document.querySelector<HTMLButtonElement>('[data-futatsume-video="sm9"]')!.click();
+    expect(open).toHaveBeenCalledWith('sm9');
+    document.querySelector('#title')!.remove();
+    await flush();
+    expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
+    expect(document.querySelector('#duplicate')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
+  });
+  it('同じ動画IDでは非表示リンクを避けて表示中のリンクへ1個だけ置く', () => {
+    document.body.innerHTML =
+      '<div hidden><a id="hidden" href="https://www.nicovideo.jp/watch/sm9">隠れた動画</a></div>' +
+      '<a id="visible" href="https://www.nicovideo.jp/watch/sm9">表示中の動画</a>';
+    ui = installWatchEntry();
+    ui.ready(() => {});
+    expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
+    expect(document.querySelector('#visible')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
+    expect(
+      document.querySelector('#hidden')?.nextElementSibling?.getAttribute('data-futatsume-video') ?? null
+    ).toBeNull();
+  });
   it('他ホストや壊れたURLを再生要求にしない', () => {
     expect(watchIdFromUrl('https://example.com/watch/sm9')).toBeNull();
     expect(watchIdFromUrl('/watch/not-a-video')).toBeNull();
     expect(watchIdFromUrl('/watch/sm9?from=3')).toBe('sm9');
     expect(watchIdFromUrl('/watch/12345')).toBe('12345');
+  });
+  it('プレイヤー本体を初期化する外部ページだけに入口を設置する', () => {
+    expect(supportsWatchEntryPage(new URL('https://dic.nicovideo.jp/v/sm9'))).toBe(true);
+    expect(supportsWatchEntryPage(new URL('https://anime.nicovideo.jp/'))).toBe(true);
+    expect(supportsWatchEntryPage(new URL('https://www.google.com/search?q=sm9'))).toBe(true);
+    expect(supportsWatchEntryPage(new URL('https://www.youtube.com/watch?v=test'))).toBe(false);
+    expect(supportsWatchEntryPage(new URL('https://embed.nicovideo.jp/watch/sm9'))).toBe(false);
+    expect(supportsWatchEntryPage(new URL('https://ext.nicovideo.jp/thumb/sm9'))).toBe(false);
   });
 });

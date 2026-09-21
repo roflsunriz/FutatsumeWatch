@@ -3,6 +3,28 @@ export interface BlogPartsMessage {
   watchId?: string;
 }
 
+export interface BlogPartsContext {
+  targetOrigin: string;
+  watchId: string;
+}
+
+export function getBlogPartsContext(href: string, referrer: string): BlogPartsContext | null {
+  try {
+    const page = new URL(href);
+    const parent = new URL(referrer);
+    const watchId = /^\/thumb\/((?:[a-z]{2})?\d+)\/?$/.exec(page.pathname)?.[1];
+    if (
+      page.hostname !== 'ext.nicovideo.jp' ||
+      !watchId ||
+      (parent.hostname !== 'nicovideo.jp' && !parent.hostname.endsWith('.nicovideo.jp'))
+    )
+      return null;
+    return { targetOrigin: parent.origin, watchId };
+  } catch {
+    return null;
+  }
+}
+
 (() => {
   const addStyle = (styles: string, id?: string): HTMLStyleElement => {
     const elm = document.createElement('style');
@@ -15,8 +37,7 @@ export interface BlogPartsMessage {
     return elm;
   };
 
-  const postMessage = (type: string, message: BlogPartsMessage, token?: unknown): void => {
-    const origin = document.referrer;
+  const postMessage = (type: string, message: BlogPartsMessage, targetOrigin: string, token?: unknown): void => {
     const { command, watchId } = message;
     try {
       parent.postMessage(
@@ -36,7 +57,7 @@ export interface BlogPartsMessage {
             },
           },
         }),
-        origin
+        targetOrigin
       );
     } catch (e) {
       alert(e);
@@ -62,10 +83,8 @@ export interface BlogPartsMessage {
   `.trim();
 
   const blogPartsApi = (): void => {
-    const [watchId] = location.href.split('/').reverse();
-
-    const [, , parentHost] = document.referrer.split('/');
-    if (!(parentHost as string).endsWith('.nicovideo.jp')) {
+    const context = getBlogPartsContext(location.href, document.referrer);
+    if (!context) {
       console.log('disable bridge');
       return;
     }
@@ -76,10 +95,14 @@ export interface BlogPartsMessage {
     button.id = 'futatsumeButton';
     document.body.append(button);
     button.onclick = (e) => {
-      postMessage('blogParts', {
-        command: e.shiftKey ? 'send' : 'open',
-        watchId,
-      });
+      postMessage(
+        'blogParts',
+        {
+          command: e.shiftKey ? 'send' : 'open',
+          watchId: context.watchId,
+        },
+        context.targetOrigin
+      );
     };
   };
 

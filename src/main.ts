@@ -1,5 +1,5 @@
 import { AntiPrototypeJs } from '../packages/lib/src/infra/anti-prototype-js';
-import { installWatchEntry } from './watch-entry';
+import { installWatchEntry, supportsWatchEntryPage } from './watch-entry';
 import type { WatchEntry } from './watch-entry';
 import { migrateSharedStorage } from './config-migration';
 
@@ -13,7 +13,7 @@ async function start(): Promise<void> {
     await new Promise<void>((resolve) =>
       document.addEventListener('DOMContentLoaded', () => resolve(), { once: true })
     );
-  if (window === window.top && location.hostname === 'www.nicovideo.jp') entry = installWatchEntry();
+  if (window === window.top && supportsWatchEntryPage()) entry = installWatchEntry();
   await AntiPrototypeJs();
   migrateSharedStorage(localStorage, sessionStorage);
   Object.assign(console, { nicoru: console.log.bind(console) });

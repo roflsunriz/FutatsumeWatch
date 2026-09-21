@@ -18,6 +18,12 @@ export function watchIdFromUrl(value: string, base = location.href): string | nu
   }
 }
 
+export function supportsWatchEntryPage(url: Pick<Location, 'hostname' | 'pathname'> = location): boolean {
+  if (url.hostname === 'www.youtube.com' || url.hostname === 'youtube.com') return false;
+  if (url.hostname === 'ext.nicovideo.jp' && url.pathname.startsWith('/thumb/')) return false;
+  return !['live.nicovideo.jp', 'embed.nicovideo.jp', 'sp.nicovideo.jp'].includes(url.hostname);
+}
+
 // 公式の意味を持つdata属性とプロフィールURLを使い、生成クラス名に依存しない。
 export function findWatchEntrySlot(doc: Document): { parent: HTMLElement; before: Element } | null {
   const headings = [...doc.querySelectorAll('h1')].filter((heading) => !heading.closest('#futatsumeVideoPlayerDialog'));
@@ -91,7 +97,7 @@ export function installWatchEntry(): WatchEntry {
   let state: 'starting' | 'ready' | 'failed' = 'starting';
   let failure = '';
   let scheduled: number | undefined;
-  const mounted = new Map<HTMLAnchorElement, HTMLButtonElement>();
+  const mounted = new Map<string, { link: HTMLAnchorElement; control: HTMLButtonElement }>();
   // 導入確認用の非表示メタデータ。画面にポップアップは作らない。
   const marker = document.createElement('meta');
   marker.dataset.futatsumeEntry = '';
@@ -146,30 +152,50 @@ export function installWatchEntry(): WatchEntry {
       } else button.remove();
       describe(button, words.watch);
     } else button.remove();
-    for (const [link, control] of mounted) {
-      const id = watchIdFromUrl(link.href);
-      if (!link.isConnected || !id || isWatch || link.closest('#futatsumeVideoPlayerDialog')) {
-        control.remove();
-        mounted.delete(link);
-      } else if (control.dataset.futatsumeVideo !== id) control.dataset.futatsumeVideo = id;
+    if (isWatch) {
+      for (const { control } of mounted.values()) control.remove();
+      mounted.clear();
+      return;
     }
-    if (isWatch) return;
+    const candidates = new Map<string, { link: HTMLAnchorElement; label: string; priority: number }>();
     for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href*="/watch/"]')) {
       const id = watchIdFromUrl(link.href);
-      if (
-        !id ||
-        !link.textContent?.trim() ||
-        link.querySelector('img') ||
-        link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')
-      )
-        continue;
-      const existing = mounted.get(link);
-      const label = `${words.watch}: ${link.textContent.trim()}`;
-      if (existing?.isConnected) {
-        describe(existing, label);
+      if (!id || link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')) continue;
+      const text = link.textContent?.trim() ?? '';
+      const accessible =
+        link.getAttribute('aria-label')?.trim() ||
+        link.title.trim() ||
+        link.querySelector<HTMLImageElement>('img[alt]')?.alt.trim() ||
+        '';
+      const label = text || accessible;
+      if (!label) continue;
+      const priority = text && !link.querySelector('img') ? 2 : 1;
+      const style = window.getComputedStyle(link);
+      const notHidden =
+        style.display !== 'none' &&
+        style.visibility === 'visible' &&
+        Number(style.opacity) !== 0 &&
+        !link.closest('[hidden],[aria-hidden="true"]');
+      const current = candidates.get(id);
+      const effectivePriority =
+        priority + (notHidden ? 2 : 0) + (notHidden && link.getClientRects().length > 0 ? 2 : 0);
+      if (!current || effectivePriority > current.priority)
+        candidates.set(id, { link, label, priority: effectivePriority });
+    }
+    for (const [id, mountedEntry] of mounted) {
+      const candidate = candidates.get(id);
+      if (!candidate || candidate.link !== mountedEntry.link || !mountedEntry.control.isConnected) {
+        mountedEntry.control.remove();
+        mounted.delete(id);
+      }
+    }
+    for (const [id, { link, label: linkLabel }] of candidates) {
+      const existing = mounted.get(id);
+      const label = `${words.watch}: ${linkLabel}`;
+      if (existing) {
+        describe(existing.control, label);
         continue;
       }
-      existing?.remove();
       const control = createIconButton();
       control.dataset.futatsumeVideo = id;
       describe(control, label);
@@ -180,14 +206,19 @@ export function installWatchEntry(): WatchEntry {
         if (id) open(id);
       });
       link.after(control);
-      mounted.set(link, control);
+      mounted.set(id, { link, control });
     }
   };
   const schedule = (): void => {
     if (scheduled === undefined) scheduled = window.requestAnimationFrame(update);
   };
   const observer = new MutationObserver(schedule);
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['href'] });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['href', 'class', 'hidden', 'style', 'aria-hidden'],
+  });
   const push = history.pushState.bind(history),
     replace = history.replaceState.bind(history);
   const pushWrapper: History['pushState'] = (data: unknown, unused: string, url?: string | URL | null): void => {
@@ -221,7 +252,7 @@ export function installWatchEntry(): WatchEntry {
       window.removeEventListener('popstate', schedule);
       if (history.pushState === pushWrapper) history.pushState = push;
       if (history.replaceState === replaceWrapper) history.replaceState = replace;
-      for (const control of mounted.values()) control.remove();
+      for (const { control } of mounted.values()) control.remove();
       mounted.clear();
       button.remove();
       marker.remove();

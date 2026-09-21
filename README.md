@@ -4,14 +4,14 @@ ZenzaWatch 後継ユーザースクリプト。どこからでも動画をその
 
 ## インストール
 
-**Version 0.0.11**
+**Version 0.0.12**
 
 **[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)**
 
 ## 使い方
 
 1. Tampermonkey / Violentmonkey / Greasemonkeyで上記リンクを開き、ユーザースクリプトをインストールする
-2. 各所に現れる四角が二重になっているアイコンをクリックし、再生
+2. ニコニコ動画・Nアニメ等の動画リンクや、ニコ百の埋め込みサムネイルに現れる起動ボタンをクリックし、再生
 
 ## 同梱機能
 
