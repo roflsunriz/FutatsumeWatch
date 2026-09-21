@@ -433,7 +433,7 @@ export function createOfflineSite() {
           !Array.isArray(params.targets) ||
           params.targets.length < 1 ||
           params.targets.length > 3 ||
-          !['ja-jp', 'en-us', 'zh-tw'].includes(String(params.language))
+          params.language !== 'ja-jp'
         )
           return null;
         if (
@@ -468,10 +468,7 @@ export function createOfflineSite() {
             (value) =>
               typeof additionals.when !== 'number' || new Date(value.postedAt).getTime() / 1000 <= additionals.when
           )
-          .map((value) => ({
-            ...value,
-            body: params.language === 'ja-jp' ? value.body : '[' + String(params.language) + '] ' + value.body,
-          }));
+          .map((value) => ({ ...value }));
         const response = json({
           meta: { status: 200 },
           data: {
@@ -523,7 +520,7 @@ export function createOfflineSite() {
           if (
             !keys(data, ['deleteKey', 'fork', 'language', 'targets', 'videoId']) ||
             data.deleteKey !== `fixture-delete-${id}` ||
-            !['ja-jp', 'en-us', 'zh-tw'].includes(String(data.language)) ||
+            data.language !== 'ja-jp' ||
             !Array.isArray(data.targets) ||
             data.targets.length < 1
           )

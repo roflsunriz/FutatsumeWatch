@@ -240,11 +240,6 @@ const { initialize, initializeExternal, initializeMessage, initializeLastSession
       await (uq as unknown as { ready(): Promise<unknown> }).ready(); // DOMContentLoaded
       const isWatch = await isWatchPage();
 
-      // migrate comment language
-      if (typeof Config.props.commentLanguage === 'string') {
-        Config.props.commentLanguage = Config.props.commentLanguage.replace('_', '-').toLowerCase();
-      }
-
       const hoverMenu = (global.debug.hoverMenu = new (
         HoverMenu as unknown as new (params: { playerConfig: ConfigStore }) => { setPlayer(player: unknown): void }
       )({ playerConfig: Config }));

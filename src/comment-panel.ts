@@ -130,7 +130,6 @@ interface CommentPanelParams {
   $container: Uq;
   player: NicoVideoPlayer;
   autoScroll?: boolean;
-  language?: string;
 }
 
 interface ThreadInfo {
@@ -1588,11 +1587,6 @@ class CommentPanelView extends Emitter {
   declare private _listView: CommentListView;
   declare private _timeMachineView: TimeMachineView;
   declare private _lastCurrentTime: number | undefined;
-  languages: [string, string][] = [
-    ['ja-jp', '日本語'],
-    ['en-us', 'English (US)'],
-    ['zh-tw', '中文 (繁體)'],
-  ];
 
   constructor(params: CommentPanelViewParams) {
     super();
@@ -1603,18 +1597,6 @@ class CommentPanelView extends Emitter {
     css.addStyle(CommentPanelView.__css__);
     const $view = (this.$view = (uq as unknown as UqFactory).html(CommentPanelView.__tpl__));
     this.$container.append($view);
-
-    const langs = document.querySelector('.commentLanguageSelector');
-    for (const [language, label] of this.languages) {
-      const list = document.createElement('li');
-      list.className = 'commentPanel-command';
-      Object.assign(list.dataset, {
-        command: 'update-commentLanguage',
-        param: language,
-      });
-      list.textContent = label;
-      langs!.append(list);
-    }
 
     const $menu = (this._$menu = this.$view.find('.commentPanel-menu'));
 
@@ -1706,13 +1688,7 @@ class CommentPanelView extends Emitter {
   }
   _onCommentPanelStatusUpdate(): void {
     const commentPanel = this.commentPanel;
-    const $view = this.toggleClass('autoScroll', commentPanel.isAutoScroll);
-
-    const langClass = `lang-${commentPanel.getLanguage()}`;
-    if (!$view.hasClass(langClass)) {
-      $view.raf.removeClass(this.languages.map(([x]) => `lang-${x}`).join(' '));
-      $view.raf.addClass(langClass);
-    }
+    this.toggleClass('autoScroll', commentPanel.isAutoScroll);
   }
 }
 CommentPanelView.__css__ = `
@@ -1801,14 +1777,6 @@ CommentPanelView.__css__ = `
       line-height: 20px;
     }
 
-    .commentPanel-container.lang-ja-jp .commentPanel-command[data-param=ja-jp],
-    .commentPanel-container.lang-en-us .commentPanel-command[data-param=en-us],
-    .commentPanel-container.lang-zh-tw .commentPanel-command[data-param=zh-tw] {
-      font-weight: bolder;
-      color: #ff9;
-    }
-
-
   `.trim();
 
 CommentPanelView.__tpl__ = `
@@ -1823,17 +1791,14 @@ CommentPanelView.__tpl__ = `
             <div class="listInner">
             <ul>
               <li class="commentPanel-command" data-command="sortBy" data-param="vpos">
-                コメント位置順に並べる
+                コメントを位置順に並べる
               </li>
               <li class="commentPanel-command" data-command="sortBy" data-param="date:desc">
-                コメントの新しい順に並べる
+                新しい順
               </li>
               <li class="commentPanel-command" data-command="sortBy" data-param="nicoru:desc">
-                ニコる数で並べる
+                ニコる数
               </li>
-            </ul>
-            <hr class="separator">
-            <ul class="commentLanguageSelector">
             </ul>
             </div>
           </div>
@@ -1852,7 +1817,6 @@ class CommentPanel extends Emitter {
   declare private _player: NicoVideoPlayer;
   declare private _autoScroll: boolean;
   declare private _model: CommentListModel;
-  declare private _language: string;
   declare private _view: CommentPanelView | undefined;
   declare private _timer: number | null | undefined;
   declare private _threadInfo: ThreadInfo | undefined;
@@ -1865,10 +1829,9 @@ class CommentPanel extends Emitter {
     this._autoScroll = _.isBoolean(params.autoScroll) ? params.autoScroll : true;
 
     this._model = new CommentListModel({});
-    this._language = params.language || 'ja-jp';
 
-    player.on('commentParsed', _.debounce(this._onCommentParsed.bind(this), 500) as unknown as EmitterCallback);
-    player.on('commentChange', _.debounce(this._onCommentChange.bind(this), 500) as unknown as EmitterCallback);
+    player.on('commentParsed', _.debounce(this._onCommentParsed.bind(this), 500));
+    player.on('commentChange', _.debounce(this._onCommentChange.bind(this), 500));
     player.on('commentReady', _.debounce(this._onCommentReady.bind(this), 500) as unknown as EmitterCallback);
     player.on('open', this._onPlayerOpen.bind(this));
     player.on('close', this._onPlayerClose.bind(this));
@@ -1960,14 +1923,12 @@ class CommentPanel extends Emitter {
         this.emit('command', command, param);
     }
   }
-  _onCommentParsed(language: string): void {
-    this.setLanguage(language);
+  _onCommentParsed(): void {
     void this._initializeView();
     this.setChatList((this._player as unknown as { chatList: ChatListData }).chatList);
     this.startTimer();
   }
-  _onCommentChange(language: string): void {
-    this.setLanguage(language);
+  _onCommentChange(): void {
     void this._initializeView();
     this.setChatList((this._player as unknown as { chatList: ChatListData }).chatList);
   }
@@ -2024,17 +1985,8 @@ class CommentPanel extends Emitter {
   get isAutoScroll(): boolean {
     return this._autoScroll;
   }
-  getLanguage(): string {
-    return this._language || 'ja-jp';
-  }
   getThreadInfo(): ThreadInfo | undefined {
     return this._threadInfo;
-  }
-  setLanguage(lang: string): void {
-    if (lang !== this._language) {
-      this._language = lang;
-      this.emit('update');
-    }
   }
   toggleScroll(v?: boolean): void {
     if (!_.isBoolean(v)) {

@@ -9,7 +9,6 @@ type MessageInfo = Parameters<typeof ThreadLoader.postChat>[0];
 const context = (): MessageInfo => ({
   videoId: 'sm9',
   threadId: '1234',
-  language: 'ja-jp',
   nvComment: {
     server: 'https://public.nvcomment.nicovideo.jp',
     params: { language: 'ja-jp', targets: [{ id: '1234', fork: 'main' }] },
@@ -288,10 +287,9 @@ describe('P4 コメント投稿API契約', () => {
     expect(calls).toBe(0);
   });
 
-  test('P3-07 再取得の時刻を追加し、API指定の言語を保存設定で上書きしない', async () => {
+  test('P3-07 再取得では時刻だけを追加し、API指定の日本語契約を保持する', async () => {
     const info = context();
     info.when = 123456;
-    info.language = 'en-us';
     let body = '';
     netUtil.fetch = (_url, init) => {
       const headers = new Headers(init?.headers);

@@ -209,18 +209,15 @@ describe('Phase0 ブラウザ用要求契約', () => {
     ).toHaveLength(64);
   });
 
-  test('取得の言語・過去ログ時刻・forkを反映し、異なる意味の条件を無視しない', async () => {
+  test('日本語の取得・過去ログ時刻・forkを反映し、異なる意味の条件を無視しない', async () => {
     const site = createOfflineSite(),
       url = 'https://public.nvcomment.nicovideo.jp/v1/threads';
     const body = loadPacket();
-    const japanese = parse(await site.reply(request(url, body)));
-    body.params.language = 'en-us';
-    const english = parse(await site.reply(request(url, body)));
-    expect(english.data.threads[0]?.comments[0]?.body).not.toBe(japanese.data.threads[0]?.comments[0]?.body);
     body.additionals = { when: 1 };
     expect(parse(await site.reply(request(url, body))).data.threads[0]?.comments).toHaveLength(0);
     for (const invalid of [
-      { ...loadPacket(), params: { ...loadPacket().params, language: 'unknown' } },
+      { ...loadPacket(), params: { ...loadPacket().params, language: 'en-us' } },
+      { ...loadPacket(), params: { ...loadPacket().params, language: 'zh-tw' } },
       { ...loadPacket(), additionals: { when: '1' } },
       { ...loadPacket(), additionals: { when: 1, extra: true } },
       {

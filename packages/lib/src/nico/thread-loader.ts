@@ -126,7 +126,6 @@ interface ThreadMsgInfo {
   videoId: string;
   userId?: unknown;
   threadId?: string;
-  language?: string;
   when?: number;
   threads?: Array<{ id: string | number; forkLabel?: string; fork?: string }>;
   defaultThread?: { is184Forced?: boolean };
@@ -335,8 +334,7 @@ const { ThreadLoader } = (() => {
         threadId: msgInfo.threadId,
         is184Forced: msgInfo.defaultThread!.is184Forced,
         totalResCount,
-        language:
-          typeof msgInfo.nvComment.params.language === 'string' ? msgInfo.nvComment.params.language : msgInfo.language,
+        language: typeof msgInfo.nvComment.params.language === 'string' ? msgInfo.nvComment.params.language : 'ja-jp',
         when: msgInfo.when,
         isWaybackMode: !!msgInfo.when,
       };

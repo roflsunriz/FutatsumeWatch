@@ -38,7 +38,6 @@ import type { ConfigStore } from './config';
 import type { Uq, UqFactory } from './comment-panel';
 import type { ThumbInfoOk } from '../packages/lib/src/nico/parse-thumb-info';
 import type { CommentPlayerOptions } from './comment-player';
-import { applyApiCommentLanguage } from './comment-language';
 
 interface DialogPlayerConfig extends ConfigStore {
   getNativeKey?(key: string): string;
@@ -135,7 +134,6 @@ interface DialogThreadMsgInfo {
   videoId: string;
   userId?: unknown;
   threadId?: string;
-  language?: string;
   when?: number;
   frontendId: string | number;
   frontendVersion: string | number;
@@ -1860,13 +1858,6 @@ class NicoVideoPlayerDialog extends Emitter {
         this._playerConfig.props.domandVideoQuality = param as string;
         this.reload();
         break;
-      case 'update-commentLanguage':
-        if (this._playerConfig.props.commentLanguage === param) {
-          break;
-        }
-        this._playerConfig.props.commentLanguage = param as string;
-        this.reloadComment();
-        break;
       case 'saveMymemory':
         (util as unknown as DialogUtilView).saveMymemory(this, this._state.videoInfo);
         break;
@@ -2240,13 +2231,11 @@ class NicoVideoPlayerDialog extends Emitter {
       });
   }
   _onCommentParsed(): void {
-    const lang = this._playerConfig.getValue('commentLanguage');
-    this.emit('commentParsed', lang, this._threadInfo);
+    this.emit('commentParsed');
     global.emitter.emit('commentParsed');
   }
   _onCommentChange(): void {
-    const lang = this._playerConfig.getValue('commentLanguage');
-    this.emit('commentChange', lang, this._threadInfo);
+    this.emit('commentChange');
     global.emitter.emit('commentChange');
   }
   _onCommentFilterChange(filter: {
@@ -2485,8 +2474,6 @@ class NicoVideoPlayerDialog extends Emitter {
   loadComment(msgInfo: DialogThreadMsgInfo): void {
     const requestId = this._requestId;
     const commentRequest = ++this.commentRequestSequence;
-    const language = applyApiCommentLanguage(msgInfo, this._playerConfig.props.commentLanguage);
-    if (this._playerConfig.props.commentLanguage !== language) this._playerConfig.props.commentLanguage = language;
     this.threadLoader.load(msgInfo).then(
       (result) => {
         if (commentRequest === this.commentRequestSequence) this._onCommentLoadSuccess(requestId, result);
@@ -2899,7 +2886,6 @@ class NicoVideoPlayerDialog extends Emitter {
       player: this as unknown as NicoVideoPlayer,
       $container: $container,
       autoScroll: this._playerConfig.props.enableCommentPanelAutoScroll,
-      language: this._playerConfig.props.commentLanguage,
     });
     this._commentPanel.on('command', this._onCommand.bind(this) as EmitterCallback);
     this._commentPanel.on('deleteChat', ((e: { resolve(): void; reject(error: Error): void }, chat: unknown) => {

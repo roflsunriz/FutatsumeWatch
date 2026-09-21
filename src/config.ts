@@ -59,7 +59,6 @@ export interface ConfigProps {
   enableCommentPanel: boolean;
   enableCommentPanelAutoScroll: boolean;
   playlistLoop: boolean;
-  commentLanguage: string;
   baseFontFamily: string;
   baseChatScale: number;
   baseFontBolder: boolean;
@@ -243,7 +242,6 @@ const Config = (() => {
     enableCommentPanelAutoScroll: true,
 
     playlistLoop: false,
-    commentLanguage: 'ja-jp',
 
     baseFontFamily: '',
     baseChatScale: 1.0,

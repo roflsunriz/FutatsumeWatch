@@ -309,6 +309,17 @@ async function main() {
       `${state}.commentPanel.isAutoScroll!==${JSON.stringify(autoScroll)}`,
       'P3-06 自動スクロールを実クリックで切替'
     );
+    await check(
+      session,
+      `JSON.stringify([...document.querySelectorAll('.commentPanel-menu .commentPanel-command')].map(item=>[item.dataset.command,item.dataset.param,item.textContent.trim()]))===${JSON.stringify(
+        JSON.stringify([
+          ['sortBy', 'vpos', 'コメントを位置順に並べる'],
+          ['sortBy', 'date:desc', '新しい順'],
+          ['sortBy', 'nicoru:desc', 'ニコる数'],
+        ])
+      )}`,
+      'P3-09 コメントメニューは並べ替え3項目だけを表示'
+    );
     for (const key of ['vpos', 'date:desc', 'nicoru:desc']) {
       await clickVisible(session, '.commentPanel-menu-toggle');
       await clickVisible(session, `.commentPanel-menu [data-command="sortBy"][data-param="${key}"]`);

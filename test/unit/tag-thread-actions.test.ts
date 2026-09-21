@@ -8,7 +8,6 @@ afterEach(() => {
 const context: Parameters<typeof ThreadLoader.nicoru>[0] = {
   videoId: 'sm9',
   threadId: '1234',
-  language: 'ja-jp',
   nvComment: {
     server: 'https://public.nvcomment.nicovideo.jp',
     params: { language: 'ja-jp', targets: [{ id: '1234', fork: 'main' }] },
