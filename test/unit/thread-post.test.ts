@@ -69,7 +69,14 @@ function install(post: (packet: Packet) => Response | Promise<Response>, load?: 
       keyCount++;
       return ok({ postKey: `fixture-key-${keyCount}` });
     }
-    if (url.pathname === '/v1/threads' && load) return load();
+    if (url.pathname === '/v1/threads' && load) {
+      expect(init.credentials).toBe('same-origin');
+      expect(headers.get('X-Client-Os-Type')).toBe('others');
+      expect(headers.get('content-type')).toBe('application/json');
+      const packet = JSON.parse(typeof init.body === 'string' ? init.body : '') as Record<string, unknown>;
+      expect(Object.keys(packet).sort()).toEqual(['params', 'threadKey']);
+      return load();
+    }
     expect(url.origin + url.pathname + url.search).toBe(
       'https://public.nvcomment.nicovideo.jp/v1/threads/1234/comments?pc=1'
     );
@@ -187,6 +194,20 @@ describe('P4 コメント投稿API契約', () => {
     expect(loaded.body.threads[0]).toMatchObject({ comments: [{ id: 'accepted-1', no: 1, body: '1回の投稿' }] });
   });
 
+  test('globalCommentsがないfilter-matome互換応答はthread件数から合計する', async () => {
+    install(
+      () => ok({ no: 1 }),
+      () =>
+        ok({
+          threads: [
+            { id: '1234', fork: 'main', commentCount: 2, comments: [] },
+            { id: '1234', fork: 'owner', commentCount: 1, comments: [] },
+          ],
+        })
+    );
+    expect((await ThreadLoader.load(context())).threadInfo.totalResCount).toBe(3);
+  });
+
   test('P4-10 キー取得中の動画切替で書き込みせず、呼出後の対象変更を混入させない', async () => {
     let release!: (response: Response) => void;
     netUtil.fetch = () =>
@@ -273,12 +294,25 @@ describe('P4 コメント投稿API契約', () => {
     info.language = 'en-us';
     let body = '';
     netUtil.fetch = (_url, init) => {
+      const headers = new Headers(init?.headers);
+      expect(headers.get('X-Client-Os-Type')).toBe('others');
+      expect(headers.get('content-type')).toBe('application/json');
       body = typeof init?.body === 'string' ? init.body : '';
       return Promise.resolve(ok({ globalComments: [], threads: [] }));
     };
     await ThreadLoader._load(info);
     expect(JSON.parse(body)).toMatchObject({ additionals: { when: 123456 }, params: { language: 'en-us' } });
     expect(info.nvComment.params.language).toBe('ja-jp');
+  });
+
+  test('コメント取得失敗を別キーで自動再送しない', async () => {
+    let calls = 0;
+    netUtil.fetch = () => {
+      calls++;
+      return Promise.resolve(refused(503, 'SERVICE_UNAVAILABLE'));
+    };
+    expect((await fail(ThreadLoader.load(context()))).message).toBe('コメントサーバーの通信失敗');
+    expect(calls).toBe(1);
   });
 });
 

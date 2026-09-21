@@ -7,11 +7,27 @@ interface AbortableFetchParams extends RequestInit {
 interface NetUtil {
   ajax: (params: JQuery.AjaxSettings) => unknown;
   abortableFetch: (url: string, params?: AbortableFetchParams) => Promise<unknown>;
+  xhr: (url: string, params?: AbortableFetchParams) => Promise<Response>;
   fetch: (url: string, params?: AbortableFetchParams) => Promise<unknown>;
   jsonp: (url: string, funcName?: string) => Promise<unknown>;
 }
 
 import { NicoVideoApi } from '../nico/nico-video-api';
+
+export function isNvCommentApiUrl(resource: string | URL): boolean {
+  try {
+    const url = new URL(resource, location.href);
+    return (
+      url.protocol === 'https:' &&
+      (url.hostname === 'nvcomment.nicovideo.jp' || url.hostname.endsWith('.nvcomment.nicovideo.jp')) &&
+      !url.username &&
+      !url.password &&
+      !url.port
+    );
+  } catch {
+    return false;
+  }
+}
 
 //===BEGIN===
 const netUtil: NetUtil = {
@@ -49,7 +65,59 @@ const netUtil: NetUtil = {
       })
       .finally(() => (timer = null));
   },
+  xhr(url, params = {}) {
+    return new Promise<Response>((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      const endpoint = new URL(url, location.href);
+      const timeout = typeof params.timeout === 'number' && Number.isFinite(params.timeout) ? params.timeout : 30000;
+      let settled = false;
+      const finish = (callback: () => void): void => {
+        if (settled) return;
+        settled = true;
+        params.signal?.removeEventListener('abort', onAbort);
+        callback();
+      };
+      const onAbort = (): void => {
+        request.abort();
+        finish(() => reject(new DOMException('The operation was aborted', 'AbortError')));
+      };
+      request.open(params.method ?? 'GET', endpoint.href, true);
+      request.responseType = 'arraybuffer';
+      request.timeout = Math.max(0, timeout);
+      request.withCredentials = params.credentials === 'include';
+      new Headers(params.headers).forEach((value, name) => request.setRequestHeader(name, value));
+      request.onload = () =>
+        finish(() => {
+          const headers = new Headers();
+          for (const line of request.getAllResponseHeaders().trim().split(/\r?\n/)) {
+            if (!line) continue;
+            const separator = line.indexOf(':');
+            if (separator > 0) headers.append(line.slice(0, separator).trim(), line.slice(separator + 1).trim());
+          }
+          const rawResponse: unknown = request.response;
+          const body =
+            request.status === 204 || request.status === 205 || request.status === 304
+              ? null
+              : rawResponse instanceof ArrayBuffer
+                ? rawResponse
+                : null;
+          resolve(new Response(body, { status: request.status, statusText: request.statusText, headers }));
+        });
+      request.onerror = () => finish(() => reject(new TypeError(`XMLHttpRequest failed: ${endpoint.origin}`)));
+      request.ontimeout = () => finish(() => reject(new DOMException('The operation timed out', 'TimeoutError')));
+      request.onabort = () => finish(() => reject(new DOMException('The operation was aborted', 'AbortError')));
+      if (params.signal?.aborted) {
+        onAbort();
+        return;
+      }
+      params.signal?.addEventListener('abort', onAbort, { once: true });
+      request.send(params.body as Document | XMLHttpRequestBodyInit | null | undefined);
+    });
+  },
   fetch(url, params) {
+    if (isNvCommentApiUrl(url)) {
+      return this.xhr(url, params);
+    }
     if (location.host !== 'www.nicovideo.jp') {
       return NicoVideoApi.fetch(url, params);
     }

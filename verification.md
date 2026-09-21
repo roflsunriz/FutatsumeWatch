@@ -1,5 +1,12 @@
 # 検証記録
 
+## 2026-09-21：nv-commentの直接XHR化（0.0.13）
+
+- `filter-matome/local/features/src/api-info/nv-comment-api*.md`と現行`common.ts`を正本として照合し、通常取得を`POST {server}/v1/threads`、`{params,threadKey}`、`Content-Type: application/json`、`X-Client-Os-Type: others`、`X-Frontend-Id: 6`、`X-Frontend-Version: 0`へ統一した。過去ログ時だけ公式通信にある`additionals.when`を追加する。
+- `https://*.nvcomment.nicovideo.jp`だけを標準XMLHttpRequestで直接送信し、Nアニメ等の外部ホストでもコメント通信をiframeブリッジへ渡さない。entryの通信監査でも4件の取得元がすべて`page:network/page:fetch`で、iframe sessionからの要求がないことを確認した。userinfo・別scheme・port・許可名を含む別ホストは直接通信対象にしない。
+- 取得失敗後の3秒待機とthreadKey再取得による自動再送を削除した。`globalComments`のない応答は全threadの`commentCount`から合計を算出する。全単体426件（2,892アサーション）が成功した。
+- 同一配布物SHA-256 `741161f6a214ed7a83597c9a60ce71b73a731b6bdad3c72574d34148f559dcfb`で全9ブラウザースイート・1,702チェックを確認した。一括実行`2026-09-21T01-48-01-518Z-offline-5adb9743`はentry 12・player 55・UI 97・settings 1,321・migration 12・addons 9まで成功後、検証用の生fetchが旧本文・ヘッダーのままでfunctionalityを停止した。検証契約を修正し、`2026-09-21T01-54-23-997Z-offline-f30ec273`のfunctionality 90、`2026-09-21T01-55-13-502Z-offline-f26ac8bd`のlibrary 99、`2026-09-21T01-56-08-717Z-offline-d04868d9`のguard 7が成功した。外部ホストからの直接XHR・映像・コメント描画、投稿、再取得、過去ログ、削除、ニコるを含む。実サイトは単発制約により再試行していない。
+
 ## 2026-09-21：外部サイトの起動導線とコメント取得（0.0.12）
 
 - 同一動画IDに対する起動アイコンを1個に限定し、非表示リンクより表示中のタイトル等を優先するよう修正した。単体15件と、entryスイート12項目で同IDのサムネイル・タイトル・隠れたリンク、SPA差替え、Nアニメ相当の外部ホストからの実クリック・HLS・コメント取得を確認した。

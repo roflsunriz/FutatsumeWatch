@@ -10,6 +10,7 @@
 
 - ニコ百の記事内起動は親ページの`/v/<ID>`ではなく、`ext.nicovideo.jp/thumb/<ID>`の埋め込みサムネイルにある`blog.ts`のボタンを正本とする。子フレームからの`postMessage`は`document.referrer`全文をtargetOriginへ渡さず、検証したニコニコ配下の親originへ正規化する。動画IDはpathnameから取り、クエリを混ぜない。回帰は`blog-entry.test.ts`とaddonsスイート。
 - `watch-entry.ts`は同一文書内で動画IDごとに起動ボタンを1個だけ持つ。タイトル等のテキストリンクを優先しつつ、非表示・覆われた候補より表示中の候補を選ぶ。Nアニメ等の本体を初期化する外部ホストにも適用し、外部ホストからの映像・コメントはentryスイートの固定ページで確認する。
+- nv-commentの取得・投稿・削除・ニコるは`https://*.nvcomment.nicovideo.jp`の資格情報なしXMLHttpRequestを直接使い、外部ページでもiframeブリッジへ通さない。他ホストは既存ブリッジを維持する。通常取得はfilter-matomeの`{params,threadKey}`・`application/json`・frontend/client OSヘッダーに合わせ、過去ログ時だけ`additionals.when`を追加する。取得失敗を別threadKeyで自動再送しない。回帰は`net-util.test.ts`・`thread-post.test.ts`・entryスイート。
 - 2026-09-21の単発実測ではニコ百は対象を`/v/sm9`の主ページボタンと誤認し操作前に終了、Nアニメは隠れた同IDリンクのボタンが覆われ操作前に終了した。同じ対象を無断再試行しない。`www.nicovideo.jp/watch/sm9`は1操作でHLSとコメント描画まで成功し、一般的なコメント取得失敗は再現していない。詳細は`docs/live-once-verification.md`。
 
 ## オフライン検証の終了と設定効果（2026-09-20）

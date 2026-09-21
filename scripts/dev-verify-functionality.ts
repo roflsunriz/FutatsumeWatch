@@ -246,7 +246,7 @@ try {
   );
   const received = await evaluateAsync(
     page,
-    `fetch('https://public.nvcomment.nicovideo.jp/v1/threads',{method:'POST',body:JSON.stringify({threadKey:'fixture-thread-key',params:{targets:[{id:'1173108780',fork:'main'}],language:'ja-jp'},additionals:{}})}).then(r=>r.json()).then(r=>r.data.threads.flatMap(t=>t.comments).filter(c=>c.id===${JSON.stringify(accepted.id)}&&c.no===${accepted.no}&&c.body==='一度だけの実経路投稿').length)`
+    `fetch('https://public.nvcomment.nicovideo.jp/v1/threads',{method:'POST',headers:{'Content-Type':'application/json','X-Client-Os-Type':'others','X-Frontend-Id':'6','X-Frontend-Version':'0'},body:JSON.stringify({threadKey:'fixture-thread-key',params:{targets:[{id:'1173108780',fork:'main'}],language:'ja-jp'}})}).then(r=>r.json()).then(r=>r.data.threads.flatMap(t=>t.comments).filter(c=>c.id===${JSON.stringify(accepted.id)}&&c.no===${accepted.no}&&c.body==='一度だけの実経路投稿').length)`
   );
   if (received !== 1) throw new Error('P4-09 投稿の再取得結果が不一致');
   cases.push({ id: 'P4-09', label: '通信境界から再取得して1件を確認' });

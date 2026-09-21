@@ -9,15 +9,32 @@ import type { CdpSession } from '../../scripts/dev-cdp';
 
 const postUrl = 'https://public.nvcomment.nicovideo.jp/v1/threads/1173108780/comments?pc=1';
 const packet = () => ({ postKey: 'fixture-post-key', videoId: 'sm9', body: '本文', commands: ['184'], vposMs: 1200 });
-const request = (url: string, body?: object): FixtureRequest => ({
-  url,
-  method: body ? 'POST' : 'GET',
-  postData: body ? JSON.stringify(body) : undefined,
-});
-const loadPacket = () => ({
+const request = (url: string, body?: object): FixtureRequest => {
+  const parsed = new URL(url);
+  const commentLoad = parsed.origin === 'https://public.nvcomment.nicovideo.jp' && parsed.pathname === '/v1/threads';
+  return {
+    url,
+    method: body ? 'POST' : 'GET',
+    postData: body ? JSON.stringify(body) : undefined,
+    ...(commentLoad
+      ? {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Client-Os-Type': 'others',
+            'X-Frontend-Id': '6',
+            'X-Frontend-Version': '0',
+          },
+        }
+      : {}),
+  };
+};
+const loadPacket = (): {
+  threadKey: string;
+  params: { targets: Array<{ id: string; fork: string }>; language: string };
+  additionals?: Record<string, unknown>;
+} => ({
   threadKey: 'fixture-thread-key',
   params: { targets: [{ id: '1173108780', fork: 'main' }], language: 'ja-jp' },
-  additionals: {},
 });
 const parse = (
   response: FixtureReply | null

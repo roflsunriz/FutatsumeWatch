@@ -53,6 +53,8 @@ function bodyOf(request: FixtureRequest): Record<string, unknown> | null {
     return null;
   }
 }
+const header = (request: FixtureRequest, name: string): string =>
+  Object.entries(request.headers ?? {}).find(([key]) => key.toLowerCase() === name.toLowerCase())?.[1] ?? '';
 const keys = (body: Record<string, unknown>, names: readonly string[]) =>
   Object.keys(body).length === names.length && names.every((name) => Object.hasOwn(body, name));
 function query(url: URL, expected: Record<string, string> = {}): boolean {
@@ -360,16 +362,21 @@ export function createOfflineSite() {
         query(url)
       ) {
         const data = bodyOf(request);
+        const additionalsValue = data?.additionals;
         if (
           !data ||
-          !keys(data, ['threadKey', 'params', 'additionals']) ||
+          (!keys(data, ['threadKey', 'params']) && !keys(data, ['threadKey', 'params', 'additionals'])) ||
           !record(data.params) ||
           !keys(data.params, ['targets', 'language']) ||
-          !record(data.additionals)
+          (additionalsValue !== undefined && !record(additionalsValue)) ||
+          header(request, 'content-type') !== 'application/json' ||
+          header(request, 'x-client-os-type') !== 'others' ||
+          header(request, 'x-frontend-id') !== '6' ||
+          header(request, 'x-frontend-version') !== '0'
         )
           return null;
         const params = data.params,
-          additionals = data.additionals;
+          additionals: Record<string, unknown> = record(additionalsValue) ? additionalsValue : {};
         if (
           !Array.isArray(params.targets) ||
           params.targets.length < 1 ||

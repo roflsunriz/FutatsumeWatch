@@ -4,6 +4,17 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+## [0.0.13] - 2026-09-21
+
+### Changed
+
+- 外部ホストでもコメントを取得できるよう、nv-comment通信をiframeブリッジから信頼済みHTTPSホストへの直接XMLHttpRequestへ変更した。通常取得はfilter-matomeと同じ`params`・`threadKey`、JSON Content-Type、frontend／client OSヘッダーを使い、過去ログ時だけ公式通信の`additionals.when`を追加する。
+
+### Fixed
+
+- コメント取得失敗後に3秒待って別threadKeyで自動再送していた処理を廃止し、1回の要求結果をそのまま表示へ返すようにした。
+- `globalComments`がない有効なnv-comment応答も、全threadの件数から合計を算出して処理できるようにした。
+
 ## [0.0.12] - 2026-09-21
 
 ### Added

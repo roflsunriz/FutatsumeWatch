@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/only-throw-error --
   Nico APIラッパーの既存契約としてプレーンオブジェクトでthrowする（呼び出し側がresult/status/errorCodeで分岐する）。
   Error化すると呼び出し側の分岐が壊れるため、ランタイム同一を優先して維持する。 */
-import { PopupMessage } from '../ui/popup-message';
-import { sleep } from '../infra/sleep';
 import { netUtil } from '../infra/net-util';
 
 interface NetFetchInit {
@@ -19,15 +17,6 @@ interface NetFetchInit {
 interface NetUtilLike {
   fetch: (url: string | URL, init?: NetFetchInit) => Promise<Response>;
   jsonp: (url: string) => Promise<unknown>;
-}
-
-interface PopupLike {
-  alert: (message: string) => unknown;
-}
-
-interface ThreadKeyData {
-  threadKey: string;
-  [key: string]: unknown;
 }
 
 interface PostKeyData {
@@ -107,15 +96,16 @@ async function readEnvelope(response: Response, acceptance: Acceptance): Promise
 }
 
 interface ThreadLoadData {
-  globalComments: Array<{ count: number }>;
+  globalComments?: Array<{ count: number }>;
   threads: Array<{ id: string; fork: string; commentCount: number; info?: unknown }>;
   [key: string]: unknown;
 }
 
 function isThreadLoadData(data: Record<string, unknown>): data is ThreadLoadData {
   return (
-    Array.isArray(data.globalComments) &&
-    data.globalComments.every((entry: unknown) => isRecord(entry) && typeof entry.count === 'number') &&
+    (data.globalComments === undefined ||
+      (Array.isArray(data.globalComments) &&
+        data.globalComments.every((entry: unknown) => isRecord(entry) && typeof entry.count === 'number'))) &&
     Array.isArray(data.threads) &&
     data.threads.every(
       (entry: unknown) =>
@@ -161,7 +151,6 @@ interface ThreadInfoData {
 }
 
 interface ThreadLoadOptions {
-  retrying?: boolean;
   language?: string;
   fork?: string;
   [key: string]: unknown;
@@ -191,33 +180,6 @@ const { ThreadLoader } = (() => {
   };
 
   class ThreadLoader {
-    _threadKeys: Record<string, string>;
-
-    constructor() {
-      this._threadKeys = {};
-    }
-
-    async getThreadKey(videoId: string): Promise<ThreadKeyData> {
-      const url = `https://nvapi.nicovideo.jp/v1/comment/keys/thread?videoId=${videoId}`;
-
-      console.log('getThreadKey url: ', url);
-      try {
-        const response = await (netUtil as unknown as NetUtilLike).fetch(url, {
-          headers: {
-            'X-Frontend-Id': FRONT_ID,
-            'X-Frontend-Version': FRONT_VER,
-          },
-          credentials: 'include',
-        });
-        const data = await readEnvelope(response, 'not-sent');
-        if (typeof data.threadKey !== 'string' || !data.threadKey) throw new Error('ThreadKeyの応答形式が不正です');
-        this._threadKeys[videoId] = data.threadKey;
-        return { threadKey: data.threadKey };
-      } catch (result) {
-        throw { result, message: `ThreadKeyの取得失敗 ${videoId}` };
-      }
-    }
-
     async getPostKey(threadId: string): Promise<PostKeyData> {
       const url = new URL('https://nvapi.nicovideo.jp/v1/comment/keys/post');
       url.searchParams.set('threadId', threadId);
@@ -302,26 +264,21 @@ const { ThreadLoader } = (() => {
       }
     }
 
-    async _load(msgInfo: ThreadMsgInfo, options: ThreadLoadOptions = {}): Promise<ThreadLoadData> {
+    async _load(msgInfo: ThreadMsgInfo): Promise<ThreadLoadData> {
       const { params, server, threadKey } = msgInfo.nvComment;
 
-      const packet: { additionals: Record<string, unknown>; params: NvCommentParams; threadKey?: string } = {
-        additionals: {},
+      const packet: { additionals?: { when: number }; params: NvCommentParams; threadKey?: string } = {
         params: { ...params },
         threadKey,
       };
-
-      if (options.retrying) {
-        const info = await this.getThreadKey(msgInfo.videoId);
-        packet.threadKey = info.threadKey;
-      }
 
       if (msgInfo.language !== params.language) {
         packet.params.language = msgInfo.language;
       }
 
-      if ((msgInfo.when || 0) > 0) {
-        packet.additionals.when = msgInfo.when;
+      const when = msgInfo.when;
+      if (typeof when === 'number' && when > 0) {
+        packet.additionals = { when };
       }
 
       const url = new URL('/v1/threads', server);
@@ -329,10 +286,12 @@ const { ThreadLoader } = (() => {
       try {
         const response = await (netUtil as unknown as NetUtilLike).fetch(url, {
           method: 'POST',
+          credentials: 'same-origin',
           headers: {
+            'X-Client-Os-Type': 'others',
             'X-Frontend-Id': FRONT_ID,
             'X-Frontend-Version': FRONT_VER,
-            'Content-Type': 'text/plain; charset=UTF-8',
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(packet),
         });
@@ -347,10 +306,7 @@ const { ThreadLoader } = (() => {
       }
     }
 
-    async load(
-      msgInfo: ThreadMsgInfo,
-      options: ThreadLoadOptions = {}
-    ): Promise<{ threadInfo: ThreadInfoData; body: ThreadLoadData; format: string }> {
+    async load(msgInfo: ThreadMsgInfo): Promise<{ threadInfo: ThreadInfoData; body: ThreadLoadData; format: string }> {
       const { videoId, userId } = msgInfo;
 
       const timeKey = `loadComment videoId: ${videoId}`;
@@ -358,29 +314,20 @@ const { ThreadLoader } = (() => {
 
       let result: ThreadLoadData;
       try {
-        result = await this._load(msgInfo, options);
-      } catch (e) {
+        result = await this._load(msgInfo);
+      } catch (error) {
         console.timeEnd(timeKey);
-        window.console.error('loadComment fail 1st: ', e);
-        (PopupMessage as unknown as PopupLike).alert('コメントの取得失敗: 3秒後にリトライ');
-
-        await sleep(3000);
-        try {
-          console.time(timeKey);
-          result = await this._load(msgInfo, { ...options, retrying: true });
-        } catch (e) {
-          console.timeEnd(timeKey);
-          window.console.error('loadComment fail finally: ', e);
-          throw {
-            message: 'コメントサーバーの通信失敗',
-          };
-        }
+        window.console.error('loadComment fail: ', error);
+        throw { message: 'コメントサーバーの通信失敗' };
       }
 
       console.timeEnd(timeKey);
       debug.lastMessageServerResult = result;
 
-      let totalResCount: number = result.globalComments.reduce((count, current) => count + current.count, 0);
+      let totalResCount: number = (result.globalComments ?? result.threads).reduce(
+        (count, current) => count + ('count' in current ? current.count : current.commentCount),
+        0
+      );
       for (const thread of result.threads) {
         const fork = thread.fork;
         thread.info = msgInfo.threads!.find(({ id, forkLabel }) => `${id}` === thread.id && forkLabel === fork);
