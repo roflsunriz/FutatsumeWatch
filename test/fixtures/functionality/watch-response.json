@@ -248,7 +248,16 @@
         },
         "layerMode": 0
       },
-      "series": null,
+      "series": {
+        "id": "575910",
+        "title": "機能テストシリーズ",
+        "thumbnailUrl": "https://fixture.invalid/poster.svg",
+        "video": {
+          "first": { "id": "sm9", "title": "機能テスト映像 1" },
+          "prev": null,
+          "next": { "id": "sm2057168", "title": "機能テスト映像 2" }
+        }
+      },
       "tag": {
         "items": [
           {

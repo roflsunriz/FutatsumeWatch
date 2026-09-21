@@ -47,6 +47,43 @@ test('P3-01 投稿者一覧APIは総数に達するまで全ページを取得�
   expect(await PlaylistApiLoader.load(request)).toEqual(entries);
   expect(pages).toEqual(['1', '2']);
 });
+test('P3-12 現行シリーズv2のvideo項目を全件プレイリストへ変換する', async () => {
+  const seriesItems = entries.map((entry) => ({ video: entry.content }));
+  const urls: string[] = [];
+  netUtil.fetch = (raw, init) => {
+    const url = new URL(raw);
+    urls.push(url.href);
+    expect(url.pathname).toBe('/v2/series/575910');
+    expect([...url.searchParams]).toEqual([
+      ['pageSize', '100'],
+      ['page', '1'],
+    ]);
+    const headers = new Headers(init?.headers);
+    expect(headers.get('X-Frontend-Id')).toBe('6');
+    expect(headers.get('X-Frontend-Version')).toBe('0');
+    expect(headers.get('X-Niconico-Language')).toBe('ja-jp');
+    return Promise.resolve(
+      Response.json({ meta: { status: 200 }, data: { totalCount: seriesItems.length, items: seriesItems } })
+    );
+  };
+  const request = { type: 'series', id: '575910' };
+  const normalized = (await PlaylistApiLoader.load(request)) as typeof entries;
+  expect(normalized.map((entry) => entry.content.id)).toEqual(['sm1', 'sm2', 'sm3']);
+  const list = new PlayList({});
+  list.model.setItem(VideoListItem.createBlankInfo('sm2'));
+  list.setIndex(0, true);
+  const initializeView = spyOn(list, '_initializeView').mockImplementation(() => {});
+  list.view = { scrollToItem: () => {} } as typeof list.view;
+  try {
+    await list.load(request, { watchId: 'sm2' }, {});
+    expect(list.model.items.map((entry) => entry.watchId)).toEqual(['sm1', 'sm2', 'sm3']);
+    expect(list.model.activeIndex).toBe(1);
+    expect(urls).toHaveLength(1);
+  } finally {
+    initializeView.mockRestore();
+    list.clear();
+  }
+});
 test('P3-01 2ページ目失敗では取得済みを全件扱いせず既存プレイリストを保持する', async () => {
   let fail = true;
   const pages: string[] = [];

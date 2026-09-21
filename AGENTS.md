@@ -184,6 +184,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - ブラウザ検証は`dev-verify-comment-input.ts`を`test:browser ui`から呼ぶ。専用タブのaddChat境界だけを一時的に置換し、送信成功・失敗を制御する。公開APIへの投稿成功や認証検証とは区別する。IME・重複・文字数境界・投稿不可状態は`test/unit/comment-input-panel.test.ts`で確認する。
 - フォーム内のfocusoutはrelatedTargetで判定する。実Chromeではblur/focusout後のmicrotask時点でもactiveElementがbodyのことがあり、microtaskだけで外へ移動したと判断するとパレットの次ボタンをクリックする前に閉じる。移動先不明時はsetTimeout後に判定する。
 
+## シリーズ全体のプレイリスト追加（2026-09-21、0.0.14）
+
+- シリーズ一覧は`https://nvapi.nicovideo.jp/v2/series/{id}`を`pageSize`・`page`付きで取得する。応答の`data.items[].video`を既存プレイリストの`content`形式へ正規化し、サムネイルURLの候補も統一する。旧`/v1/playlist/series/{id}`と直下項目を前提に戻さない。
+- シリーズの再生アイコンを実クリックし、全動画の順序、再生中動画の選択位置、要求が1回だけであることを`dev-verify-library.ts`で確認する。途中失敗時に既存プレイリストを置換しない共通規則は維持する。
+
 ## 実認証と単発採取（2026-09-21、未リリース）
 
 - 実視聴ページで初期化時にCommonHeader・server-responseがない例を確認した。ログイン判定をDOMだけで固定しない。`nicoUtil`は現在の要求IDに対応するAPI viewerを優先し、VideoInfoModelの`watchApiData.viewerInfo`から表示へ接続する。guestクラスはplayerContainerではなく外側のdialogにある。切替・closeで状態を破棄する。`verify-authentication.ts`のヘッダー不在シーンで実配布物を確認する。

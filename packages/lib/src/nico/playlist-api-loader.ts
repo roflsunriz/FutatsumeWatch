@@ -93,7 +93,11 @@ const PlaylistApiLoader = (() => {
       for (let page = 1; ; page++) {
         endpoint.searchParams.set('page', String(page));
         const response = await (netUtil as unknown as NetUtilLike).fetch(endpoint.toString(), {
-          headers: { 'X-Frontend-Id': frontendId, 'X-Frontend-Version': frontendVersion },
+          headers: {
+            'X-Frontend-Id': frontendId,
+            'X-Frontend-Version': frontendVersion,
+            'X-Niconico-Language': 'ja-jp',
+          },
           credentials: 'include',
         });
         if (!response.ok)
@@ -125,16 +129,24 @@ const PlaylistApiLoader = (() => {
           throw new Error('投稿動画の総件数を確認できません。一覧は変更していません。');
         for (const entry of raw.data.items as unknown[]) {
           if (!record(entry)) throw new Error('プレイリストの動画情報が不正です。');
+          const video = record(entry.video) ? entry.video : null;
+          const thumbnail = video && record(video.thumbnail) ? video.thumbnail : {};
+          const thumbnailUrl = ['url', 'listingUrl', 'largeUrl', 'nHdUrl']
+            .map((key) => thumbnail[key])
+            .find((value): value is string => typeof value === 'string' && value.length > 0);
+          const normalizedEntry = video
+            ? { ...entry, content: { ...video, thumbnail: { ...thumbnail, url: thumbnailUrl ?? '' } } }
+            : entry;
           const id =
-            typeof entry.watchId === 'string'
-              ? entry.watchId
-              : record(entry.content) && typeof entry.content.id === 'string'
-                ? entry.content.id
+            typeof normalizedEntry.watchId === 'string'
+              ? normalizedEntry.watchId
+              : record(normalizedEntry.content) && typeof normalizedEntry.content.id === 'string'
+                ? normalizedEntry.content.id
                 : null;
           if (!id || ids.has(id))
             throw new Error('プレイリストの動画情報が不正または重複しています。再取得してください。');
           ids.add(id);
-          items.push(entry);
+          items.push(normalizedEntry);
         }
         if (total !== undefined && items.length > total)
           throw new Error('プレイリストの総件数と動画数が一致しません。');
@@ -147,11 +159,12 @@ const PlaylistApiLoader = (() => {
     }
 
     // 動画シリーズ
-    // https://nvapi.nicovideo.jp/v1/playlist/series/${seriesId}?sortOrder=${sortOrder}&sortKey=${sortKey}
+    // 現行シリーズAPIはitems[].videoを返す。
+    // https://nvapi.nicovideo.jp/v2/series/${seriesId}?pageSize=${pageSize}&page=${page}
     _buildSeriesURL(seriesId: string): PlaylistUrlPair {
       return {
-        url: `https://nvapi.nicovideo.jp/v1/playlist/series/${seriesId}`,
-        cacheKey: `playlist; series: ${seriesId}`,
+        url: `https://nvapi.nicovideo.jp/v2/series/${seriesId}`,
+        cacheKey: `playlist; series-v2: ${seriesId}`,
       };
     }
 

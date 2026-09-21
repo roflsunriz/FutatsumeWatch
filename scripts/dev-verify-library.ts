@@ -139,6 +139,28 @@ async function main() {
       )
     );
     checks.push('P3-02-profile-click プロフィール画像の実クリックで正しいURLの新規タブを開く');
+    await check(
+      session,
+      `!!${find('futatsume-video-series-label')}?.shadowRoot?.querySelector('[data-command="playlistSetSeries"]')`,
+      'P3-12 シリーズ全体追加の実操作入口を表示'
+    );
+    await deepClick(session, '.playButton');
+    await check(
+      session,
+      `(()=>{const p=${state}.playlist,m=p.model;return JSON.stringify(m.items.map(i=>i.watchId))===JSON.stringify(['sm9','sm2057168','sm100'])&&m.activeIndex===0&&p.isEnable===false})()`,
+      'P3-12 シリーズv2の全動画を順序どおりプレイリストへ追加'
+    );
+    const seriesRequests = requests.filter((request) => {
+      const url = new URL(request.url);
+      return request.method === 'GET' && url.pathname === '/v2/series/575910';
+    });
+    if (
+      seriesRequests.length !== 1 ||
+      new URL(seriesRequests[0]!.url).searchParams.toString() !== 'pageSize=100&page=1'
+    )
+      throw Error('シリーズv2の取得要求が一致しません');
+    checks.push('P3-12 シリーズv2を1回だけ取得');
+    await clickVisible(session, '[data-shell-tab="videoInfoTab"]');
     const tagRoot = `document.querySelector('.fw-tags')`;
     await check(
       session,

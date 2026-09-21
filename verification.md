@@ -1,5 +1,12 @@
 # 検証記録
 
+## 2026-09-21：シリーズ全体のプレイリスト追加（0.0.14）
+
+- シリーズ追加が旧`/v1/playlist/series/{id}`と直下の動画項目を前提にしていたため、現行`/v2/series/{id}`の`data.items[].video`を既存プレイリスト形式へ正規化するよう修正した。100件単位で総数まで取得し、全件の順序と再生中動画の選択位置を維持する。
+- 単体テストでURL・ページ指定・frontend／languageヘッダー、3件の変換、選択位置、1回だけの取得を確認した。配布物を注入するlibraryブラウザースイートでは、動画情報のシリーズ再生アイコンを実クリックし、3動画の追加順、選択位置、実要求を確認した。
+- 公開APIへの追加実測は、実サイト単発検証の再試行制約に従って行っていない。固定応答は現行APIのラッパー構造に合わせ、未登録通信を拒否するオフライン環境で検証した。
+- 型検査、lint警告0、整形、0.0.14配布物ビルド、全単体427件（2,901アサーション）、依存監査が成功した。`bun run test:browser all --offline`は全9スイート・1,705チェック成功。library 102件を含み、証跡は`dev-assets/verification/2026-09-21T02-24-56-619Z-offline-cbb5648c/run.json`、配布物SHA-256は`26cd004c7fab0919c4b4f776ed5bdc59c566a736d114c082178c9dea225e1c5f`。
+
 ## 2026-09-21：nv-commentの直接XHR化（0.0.13）
 
 - `filter-matome/local/features/src/api-info/nv-comment-api*.md`と現行`common.ts`を正本として照合し、通常取得を`POST {server}/v1/threads`、`{params,threadKey}`、`Content-Type: application/json`、`X-Client-Os-Type: others`、`X-Frontend-Id: 6`、`X-Frontend-Version: 0`へ統一した。過去ログ時だけ公式通信にある`additionals.when`を追加する。

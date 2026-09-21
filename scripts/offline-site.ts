@@ -212,7 +212,8 @@ export function createOfflineSite() {
                 query(url, { threadId: requestedThread })) ||
               (path === '/v1/comment/keys/delete' &&
                 videoForThread(requestedThread) &&
-                query(url, { threadId: requestedThread, fork: 'main' })))) ||
+                query(url, { threadId: requestedThread, fork: 'main' })) ||
+              (path === '/v2/series/575910' && query(url, { pageSize: '100', page: '1' })))) ||
           (url.origin === 'https://public.nvcomment.nicovideo.jp' &&
             ((path === '/v1/threads' && query(url)) ||
               (postPath && query(url, { pc: '1' })) ||
@@ -257,6 +258,20 @@ export function createOfflineSite() {
         query(url, { videoId: requestedVideo })
       )
         return json({ meta: { status: 200 }, data: { threadKey: key('thread', requestedVideo) } });
+      if (
+        method === 'GET' &&
+        url.origin === 'https://nvapi.nicovideo.jp' &&
+        path === '/v2/series/575910' &&
+        query(url, { pageSize: '100', page: '1' })
+      )
+        return json({
+          meta: { status: 200 },
+          data: {
+            detail: { id: 575910, title: '機能テストシリーズ' },
+            totalCount: ids.length,
+            items: ids.map((id) => ({ video: watch(id).data.response.video })),
+          },
+        });
       if (
         method === 'GET' &&
         url.origin === 'https://live.nicovideo.jp' &&
