@@ -6,7 +6,6 @@ import { cssUtil } from '../packages/lib/src/css/css';
 import { Config } from './config';
 import type { ConfigStore } from './config';
 import { FutatsumeWatch } from './futatsume-watch-index';
-import { formatNgRegexpInput, parseNgRegexpInput } from './ng-regexp-input';
 
 interface SettingScriptLodash {
   debounce<T extends (...args: never[]) => unknown>(func: T, wait: number): T;
@@ -203,12 +202,10 @@ interface SettingScriptCssUtil {
         $input.forEach((input) => {
           const { settingName } = input.dataset;
           input.value =
-            settingName === 'wordRegFilter'
-              ? formatNgRegexpInput(String(config.props.wordRegFilter), String(config.props.wordRegFilterFlags))
-              : typeof config.props[settingName as string] === 'string' ||
-                  typeof config.props[settingName as string] === 'number'
-                ? String(config.props[settingName as string])
-                : '';
+            typeof config.props[settingName as string] === 'string' ||
+            typeof config.props[settingName as string] === 'number'
+              ? String(config.props[settingName as string])
+              : '';
         });
         $input.on('change', onInputItemChange);
 
@@ -223,17 +220,6 @@ interface SettingScriptCssUtil {
         switch (key) {
           case 'debug':
             this._$panel.toggleClass('debug', value as boolean);
-            break;
-          case 'wordRegFilter':
-          case 'wordRegFilterFlags':
-            this._$panel
-              .find('.wordRegFilterInput')
-              .val(
-                formatNgRegexpInput(
-                  String(this._playerConfig.props.wordRegFilter),
-                  String(this._playerConfig.props.wordRegFilterFlags)
-                )
-              );
             break;
           case 'enableFullScreenOnDoubleClick':
           case 'autoCloseFullScreen':
@@ -269,26 +255,7 @@ interface SettingScriptCssUtil {
 
         window.setTimeout(() => $target.removeClass('update error'), 300);
 
-        switch (settingName) {
-          case 'wordRegFilter':
-            try {
-              const parsed = parseNgRegexpInput(val);
-              this._playerConfig.props.wordRegFilter = parsed.pattern;
-              this._playerConfig.props.wordRegFilterFlags = parsed.flags;
-              $target.addClass('update');
-            } catch {
-              $target.addClass('error');
-              return;
-            }
-            target.value = formatNgRegexpInput(
-              String(this._playerConfig.props.wordRegFilter),
-              String(this._playerConfig.props.wordRegFilterFlags)
-            );
-            return;
-          default:
-            $target.addClass('update');
-            break;
-        }
+        $target.addClass('update');
 
         this._playerConfig.props[settingName as string] = val;
         const saved = this._playerConfig.props[settingName as string];
@@ -602,12 +569,6 @@ interface SettingScriptCssUtil {
               </select>
             </label>
           </div>
-
-
-          <p class="caption sub">NG正規表現</p>
-          <span class="example">入力例: <code>/([wWｗＷ]+$|^ん[？?]$|洗った？$)/i</code> 文法エラーがある時は更新されません</span>
-          <input type="text" class="textInput wordRegFilterInput"
-            data-setting-name="wordRegFilter" data-ng-regexp-input>
 
           <div class="debugControl control toggle">
             <label>

@@ -35,9 +35,7 @@ export interface ConfigProps {
   videoInfoPanelTab: string;
   fullscreenControlBarMode: string;
   enableFilter: boolean;
-  wordFilter: string;
-  wordRegFilter: string;
-  wordRegFilterFlags: string;
+  wordRegFilter: string[];
   userIdFilter: string;
   commandFilter: string;
   removeNgMatchedUser: boolean;
@@ -216,9 +214,7 @@ const Config = (() => {
     // forceEconomy: false,
     // NG設定
     enableFilter: true,
-    wordFilter: '',
-    wordRegFilter: '',
-    wordRegFilterFlags: 'i',
+    wordRegFilter: [],
     userIdFilter: '',
     commandFilter: '',
     removeNgMatchedUser: false, // NGにマッチしたユーザーのコメント全部消す

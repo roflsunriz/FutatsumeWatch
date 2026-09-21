@@ -7,14 +7,12 @@ const defaults = {
   volume: 0.3,
   baseChatScale: 1,
   autoPlay: true,
-  wordFilter: '',
   commandFilter: '',
   userIdFilter: '',
   sharedNgLevel: 'MID',
   'commentLayer.textShadowType': '',
   'commentLayer.easyCommentOpacity': 0.5,
-  wordRegFilter: '',
-  wordRegFilterFlags: 'i',
+  wordRegFilter: [],
   autoFutatsumeTube: false,
 };
 describe('設定ファイルの型と範囲', () => {
@@ -27,13 +25,13 @@ describe('設定ファイルの型と範囲', () => {
       { baseChatScale: 2.1 },
       { baseChatScale: 0.55 },
       { autoPlay: 'false' },
-      { wordFilter: [3] },
+      { wordRegFilter: [3] },
       { commandFilter: {} },
       { sharedNgLevel: 'invalid' },
       { 'commentLayer.textShadowType': 'invalid' },
       { 'commentLayer.easyCommentOpacity': 0 },
-      { wordRegFilter: '[' },
-      { wordRegFilterFlags: 'ii' },
+      { wordRegFilter: ['/[/i'] },
+      { wordRegFilter: ['/ok/ii'] },
     ])
       expect(() => validateImportedConfig(invalid, defaults)).toThrow();
   });
@@ -42,6 +40,8 @@ describe('設定ファイルの型と範囲', () => {
       volume: '0.3',
       baseChatScale: '1.2',
       wordFilter: ['a', 'b'],
+      wordRegFilter: 'blocked',
+      wordRegFilterFlags: 'i',
       commandFilter: 'red',
       sharedNgLevel: 'NONE',
       'commentLayer.textShadowType': 'shadow-type3',
@@ -52,7 +52,7 @@ describe('設定ファイルの型と範囲', () => {
     expect(result).toEqual({
       volume: 0.3,
       baseChatScale: 1.2,
-      wordFilter: ['a', 'b'],
+      wordRegFilter: ['/a/i', '/b/i', '/blocked/i'],
       commandFilter: 'red',
       sharedNgLevel: 'NONE',
       'commentLayer.textShadowType': 'shadow-type3',
@@ -68,7 +68,7 @@ describe('設定ファイルの型と範囲', () => {
     for (const data of [
       { volume: 'oops', autoPlay: false },
       { baseChatScale: 0, volume: 0.8 },
-      { wordFilter: [1], volume: 0.7 },
+      { wordRegFilter: [1], volume: 0.7 },
       { sharedNgLevel: 'BROKEN' },
     ]) {
       expect(() => Config.importJson(JSON.stringify(data))).toThrow();

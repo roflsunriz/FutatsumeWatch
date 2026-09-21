@@ -1747,13 +1747,11 @@ class NicoVideoPlayerDialog extends Emitter {
         this.currentTime = this._videoInfo.initialPlaybackTime;
         break;
       case 'addWordFilter':
-        this._nicoVideoPlayer.filter.wordFilterList = this._playerConfig.props.wordFilter;
-        (this._nicoVideoPlayer.filter.addWordFilter as (word: unknown) => void)(param);
-        this._playerConfig.setValue('wordFilter', this._nicoVideoPlayer.filter.wordFilterList);
-        break;
-      case 'setWordRegFilter':
-      case 'setWordRegFilterFlags':
-        this._playerConfig.setValue(command === 'setWordRegFilter' ? 'wordRegFilter' : 'wordRegFilterFlags', param);
+        this._nicoVideoPlayer.filter.wordRegFilterList = this._playerConfig.props.wordRegFilter;
+        (this._nicoVideoPlayer.filter.addWordRegFilter as (word: string) => void)(
+          typeof param === 'string' ? param : ''
+        );
+        this._playerConfig.setValue('wordRegFilter', this._nicoVideoPlayer.filter.wordRegFilterList);
         break;
       case 'addUserIdFilter':
         this._nicoVideoPlayer.filter.userIdFilterList = this._playerConfig.props.userIdFilter;
@@ -1764,9 +1762,6 @@ class NicoVideoPlayerDialog extends Emitter {
         this._nicoVideoPlayer.filter.commandFilterList = this._playerConfig.props.commandFilter;
         (this._nicoVideoPlayer.filter.addCommandFilter as (command: unknown) => void)(param);
         this._playerConfig.setValue('commandFilter', this._nicoVideoPlayer.filter.commandFilterList);
-        break;
-      case 'setWordFilterList':
-        this._playerConfig.setValue('wordFilter', param);
         break;
       case 'setUserIdFilterList':
         this._playerConfig.setValue('userIdFilter', param);
@@ -1958,9 +1953,6 @@ class NicoVideoPlayerDialog extends Emitter {
       case 'enableFilter':
         filter.isEnable = value;
         break;
-      case 'wordFilter':
-        filter.wordFilterList = value;
-        break;
       case 'userIdFilter':
         filter.userIdFilterList = value;
         break;
@@ -1968,11 +1960,7 @@ class NicoVideoPlayerDialog extends Emitter {
         filter.commandFilterList = value;
         break;
       case 'wordRegFilter':
-      case 'wordRegFilterFlags':
-        (filter.setWordRegFilter as (source: string, flags: string) => void)(
-          String(this._playerConfig.props.wordRegFilter || ''),
-          String(this._playerConfig.props.wordRegFilterFlags || '')
-        );
+        (filter.setWordRegFilter as (source: string[]) => void)(this._playerConfig.props.wordRegFilter);
         break;
       case 'filter.fork0':
       case 'filter.fork1':
@@ -2263,7 +2251,7 @@ class NicoVideoPlayerDialog extends Emitter {
   }
   _onCommentFilterChange(filter: {
     isEnable: unknown;
-    wordFilterList: unknown;
+    wordRegFilterList: unknown;
     userIdFilterList: unknown;
     commandFilterList: unknown;
   }): void {

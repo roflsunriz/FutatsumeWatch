@@ -1,5 +1,6 @@
 import { DialogElement } from './dialog-element.js';
 import { domEvent } from '../../../lib/src/dom/dom-event';
+import { normalizeNgRegexpInputLines } from '../../../../src/ng-regexp-input';
 // import {textUtil} from '../../../lib/src/text/text-util';
 // import {cssUtil} from '../../../lib/src/css/css';
 import type { TemplateResult } from 'lit/html.js';
@@ -39,7 +40,7 @@ interface SettingConf {
   touch: SettingTouchConf;
   commentLayer: SettingCommentLayerConf;
   filter: SettingFilterConf;
-  wordFilter: unknown;
+  wordRegFilter: unknown;
   commandFilter: unknown;
   userIdFilter: unknown;
   [key: string]: unknown;
@@ -70,6 +71,7 @@ interface SettingControlElement {
   name: string;
   checkValidity(): boolean;
   reportValidity(): boolean;
+  setCustomValidity(message: string): void;
 }
 //===BEGIN===
 
@@ -347,7 +349,7 @@ const { SettingPanelElement } = (() => {
       `;
     }
     static getFilterSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {
-      const word = Array.isArray(conf.wordFilter) ? conf.wordFilter.join('\n') : conf.wordFilter;
+      const wordRegexp = Array.isArray(conf.wordRegFilter) ? conf.wordRegFilter.join('\n') : '';
       const command = Array.isArray(conf.commandFilter) ? conf.commandFilter.join('\n') : conf.commandFilter;
       const userId = Array.isArray(conf.userIdFilter) ? conf.userIdFilter.join('\n') : conf.userIdFilter;
       const videoTag = typeof conf.videoTagFilter === 'string' ? conf.videoTagFilter : '';
@@ -360,6 +362,11 @@ const { SettingPanelElement } = (() => {
             min-height: 100px;
             margin: 0 auto 0;
             color: currentcolor;
+          }
+          .filterRegexpEdit {
+            box-sizing: border-box;
+            display: block;
+            width: 100%;
           }
         </style>
         <section class="filter-setting" data-settings-section="filters">
@@ -549,9 +556,18 @@ const { SettingPanelElement } = (() => {
             </label>
           </div>
           <div class="control">
-            <h3>NGワード</h3>
+            <h3>NG正規表現</h3>
+            <p class="info">
+              1行に1つ、<code>/パターン/フラグ</code>の形式で入力します。例:
+              <code>/([wWｗＷ]+$|^ん[？?]$|洗った？$)/i</code>
+            </p>
             <label>
-              <textarea class="filterEdit" data-setting-name="wordFilter" data-type="array">${word}</textarea>
+              <textarea
+                class="filterEdit filterRegexpEdit"
+                data-setting-name="wordRegFilter"
+                data-ng-regexp-input
+                .value=${wordRegexp}
+              ></textarea>
             </label>
             <h3>NGコマンド</h3>
             <label>
@@ -721,6 +737,18 @@ const { SettingPanelElement } = (() => {
       const elm = ((path && path[0] ? path[0] : e.target) || {}) as SettingControlElement;
       const elmDataset: DOMStringMap | undefined = (elm as { dataset?: DOMStringMap }).dataset;
       if (elmDataset?.ngRegexpInput !== undefined) {
+        try {
+          const normalized = normalizeNgRegexpInputLines(elm.value);
+          elm.setCustomValidity('');
+          this.config.props.wordRegFilter = normalized;
+          const saved = this.config.props.wordRegFilter;
+          elm.value = Array.isArray(saved) ? saved.join('\n') : '';
+        } catch (error) {
+          elm.setCustomValidity(
+            error instanceof Error ? error.message : '正規表現は /パターン/フラグ の形式で入力してください'
+          );
+          elm.reportValidity();
+        }
         e.stopPropagation();
         return;
       }

@@ -52,7 +52,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'filters',
     panel: 'general',
     id: 'P2-09',
-    keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordFilter commandFilter userIdFilter videoTagFilter videoOwnerFilter'.split(
+    keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordRegFilter commandFilter userIdFilter videoTagFilter videoOwnerFilter'.split(
       ' '
     ),
   },
@@ -60,7 +60,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'advanced',
     panel: 'advanced',
     id: 'P2-10',
-    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command wordRegFilter debug'.split(
+    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command debug'.split(
       ' '
     ),
   },
@@ -197,7 +197,7 @@ function candidates(field: Field): (string | boolean)[] {
     return field.min && field.max
       ? [field.min, field.max].filter((v) => v !== field.value)
       : [String(Number(field.value) + 1)];
-  if (field.key === 'wordRegFilter') return ['/futatsume-settings-fixture/g'];
+  if (field.key === 'wordRegFilter') return ['/futatsume-settings-fixture/g\n/^second$/i'];
   if (field.key.includes('ShadowColor')) return ['#123456'];
   if (field.key === 'baseFontFamily') return ['monospace'];
   if (field.key === 'videoOwnerFilter' || field.key === 'userIdFilter') return ['99999999'];
@@ -205,7 +205,7 @@ function candidates(field: Field): (string | boolean)[] {
   return ['futatsume-settings-fixture'];
 }
 function expected(field: Field, value: string | boolean, panel: Panel): string {
-  if (field.key === 'wordRegFilter') return JSON.stringify(String(value).slice(1, String(value).lastIndexOf('/')));
+  if (field.key === 'wordRegFilter') return JSON.stringify(String(value).split('\n'));
   return JSON.stringify(
     panel === 'masked'
       ? value === 'true'
@@ -322,14 +322,14 @@ export async function verifySettingsFields(
           const preserved = await evaluate(
             session,
             field.key === 'wordRegFilter'
-              ? `({value:window.FutatsumeWatch.config.props.wordRegFilter,flags:window.FutatsumeWatch.config.props.wordRegFilterFlags,stored:localStorage.getItem(${JSON.stringify(storage)}),storedFlags:localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags')))})`
+              ? `({value:window.FutatsumeWatch.config.props.wordRegFilter,stored:localStorage.getItem(${JSON.stringify(storage)})})`
               : `({value:window.FutatsumeWatch.config.props[${JSON.stringify(field.key)}],stored:localStorage.getItem(${JSON.stringify(storage)})})`
           );
           await enter(session, panel, field, value);
           const current = await evaluate(
             session,
             field.key === 'wordRegFilter'
-              ? `({value:window.FutatsumeWatch.config.props.wordRegFilter,flags:window.FutatsumeWatch.config.props.wordRegFilterFlags,stored:localStorage.getItem(${JSON.stringify(storage)}),storedFlags:localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags')))})`
+              ? `({value:window.FutatsumeWatch.config.props.wordRegFilter,stored:localStorage.getItem(${JSON.stringify(storage)})})`
               : `({value:window.FutatsumeWatch.config.props[${JSON.stringify(field.key)}],stored:localStorage.getItem(${JSON.stringify(storage)})})`
           );
           if (JSON.stringify(current) !== JSON.stringify(preserved))
@@ -349,7 +349,7 @@ export async function verifySettingsFields(
           // resolves that contract; absence is never accepted for another panel.
           const persistence =
             field.key === 'wordRegFilter'
-              ? `window.FutatsumeWatch.config.props.wordRegFilter===${JSON.stringify(String(value).slice(1, String(value).lastIndexOf('/')))}&&window.FutatsumeWatch.config.props.wordRegFilterFlags===${JSON.stringify(String(value).slice(String(value).lastIndexOf('/') + 1))}&&JSON.parse(${stored})===window.FutatsumeWatch.config.props.wordRegFilter&&JSON.parse(localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags'))))===window.FutatsumeWatch.config.props.wordRegFilterFlags`
+              ? `JSON.stringify(window.FutatsumeWatch.config.props.wordRegFilter)===${JSON.stringify(JSON.stringify(String(value).split('\n')))}&&${stored}===JSON.stringify(window.FutatsumeWatch.config.props.wordRegFilter)`
               : panel === 'masked'
                 ? `JSON.stringify(window.MaskedWatch.config[${JSON.stringify(field.key)}])===${JSON.stringify(expectedJson)} && (${stored}===null || ${stored}===${JSON.stringify(expectedJson)})`
                 : `${stored}!==null && JSON.stringify(JSON.parse(${stored}))===${JSON.stringify(expectedJson)}`;
@@ -359,7 +359,7 @@ export async function verifySettingsFields(
             do {
               snapshot = await evaluate(
                 session,
-                `({value:window.FutatsumeWatch.config.props.wordRegFilter,flags:window.FutatsumeWatch.config.props.wordRegFilterFlags,stored:${stored},storedFlags:localStorage.getItem(window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey('wordRegFilterFlags')))})`
+                `({value:window.FutatsumeWatch.config.props.wordRegFilter,stored:${stored}})`
               );
               if (await evaluate(session, persistence)) break;
               await Bun.sleep(100);

@@ -2125,7 +2125,7 @@ class CommentPreviewChatItem {
          <span class="addFilter addUserIdFilter"
            data-command="addUserIdFilter" title="NGユーザー">NGuser</span>
          <span class="addFilter addWordFilter"
-           data-command="addWordFilter" title="NGワード">NGword</span>
+           data-command="addWordFilter" title="NG正規表現へ追加">NGword</span>
        </li>
       `.trim();
   }

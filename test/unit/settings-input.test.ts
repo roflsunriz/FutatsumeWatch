@@ -43,6 +43,26 @@ describe('一般設定の入力境界', () => {
     input.value = 'first\nsecond';
     expect(change(input, [])).toEqual(['first', 'second']);
   });
+  test('NG・フィルターの統合入力だけから正規表現とフラグを保存する', () => {
+    const input = document.createElement('textarea');
+    input.dataset.settingName = 'wordRegFilter';
+    input.dataset.ngRegexpInput = '';
+    const props: Record<string, unknown> = { wordRegFilter: ['/before/i'] };
+    const receiver = { config: { props } } as unknown as SettingPanelType;
+    const event = new window.Event('change', { bubbles: true });
+    Object.defineProperty(event, 'target', { value: input });
+
+    input.value = '/[/i';
+    SettingPanelElement.prototype.onChange.call(receiver, event);
+    expect(props).toEqual({ wordRegFilter: ['/before/i'] });
+    expect(input.validationMessage).not.toBe('');
+
+    input.value = '/foo\\/bar/gi\n/^second$/i';
+    SettingPanelElement.prototype.onChange.call(receiver, event);
+    expect(props).toEqual({ wordRegFilter: ['/foo\\/bar/gi', '/^second$/i'] });
+    expect(input.value).toBe('/foo\\/bar/gi\n/^second$/i');
+    expect(input.validationMessage).toBe('');
+  });
   test('保存層が拒否したチェックを以前の値へ戻す', () => {
     const input = document.createElement('input');
     input.type = 'checkbox';

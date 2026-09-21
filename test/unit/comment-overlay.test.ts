@@ -52,7 +52,7 @@ describe('comment-overlayへのコメント移行', () => {
     }
   });
   test('NG・置換・追加・取り消し後も非フィルター一覧を保持する', async () => {
-    const model = new NicoComment({ filter: { wordFilter: 'blocked' } });
+    const model = new NicoComment({ filter: { wordRegFilter: ['/blocked/i'] } });
     await model.setData([legacy('blocked', 1), legacy('old text', 2)], { replacement: { old: 'new' } });
     expect(model.chatList.naka.map((chat) => chat.text)).toEqual(['new text']);
     expect(model.nonFilteredChatList.naka).toHaveLength(2);

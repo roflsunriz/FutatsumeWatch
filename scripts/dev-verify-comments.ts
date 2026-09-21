@@ -69,14 +69,14 @@ export async function verifyCommentOverlay(session: CdpSession): Promise<string[
     `(()=>{const c=${renderer}.canvas;return c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>0);})()`,
     '停止中でも再表示で画素を復元'
   );
-  const ng = await evaluate(session, `${player}.filter.wordFilterList`);
-  await evaluate(session, `${player}.filter.addWordFilter('移行検証コメント')`);
+  const ng = await evaluate(session, `${player}.filter.wordRegFilterList`);
+  await evaluate(session, `${player}.filter.addWordRegFilter('移行検証コメント')`);
   await Bun.sleep(500);
   await check(
     `!${renderer}.comments.some(c=>c.text==='移行検証コメント') && ${player}.nonFilteredChatList.top.some(c=>c.text==='移行検証コメント')`,
     'NG反映で描画から除外し元データを保持'
   );
-  await evaluate(session, `${player}.filter.wordFilterList=${JSON.stringify(ng)}`);
+  await evaluate(session, `${player}.filter.wordRegFilterList=${JSON.stringify(ng)}`);
   await Bun.sleep(500);
   await check(`${renderer}.comments.some(c=>c.text==='移行検証コメント')`, 'NG解除でコメントを復元');
   await evaluate(session, `${player}.removeChat(window.__fwOverlayTestChat); delete window.__fwOverlayTestChat`);

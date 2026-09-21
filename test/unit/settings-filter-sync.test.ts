@@ -16,11 +16,9 @@ async function fixture(): Promise<{ config: DataStorage; filter: NicoChatFilter;
   const config = DataStorage.create(
     {
       enableFilter: true,
-      wordFilter: [],
       commandFilter: [],
       userIdFilter: [],
-      wordRegFilter: '',
-      wordRegFilterFlags: '',
+      wordRegFilter: [],
     },
     { readonly: true }
   );
@@ -44,25 +42,25 @@ describe('設定とNGモデルの更新順序', () => {
   });
   test('メニューからのNG追加は最新の設定へ追加し、無関係なNGを変えない', async () => {
     const { config, filter, dialog } = await fixture();
-    config.setValue('wordFilter', ['newer-form-value']);
+    config.setValue('wordRegFilter', ['/newer-form-value/i']);
     config.setValue('commandFilter', ['red']);
-    NicoVideoPlayerDialog.prototype._onCommand.call(dialog, 'addWordFilter', 'row-menu-value');
-    expect(config.getValue('wordFilter')).toEqual(['newer-form-value', 'row-menu-value']);
-    expect(filter.wordFilterList).toEqual(['newer-form-value', 'row-menu-value']);
+    NicoVideoPlayerDialog.prototype._onCommand.call(dialog, 'addWordFilter', 'row.menu\nvalue');
+    expect(config.getValue('wordRegFilter')).toEqual(['/newer-form-value/i', '/row\\.menu\\nvalue/i']);
+    expect(filter.wordRegFilterList).toEqual(['/newer-form-value/i', '/row\\.menu\\nvalue/i']);
     expect(config.getValue('commandFilter')).toEqual(['red']);
   });
-  test('正規表現とflagsを設定から反映し、空に戻せば全コメントを復帰する', async () => {
+  test('改行単位の正規表現を設定から反映し、空に戻せば全コメントを復帰する', async () => {
     const { config, filter, dialog } = await fixture();
     const comments = [NicoChat.create({ text: 'BLOCKED', no: 1 }), NicoChat.create({ text: 'safe', no: 2 })];
-    config.setValue('wordRegFilter', 'blocked');
-    config.setValue('wordRegFilterFlags', 'i');
-    NicoVideoPlayerDialog.prototype._onPlayerConfigUpdate.call(dialog, 'wordRegFilterFlags', 'i');
+    config.setValue('wordRegFilter', ['/blocked/i', '/^another$/']);
+    NicoVideoPlayerDialog.prototype._onPlayerConfigUpdate.call(
+      dialog,
+      'wordRegFilter',
+      config.getValue('wordRegFilter')
+    );
     expect(filter.applyFilter(comments)).toEqual([comments[1]!]);
-    config.setValue('wordRegFilterFlags', '');
-    NicoVideoPlayerDialog.prototype._onPlayerConfigUpdate.call(dialog, 'wordRegFilterFlags', '');
-    expect(filter.applyFilter(comments)).toEqual(comments);
-    config.setValue('wordRegFilter', '');
-    NicoVideoPlayerDialog.prototype._onPlayerConfigUpdate.call(dialog, 'wordRegFilter', '');
+    config.setValue('wordRegFilter', []);
+    NicoVideoPlayerDialog.prototype._onPlayerConfigUpdate.call(dialog, 'wordRegFilter', []);
     expect(filter.applyFilter(comments)).toEqual(comments);
   });
 });

@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { Emitter } from '../../../lib/src/emitter';
 import { textUtil } from '../../../lib/src/text/text-util';
 import { Config } from '../../../../src/config';
+import { formatLiteralNgRegexpInput, formatNgRegexpInput, parseNgRegexpInput } from '../../../../src/ng-regexp-input';
 import type { NicoChatType as NicoChat } from './nico-chat';
 
 export interface NicoChatFilterParams {
@@ -26,7 +27,7 @@ export interface NicoChatFilterParams {
   extraNicosThread?: boolean;
   extraEasyThread?: boolean;
   enableFilter?: boolean;
-  wordRegFilter?: string;
+  wordRegFilter?: string | string[];
   wordRegFilterFlags?: string;
 }
 
@@ -76,10 +77,10 @@ class NicoChatFilter extends Emitter {
   declare _extraEasyThread: boolean;
   declare _enable: boolean;
   declare _wordReg: RegExp | null;
-  declare _wordRegReg: RegExp | null;
+  declare _wordRegList: RegExp[];
+  declare _wordRegFilterList: string[];
   declare _userIdReg: RegExp | null;
   declare _commandReg: RegExp | null;
-  declare _flags: string | undefined;
   constructor(params: NicoChatFilterParams) {
     super();
     this._sharedNgLevel = params.sharedNgLevel || NicoChatFilter.SHARED_NG_LEVEL.MID;
@@ -112,7 +113,8 @@ class NicoChatFilter extends Emitter {
     this._enable = typeof params.enableFilter === 'boolean' ? params.enableFilter : true;
 
     this._wordReg = null;
-    this._wordRegReg = null;
+    this._wordRegList = [];
+    this._wordRegFilterList = [];
     this._userIdReg = null;
     this._commandReg = null;
 
@@ -346,26 +348,35 @@ class NicoChatFilter extends Emitter {
     return this._wordFilterList;
   }
 
-  setWordRegFilter(source: string, flags?: string): void {
-    if (!source) {
-      this._wordRegReg = null;
-      this._flags = flags;
-      this._onChange();
-      return;
-    }
-    if (this._wordRegReg) {
-      if (this._wordRegReg.source === source && this._flags === flags) {
-        return;
-      }
-    }
+  setWordRegFilter(source: string | string[], flags?: string): void {
+    const expressions = Array.isArray(source)
+      ? [...new Set(source)]
+      : source
+        ? [formatNgRegexpInput(source, flags ?? '')]
+        : [];
+    if (this._wordRegFilterList.join('\n') === expressions.join('\n')) return;
     try {
-      this._wordRegReg = new RegExp(source, flags);
-      this._flags = flags;
+      this._wordRegList = expressions.map((expression) => {
+        const parsed = parseNgRegexpInput(expression);
+        return new RegExp(parsed.pattern, parsed.flags);
+      });
+      this._wordRegFilterList = expressions;
     } catch (e) {
       window.console.error(e);
       return;
     }
     this._onChange();
+  }
+  addWordRegFilter(text: string): void {
+    const value = text.trim();
+    if (!value) return;
+    this.setWordRegFilter([...this._wordRegFilterList, formatLiteralNgRegexpInput(value)]);
+  }
+  set wordRegFilterList(list: string[]) {
+    this.setWordRegFilter(list);
+  }
+  get wordRegFilterList(): string[] {
+    return [...this._wordRegFilterList];
   }
 
   addUserIdFilter(text: string): void {
@@ -464,7 +475,7 @@ class NicoChatFilter extends Emitter {
       this._commandReg = this._buildFilterReg(this._commandFilterList);
     }
     const wordReg = this._wordReg;
-    const wordRegReg = this._wordRegReg;
+    const wordRegList = this._wordRegList;
     const commandReg = this._commandReg;
 
     if ((Config as unknown as ConfigLike).getValue('debug')) {
@@ -484,11 +495,12 @@ class NicoChatFilter extends Emitter {
           return false;
         }
 
-        if (wordRegReg) {
-          wordRegReg.lastIndex = 0;
-          m = wordRegReg.exec(nicoChat.text);
-        }
-        if (m) {
+        if (
+          wordRegList.some((regexp) => {
+            regexp.lastIndex = 0;
+            return regexp.test(nicoChat.text);
+          })
+        ) {
           return false;
         }
 
@@ -512,13 +524,14 @@ class NicoChatFilter extends Emitter {
         return true;
       }
       const text = nicoChat.text;
-      // g/y carry lastIndex between calls. Each comment is an independent
-      // input, including repeated passes after a setting change.
-      if (wordRegReg) wordRegReg.lastIndex = 0;
       return !(
         nicoChat.score <= threthold ||
         (wordReg && wordReg.test(text)) ||
-        (wordRegReg && wordRegReg.test(text)) ||
+        wordRegList.some((regexp) => {
+          // g/y carry lastIndex between calls. Each comment is independent.
+          regexp.lastIndex = 0;
+          return regexp.test(text);
+        }) ||
         (umatch && umatch.includes(nicoChat.userId as string)) ||
         (commandReg && commandReg.test(nicoChat.cmd))
       );

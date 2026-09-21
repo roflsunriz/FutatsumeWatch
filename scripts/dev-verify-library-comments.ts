@@ -134,7 +134,7 @@ export async function verifyLibraryComments(session: CdpSession, actions: Librar
     'P3-08-nicoru-reload 再取得でも受理件数を保持'
   );
 
-  const clearFilter = async (key: 'wordFilter' | 'userIdFilter') => {
+  const clearFilter = async (key: 'wordRegFilter' | 'userIdFilter') => {
     await clickVisible(session, '.fw-backdrop');
     await clickVisible(session, '[data-shell-action="settings"]');
     await clickVisible(session, '[data-shell-action="general"]');
@@ -151,11 +151,11 @@ export async function verifyLibraryComments(session: CdpSession, actions: Librar
   await click(session, '[data-command="addWordFilter"]', root);
   await check(
     session,
-    `${model}._items.length===${count - 1}&&!${model}._items.some(item=>item.text==='検証コメント 0')`,
-    'P3-08-ng-word 選んだ単語のコメントだけを除外'
+    `${model}._items.length===${count - 1}&&!${model}._items.some(item=>item.text==='検証コメント 0')&&window.FutatsumeWatch.config.props.wordRegFilter.includes('/検証コメント 0/i')`,
+    'P3-08-ng-word 選んだ本文をリテラル正規表現へ追加して除外'
   );
   if (current().length !== count) throw Error('NG操作がサーバーのコメントを削除しました');
-  await clearFilter('wordFilter');
+  await clearFilter('wordRegFilter');
   await openRow(1);
   await click(session, '[data-command="addUserIdFilter"]', root);
   await check(session, `${model}._items.length===0`, 'P3-08-ng-user 同じユーザーのコメントを除外');

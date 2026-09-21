@@ -66,6 +66,10 @@ try {
     '旧設定名を本体の設定モデルへ反映'
   );
   await check(
+    `JSON.stringify(window.FutatsumeWatch.config.props.wordRegFilter)===JSON.stringify(['/a\\\\.b/i','/slash\\\\/value/i','/^blocked$/gi']) && localStorage.getItem('FutatsumeWatch_wordFilter')===${JSON.stringify(fixture.local.FutatsumeWatch_wordFilter)}`,
+    '旧NGワードと単一正規表現を1行1表現の一覧へ移行'
+  );
+  await check(
     'window.FutatsumeWatch.debug.hlsConfig.capLevelToPlayerSize === true',
     'HLS旧設定を実際の設定モデルへ反映'
   );
@@ -108,7 +112,7 @@ try {
   console.error(
     await evaluate(
       page,
-      `({title:document.title,ready:window.FutatsumeWatch?.ready,gamepad:!!window.FutatsumeWatch?.FutatsumeGamePad,pocket:window.MylistPocket?.isReady,entry:document.querySelector('[data-futatsume-entry]')?.outerHTML})`
+      `({title:document.title,ready:window.FutatsumeWatch?.ready,gamepad:!!window.FutatsumeWatch?.FutatsumeGamePad,pocket:window.MylistPocket?.isReady,entry:document.querySelector('[data-futatsume-entry]')?.outerHTML,wordRegFilter:window.FutatsumeWatch?.config?.props?.wordRegFilter,storageVersion:localStorage.getItem('FutatsumeWatch_storageVersion'),legacyWordFilter:localStorage.getItem('FutatsumeWatch_wordFilter')})`
     )
   );
   throw error;

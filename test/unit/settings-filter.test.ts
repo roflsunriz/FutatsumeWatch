@@ -54,7 +54,7 @@ describe('NG設定の対象別効果と解除', () => {
       expect(filter.applyFilter([denied, allowed, owner])).toEqual([denied, allowed, owner]);
     });
   }
-  test('単語・コマンド・ユーザーと同一発言者をそれぞれ除外し、OFFで復元する', () => {
+  test('正規表現・コマンド・ユーザーと同一発言者をそれぞれ除外し、OFFで復元する', () => {
     const comments = [
       chat(1, { text: 'blocked', user_id: 'same' }),
       chat(2, { user_id: 'same' }),
@@ -63,7 +63,7 @@ describe('NG設定の対象別効果と解除', () => {
       chat(5),
     ];
     const filter = new NicoChatFilter({
-      wordFilter: ['blocked'],
+      wordRegFilter: ['/blocked/i'],
       commandFilter: ['red'],
       userIdFilter: ['denied'],
       removeNgMatchedUser: true,
@@ -74,7 +74,7 @@ describe('NG設定の対象別効果と解除', () => {
   });
   for (const flags of ['g', 'y', 'gi']) {
     test(`正規表現 ${flags} は前のコメントの一致位置に依存しない`, () => {
-      const filter = new NicoChatFilter({ wordRegFilter: 'blocked', wordRegFilterFlags: flags });
+      const filter = new NicoChatFilter({ wordRegFilter: [`/blocked/${flags}`] });
       const comments = [
         chat(1, { text: 'blocked' }),
         chat(2, { text: 'blocked' }),

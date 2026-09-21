@@ -183,6 +183,7 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     '現行設定の音量を優先',
     '移行済みの旧版でリセットした設定を復活させない',
     '旧設定名を本体の設定モデルへ反映',
+    '旧NGワードと単一正規表現を1行1表現の一覧へ移行',
     'HLS旧設定を実際の設定モデルへ反映',
     'GamePadとMylistPocketの保存キーを移行',
     'プレイリストを現行キーへ移行',
@@ -258,7 +259,7 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
 const invalidSettingInputs: Readonly<Record<string, readonly string[]>> = {
   'P2-08/baseChatScale': ['', '0.4', '2.1', '0.55'],
   'P2-08/commentLayer.ownerCommentShadowColor': ['#xyz'],
-  'P2-10/wordRegFilter': ['/[/i', '/ok/ii'],
+  'P2-09/wordRegFilter': ['/[/i', '/ok/ii'],
 };
 export const requiredSettingsFields = settingsCategories.flatMap((category) =>
   category.keys.map((key) => ({ id: `${category.id}/${key}`, key, category: category.name }))
@@ -306,7 +307,7 @@ function validateSettings(report: Record<string, unknown>, missing: string[]): v
     if (fields.has(value.id)) missing.push(`重複設定:${value.id}`);
     fields.set(value.id, value);
   }
-  if (requiredSettingsFields.length !== 78 || fields.size !== 78) missing.push(`設定78件:実際${fields.size}`);
+  if (requiredSettingsFields.length !== 77 || fields.size !== 77) missing.push(`設定77件:実際${fields.size}`);
   for (const required of requiredSettingsFields) {
     const field = fields.get(required.id);
     if (!field || field.key !== required.key || field.category !== required.category) {

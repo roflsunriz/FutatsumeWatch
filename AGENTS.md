@@ -22,7 +22,7 @@
 - HeatSyncは動画切替の除外判定より前に適用済み速度を上書きしない。短動画・除外タグへ切替時は自分の加速だけ戻し、手動速度は残す。除外語・タグを同じ大文字化で照合する。回帰は`settings-heatsync.test.ts`。
 - 動画情報パネルへ届くイベント名は`canPlay`。小文字の`canplay`では関連取得と説明欄の自動YouTube切替が接続されない。自動切替の遅延は、設定OFF・新動画・hideで古い応答を無効化する。`settings-video-events.test.ts`は実Emitterからの接続も確認する。提供者取得機能は0.0.15で削除した。
 - Storyboardは`media.domand.isStoryboardAvailable`の会員別値をtrueへ正規化し、設定ONなら`access-rights/storyboard`を実際に要求して資産可否を判定する。UIからプレミアム表記を外し、OFF・動画切替・遅延応答の世代判定を維持する。オフライン環境はStoryboard access-rights・JSON・画像を登録する。
-- 0.0.15では画面クリック再生・GamePad・HeatSyncの既定値をfalseへ変更した。既存の保存値は利用者の選択として保持する。削除した広告提供者・UI倍率・コメント速度／背面・影2種の設定と処理を復活させない。NG正規表現は`/パターン/フラグ`の1入力、NGタグ／投稿者は一般設定のNG・フィルターを正本とする。
+- 0.0.15では画面クリック再生・GamePad・HeatSyncの既定値をfalseへ変更した。既存の保存値は利用者の選択として保持する。削除した広告提供者・UI倍率・コメント速度／背面・影2種の設定と処理を復活させない。0.0.17以降のNG正規表現は、一般設定の「NG・フィルター」にある1行1つの`/パターン/フラグ`一覧を正本とし、詳細設定に重複配置しない。コメント行のNGwordは本文を`i`付きリテラル正規表現へ変換してこの一覧へ追加する。旧NGワードと旧単一正規表現／フラグは設定移行版3で一覧へ統合する。NGタグ／投稿者も同じタブを正本とする。
 - 映像配信は現行のDomand HLSだけを使用する。終了したDMC/HTTP方式の選択設定、フォールバック、Worker、ストーリーボード、HeatSync分岐を復活させず、画質設定と検証はDomandの利用可能な画質を対象にする。
 - 新規タブとService Workerは専用BrowserContextに限定したbrowser-level監視で初回要求から捕捉する。初期化前popupではFetch・Runtime監視を先にキューへ送り、resumeと全応答を待つ。初回がchrome-errorになったリンクを再読み込みで成功へ変えない。guardはページ・専用Worker・iframe・popup・Service Workerの未登録5要求とWorker先頭例外2件を照合する。
 - Service Workerのエントリーはtarget生成前に取得されるため、guardだけ専用loopbackサーバーの完全一致GETで供給する。別ポート・外部への禁止プロキシは維持する。映像は`test/fixtures/functionality/media-spec.ts`を正本にID別の長さ・比率・色を持ち、表示IDだけで切替成功にしない。
@@ -172,7 +172,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## 名称の全面移行とlint（2026-09-20、未リリース）
 
 - 現行コード・DOM・イベント・追加機能はFutatsumeWatch / Futatsume系、プレイヤーのパッケージは`packages/futatsume`へ統一した。旧ブランド文字列は`src/config-migration.ts`の読み込み境界と移行テスト、由来・上流URL・過去の記録だけに残す。`escapeToZenkaku`、`frozen`、資料内の全角空白`zen_space`はブランド名ではない。
-- `main.ts`で共有保存値・プレイリスト・前回再生状態を移し、Configの復元前に本体設定を、HLS/GamePadの初期化時に各既定キーを移す。本体の移行版は2。マーカー1では名称変更したTube設定だけをFutatsumeWatchの旧キーから移し、リセットした値を旧ブランドのバックアップから復活させない。旧値は保持し、新キーを優先する。旧設定JSONは`Config.import`でキーを変換する。
+- `main.ts`で共有保存値・プレイリスト・前回再生状態を移し、Configの復元前に本体設定を、HLS/GamePadの初期化時に各既定キーを移す。本体の移行版は3。マーカー1では名称変更したTube設定だけをFutatsumeWatchの旧キーから移し、マーカー3では旧NGワードと旧単一正規表現／フラグを正規表現一覧へ統合する。リセットした値を旧ブランドのバックアップから復活させず、旧値は保持し、新キーを優先する。旧設定JSONは`Config.import`でキーを変換する。
 - GamePadの公開オブジェクトはプレイヤーを開いてから設定される。起動前の移行確認では保存キーを確認し、操作は起動後に検証する。`dev:verify:migration`は隔離コンテキストで移行とHLSエラー種別を検証する。
 - lintは`--max-warnings 0`・未使用宣言error。継承・公開契約に必要な未使用引数だけ意図を明示し、未使用の代入を外す際は初期化や入力検証の副作用を残す。
 - Bun 1.4.0の`install --lockfile-only --ignore-scripts`は`--force`付きでも既存lockfileのルートnameを更新しなかった。今回だけルートnameをpackage.jsonへ合わせ、依存解決情報を変えず`--frozen-lockfile`で整合性を確認する。

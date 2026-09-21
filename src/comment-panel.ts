@@ -1024,7 +1024,7 @@ CommentListView.__tpl__ = `
       <span class="comment-row-action removeComment"     data-command="removeComment" title="コメントを削除">delete</span>
       <span class="comment-row-action clipBoard"         data-command="clipBoard" title="クリップボードにコピー">copy</span>
       <span class="comment-row-action addUserIdFilter"   data-command="addUserIdFilter" title="NGユーザー">NGuser</span>
-      <span class="comment-row-action addWordFilter"     data-command="addWordFilter" title="NGワード">NGword</span>
+      <span class="comment-row-action addWordFilter"     data-command="addWordFilter" title="NG正規表現へ追加">NGword</span>
     </div>
     <div id="listContainerInner"></div>
   </div>

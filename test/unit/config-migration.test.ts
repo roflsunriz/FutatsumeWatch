@@ -44,7 +44,7 @@ describe('旧設定の移行', () => {
     expect(storage.getItem('FutatsumeWatch_bestFutatsumeTube')).toBe('true');
     expect(storage.getItem('FutatsumeWatch_autoPlay:ginza')).toBe('false');
     expect(storage.getItem('FutatsumeWatch_unrecognized')).toBeNull();
-    expect(storage.getItem('FutatsumeWatch_storageVersion')).toBe('2');
+    expect(storage.getItem('FutatsumeWatch_storageVersion')).toBe('3');
   });
 
   it('v1移行後にリセットした通常設定と旧名称の設定を復活させない', () => {
@@ -67,9 +67,38 @@ describe('旧設定の移行', () => {
     expect(storage.getItem('FutatsumeWatch_autoPlay:ginza')).toBe('false');
   });
 
+  it('旧NGワードと単一正規表現を1行1表現の正規表現一覧へ移す', () => {
+    const storage = new JSDOM('', { url: 'https://www.nicovideo.jp' }).window.localStorage;
+    storage.setItem('FutatsumeWatch_storageVersion', '2');
+    storage.setItem('FutatsumeWatch_wordFilter', JSON.stringify(['a.b', 'slash/value']));
+    storage.setItem('FutatsumeWatch_wordRegFilter', JSON.stringify('^blocked$'));
+    storage.setItem('FutatsumeWatch_wordRegFilterFlags', JSON.stringify('gi'));
+    migrateConfig(storage, ['wordRegFilter']);
+    expect(JSON.parse(storage.getItem('FutatsumeWatch_wordRegFilter')!)).toEqual([
+      '/a\\.b/i',
+      '/slash\\/value/i',
+      '/^blocked$/gi',
+    ]);
+    expect(storage.getItem('FutatsumeWatch_storageVersion')).toBe('3');
+    expect(storage.getItem('FutatsumeWatch_wordFilter')).toBe(JSON.stringify(['a.b', 'slash/value']));
+  });
+
   it('旧設定ファイルを変換し、現行キーと元の入力を保護する', () => {
-    const old = { autoZenTube: true, bestZenTube: true, bestFutatsumeTube: false, volume: 0.4 };
-    expect(migrateImportedConfig(old)).toEqual({ autoFutatsumeTube: true, bestFutatsumeTube: false, volume: 0.4 });
+    const old = {
+      autoZenTube: true,
+      bestZenTube: true,
+      bestFutatsumeTube: false,
+      volume: 0.4,
+      wordFilter: ['a.b'],
+      wordRegFilter: '^blocked$',
+      wordRegFilterFlags: 'i',
+    };
+    expect(migrateImportedConfig(old)).toEqual({
+      autoFutatsumeTube: true,
+      bestFutatsumeTube: false,
+      volume: 0.4,
+      wordRegFilter: ['/a\\.b/i', '/^blocked$/i'],
+    });
     expect(old.autoZenTube).toBe(true);
   });
 

@@ -166,9 +166,7 @@ class NicoVideoPlayer extends Emitter {
       // offScreenLayer: params.offScreenLayer,
       filter: {
         enableFilter: conf.props.enableFilter,
-        wordFilter: conf.props.wordFilter,
         wordRegFilter: conf.props.wordRegFilter,
-        wordRegFilterFlags: conf.props.wordRegFilterFlags,
         userIdFilter: conf.props.userIdFilter,
         commandFilter: conf.props.commandFilter,
         removeNgMatchedUser: conf.props.removeNgMatchedUser,

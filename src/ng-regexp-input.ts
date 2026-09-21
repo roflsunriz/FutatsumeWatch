@@ -35,3 +35,27 @@ export function parseNgRegexpInput(value: string): NgRegexpInput {
   Reflect.construct(RegExp, [pattern, flags]);
   return { pattern, flags };
 }
+
+export function normalizeNgRegexpInputLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const parsed = parseNgRegexpInput(line);
+      return formatNgRegexpInput(parsed.pattern, parsed.flags);
+    });
+}
+
+export function escapeNgRegexpLiteral(value: string): string {
+  return value
+    .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+export function formatLiteralNgRegexpInput(value: string): string {
+  return formatNgRegexpInput(escapeNgRegexpLiteral(value.trim()), 'i');
+}

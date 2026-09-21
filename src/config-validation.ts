@@ -1,3 +1,5 @@
+import { normalizeNgRegexpInputLines } from './ng-regexp-input';
+
 // Product constraints belong at the Config import boundary, not in the generic
 // DataStorage transaction. Older exports used numeric strings in select boxes.
 const ranges: Readonly<Record<string, readonly [number, number]>> = {
@@ -15,7 +17,7 @@ const enums: Readonly<Record<string, readonly string[]>> = {
   'commentLayer.textShadowType': ['', 'shadow-type2', 'shadow-type3'],
   fullscreenControlBarMode: ['auto', 'always-show', 'always-hide'],
 };
-const stringLists = new Set(['wordFilter', 'commandFilter', 'userIdFilter']);
+const stringLists = new Set(['commandFilter', 'userIdFilter']);
 const stepped = new Set([
   'baseChatScale',
   'commentLayerOpacity',
@@ -39,11 +41,14 @@ export function validateImportedConfig(
       /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())
     )
       value = Number(value);
-    const validType = stringLists.has(key)
-      ? typeof value === 'string' || (Array.isArray(value) && value.every((item) => typeof item === 'string'))
-      : Array.isArray(expected)
-        ? Array.isArray(value)
-        : typeof value === typeof expected && value !== null;
+    const validType =
+      key === 'wordRegFilter'
+        ? Array.isArray(value) && value.every((item) => typeof item === 'string')
+        : stringLists.has(key)
+          ? typeof value === 'string' || (Array.isArray(value) && value.every((item) => typeof item === 'string'))
+          : Array.isArray(expected)
+            ? Array.isArray(value)
+            : typeof value === typeof expected && value !== null;
     if (!validType || (typeof value === 'number' && !Number.isFinite(value)))
       throw new TypeError(`設定「${key}」の値の型が正しくありません。`);
     const range = ranges[key];
@@ -60,14 +65,12 @@ export function validateImportedConfig(
       throw new TypeError('投稿者コメントの影の色が正しくありません。');
     result[key] = value;
   }
-  const source = result.wordRegFilter ?? defaults.wordRegFilter;
-  const flags = result.wordRegFilterFlags ?? defaults.wordRegFilterFlags;
-  if (typeof source === 'string' && typeof flags === 'string') {
+  const expressions = result.wordRegFilter ?? defaults.wordRegFilter;
+  if (Array.isArray(expressions))
     try {
-      new RegExp(source, flags);
+      normalizeNgRegexpInputLines(expressions.join('\n'));
     } catch (cause) {
       throw new TypeError('NGの正規表現またはフラグが正しくありません。', { cause });
     }
-  }
   return result;
 }
