@@ -38,6 +38,7 @@ import type { ConfigStore } from './config';
 import type { Uq, UqFactory } from './comment-panel';
 import type { ThumbInfoOk } from '../packages/lib/src/nico/parse-thumb-info';
 import type { CommentPlayerOptions } from './comment-player';
+import { applyApiCommentLanguage } from './comment-language';
 
 interface DialogPlayerConfig extends ConfigStore {
   getNativeKey?(key: string): string;
@@ -2496,8 +2497,8 @@ class NicoVideoPlayerDialog extends Emitter {
   loadComment(msgInfo: DialogThreadMsgInfo): void {
     const requestId = this._requestId;
     const commentRequest = ++this.commentRequestSequence;
-    msgInfo.language = this._playerConfig.props.commentLanguage;
-    this._playerConfig.props.commentLanguage = msgInfo.language;
+    const language = applyApiCommentLanguage(msgInfo, this._playerConfig.props.commentLanguage);
+    if (this._playerConfig.props.commentLanguage !== language) this._playerConfig.props.commentLanguage = language;
     this.threadLoader.load(msgInfo).then(
       (result) => {
         if (commentRequest === this.commentRequestSequence) this._onCommentLoadSuccess(requestId, result);

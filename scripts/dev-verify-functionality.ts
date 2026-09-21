@@ -136,6 +136,15 @@ try {
   await verifyMediaIdentity(page, 'sm9', (_session, expression, label, timeout) =>
     check('P1-04', label, expression, timeout)
   );
+  await evaluate(
+    page,
+    `window.FutatsumeWatch.config.props.commentLanguage='en-us';window.FutatsumeWatch.debug.dialog.reloadComment()`
+  );
+  await check(
+    'P1-03',
+    '保存言語が異なってもAPI指定言語でコメントを再取得',
+    `window.FutatsumeWatch.config.props.commentLanguage==='ja-jp'&&window.FutatsumeWatch.debug.nicoCommentPlayer._view.renderer.comments.length>0`
+  );
   const stopped = (await evaluate(page, `${v}.currentTime`)) as number;
   await Bun.sleep(400);
   await check('P1-03', '停止中に時計を保持', `${v}.paused && Math.abs(${v}.currentTime-${stopped})<0.05`);

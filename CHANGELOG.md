@@ -4,6 +4,12 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+## [0.0.16] - 2026-09-21
+
+### Fixed
+
+- 保存されたコメント言語が動画APIの`nvComment.params.language`と異なるとコメントAPIが`INVALID_PARAMETER`を返すため、サーバー提供のparamsを送信前に書き換えず、表示側の言語状態も実際のAPI言語へ同期するようにした。
+
 ## [0.0.15] - 2026-09-21
 
 ### Changed

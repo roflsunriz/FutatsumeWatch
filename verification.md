@@ -1,8 +1,15 @@
 # 検証記録
 
+## 2026-09-21：実利用プロファイルのコメント言語不一致（0.0.16）
+
+- ニコ百の記事から`sm11793256`を再生した実利用Tampermonkey経路で、コメントAPIがHTTP 400・`INVALID_PARAMETER`を返した。実インスタンスは動画APIの`nvComment.params.language`が`ja-jp`、同期設定`commentLanguage`が`en-us`で、FWが送信直前にparamsを`en-us`へ上書きしていた。既定`ja-jp`だけの単発採取では通らない分岐だった。
+- filter-matomeと同様に動画APIの`{params,threadKey}`を改変せず、過去ログ時だけ`additionals.when`を追加するよう修正した。表示・削除等が参照する言語も実API言語へ同期する。paramsが`ja-jp`・設定が`en-us`の回帰と、API言語がない場合の設定フォールバックを単体で固定した。
+- 0.0.16を同じ手動用ChromeのTampermonkeyへ導入し、同じニコ百記事に再読込後も存在した`sm9`の可視起動ボタンを1回操作した。同期設定は`en-us`からAPI値`ja-jp`へ更新され、POST本文の言語`ja-jp`・threadKeyあり・target 3件でHTTP 200。コメント786件、HLS `readyState=4`、43秒超の時間進行を確認した。失敗時の`sm11793256`リンクは再読込後のDOMに存在しなかったため、同じ動画IDの再実行とは扱わない。
+- `bun run lint`、`bun run format`、`bun run type-check`、0.0.16配布物ビルド、全単体430件（2,900アサーション）が成功した。`bun run test:browser all --offline`は全9スイート・1,598チェック成功し、保存`en-us`／API`ja-jp`のブラウザー再取得を含む。証跡は`dev-assets/verification/2026-09-21T12-20-25-316Z-offline-8d3aab69/run.json`、配布物SHA-256は`c1c2153fc2ca9c346a1c95de27a75c673fa93e8c571bc706295356e7d4f1a280`。
+
 ## 2026-09-21：外部サイト起動・設定整理・Storyboard（0.0.15）
 
-- 追加承認後の実サイト単発検証で、Nアニメ`so46805846`とニコ百`/v/sm9`から起動し、HLSデコード・時間進行・コメント描画まで成功した。両サイトのnv-commentは標準XMLHttpRequestでOPTIONS／POSTともHTTP 200だったため、GM API未使用は400原因ではない。0.0.13より前の`text/plain`・常時空`additionals`・OSヘッダー欠落という要求契約不一致を原因として記録した。失敗試行と再試行の承認・証跡は`docs/live-once-verification.md`を正本とする。
+- 追加承認後の実サイト単発検証で、Nアニメ`so46805846`とニコ百`/v/sm9`から起動し、HLSデコード・時間進行・コメント描画まで成功した。両サイトのnv-commentは標準XMLHttpRequestでOPTIONS／POSTともHTTP 200だったため、GM API未使用は400原因ではない。ただし両試行はAPI言語と保存設定が同じ`ja-jp`であり、0.0.16で見つかった言語不一致分岐の検証にはなっていなかった。失敗試行と再試行の承認・証跡は`docs/live-once-verification.md`を正本とする。
 - Nアニメのカードとニコ百埋め込み内で、見えている起動ボタンを透明リンクが覆う状態を再現した。ボタン矩形内の実クリック／タップをcapture段階で受け取るよう修正し、モバイルの埋め込みボタンはホバーなしで44px以上を表示する。entry 12項目とaddons 11項目、透明リンクの単体回帰で確認した。
 - Storyboardは会員別フラグを設定可能な値へ正規化し、実際の`access-rights/storyboard`応答で資産可否を判定する。設定OFF・動画切替・遅延応答の無効化を維持し、失敗表示のclass更新例外も修正した。オフライン固定応答にStoryboardのaccess-rights・JSON・PNGを追加した。
 - 画面クリック再生・GamePad・HeatSyncの既定値をOFFへ変更し、既存保存値は保持した。設定スイートで初期値3件と、削除後の全78設定の入力・保存・再表示・復元を確認した。

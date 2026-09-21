@@ -84,4 +84,12 @@
 - Nアニメは`live-anime-free-comments-2026-09-21-2`が旧候補選択、`-3`／`-4`が透明リンク層、`-5`がログ削減時に露呈した`console.nicoru`初期化依存により、いずれも起動操作前に終了した。依存を除去し、表示ボタン矩形内の実クリックをcapture段階で処理した`live-anime-free-comments-2026-09-21-6`は、`so46805846`の起動、HLSデコード・時間進行、コメント描画まで成功した。
 - ニコ百は`live-dic-sm9-comments-2026-09-21-2`で`ext.nicovideo.jp/thumb/sm9`内の起動ボタンが埋め込みリンクに覆われ、操作前に終了した。埋め込み文書側にも同じ実クリック処理を入れた`live-dic-sm9-comments-2026-09-21-3`は、埋め込み内ボタンの操作、sm9のHLSデコード・時間進行、コメント描画まで成功した。
 - Nアニメのnv-commentは`Origin: https://anime.nicovideo.jp`のOPTIONSがHTTP 200、資格情報なしPOSTがHTTP 200。ニコ百も`Origin: https://dic.nicovideo.jp`のOPTIONSがHTTP 200、POSTがHTTP 200だった。どちらも標準XMLHttpRequestであり、GM API未使用は400原因ではない。
-- 0.0.13より前の通常取得は`Content-Type: text/plain; charset=UTF-8`、通常時も`additionals: {}`を含み、client OSヘッダーも欠けていた。現行の実測成功は、`application/json`・`{params,threadKey}`・OS/frontendヘッダーへ公式契約どおり修正し、通常時の空`additionals`と別threadKey自動再送を除去した後の結果である。過去に観測した400はこの要求契約不一致と整合し、GM APIへ切り替える必要はない。
+- 0.0.13より前の通常取得は`Content-Type: text/plain; charset=UTF-8`、通常時も`additionals: {}`を含み、client OSヘッダーも欠けていた。現行の実測成功は、`application/json`・`{params,threadKey}`・OS/frontendヘッダーへ公式契約どおり修正し、通常時の空`additionals`と別threadKey自動再送を除去した後の結果である。GM APIへ切り替える必要はないが、この成功試行はいずれもAPI言語と保存設定が`ja-jp`で一致しており、0.0.16で実利用プロファイルから見つかった言語不一致時の400は通らない条件だった。
+
+## 2026-09-21：実利用Tampermonkey経路の`INVALID_PARAMETER`
+
+ニコ百の記事から`sm11793256`を開いた実利用プロファイルで、`POST https://public.nvcomment.nicovideo.jp/v1/threads`がHTTP 400・`INVALID_PARAMETER`になった。再送前に既存インスタンスを読み取り、API発行値と送信元状態の差だけを確認した。
+
+- 動画APIの`nvComment.params.language`は`ja-jp`、同期された`commentLanguage`と`msgInfo.language`は`en-us`だった。FWは送信前にparamsの言語を`en-us`へ上書きしていた。
+- filter-matomeは動画APIの`params`と`threadKey`をそのまま本文へ使う。FWもこれに合わせ、過去ログ時の`additionals.when`以外は発行済みparamsを変更しない。表示側・`threadInfo`の言語は実API値へ同期する。
+- 0.0.16を同じ手動用ChromeのTampermonkeyへ導入し、同じ記事を再読込した。失敗時の`sm11793256`リンクは再読込後のDOMになかったため、記事内に残る`sm9`の可視起動ボタンを1回操作した。同期設定は`en-us`からAPI値`ja-jp`へ揃い、POST本文も`ja-jp`・threadKeyあり・target 3件でHTTP 200。コメント786件、HLS `readyState=4`、43秒超の時間進行を確認した。

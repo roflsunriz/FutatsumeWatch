@@ -272,10 +272,6 @@ const { ThreadLoader } = (() => {
         threadKey,
       };
 
-      if (msgInfo.language !== params.language) {
-        packet.params.language = msgInfo.language;
-      }
-
       const when = msgInfo.when;
       if (typeof when === 'number' && when > 0) {
         packet.additionals = { when };
@@ -339,7 +335,8 @@ const { ThreadLoader } = (() => {
         threadId: msgInfo.threadId,
         is184Forced: msgInfo.defaultThread!.is184Forced,
         totalResCount,
-        language: msgInfo.language,
+        language:
+          typeof msgInfo.nvComment.params.language === 'string' ? msgInfo.nvComment.params.language : msgInfo.language,
         when: msgInfo.when,
         isWaybackMode: !!msgInfo.when,
       };

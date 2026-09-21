@@ -288,7 +288,7 @@ describe('P4 コメント投稿API契約', () => {
     expect(calls).toBe(0);
   });
 
-  test('P3-07 再取得の時刻と言語を本文に反映し元パラメーターを変更しない', async () => {
+  test('P3-07 再取得の時刻を追加し、API指定の言語を保存設定で上書きしない', async () => {
     const info = context();
     info.when = 123456;
     info.language = 'en-us';
@@ -301,7 +301,7 @@ describe('P4 コメント投稿API契約', () => {
       return Promise.resolve(ok({ globalComments: [], threads: [] }));
     };
     await ThreadLoader._load(info);
-    expect(JSON.parse(body)).toMatchObject({ additionals: { when: 123456 }, params: { language: 'en-us' } });
+    expect(JSON.parse(body)).toMatchObject({ additionals: { when: 123456 }, params: { language: 'ja-jp' } });
     expect(info.nvComment.params.language).toBe('ja-jp');
   });
 
