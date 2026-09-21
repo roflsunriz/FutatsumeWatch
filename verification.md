@@ -326,6 +326,7 @@ scripts/dev-verify-addons.tsは隔離コンテキストで外部通信を遮断�
 - GitHub ActionsのWindowsブラウザ検証で、製品の55項目合格後に終了済みWorkerへの購読要求が`No session with given id`となり、releaseジョブがスキップされた。
 - 子セッションの消滅時だけ未完了の購読要求を正常終了させる。ほかのCDPエラーを同じ扱いにしないことを`test/unit/offline-site.test.ts`で固定する。
 - Windows runnerの英語ロケールでは`datetime-local`が月→日→年・12時間表示になる。実キー入力順をブラウザのロケールから構成し、日本語24時間表示と英語12時間表示の並びを`test/unit/library-date-input.test.ts`で確認する。
+- ページ終了時の`Fetch.fulfillRequest/failRequest: Invalid InterceptionId`は、監査のclose開始後だけ要求消滅として回収する。別のFetchエラーを失敗に保つ正負例を`offline-site.test.ts`で確認する。
 
 ## 未確認・制約と再開条件
 

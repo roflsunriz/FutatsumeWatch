@@ -42,6 +42,9 @@ export async function installOffline(session: CdpSession, targetId?: string): Pr
   mkdirSync(directory, { recursive: true });
   const originalSend = session.send;
   const originalClose = session.close;
+  let closing = false;
+  const isExpiredInterception = (error: unknown): boolean =>
+    error instanceof Error && /^Fetch\.(?:fulfillRequest|failRequest): Invalid InterceptionId\.$/.test(error.message);
   const reportError = (error: unknown): void => {
     errors.push(String(error));
   };
@@ -141,11 +144,12 @@ export async function installOffline(session: CdpSession, targetId?: string): Pr
               });
             } catch (error) {
               // パーサー・ファイル読込・CDPの失敗でもpaused要求を放置しない。
+              if (closing && isExpiredInterception(error)) return;
               reportError(error);
               try {
                 await channel.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'Failed' });
               } catch (cleanupError) {
-                reportError(cleanupError);
+                if (!(closing && isExpiredInterception(cleanupError))) reportError(cleanupError);
               }
             }
           })()
@@ -204,6 +208,7 @@ export async function installOffline(session: CdpSession, targetId?: string): Pr
   let closePromise: Promise<void> | undefined;
   session.close = () =>
     (closePromise ??= (async () => {
+      closing = true;
       try {
         // close開始後も、開始済みの要求・子ターゲット設定・失敗を最後まで取り込む。
         await drain();

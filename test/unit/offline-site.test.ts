@@ -317,8 +317,13 @@ class FakeSession implements CdpSession {
   closeError: Error | undefined;
   missingTargetSessions = new Set<string>();
   targetSessionErrors = new Map<string, string>();
+  fetchErrors = new Map<string, string>();
   send = (method: string, params: Record<string, unknown> = {}): Promise<unknown> => {
     this.calls.push({ method, params });
+    if (method === 'Fetch.fulfillRequest' || method === 'Fetch.failRequest') {
+      const fetchError = this.fetchErrors.get(String(params.requestId));
+      if (fetchError) return Promise.reject(new Error(`${method}: ${fetchError}`));
+    }
     if (method === 'Target.sendMessageToTarget') {
       if (this.missingTargetSessions.has(String(params.sessionId)))
         return Promise.reject(new Error('Target.sendMessageToTarget: No session with given id'));
@@ -449,6 +454,32 @@ describe('Phase0 非同期通信監査と終了処理', () => {
     session.targetSessionErrors.set('broken-worker', 'Target.sendMessageToTarget: unexpected protocol failure');
     session.emit('Target.attachedToTarget', { sessionId: 'broken-worker', targetInfo: { type: 'worker' } });
     expect(await closeError(session)).toContain('unexpected protocol failure');
+    expect(offlineReports.get(session)?.completed).toBe(false);
+  });
+
+  test('close開始後に無効化されたinterceptionだけは監査失敗にしない', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    session.fetchErrors.set('expired', 'Invalid InterceptionId.');
+    session.emit('Fetch.requestPaused', {
+      requestId: 'expired',
+      networkId: 'expired-network',
+      request: request('https://fixture.invalid/poster.svg'),
+    });
+    expect(await closeError(session)).toBe('');
+    expect(offlineReports.get(session)).toMatchObject({ completed: true, errors: [] });
+  });
+
+  test('close中でもinterception消滅以外のFetchエラーは監査失敗にする', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    session.fetchErrors.set('broken', 'unexpected fetch failure');
+    session.emit('Fetch.requestPaused', {
+      requestId: 'broken',
+      networkId: 'broken-network',
+      request: request('https://fixture.invalid/poster.svg'),
+    });
+    expect(await closeError(session)).toContain('unexpected fetch failure');
     expect(offlineReports.get(session)?.completed).toBe(false);
   });
 
