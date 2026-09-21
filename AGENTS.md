@@ -193,6 +193,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - スイート終了はWebSocketを閉じるだけで済ませず、自分が作成したTargetとBrowserContextも破棄する。`cleanupCdp`で一つの後始末が失敗しても残りを実行する。guardで異なるContext間のlocalStorageとBroadcastChannel隔離も確認する。
 - 生成HLSは`test/fixtures/functionality/media`に置く。MPEG-TSを`.ts`にすると型検査でTypeScriptと誤認するため`.mpegts`を使う。生成手順と採取・加工根拠は同ディレクトリのREADMEを参照する。
 - 設定の全項目検証は`verify-settings-fields.ts`。描画エンジンはコメントdurationを整数msに正規化するため、速度変更の期待値は導入版の公開実装と照合する。全入力の保存成功を、実機・外部サービスを含む全機能効果の保証としない。
+- `datetime-local`の表示・実キー入力順は実行環境のロケールで変わる。`dev-verify-library-comments.ts`はブラウザの`Intl.DateTimeFormat.formatToParts`と12/24時間制からセグメント順を決め、年→月→日を固定しない。回帰は`library-date-input.test.ts`。
 - コメント行メニューの`.menuButton`はiframeへ注入する共通CSSと衝突して実寸法が潰れたため`.comment-row-action`に変更した。新しい標準dialogも、ホストページの背景操作抑止CSSに巻き込まれないよう`futatsume-family`へ所属させる。
 - 一覧のソート描画と関連動画追加には遅延処理がある。内部ソートキーの変化や開始前の`isUpdating=false`を完了判定に使わず、表示行ID／開始から終了への遷移と再取得結果を確認する。
 - 計画と親ケースの対応は`docs/plan-functionality-test.md`・`docs/functionality-test-matrix.md`、実行済み結果は`verification.md`と実行ごとの`run.json`を正本にする。

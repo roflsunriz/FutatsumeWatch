@@ -10,6 +10,30 @@ export interface LibraryActions {
   input(this: void, session: CdpSession, selector: string, text: string, within?: string): Promise<void>;
   find(this: void, selector: string, within?: string): string;
 }
+
+type DateTimeInputSegment = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'dayPeriod';
+
+export function getDateTimeInputKeys(
+  value: string,
+  segments: readonly DateTimeInputSegment[],
+  hour12: boolean
+): string[] {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/.exec(value);
+  if (!match) throw new Error(`日時入力値の形式が不正です: ${value}`);
+  const [, year, month, day, rawHour, minute, second] = match;
+  const hour = Number(rawHour);
+  const values: Record<DateTimeInputSegment, string> = {
+    year: year!,
+    month: month!,
+    day: day!,
+    hour: hour12 ? String(hour % 12 || 12).padStart(2, '0') : rawHour!,
+    minute: minute!,
+    second: second!,
+    dayPeriod: hour < 12 ? 'a' : 'p',
+  };
+  return segments.map((segment) => values[segment]);
+}
+
 export async function verifyLibraryComments(session: CdpSession, actions: LibraryActions): Promise<void> {
   const { check, click, input, find } = actions;
   const root = `document.querySelector('#fw-tab-comment')`;
@@ -23,14 +47,17 @@ export async function verifyLibraryComments(session: CdpSession, actions: Librar
     actions.requests.filter((request) => request.method === 'POST' && new URL(request.url).pathname === '/v1/threads');
   const dateInput = async (value: string) => {
     await click(session, '.dateTimeInput', root);
+    const layout = (await evaluate(
+      session,
+      `(()=>{const f=new Intl.DateTimeFormat(navigator.language,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});const supported=new Set(['year','month','day','hour','minute','second','dayPeriod']);return {segments:f.formatToParts(new Date(2001,10,22,13,44,55)).map(p=>p.type).filter(type=>supported.has(type)),hour12:f.resolvedOptions().hour12};})()`
+    )) as { segments: DateTimeInputSegment[]; hour12: boolean };
     const key = async (key: string, text?: string) => {
       await session.send('Input.dispatchKeyEvent', { type: 'keyDown', key, text });
       await session.send('Input.dispatchKeyEvent', { type: 'keyUp', key });
     };
     for (let i = 0; i < 8; i++) await key('ArrowLeft');
-    const parts = value.split(/[-T:]/);
-    for (const digit of parts[0]!) await key(digit, digit);
-    for (const part of parts.slice(1)) for (const digit of part) await key(digit, digit);
+    for (const part of getDateTimeInputKeys(value, layout.segments, layout.hour12))
+      for (const character of part) await key(character, character);
   };
   const openRow = async (no: number) => {
     if (await evaluate(session, `${model}._currentSortKey!=='vpos'`)) {
