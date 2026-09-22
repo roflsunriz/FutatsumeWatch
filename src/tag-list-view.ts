@@ -292,13 +292,14 @@ TagListView.__css__ = `
     }
   `.trim();
 
-class TagItemMenu extends HTMLElement {
-  private hasNicodic!: boolean;
-  private text!: string;
-  private _shadow!: ShadowRoot;
-  static template({ text }: { text: string }): string {
-    const host = location.host;
-    return `
+if (typeof HTMLElement !== 'undefined') {
+  class TagItemMenu extends HTMLElement {
+    private hasNicodic!: boolean;
+    private text!: string;
+    private _shadow!: ShadowRoot;
+    static template({ text }: { text: string }): string {
+      const host = location.host;
+      return `
       <style>
         .root {
           display: inline-block;
@@ -419,22 +420,23 @@ class TagItemMenu extends HTMLElement {
         </ul>
       </div>
     `;
+    }
+    constructor() {
+      super();
+      this.hasNicodic = this.dataset.hasNicodic === '1';
+      this.text = (textUtil as unknown as TagTextUtil).escapeToZenkaku(this.dataset.text as string);
+      const shadow = (this._shadow = this.attachShadow({ mode: 'open' }));
+      shadow.innerHTML = (
+        this.constructor as unknown as {
+          template(args: { text: string }): string;
+        }
+      ).template({ text: this.text });
+      shadow.querySelector('.root')!.classList.toggle('has-nicodic', this.hasNicodic);
+    }
   }
-  constructor() {
-    super();
-    this.hasNicodic = this.dataset.hasNicodic === '1';
-    this.text = (textUtil as unknown as TagTextUtil).escapeToZenkaku(this.dataset.text as string);
-    const shadow = (this._shadow = this.attachShadow({ mode: 'open' }));
-    shadow.innerHTML = (
-      this.constructor as unknown as {
-        template(args: { text: string }): string;
-      }
-    ).template({ text: this.text });
-    shadow.querySelector('.root')!.classList.toggle('has-nicodic', this.hasNicodic);
+  if (typeof window !== 'undefined' && window.customElements) {
+    window.customElements.define('futatsume-tag-item-menu', TagItemMenu);
   }
-}
-if (window.customElements) {
-  window.customElements.define('futatsume-tag-item-menu', TagItemMenu);
 }
 
 //===END===

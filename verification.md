@@ -4,8 +4,9 @@
 
 - NG・フィルターのトグル重なりの原因は、金属調トグル（50×28）へ移行した後に旧来の`transform: scale(2)`が残り、実矩形が100×56となって隣の行へ16px食い込んでいたことだった。`setting-panel-element.ts`と`setting.ts`の旧指定を除去し、共通テーマの寸法へ一本化した。詳細設定の2項目も同じ原因だったため同時に修正した。
 - 再生中にホバーで表示されるタイトルと動画メタデータは現行シェルの`.fw-header`が正本であり、旧`VideoHeaderPanel`はシェル表示では`display:none`のため、タグ一覧はシェルの`.fw-heading`内（タイトル・メタデータの下）へ詳細タブと同じ閲覧専用`TagListView`で表示する。旧ヘッダへの仮実装は取り消した。
-- 0.0.21の最終`bun run test:browser all --offline`は全9スイート成功（settingsに「フィルターのトグルが重ならない」を追加）。証跡は`dev-assets/verification/2026-09-22T11-53-48-178Z-offline-2ca9e93c/run.json`、画像は同ディレクトリの`settings/settings-tabs-filters-1280.png`と`dev-assets/verification/header-tags-hover.png`、配布物SHA-256は`e474d4152fac98b0dc6af55f897c9a280ace19be24f83cf60fa6c39e51cf4d69`。
+- 0.0.21の最終`bun run test:browser all --offline`は全9スイート成功（settingsに「フィルターのトグルが重ならない」を追加）。証跡は`dev-assets/verification/2026-09-22T11-53-48-178Z-offline-2ca9e93c/run.json`、画像は同ディレクトリの`settings/settings-tabs-filters-1280.png`と`dev-assets/verification/header-tags-hover.png`、配布物SHA-256は`ac9d43e4cc04c8be026b7c16b09831b476d3fbeae20d5bc2f3ea0302a7d7c9e9`。
 - `bun install --frozen-lockfile`、lint、整形、型検査、ビルド、全単体388件（2,696アサーション）、`bun audit`（243パッケージ・脆弱性0件）に成功した。公開サイト通信、実アカウント操作は行っていない。
+- CI初回は単体テストが`tag-list-view.ts`のモジュール直下`extends HTMLElement`で失敗した。`player-shell.ts`がタグ表示のために同モジュールを読み込むようになり、DOMグローバルなしで読み込むテスト経路で壊れた。カスタム要素の定義を`typeof HTMLElement`で守り、読み込み自体は常に成功するようにした。公開後のCI再実行で確認する。
 
 ## 2026-09-22：利用可能フォントのプルダウン（0.0.19）
 
