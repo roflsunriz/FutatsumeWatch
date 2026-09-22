@@ -104,17 +104,20 @@ export class PlayerShell {
     this.menu.id = 'fw-settings';
     this.menu.className = 'fw-settings';
     this.menu.setAttribute('aria-label', t.settings);
-    this.menu.innerHTML = `<div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton('dismiss', t.close, 'close')}</div>
-      <button type="button" data-shell-action="general">${t.settings}</button>
+    this.menu.innerHTML = `<div class="fw-settings-rail">
+      <div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton('dismiss', t.close, 'close')}</div>
+      <button type="button" class="fw-settings-picker" data-shell-action="general"><span aria-hidden="true">☰</span>${t.chooseSettings}</button>
       <label class="fw-quality">${t.quality}<select data-shell-quality aria-label="${t.quality}">
         <option value="auto">${t.auto}</option>
       </select></label>
       <a href="https://github.com/roflsunriz/FutatsumeWatch" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-      <details><summary>${t.more}</summary>
+      <div class="fw-settings-actions" aria-label="${t.more}">
         <button type="button" data-shell-action="reload">${t.reload}</button>
         <button type="button" data-shell-action="screenShotWithComment">${t.capture}</button>
         <button type="button" data-shell-action="openGinza">${t.original}</button>
-      </details>`;
+      </div>
+    </div>
+    <div class="fw-settings-home"><p>${t.chooseSettingsPrompt}</p></div>`;
     this.menu.inert = true;
     this.backdrop = document.createElement('button');
     this.backdrop.type = 'button';

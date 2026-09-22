@@ -48,6 +48,7 @@ export class SettingsDialog {
   readonly content: HTMLDivElement;
   private readonly body: HTMLDivElement;
   private readonly sidebar: HTMLElement;
+  private readonly heading: HTMLHeadingElement;
   constructor(
     readonly element: HTMLDialogElement,
     private readonly name: SettingsPanel,
@@ -78,6 +79,20 @@ export class SettingsDialog {
     this.sidebar.setAttribute('role', 'tablist');
     this.sidebar.setAttribute('aria-orientation', 'vertical');
     this.sidebar.setAttribute('aria-label', text.navigation);
+    const brand = document.createElement('div');
+    brand.className = 'fw-settings-brand';
+    const menuMark = document.createElement('span');
+    menuMark.className = 'fw-settings-brand-mark';
+    menuMark.textContent = '☰';
+    menuMark.setAttribute('aria-hidden', 'true');
+    const brandText = document.createElement('span');
+    const product = document.createElement('strong');
+    product.textContent = 'FutatsumeWatch';
+    const version = document.createElement('small');
+    version.textContent = `v${document.querySelector<HTMLElement>('[data-futatsume-entry]')?.dataset.futatsumeVersion ?? ''}`;
+    brandText.append(product, version);
+    brand.append(menuMark, brandText);
+    this.sidebar.append(brand);
     for (const tab of tabs) {
       const button = document.createElement('button');
       button.type = 'button';
@@ -104,7 +119,7 @@ export class SettingsDialog {
     layout.append(this.sidebar, body);
     const header = document.createElement('header');
     header.className = 'fw-modal-heading';
-    const title = document.createElement('h2');
+    const title = (this.heading = document.createElement('h2'));
     title.textContent = text[name];
     const close = document.createElement('button');
     close.type = 'button';
@@ -187,7 +202,9 @@ export class SettingsDialog {
     navigation.open?.(isGeneralSection(tab) ? 'general' : tab);
   }
   private syncTabs(): void {
+    const text = labels[navigator.language.startsWith('ja') ? 'ja' : 'en'];
     const selected = this.name === 'general' ? navigation.section : this.name;
+    this.heading.textContent = text[selected];
     for (const button of this.sidebar.querySelectorAll<HTMLButtonElement>('[data-settings-tab]')) {
       const tab = button.dataset.settingsTab as SettingsTab;
       const active = tab === selected;

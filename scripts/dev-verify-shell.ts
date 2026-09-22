@@ -211,23 +211,21 @@ async function main(): Promise<void> {
     await screenshot(session, '1280-settings');
     await check(
       session,
-      `(()=>{const menu=document.querySelector('.fw-settings');return menu.querySelectorAll(':scope > button').length===1&&menu.querySelectorAll(':scope > .fw-quality').length===1&&menu.querySelectorAll(':scope > a').length===1&&menu.querySelectorAll(':scope > details').length===1&&menu.querySelectorAll('[data-shell-action="advanced"],[data-shell-action="masked"],[data-shell-action="toggleHLSDebug"],[data-shell-action="toggleFutatsumeGamePadConfig"],[data-shell-action="toggleHeatSyncDialog"]').length===0})()`,
-      '設定前のメニューを4項目に集約'
+      `(()=>{const menu=document.querySelector('.fw-settings'),rail=menu.querySelector('.fw-settings-rail'),home=menu.querySelector('.fw-settings-home'),r=menu.getBoundingClientRect();return r.width===innerWidth&&r.height===innerHeight&&rail.querySelectorAll(':scope > .fw-settings-picker').length===1&&rail.querySelectorAll(':scope > .fw-quality').length===1&&rail.querySelectorAll(':scope > a').length===1&&rail.querySelectorAll('.fw-settings-actions > [data-shell-action]').length===3&&!menu.querySelector('details')&&home.textContent.includes('設定項目を選んでください')})()`,
+      'スケッチどおり左メニューと設定選択案内を表示'
     );
-    await clickVisible(session, '.fw-settings > details > summary');
     await check(
       session,
-      `document.querySelector('.fw-settings > details').open && document.querySelectorAll('.fw-settings > details [data-shell-action]').length===3`,
-      'その他操作の既存3操作を開く'
+      `document.querySelectorAll('.fw-settings-actions > [data-shell-action]').length===3`,
+      'その他操作をアコーディオンなしで並べる'
     );
-    await clickVisible(session, '.fw-settings > details > summary');
     await Bun.sleep(3300);
     await check(session, `${container}.dataset.controls==='visible'`, 'メニュー操作中は自動で隠さない');
-    await clickVisible(session, '.fw-backdrop');
+    await clickVisible(session, '.fw-settings [data-shell-action="dismiss"]');
     await check(
       session,
       `${container}.dataset.panel==='' && document.querySelector('.fw-settings').inert`,
-      '背景クリックで閉じる'
+      '閉じるボタンで設定選択画面を閉じる'
     );
     await evaluate(
       session,

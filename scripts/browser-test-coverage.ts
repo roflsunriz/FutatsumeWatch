@@ -99,6 +99,8 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     'ABリピート解除',
     'AB指定で動画全体のリピートを解除',
     '通常リピートへの切替でAB指定を解除',
+    'スケッチどおり左メニューと設定選択案内を表示',
+    'その他操作をアコーディオンなしで並べる',
     '左メニューから一般設定を開く',
     '一般設定のチェックボックスを実クリックで保存',
     '右の4タブを開く',

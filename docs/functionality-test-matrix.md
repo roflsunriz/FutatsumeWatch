@@ -50,7 +50,7 @@
 | P2-08 | コメント設定の全入力・描画パラメータへの反映                            | settings、settings-comment-presentation単体                                          |
 | P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                    | settings、settings-filter等の単体                                                    |
 | P2-10 | 詳細設定2項目、ダブルクリック全画面と終端時の全画面解除                 | settings、settings-video-events単体                                                  |
-| P2-15 | 一般・詳細の全カテゴリ、背景／内部クリック、Escape、フォーカス、各寸法  | settings、settings-dialog単体                                                        |
+| P2-15 | 初期選択案内、平置き操作、一般・詳細の全カテゴリ、Escape、各寸法        | ui、settings、settings-dialog単体                                                    |
 
 ## 一覧・タグ・投稿
 

@@ -239,19 +239,45 @@
 #futatsumeVideoPlayerDialog .fw-settings {
   display: none;
   position: absolute;
-  inset: 0 auto 0 0;
-  width: min(280px, 88vw);
-  padding: 20px 14px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: #131923f5;
-  border-right: 1px solid #ffffff20;
+  inset: 0;
+  grid-template-columns: minmax(220px, 26%) minmax(0, 1fr);
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #0d141ff5;
   z-index: 510;
   font-size: 15px;
-  box-shadow: 12px 0 48px #0005;
+  box-shadow: none;
 }
 #futatsumeVideoPlayerDialog .fw-player[data-panel='settings'] .fw-settings {
-  display: block;
+  display: grid;
+}
+#futatsumeVideoPlayerDialog .fw-settings-rail {
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px 14px;
+  background: #131923;
+  border-right: 1px solid #ffffff20;
+  box-shadow: 12px 0 48px #0005;
+}
+#futatsumeVideoPlayerDialog .fw-settings-home {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 32px;
+  background: #101721;
+  color: var(--fw-muted);
+}
+#futatsumeVideoPlayerDialog .fw-settings-home p {
+  margin: 0;
+  padding: 24px 32px;
+  border: 1px dashed #ffffff30;
+  border-radius: 16px;
+  font-size: clamp(18px, 2vw, 28px);
+  text-align: center;
 }
 #futatsumeVideoPlayerDialog .fw-menu-heading {
   display: flex;
@@ -264,9 +290,9 @@
   color: var(--fw-muted);
   margin-top: 4px;
 }
-#futatsumeVideoPlayerDialog .fw-settings > button,
-#futatsumeVideoPlayerDialog .fw-settings details button,
-#futatsumeVideoPlayerDialog .fw-settings > a,
+#futatsumeVideoPlayerDialog .fw-settings-rail > button,
+#futatsumeVideoPlayerDialog .fw-settings-actions button,
+#futatsumeVideoPlayerDialog .fw-settings-rail > a,
 #futatsumeVideoPlayerDialog .fw-quality {
   display: flex;
   justify-content: space-between;
@@ -278,15 +304,25 @@
   color: var(--fw-ink);
   border-radius: 8px;
 }
-#futatsumeVideoPlayerDialog .fw-settings details {
+#futatsumeVideoPlayerDialog .fw-settings-rail > .fw-settings-picker {
+  gap: 10px;
+  justify-content: flex-start;
+  color: var(--fw-accent);
+  background: #203d3b;
+  border-color: #8ddbc755;
+}
+#futatsumeVideoPlayerDialog .fw-settings-picker span {
+  font-size: 20px;
+}
+#futatsumeVideoPlayerDialog .fw-settings-actions {
+  display: grid;
+  gap: 4px;
   margin-top: 16px;
   border-top: 1px solid #ffffff20;
   padding-top: 16px;
 }
-#futatsumeVideoPlayerDialog .fw-settings summary {
-  cursor: pointer;
-  color: var(--fw-muted);
-  padding: 10px;
+#futatsumeVideoPlayerDialog .fw-settings-actions button {
+  justify-content: flex-start;
 }
 #futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoInfoPanel {
   display: none;
@@ -473,10 +509,25 @@
     height: 48px;
   }
   #futatsumeVideoPlayerDialog .fw-settings {
-    padding-top: 8px;
+    grid-template-columns: minmax(180px, 38%) minmax(0, 1fr);
   }
   #futatsumeVideoPlayerDialog .fw-menu-heading {
     margin-bottom: 6px;
+  }
+}
+@media (max-width: 520px) {
+  #futatsumeVideoPlayerDialog .fw-settings {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  #futatsumeVideoPlayerDialog .fw-settings-rail {
+    max-height: 46dvh;
+    border-right: 0;
+    border-bottom: 1px solid #ffffff20;
+    box-shadow: 0 12px 36px #0005;
+  }
+  #futatsumeVideoPlayerDialog .fw-settings-home {
+    padding: 16px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

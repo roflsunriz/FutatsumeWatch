@@ -1,5 +1,7 @@
 const ja = {
   settings: '設定',
+  chooseSettings: '設定項目を選ぶ',
+  chooseSettingsPrompt: '設定項目を選んでください',
   details: '動画の詳細',
   close: '閉じる',
   quality: '画質',
@@ -37,6 +39,8 @@ const ja = {
 };
 const en: typeof ja = {
   settings: 'Settings',
+  chooseSettings: 'Choose a settings category',
+  chooseSettingsPrompt: 'Choose a settings category',
   details: 'Video details',
   close: 'Close',
   quality: 'Video quality',
