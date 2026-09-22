@@ -1,7 +1,7 @@
 // FutatsumeWatch のユーザースクリプト生成に関する小さく型安全な基盤。
 // 配布版と開発版は同じ自己完結ファイルを使用する。
 
-export const VERSION = '0.0.18';
+export const VERSION = '0.0.19';
 export const STABLE_USERSCRIPT_FILE = 'dist/FutatsumeWatch.user.js';
 
 const VERSION_LINE_PATTERN = /^\s*\/\/\s*@version\s+(.+?)\s*$/m;
