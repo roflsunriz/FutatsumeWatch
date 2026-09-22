@@ -55,47 +55,6 @@ test('終端の全画面解除は設定・動画別指定・次動画の継続�
   }
 });
 
-test('説明欄のYouTube自動切替はON時だけ実要求し、途中OFF・別動画への遅延を無視する', async () => {
-  const commands: unknown[][] = [];
-  const raw: unknown = await Bun.file('test/fixtures/video-info-raw-data.json').json();
-  type Info = Parameters<typeof VideoInfoPanel.prototype._onVideoCanPlay>[1];
-  const first = new VideoInfoModel(raw as RawVideoInfoData) as Info;
-  const second = new VideoInfoModel(raw as RawVideoInfoData) as Info;
-  const context = {
-    playbackGeneration: 0,
-    _relatedVideoList: { fetchRecommend: () => Promise.resolve() },
-    _config: { props: { autoFutatsumeTube: false } },
-    _futatsumeTubeUrl: 'https://www.youtube.com/watch?v=fixture',
-    _videoInfo: first,
-    emit: (...args: unknown[]) => commands.push(args),
-  };
-  await VideoInfoPanel.prototype._onVideoCanPlay.call(context, 'sm9', first, {});
-  await Bun.sleep(120);
-  expect(commands).toEqual([]);
-  context._config.props.autoFutatsumeTube = true;
-  await VideoInfoPanel.prototype._onVideoCanPlay.call(context, 'sm9', first, {});
-  await Bun.sleep(120);
-  expect(commands).toEqual([['command', 'setVideo', context._futatsumeTubeUrl]]);
-  commands.length = 0;
-  await VideoInfoPanel.prototype._onVideoCanPlay.call(context, 'sm9', first, { isAutoFutatsumeTubeDisabled: true });
-  await Bun.sleep(120);
-  expect(commands).toEqual([]);
-  await VideoInfoPanel.prototype._onVideoCanPlay.call(context, 'sm9', first, {});
-  context._config.props.autoFutatsumeTube = false;
-  await Bun.sleep(120);
-  expect(commands).toEqual([]);
-  context._config.props.autoFutatsumeTube = true;
-  await VideoInfoPanel.prototype._onVideoCanPlay.call(context, 'sm9', first, {});
-  context._videoInfo = second;
-  await Bun.sleep(120);
-  expect(commands).toEqual([]);
-  context._videoInfo = first;
-  await VideoInfoPanel.prototype._onVideoCanPlay.call(context, 'sm9', first, {});
-  VideoInfoPanel.prototype.cancelPending.call(context);
-  await Bun.sleep(120);
-  expect(commands).toEqual([]);
-});
-
 test('動画情報パネルは実canPlayイベントから関連取得へ接続する', async () => {
   const dialog = new Emitter();
   const panel = new VideoInfoPanel({ dialog });

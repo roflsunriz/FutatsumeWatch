@@ -87,137 +87,67 @@ const { SettingPanelElement } = (() => {
     static getPlayerSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {
       return html`
         <section class="player-setting" data-settings-section="player">
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="autoPlay"
-              ?checked=${conf.autoPlay}>
+          <div class="control">
+            <label>
+              <input type="checkbox" class="checkbox" data-setting-name="autoPlay" ?checked=${conf.autoPlay} />
               自動で再生する
-          </label>
-        </div>
+            </label>
+          </div>
 
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="enableResume"
-              ?checked=${conf.enableResume}>
+          <div class="control">
+            <label>
+              <input type="checkbox" class="checkbox" data-setting-name="enableResume" ?checked=${conf.enableResume} />
               続きから再生する
-          </label>
-        </div>
+            </label>
+          </div>
 
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-            data-setting-name="enableTogglePlayOnClick"
-              ?checked=${conf.enableTogglePlayOnClick}>
+          <div class="control">
+            <label>
+              <input
+                type="checkbox"
+                class="checkbox"
+                data-setting-name="enableTogglePlayOnClick"
+                ?checked=${conf.enableTogglePlayOnClick}
+              />
               画面クリックで再生/一時停止
-          </label>
-        </div>
+            </label>
+          </div>
 
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="autoFullScreen"
-              ?checked=${conf.autoFullScreen}>
+          <div class="control">
+            <label>
+              <input
+                type="checkbox"
+                class="checkbox"
+                data-setting-name="autoFullScreen"
+                ?checked=${conf.autoFullScreen}
+              />
               自動でフルスクリーンにする
-          </label>
-        </div>
+            </label>
+          </div>
 
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="enableSingleton"
-              ?checked=${conf.enableSingleton}>
-              FutatsumeWatchを起動してるタブがあればそちらで開く<br>
-              <smal>(singletonモード)</small>
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="enableHeatMap"
-              ?checked=${conf.enableHeatMap}>
+          <div class="control">
+            <label>
+              <input
+                type="checkbox"
+                class="checkbox"
+                data-setting-name="enableHeatMap"
+                ?checked=${conf.enableHeatMap}
+              />
               コメントの盛り上がりをシークバーに表示
-          </label>
-        </div>
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="overrideGinza"
-              ?checked=${conf.overrideGinza}>
-              動画視聴ページでも公式プレイヤーの代わりに起動する
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="overrideWatchLink"
-              ?checked=${conf.overrideWatchLink}>
-              [Futatsume]ボタンなしでFutatsumeWatchを開く(リロード後に反映)
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="enableStoryboard"
-              ?checked=${conf.enableStoryboard}>
+            </label>
+          </div>
+          <div class="control">
+            <label>
+              <input
+                type="checkbox"
+                class="checkbox"
+                data-setting-name="enableStoryboard"
+                ?checked=${conf.enableStoryboard}
+              />
               シークバーにサムネイルを表示
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="enableAutoMylistComment"
-              ?checked=${conf.enableAutoMylistComment}>
-              マイリストコメントに投稿者名を入れる
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="enableNicosJumpVideo"
-              ?checked=${conf.enableNicosJumpVideo}
-              data-command="toggle-enableNicosJumpVideo">
-              ＠ジャンプで指定された動画をプレイリストに入れる
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox" data-setting-name="touch.enable"
-            data-command="toggle-touchEnable"
-            ?checked=${conf.touch.enable}>
-              タッチパネルのジェスチャを有効にする
-              <smal>(2本指左右シーク・上下で速度変更/3本指で動画切替)</small>
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="bestFutatsumeTube"
-              ?checked=${conf.bestFutatsumeTube}
-              data-command="toggle-bestFutatsumeTube">
-              FutatsumeTube使用時に最高画質をリクエストする (※ 機能してないかも)
-          </label>
-        </div>
-
-        <div class="control">
-          <label>
-            <input type="checkbox" class="checkbox"
-              data-setting-name="loadLinkedChannelVideo"
-              ?checked=${conf.loadLinkedChannelVideo}>
-              無料期間の切れた動画はdアニメの映像を流す<br>
-              <small>(当然ながらdアニメニコニコチャンネル加入が必要)</small>
-          </label>
-        </div>
-
-      </section>
+            </label>
+          </div>
+        </section>
       `;
     }
     static getCommentSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {

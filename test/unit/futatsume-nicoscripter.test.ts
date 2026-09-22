@@ -60,12 +60,6 @@ describe('NicoScriptParser.parseNicos', () => {
     expect(typeof parsed.id).toBe('number');
   });
 
-  it('＠ジャンプの動画ID遷移先を JUMP として解釈する', () => {
-    const parsed = NicoScriptParser.parseNicos('＠ジャンプ sm123');
-
-    expect(parsed.type).toBe('JUMP');
-  });
-
   it('＠ジャンプの時刻指定を SEEK として解釈する', () => {
     const parsed = NicoScriptParser.parseNicos('＠ジャンプ #1:30');
 
@@ -83,16 +77,6 @@ describe('NicoScripter.apply', () => {
     scripter.apply([target]);
 
     expect(target.text).toBe('say こんにちは world');
-  });
-
-  it('＠ジャンプで次動画IDを記録する', () => {
-    const scripter = new NicoScripter();
-    const nicos = NicoChat.create({ text: '＠ジャンプ sm123', vpos: 0, fork: 1 });
-    scripter.add(nicos);
-
-    scripter.apply([]);
-
-    expect(scripter.getNextVideo()).toBe('sm123');
   });
 
   it('時間窓外のコメントには適用しない', () => {

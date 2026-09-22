@@ -62,30 +62,6 @@ interface NvpVideoPlayerParams {
 interface NvpBoundHandlers extends Record<string, (e: Event) => void> {
   onBodyClick: EventListener;
 }
-interface NvpTouchPoint {
-  x: number;
-  y: number;
-}
-interface NvpTouchDiff {
-  count: number;
-  startX: number;
-  startY: number;
-  currentX: number;
-  currentY: number;
-  moveX: number;
-  moveY: number;
-  x: number;
-  y: number;
-  perX: number;
-  perY: number;
-  perStartX: number;
-  perStartY: number;
-  movePerX: number;
-  movePerY: number;
-}
-interface NvpTouchConfig {
-  props: Record<string, string>;
-}
 interface NvpYouTubePlayer {
   autoplay: boolean;
   loop: boolean;
@@ -991,8 +967,6 @@ ContextMenu.__tpl__ = `
           data-command="reload">動画のリロード</li>
         <li class="command"
           data-command="copy-video-watch-url">動画URLをコピー</li>
-        <li class="command debug" data-config="debug"
-          data-command="toggle-debug">デバッグ</li>
         <li class="command mymemory"
           data-command="saveMymemory">コメントの保存</li>
       </ul>
@@ -1011,7 +985,7 @@ class VideoPlayer extends Emitter {
   declare _currentVideo: HTMLVideoElement | NvpYouTubePlayer;
   declare _body: HTMLDivElement;
   declare classList: DOMTokenList;
-  declare _touchWrapper: TouchWrapper;
+  declare _touchWrapper: HTMLDivElement;
   declare _isPlaying: boolean;
   declare _canPlay: boolean;
   declare _playbackRate: number;
@@ -1106,16 +1080,9 @@ class VideoPlayer extends Emitter {
     this.muted = params.mute as boolean;
     this.playbackRate = playbackRate;
 
-    this._touchWrapper = new TouchWrapper({
-      parentElement: body,
-    });
-    this._touchWrapper.on('command', (command: unknown, param: unknown) => {
-      if (command === 'contextMenu') {
-        (this as unknown as { _emit(event: string, ...args: Array<unknown>): void })._emit('contextMenu', param);
-        return;
-      }
-      this.emit('command', command, param);
-    });
+    this._touchWrapper = document.createElement('div');
+    this._touchWrapper.className = 'touchWrapper';
+    body.append(this._touchWrapper);
 
     this._initializeEvents();
 
@@ -1155,7 +1122,7 @@ class VideoPlayer extends Emitter {
       .on('contextmenu', eventBridge.bind(this, 'contextmenu'))
       .on('click', eventBridge.bind(this, 'click'));
 
-    const touch = (util as unknown as NvpUtil).$(this._touchWrapper.body);
+    const touch = (util as unknown as NvpUtil).$(this._touchWrapper);
     touch
       .on('click', eventBridge.bind(this, 'click'))
       .on('dblclick', this._onDoubleClick.bind(this))
@@ -1179,9 +1146,6 @@ class VideoPlayer extends Emitter {
       } else {
         this._isAspectRatioFixed = true;
         this.emit('aspectRatioFix', this._video.videoHeight / Math.max(1, this._video.videoWidth));
-      }
-      if (this._isYouTube && Config.props.bestFutatsumeTube) {
-        this._videoYouTube.selectBestQuality();
       }
     }
   }
@@ -1713,233 +1677,6 @@ VideoPlayer.__css__ = `
 
 
   `.trim();
-
-class TouchWrapper extends Emitter {
-  declare _parentElement: Element | null | undefined;
-  declare _config: NvpTouchConfig;
-  declare _isTouching: boolean;
-  declare _maxCount: number;
-  declare _currentPointers: Array<Touch>;
-  declare _debouncedOnSwipe2Y: (diff: NvpTouchDiff) => void;
-  declare _debouncedOnSwipe3X: (diff: NvpTouchDiff) => void;
-  declare _body: HTMLDivElement;
-  declare _lastTap: number;
-  declare _startCenter: NvpTouchPoint;
-  declare _lastCenter: NvpTouchPoint;
-  declare _isMoved: boolean;
-  constructor({ parentElement }: { parentElement?: Element | null }) {
-    super();
-    this._parentElement = parentElement;
-
-    this._config = global.config.namespace('touch') as unknown as NvpTouchConfig;
-    this._isTouching = false;
-    this._maxCount = 0;
-    this._currentPointers = [];
-
-    this._debouncedOnSwipe2Y = _.debounce(this._onSwipe2Y.bind(this), 400);
-    this._debouncedOnSwipe3X = _.debounce(this._onSwipe3X.bind(this), 400);
-    this.initializeDom();
-  }
-
-  initializeDom(): void {
-    const body = (this._body = document.createElement('div'));
-    body.className = 'touchWrapper';
-
-    body.addEventListener('click', this._onClick.bind(this));
-
-    body.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: true });
-    body.addEventListener('touchmove', this._onTouchMove.bind(this), { passive: true });
-    body.addEventListener('touchend', this._onTouchEnd.bind(this), { passive: true });
-    body.addEventListener('touchcancel', this._onTouchCancel.bind(this), { passive: true });
-
-    this._onTouchMoveThrottled = _.throttle(this._onTouchMoveThrottled.bind(this), 200);
-
-    if (this._parentElement) {
-      this._parentElement.appendChild(body);
-    }
-    global.debug.touchWrapper = this;
-  }
-
-  get body(): HTMLDivElement {
-    return this._body;
-  }
-
-  _onClick(): void {
-    this._lastTap = 0;
-  }
-
-  _onTouchStart(e: TouchEvent): void {
-    const identifiers = this._currentPointers.map((touch) => {
-      return touch.identifier;
-    });
-    if (e.changedTouches.length > 1) {
-      e.preventDefault();
-    }
-
-    [...e.changedTouches].forEach((touch) => {
-      if (identifiers.includes(touch.identifier)) {
-        return;
-      }
-      this._currentPointers.push(touch);
-    });
-
-    this._maxCount = Math.max(this._maxCount, this.touchCount);
-    this._startCenter = this._getCenter(e);
-    this._lastCenter = this._getCenter(e);
-    this._isMoved = false;
-  }
-
-  _onTouchMove(e: TouchEvent): void {
-    if (e.targetTouches.length > 1) {
-      e.preventDefault();
-    }
-    this._onTouchMoveThrottled(e);
-  }
-
-  _onTouchMoveThrottled(e: TouchEvent): NvpTouchDiff | undefined {
-    if (!e.targetTouches) {
-      return;
-    }
-    if (e.targetTouches.length > 1) {
-      e.preventDefault();
-    }
-    const startPoint = this._startCenter;
-    const lastPoint = this._lastCenter;
-    const currentPoint = this._getCenter(e);
-
-    if (!startPoint || !currentPoint) {
-      return;
-    }
-    const width = this._body.offsetWidth;
-    const height = this._body.offsetHeight;
-    const diff = {
-      count: this.touchCount,
-      startX: startPoint.x,
-      startY: startPoint.y,
-      currentX: currentPoint.x,
-      currentY: currentPoint.y,
-      moveX: currentPoint.x - lastPoint.x,
-      moveY: currentPoint.y - lastPoint.y,
-      x: currentPoint.x - startPoint.x,
-      y: currentPoint.y - startPoint.y,
-    } as NvpTouchDiff;
-
-    diff.perX = (diff.x / width) * 100;
-    diff.perY = (diff.y / height) * 100;
-    diff.perStartX = (diff.startX / width) * 100;
-    diff.perStartY = (diff.startY / height) * 100;
-    diff.movePerX = (diff.moveX / width) * 100;
-    diff.movePerY = (diff.moveY / height) * 100;
-
-    if (Math.abs(diff.perX) > 2 || Math.abs(diff.perY) > 1) {
-      this._isMoved = true;
-    }
-
-    if (diff.count === 2) {
-      if (Math.abs(diff.movePerX) >= 0.5) {
-        this._execCommand('seekRelativePercent', diff);
-      }
-      if (Math.abs(diff.perY) >= 20) {
-        this._debouncedOnSwipe2Y(diff);
-      }
-    }
-
-    if (diff.count === 3) {
-      if (Math.abs(diff.perX) >= 20) {
-        this._debouncedOnSwipe3X(diff);
-      }
-    }
-
-    this._lastCenter = currentPoint;
-    return diff;
-  }
-
-  _onSwipe2Y(diff: NvpTouchDiff): void {
-    this._execCommand(diff.perY < 0 ? 'shiftUp' : 'shiftDown');
-    this._startCenter = this._lastCenter;
-  }
-
-  _onSwipe3X(diff: NvpTouchDiff): void {
-    this._execCommand(diff.perX < 0 ? 'playNextVideo' : 'playPreviousVideo');
-    this._startCenter = this._lastCenter;
-  }
-
-  _execCommand(command: string | undefined, param?: unknown): void {
-    if (!this._config.props.enable) {
-      return;
-    }
-    if (!command) {
-      return;
-    }
-    this.emit('command', command, param);
-  }
-
-  _onTouchEnd(e: TouchEvent): void {
-    if (!e.changedTouches) {
-      return;
-    }
-    const identifiers = Array.from(e.changedTouches).map((touch) => {
-      return touch.identifier;
-    });
-    const currentTouches: Array<Touch> = this._currentPointers.filter((touch) => {
-      return !identifiers.includes(touch.identifier);
-    });
-
-    this._currentPointers = currentTouches;
-
-    //touchstartは複数タッチでも一回にまとまって飛んでくるが、
-    //touchendは指の数だけ飛んでくるっぽい？
-    //window.console.log('onTouchEnd', this._isMoved, e.changedTouches.length, this._maxCount, this.touchCount);
-    if (!this._isMoved && this.touchCount === 0) {
-      const config = this._config;
-      this._lastTap = this._maxCount;
-      switch (this._maxCount) {
-        case 2:
-          this._execCommand(config.props.tap2command);
-          break;
-        case 3:
-          this._execCommand(config.props.tap3command);
-          break;
-        case 4:
-          this._execCommand(config.props.tap4command);
-          break;
-        case 5:
-          this._execCommand(config.props.tap5command);
-          break;
-      }
-      this._maxCount = 0;
-      this._isMoved = false;
-    }
-  }
-
-  _onTouchCancel(e: TouchEvent): void {
-    if (!e.changedTouches) {
-      return;
-    }
-    const identifiers = Array.from(e.changedTouches).map((touch) => {
-      return touch.identifier;
-    });
-    const currentTouches: Array<Touch> = this._currentPointers.filter((touch) => {
-      return !identifiers.includes(touch.identifier);
-    });
-
-    this._currentPointers = currentTouches;
-  }
-
-  get touchCount(): number {
-    return this._currentPointers.length;
-  }
-
-  _getCenter(e: TouchEvent): NvpTouchPoint {
-    let x = 0,
-      y = 0;
-    Array.from(e.touches).forEach((t) => {
-      x += t.pageX;
-      y += t.pageY;
-    });
-    return { x: x / e.touches.length, y: y / e.touches.length };
-  }
-}
 
 //===END===
 

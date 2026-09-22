@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { Emitter } from '../../../lib/src/emitter';
 import { textUtil } from '../../../lib/src/text/text-util';
-import { Config } from '../../../../src/config';
 import { formatLiteralNgRegexpInput, formatNgRegexpInput, parseNgRegexpInput } from '../../../../src/ng-regexp-input';
 import type { NicoChatType as NicoChat } from './nico-chat';
 
@@ -33,10 +32,6 @@ export interface NicoChatFilterParams {
 
 interface TextUtilLike {
   escapeRegs(value: string): string;
-}
-
-interface ConfigLike {
-  getValue(key: string): unknown;
 }
 
 //===BEGIN===
@@ -477,46 +472,6 @@ class NicoChatFilter extends Emitter {
     const wordReg = this._wordReg;
     const wordRegList = this._wordRegList;
     const commandReg = this._commandReg;
-
-    if ((Config as unknown as ConfigLike).getValue('debug')) {
-      return (nicoChat: NicoChat) => {
-        if (nicoChat.fork === 1) {
-          return true;
-        }
-        const score = nicoChat.score;
-        if (score <= threthold) {
-          return false;
-        }
-        let m: RegExpExecArray | boolean | null = null;
-        if (wordReg) {
-          m = wordReg.exec(nicoChat.text);
-        }
-        if (m) {
-          return false;
-        }
-
-        if (
-          wordRegList.some((regexp) => {
-            regexp.lastIndex = 0;
-            return regexp.test(nicoChat.text);
-          })
-        ) {
-          return false;
-        }
-
-        if (umatch && umatch.includes(nicoChat.userId as string)) {
-          return false;
-        }
-        if (commandReg) {
-          m = commandReg.test(nicoChat.cmd);
-        }
-        if (m) {
-          return false;
-        }
-
-        return true;
-      };
-    }
 
     return (nicoChat: NicoChat) => {
       if (nicoChat.fork === 1) {

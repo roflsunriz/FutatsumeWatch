@@ -21,7 +21,6 @@ interface RootPlayerState {
   isShowComment: boolean;
   isLoop: boolean;
   isMute: boolean;
-  isDebug: boolean;
   [key: string]: unknown;
 }
 
@@ -86,11 +85,8 @@ const RootDispatcher = (() => {
         case 'toggle-showComment':
         case 'toggle-mute':
         case 'toggle-loop':
-        case 'toggle-debug':
         case 'toggle-enableFilter':
-        case 'toggle-enableNicosJumpVideo':
         case 'toggle-useWellKnownPort':
-        case 'toggle-bestFutatsumeTube':
           command = command.replace(/^toggle-/, '');
           config.props[command] = !config.props[command];
           break;

@@ -214,10 +214,6 @@ class NicoComment extends Emitter {
 
     if (!nicoScripter.isEmpty) {
       nicoScripter.apply(nicoChats);
-      const nextVideo = nicoScripter.getNextVideo();
-      if (nextVideo) {
-        void this.emitAsync('command', 'nextVideo', nextVideo);
-      }
     }
 
     const TYPE = NicoChat.TYPE;

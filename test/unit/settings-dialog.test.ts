@@ -3,7 +3,7 @@ import { SettingsDialog } from '../../packages/components/src/settings-dialog';
 
 Object.assign(globalThis, { ShadowRoot: window.ShadowRoot });
 const dialogs: SettingsDialog[] = [];
-function create(name: 'general' | 'hls' = 'general'): {
+function create(name: 'general' | 'advanced' = 'general'): {
   modal: SettingsDialog;
   root: HTMLDialogElement;
   closes: () => number;
@@ -115,7 +115,7 @@ describe('共通設定ダイアログ', () => {
   });
   test('別の設定を開いたときに先の設定を閉じる', () => {
     const first = create();
-    const second = create('hls');
+    const second = create('advanced');
     first.modal.open();
     second.modal.open();
     expect(first.root.open).toBe(false);

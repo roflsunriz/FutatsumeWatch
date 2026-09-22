@@ -112,11 +112,7 @@ const WindowMessageEmitter = (messageUtil.WindowMessageEmitter = ((safeOrigins: 
       const message = body!.params;
       if (type === 'blogParts') {
         // 互換のための対応
-        const command = (global as unknown as GlobalLike).config.props.enableSingleton
-          ? message.command === 'send'
-            ? 'open'
-            : 'send'
-          : message.command;
+        const command = message.command;
 
         if (command === 'send') {
           (global as unknown as GlobalLike).external.sendOrExecCommand(

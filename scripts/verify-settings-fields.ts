@@ -1,7 +1,7 @@
 import { evaluate } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 
-type Panel = 'general' | 'advanced' | 'hls' | 'masked' | 'gamepad' | 'heatsync';
+type Panel = 'general' | 'advanced';
 interface Field {
   key: string;
   type: string;
@@ -36,9 +36,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'player',
     panel: 'general',
     id: 'P2-07',
-    keys: 'autoPlay enableResume enableTogglePlayOnClick autoFullScreen enableSingleton enableHeatMap overrideGinza overrideWatchLink enableStoryboard enableAutoMylistComment enableNicosJumpVideo touch.enable bestFutatsumeTube loadLinkedChannelVideo'.split(
-      ' '
-    ),
+    keys: 'autoPlay enableResume enableTogglePlayOnClick autoFullScreen enableHeatMap enableStoryboard'.split(' '),
   },
   {
     name: 'comments',
@@ -60,44 +58,14 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'advanced',
     panel: 'advanced',
     id: 'P2-10',
-    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen continueNextPage enableDblclickClose autoFutatsumeTube touch.tap2command touch.tap3command touch.tap4command touch.tap5command debug'.split(
-      ' '
-    ),
-  },
-  {
-    name: 'hls',
-    panel: 'hls',
-    id: 'P2-11',
-    keys: 'maxBufferLength maxBufferSize maxMaxBufferLength minAutoBitrate startLevel abrEwmaDefaultEstimate autoAbrEwmaDefaultEstimate capLevelOnFPSDrop capLevelToPlayerSize show_video_label enable_db_cache debug'.split(
-      ' '
-    ),
-  },
-  {
-    name: 'masked',
-    panel: 'masked',
-    id: 'P2-12',
-    keys: 'faceDetection textDetection fastMode debug enabled'.split(' '),
-  },
-  { name: 'gamepad', panel: 'gamepad', id: 'P2-13', keys: 'enabled needFocus deviceIndex'.split(' ') },
-  {
-    name: 'heatsync',
-    panel: 'heatsync',
-    id: 'P2-14',
-    keys: 'turbo.blue turbo.red turbo.minDuration turbo.ignoreTags turbo.enabled'.split(' '),
+    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen'.split(' '),
   },
 ];
 
 const panelRoot = (panel: Panel): string => `window.__settingsQuery('[data-fw-settings="${panel}"]')`;
 function control(panel: Panel, field: Field, radio?: string): string {
   const root = panelRoot(panel);
-  if (panel === 'hls')
-    return `window.__settingsQuery('input',${root}.querySelector('[name=${JSON.stringify(field.key)}]').shadowRoot)`;
-  const attribute =
-    panel === 'masked'
-      ? 'name'
-      : panel === 'gamepad' || panel === 'heatsync'
-        ? 'data-config-name'
-        : 'data-setting-name';
+  const attribute = 'data-setting-name';
   const selector = `[${attribute}=${JSON.stringify(field.key)}]${radio === undefined ? '' : `[value=${JSON.stringify(radio)}]`}`;
   return `window.__settingsQuery(${JSON.stringify(selector)},${root})`;
 }
@@ -167,7 +135,7 @@ async function inventory(session: CdpSession, panel: Panel, category: string): P
     session,
     `(()=>{
     const root=${root};
-    const controls=${panel === 'hls' ? "[...root.querySelectorAll('video-debug-slider,video-debug-checkbox')].map(host=>({e:host.shadowRoot.querySelector('input'),key:host.getAttribute('name')}))" : "[...root.querySelectorAll('input,select,textarea')].filter(e=>!e.matches('.futatsumeAdvancedSetting-rawData,.futatsumeAdvancedSetting-playlistData')).map(e=>({e,key:e.dataset.settingName||e.dataset.configName||e.name}))"};
+    const controls=[...root.querySelectorAll('input,select,textarea')].map(e=>({e,key:e.dataset.settingName||e.name}));
     const groups=new Map();
     for(const {e,key} of controls){
       if(!key)throw Error('台帳の識別キーを持たない設定入力があります');
@@ -204,16 +172,14 @@ function candidates(field: Field): (string | boolean)[] {
   if (field.key === 'commandFilter') return ['invisible'];
   return ['futatsume-settings-fixture'];
 }
-function expected(field: Field, value: string | boolean, panel: Panel): string {
+function expected(field: Field, value: string | boolean): string {
   if (field.key === 'wordRegFilter') return JSON.stringify(String(value).split('\n'));
   return JSON.stringify(
-    panel === 'masked'
-      ? value === 'true'
-      : field.dataType === 'array'
-        ? String(value).split('\n')
-        : field.dataType === 'number' || field.type === 'range'
-          ? Number(value)
-          : value
+    field.dataType === 'array'
+      ? String(value).split('\n')
+      : field.dataType === 'number' || field.type === 'range'
+        ? Number(value)
+        : value
   );
 }
 function valueMatches(field: Field, expression: string, value: string | boolean): string {
@@ -226,35 +192,9 @@ async function verifyEffect(
   session: CdpSession,
   helpers: Helpers,
   field: Field,
-  value: string | boolean,
-  panel: Panel
+  value: string | boolean
 ): Promise<boolean> {
   const renderer = 'window.FutatsumeWatch.debug.nicoCommentPlayer._view.renderer';
-  if (panel === 'hls') {
-    const json = expected(field, value, panel);
-    await helpers.check(
-      session,
-      `(()=>{const v=document.querySelector('futatsume-video'),key=${JSON.stringify(field.key)},expected=${json};return window.FutatsumeWatch.debug.hlsConfig[key]===expected && v.hlsConfig[key]===expected && (!(key in v.hls.config)||v.hls.config[key]===expected)})()`,
-      `${field.key}: 保存内容を実HLS構成へ反映`
-    );
-    return true;
-  }
-  if (panel === 'heatsync') {
-    await helpers.check(
-      session,
-      `window.HeatSync.config.getValue(${JSON.stringify(field.key)})===${expected(field, value, panel)}`,
-      `${field.key}: 速度制御が参照する設定へ反映`
-    );
-    return true;
-  }
-  if (panel === 'gamepad' && field.key === 'enabled') {
-    await helpers.check(
-      session,
-      `document.querySelector('.FutatsumeGamePadToggleButtonContainer')?.classList.contains('is-Enabled')===${String(value)}`,
-      'enabled: GamePadの有効状態を操作ボタンへ反映'
-    );
-    return true;
-  }
   const checks: Record<string, string> = {
     autoPlay: `document.querySelector('futatsume-video').autoplay===${String(value)} && window.FutatsumeWatch.debug.nicoVideoPlayer.isAutoPlay===${String(value)} && window.FutatsumeWatch.state.player.isAutoPlay===${String(value)}`,
     enableHeatMap: `document.querySelector('.seekBarContainer')?.classList.contains('noHeatMap')===${String(!value)}`,
@@ -266,13 +206,11 @@ async function verifyEffect(
   await helpers.check(session, check, `${field.key}: 設定を描画状態へ反映`);
   return true;
 }
-async function storageKey(session: CdpSession, panel: Panel, name: string): Promise<string> {
-  if (panel === 'general' || panel === 'advanced')
-    return (await evaluate(
-      session,
-      `window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey(${JSON.stringify(name)}))`
-    )) as string;
-  return `${{ hls: 'FutatsumeWatch_video.hls.', masked: 'MaskedWatch_', gamepad: 'FutatsumeGamePad_config_', heatsync: 'HeatSync_config_' }[panel]}${name}`;
+async function storageKey(session: CdpSession, name: string): Promise<string> {
+  return (await evaluate(
+    session,
+    `window.FutatsumeWatch.config.getStorageKey(window.FutatsumeWatch.config.getNativeKey(${JSON.stringify(name)}))`
+  )) as string;
 }
 
 /** Every rendered setting must have a case; newly added keys fail inventory parity. */
@@ -293,7 +231,7 @@ export async function verifySettingsFields(
       throw Error(`${category.id}: 設定台帳と実入力が不一致: ${fields.map((f) => f.key).join(', ')}`);
     for (const field of fields) {
       const original = field.type === 'checkbox' ? field.checked : field.value;
-      const storage = await storageKey(session, panel, field.key);
+      const storage = await storageKey(session, field.key);
       const initialStorage = await evaluate(session, `localStorage.getItem(${JSON.stringify(storage)})`);
       const values = candidates(field);
       const result: SettingsFieldResult = {
@@ -342,17 +280,12 @@ export async function verifySettingsFields(
         if (result.invalidInputs.length) await enter(session, panel, field, original);
         for (const value of values) {
           await enter(session, panel, field, value);
-          if (panel === 'hls') await helpers.clickInside(session, panel, '[data-command="save"]');
-          const expectedJson = expected(field, value, panel);
+          const expectedJson = expected(field, value);
           const stored = `localStorage.getItem(${JSON.stringify(storage)})`;
-          // MaskedWatch deliberately removes default values. Its public getter
-          // resolves that contract; absence is never accepted for another panel.
           const persistence =
             field.key === 'wordRegFilter'
               ? `JSON.stringify(window.FutatsumeWatch.config.props.wordRegFilter)===${JSON.stringify(JSON.stringify(String(value).split('\n')))}&&${stored}===JSON.stringify(window.FutatsumeWatch.config.props.wordRegFilter)`
-              : panel === 'masked'
-                ? `JSON.stringify(window.MaskedWatch.config[${JSON.stringify(field.key)}])===${JSON.stringify(expectedJson)} && (${stored}===null || ${stored}===${JSON.stringify(expectedJson)})`
-                : `${stored}!==null && JSON.stringify(JSON.parse(${stored}))===${JSON.stringify(expectedJson)}`;
+              : `${stored}!==null && JSON.stringify(JSON.parse(${stored}))===${JSON.stringify(expectedJson)}`;
           if (field.key === 'wordRegFilter') {
             const deadline = Date.now() + 5000;
             let snapshot: unknown;
@@ -368,7 +301,7 @@ export async function verifySettingsFields(
               throw Error(`${result.id}: ${String(value)}の保存が不一致: ${JSON.stringify(snapshot)}`);
             await helpers.check(session, 'true', `${result.id}: ${String(value)}を正しい型で保存`);
           } else await helpers.check(session, persistence, `${result.id}: ${String(value)}を正しい型で保存`);
-          if (await verifyEffect(session, helpers, field, value, panel)) result.effect = '描画・利用側モデルを確認';
+          if (await verifyEffect(session, helpers, field, value)) result.effect = '描画・利用側モデルを確認';
           await helpers.clickInside(session, panel, '[data-settings-close]');
           await show();
           const expression = control(panel, field, field.type === 'radio' ? String(value) : undefined);
@@ -386,7 +319,6 @@ export async function verifySettingsFields(
       } finally {
         try {
           await enter(session, panel, field, original);
-          if (panel === 'hls') await helpers.clickInside(session, panel, '[data-command="save"]');
           const expression = control(panel, field, field.type === 'radio' ? String(original) : undefined);
           await helpers.check(session, valueMatches(field, expression, original), `${result.id}: 入力値を復元`);
           result.restored = true;

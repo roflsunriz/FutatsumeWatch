@@ -2,7 +2,7 @@ import type { BrowserSuite } from './browser-test-options';
 import { settingsCategories } from './verify-settings-fields';
 
 // 計画から固定した必須操作。実行結果から期待値を生成しない。
-const panels = ['general', 'advanced', 'hls', 'masked', 'gamepad', 'heatsync'] as const;
+const panels = ['general', 'advanced'] as const;
 export const requiredBrowserParents: Readonly<Partial<Record<BrowserSuite, readonly string[]>>> = {
   functionality: [
     'P1-01',
@@ -133,15 +133,6 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     'P2-10: ダブルクリックOFFでは全画面に入らない',
     'P2-07: 自動全画面ONで起動アイコンから全画面に入る',
     'P2-07: 自動全画面OFFでは通常表示で起動する',
-    'P2-07/10: タッチONは3本指でミュート切替',
-    'P2-07/10: タッチOFFは3本指でも状態を保持',
-    'P2-10: 3本指の再操作で音声状態を復元',
-    'P2-10: 複数指の取消後に1本指へ操作が漏れない',
-    'P2-12: 検出API不在の隔離文書で初期化',
-    'P2-12: API不在でも実動画再生とWorker初期化を継続',
-    'P2-12: API不在の理由を設定画面へ可視表示',
-    'P2-12: API不在でも設定を保持して変更可能',
-    'P2-12: 非対応表示後も動画の時刻が進む',
     '設定の入口から共通画面を開く',
     '設定書き出しのJSONが保存設定に一致',
     'プレイヤー終了時に設定と背景も閉じる',
@@ -150,20 +141,6 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     ...['malformed', 'array', 'null', 'invalid-type', 'invalid-range', 'invalid-enum'].map(
       (name) => `P2-06/${name}: ファイルの実選択で失敗を通知し、設定と画面を保持`
     ),
-    'P2-11: 保存前のHLS入力は永続値を変えない',
-    'P2-11: 未保存で閉じても編集中の値を保持する',
-    'P2-11: リセットはfalseの既定値も上書きする',
-    'P2-11: キャッシュ消去後に実IndexedDBが空になる',
-    'P2-12: フェイク顔検出→実Worker応答→マスク用領域へ接続',
-    'P2-12: 顔OFF・テキストONで検出対象と履歴を切替',
-    'P2-12: UIでOFFにしてマスクを解除（実画素確認）',
-    'P2-13: Bボタン入力から実ミュートへ到達',
-    'P2-13: 軸のデッドゾーンではシークしない',
-    'P2-13: 軸入力から実シークへ到達',
-    'P2-13: 切断の重複通知で例外・二重解除なし',
-    'P2-14: 疎な区間はUI設定の上限速度へ加速',
-    'P2-14: 密な区間はUI設定の基準速度へ減速',
-    'P2-14: UIでOFFにすると加速を残さない',
     ...panels.flatMap((name) => [
       `${name}: 共通モーダルを開く`,
       `${name}: パネル内クリックでは閉じない`,
@@ -172,20 +149,18 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
       `${name}: 共通の閉じるボタン`,
       `${name}: 全画面を保って背景クリックで閉じる`,
     ]),
-    ...['player', 'comments', 'filters', 'data', 'advanced', 'hls', 'masked', 'gamepad', 'heatsync'].flatMap((tab) =>
+    ...['player', 'comments', 'filters', 'data', 'advanced'].flatMap((tab) =>
       [1280, 390].map((width) => `${width}px: サイドバーで${tab}へ切替`)
     ),
   ],
   migration: [
-    '現行名称で本体と追加機能を初期化',
+    '現行名称で本体とマイリスト機能を初期化',
     '新しい初期化イベントを各1回通知',
     '旧グローバル別名を公開しない',
     '現行設定の音量を優先',
     '移行済みの旧版でリセットした設定を復活させない',
-    '旧設定名を本体の設定モデルへ反映',
     '旧NGワードと単一正規表現を1行1表現の一覧へ移行',
-    'HLS旧設定を実際の設定モデルへ反映',
-    'GamePadとMylistPocketの保存キーを移行',
+    'MylistPocketの保存キーを移行',
     'プレイリストを現行キーへ移行',
     '前回の再生状態を現行キーへ移行',
     '移行前の設定を復旧用に保持',
@@ -307,7 +282,7 @@ function validateSettings(report: Record<string, unknown>, missing: string[]): v
     if (fields.has(value.id)) missing.push(`重複設定:${value.id}`);
     fields.set(value.id, value);
   }
-  if (requiredSettingsFields.length !== 77 || fields.size !== 77) missing.push(`設定77件:実際${fields.size}`);
+  if (requiredSettingsFields.length !== 36 || fields.size !== 36) missing.push(`設定36件:実際${fields.size}`);
   for (const required of requiredSettingsFields) {
     const field = fields.get(required.id);
     if (!field || field.key !== required.key || field.category !== required.category) {

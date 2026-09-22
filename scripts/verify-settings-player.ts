@@ -8,7 +8,7 @@ interface Helpers {
   check(session: CdpSession, expression: string, label: string, timeout?: number): Promise<void>;
 }
 const video = `document.querySelector('futatsume-video')`;
-const keys = ['enableTogglePlayOnClick', 'enableFullScreenOnDoubleClick', 'autoFullScreen', 'touch.enable'] as const;
+const keys = ['enableTogglePlayOnClick', 'enableFullScreenOnDoubleClick', 'autoFullScreen'] as const;
 
 export async function verifyPlayerSettingEffects(session: CdpSession, helpers: Helpers): Promise<void> {
   const previous = (await evaluate(
@@ -83,9 +83,6 @@ export async function verifyPlayerSettingEffects(session: CdpSession, helpers: H
     await surfaceClick(2);
     await helpers.check(session, '!document.fullscreenElement', 'P2-10: ダブルクリックOFFでは全画面に入らない');
 
-    await pageTouch(false);
-    await pageTouch(true);
-
     await setting('autoFullScreen', true);
     await reopen();
     await helpers.check(session, '!!document.fullscreenElement', 'P2-07: 自動全画面ONで起動アイコンから全画面に入る');
@@ -101,36 +98,5 @@ export async function verifyPlayerSettingEffects(session: CdpSession, helpers: H
     if ((await evaluate(session, `${video}.paused`)) !== oldPaused)
       await clickVisible(session, '[data-shell-action="togglePlay"]');
     await helpers.check(session, `${video}.paused===${oldPaused}`, 'P2-07/10: 元の再生状態を復元');
-  }
-
-  async function pageTouch(enabled: boolean): Promise<void> {
-    await setting('touch.enable', enabled);
-    const muted = (await evaluate(session, `${video}.muted`)) as boolean;
-    const points = (await evaluate(
-      session,
-      `(()=>{const e=document.querySelector('.touchWrapper'),r=e.getBoundingClientRect();return [0,1,2].map(id=>({id,x:r.x+r.width*.25+id*25,y:r.y+r.height*.35,radiusX:4,radiusY:4,force:1})).map(p=>{if(document.elementFromPoint(p.x,p.y)!==e)throw Error('タッチ操作面が覆われています');return p;})})()`
-    )) as Array<{ id: number; x: number; y: number; radiusX: number; radiusY: number; force: number }>;
-    await session.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
-    try {
-      await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
-      await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-      await helpers.check(
-        session,
-        `${video}.muted===${enabled ? !muted : muted}`,
-        `P2-07/10: タッチ${enabled ? 'ONは3本指でミュート切替' : 'OFFは3本指でも状態を保持'}`
-      );
-      if (enabled) {
-        await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
-        await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-        await helpers.check(session, `${video}.muted===${muted}`, 'P2-10: 3本指の再操作で音声状態を復元');
-        await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
-        await session.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
-        await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [points[0]] });
-        await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-        await helpers.check(session, `${video}.muted===${muted}`, 'P2-10: 複数指の取消後に1本指へ操作が漏れない');
-      }
-    } finally {
-      await session.send('Emulation.setTouchEmulationEnabled', { enabled: false });
-    }
   }
 }

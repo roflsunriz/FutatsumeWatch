@@ -2,21 +2,17 @@ import { afterEach, beforeEach, expect, spyOn, test } from 'bun:test';
 import { closeMylistPicker, openMylistPicker } from '../../src/mylist-picker';
 import { MylistApiLoader } from '../../packages/lib/src/nico/mylist-api-loader';
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
-import { Config } from '../../src/config';
 const prototype = window.HTMLDialogElement.prototype;
 const originalShow = Object.getOwnPropertyDescriptor(prototype, 'showModal');
 const originalClose = Object.getOwnPropertyDescriptor(prototype, 'close');
 let login: ReturnType<typeof spyOn<typeof nicoUtil, 'isLogin'>>;
 let lists: ReturnType<typeof spyOn<typeof MylistApiLoader, 'getMylistList'>>;
 let add: ReturnType<typeof spyOn<typeof MylistApiLoader, 'addMylistItem'>>;
-let originalAutoComment: unknown;
 const flush = async () => {
   await Promise.resolve();
   await Promise.resolve();
 };
 beforeEach(() => {
-  originalAutoComment = Config.getValue('enableAutoMylistComment');
-  Config.setValue('enableAutoMylistComment', false);
   Object.defineProperties(prototype, {
     showModal: {
       configurable: true,
@@ -41,7 +37,6 @@ afterEach(() => {
   login.mockRestore();
   lists.mockRestore();
   add.mockRestore();
-  Config.setValue('enableAutoMylistComment', originalAutoComment);
   if (originalShow) Object.defineProperty(prototype, 'showModal', originalShow);
   else Reflect.deleteProperty(prototype, 'showModal');
   if (originalClose) Object.defineProperty(prototype, 'close', originalClose);

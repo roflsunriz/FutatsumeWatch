@@ -83,7 +83,6 @@ const loadRaw = (): RawVideoInfoData => {
     ngFilters: [],
     msgInfo: { threadId: parsed.msgInfo.threadId },
     domandInfo: undefined,
-    linkedChannelVideo: undefined,
     playlist: {
       playlist: (parsed.playlist?.playlist ?? []).map((item) => ({
         ...item,

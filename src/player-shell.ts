@@ -64,17 +64,7 @@ export class PlayerShell {
   ) {
     configureSettingsNavigation((panel) => {
       if (panel === 'general') this.generalSettings();
-      else if (panel === 'advanced')
-        this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
-      else if (panel === 'masked')
-        this.container
-          .querySelector('maskedwatch-toggle-button')
-          ?.shadowRoot?.querySelector<HTMLElement>('.root')
-          ?.click();
-      else
-        this.command(
-          { hls: 'toggleHLSDebug', gamepad: 'toggleFutatsumeGamePadConfig', heatsync: 'toggleHeatSyncDialog' }[panel]
-        );
+      else this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
     });
     container.classList.add('fw-player');
     this.info = this.require('.futatsumeWatchVideoInfoPanel');

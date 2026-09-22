@@ -1,4 +1,3 @@
-import lodash from 'lodash';
 import { SettingsDialog } from '../packages/components/src/settings-dialog';
 import { FutatsumeDetector } from '../packages/components/src/util/futatsume-detector';
 import { uq } from '../packages/lib/src/u-query';
@@ -6,10 +5,6 @@ import { cssUtil } from '../packages/lib/src/css/css';
 import { Config } from './config';
 import type { ConfigStore } from './config';
 import { FutatsumeWatch } from './futatsume-watch-index';
-
-interface SettingScriptLodash {
-  debounce<T extends (...args: never[]) => unknown>(func: T, wait: number): T;
-}
 
 interface SettingScriptUqCollection {
   find(selector: string): SettingScriptUqCollection;
@@ -32,21 +27,6 @@ interface SettingScriptUq {
   (element: Element): SettingScriptUqCollection;
 }
 
-interface SettingScriptWindow {
-  PureArray?: typeof Array;
-  Array: typeof Array;
-  _: SettingScriptLodash;
-  FutatsumeAdvancedSettings: unknown;
-  FutatsumeWatch: {
-    external: {
-      playlist: {
-        export(): unknown;
-        import(data: unknown): void;
-      };
-    };
-  };
-}
-
 export interface SettingScriptPanelParams {
   playerConfig: ConfigStore;
   $container: SettingScriptUqCollection;
@@ -57,8 +37,6 @@ interface SettingScriptCssUtil {
 }
 ((window: Window) => {
   const monkey = async (): Promise<void> => {
-    const _ = lodash;
-
     await Config.promise('restore');
     const $ = uq as unknown as SettingScriptUq;
     (window as unknown as { FutatsumeAdvancedSettings: unknown }).FutatsumeAdvancedSettings = {
@@ -110,8 +88,6 @@ interface SettingScriptCssUtil {
       private _$container!: SettingScriptUqCollection;
       private _$panel!: SettingScriptUqCollection;
       private _$view!: SettingScriptUqCollection;
-      private _$rawData!: SettingScriptUqCollection;
-      private _$playlistData!: SettingScriptUqCollection;
       constructor(params: SettingScriptPanelParams) {
         this.initialize(params);
       }
@@ -119,7 +95,6 @@ interface SettingScriptCssUtil {
         this._playerConfig = params.playerConfig;
         this._$container = params.$container;
 
-        this._update$rawData = _.debounce(this._update$rawData.bind(this), 500);
         this._playerConfig.on('update', this._onPlayerConfigUpdate.bind(this));
       }
       _initializeDom(): void {
@@ -137,56 +112,6 @@ interface SettingScriptCssUtil {
         const dialog = document.querySelector<HTMLDialogElement>('.futatsumeAdvancedSettingPanel')!;
         this.modal = new SettingsDialog(dialog, 'advanced', () => this._$view.toggleClass('show', false));
         this._$view.on('click', (e: unknown) => (e as { stopPropagation(): void }).stopPropagation());
-
-        this._$rawData = $panel.find('.futatsumeAdvancedSetting-rawData');
-        this._$rawData.val(config.exportJson());
-        this._$rawData.on('change', () => {
-          let val = this._$rawData.val();
-          let data: unknown;
-          if (val === '') {
-            val = '{}';
-          }
-
-          try {
-            data = JSON.parse(val) as unknown;
-          } catch (e) {
-            alert(e);
-            return;
-          }
-
-          if (confirm('設定データを直接書き換えしますか？')) {
-            try {
-              config.import(data);
-              location.reload();
-            } catch (error) {
-              alert(error instanceof Error ? error.message : '設定を読み込めませんでした。');
-            }
-          }
-        });
-
-        this._$playlistData = $panel.find('.futatsumeAdvancedSetting-playlistData');
-        this._$playlistData.val(
-          JSON.stringify((window as unknown as SettingScriptWindow).FutatsumeWatch.external.playlist.export(), null, 2)
-        );
-        this._$playlistData.on('change', () => {
-          let val = this._$playlistData.val();
-          let data: unknown;
-          if (val === '') {
-            val = '{}';
-          }
-
-          try {
-            data = JSON.parse(val) as unknown;
-          } catch (e) {
-            alert(e);
-            return;
-          }
-
-          if (confirm('プレイリストデータを直接書き換えしますか？')) {
-            (window as unknown as SettingScriptWindow).FutatsumeWatch.external.playlist.import(data);
-            location.reload();
-          }
-        });
 
         const onInputItemChange = this._onInputItemChange.bind(this);
         const $check = $panel.find('input[type=checkbox]');
@@ -213,17 +138,11 @@ interface SettingScriptCssUtil {
           (e as { stopPropagation(): void }).stopPropagation();
           this.hide();
         });
-
-        $panel.toggleClass('debug', config.props.debug);
       }
       _onPlayerConfigUpdate(key: unknown, value: unknown): void {
         switch (key) {
-          case 'debug':
-            this._$panel.toggleClass('debug', value as boolean);
-            break;
           case 'enableFullScreenOnDoubleClick':
           case 'autoCloseFullScreen':
-          case 'continueNextPage':
             this._$panel
               .find('.' + (key as string) + 'Control')
               .toggleClass('checked', value as boolean)
@@ -231,10 +150,6 @@ interface SettingScriptCssUtil {
               .prop('checked', value);
             break;
         }
-        this._update$rawData();
-      }
-      _update$rawData(): void {
-        this._$rawData.val(this._playerConfig.exportJson());
       }
       _onToggleItemChange(e: unknown): void {
         const target = (e as { target: HTMLInputElement }).target;
@@ -261,23 +176,11 @@ interface SettingScriptCssUtil {
         const saved = this._playerConfig.props[settingName as string];
         target.value = typeof saved === 'string' || typeof saved === 'number' ? String(saved) : '';
       }
-      _beforeShow(): void {
-        if (this._$playlistData) {
-          this._$playlistData.val(
-            JSON.stringify(
-              (window as unknown as SettingScriptWindow).FutatsumeWatch.external.playlist.export(),
-              null,
-              2
-            )
-          );
-        }
-      }
       toggle(v?: boolean): void {
         this._initializeDom();
         // window.FutatsumeWatch.external.execCommand('close');
         this._$view.toggleClass('show', v);
         if (this._$view.hasClass('show')) {
-          this._beforeShow();
           this.modal.open();
         } else this.modal.close();
       }
@@ -450,25 +353,11 @@ interface SettingScriptCssUtil {
         overflow: scroll;
       }
 
-      .futatsumeAdvancedSetting-rawData,
-      .futatsumeAdvancedSetting-playlistData {
-        width: 90%;
-        height: 300px;
-        margin: 0 5%;
-        word-break: break-all;
-        overflow: scroll;
-      }
-
       .futatsumeAdvancedSetting-close:active {
         box-shadow: none;
         border: inset 2px;
         transform: scale(0.8);
       }
-
-      .futatsumeAdvancedSettingPanel:not(.debug) .debugOnly {
-        display: none !important;
-      }
-
 
       .example code {
         font-family: monospace;
@@ -480,19 +369,6 @@ interface SettingScriptCssUtil {
         border-radius: 4px;
       }
 
-    `.trim();
-
-    const commands = `
-      <option value="">なし</option>
-      <option value="togglePlay">再生/停止</option>
-      <option value="fullScreen">フルスクリーン ON/OFF</option>
-      <option value="toggle-mute">ミュート ON/OFF</option>
-      <option value="toggle-showComment">コメント表示 ON/OFF</option>
-      <option value="toggle-loop">ループ ON/OFF</option>
-      <option value="toggle-enableFilter">NG設定 ON/OFF</option>
-      <option value="screenShot">スクリーンショット</option>
-      <option value="deflistAdd">とりあえずマイリスト</option>
-      <option value="picture-in-picture">picture-in-picture</option>
     `.trim();
 
     SettingPanel.__tpl__ = `
@@ -511,81 +387,6 @@ interface SettingScriptCssUtil {
               再生終了時に自動でフルスクリーン解除
 
             </label>
-          </div>
-
-          <div class="continueNextPageControl control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="continueNextPage">
-              再生中にページを切り換えても続きから再開する
-            </label>
-          </div>
-
-          <div class="enableDblclickClose control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="enableDblclickClose">
-              背景のダブルクリックでプレイヤーを閉じる
-            </label>
-          </div>
-
-          <div class="autoFutatsumeTube control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="autoFutatsumeTube">
-              自動FutatsumeTube（元に戻すには動画を右クリック→FutatsumeTube解除）
-            </label>
-          </div>
-
-          <div class="touch-tap2command control toggle">
-            <label>
-              2本指タッチ
-              <select data-setting-name="touch.tap2command">
-                ${commands}
-              </select>
-            </label>
-          </div>
-
-          <div class="touch-tap3command control toggle">
-            <label>
-              3本指タッチ
-              <select data-setting-name="touch.tap3command">
-                ${commands}
-              </select>
-            </label>
-          </div>
-
-          <div class="touch-tap3command control toggle">
-            <label>
-              4本指タッチ
-              <select data-setting-name="touch.tap4command">
-                ${commands}
-              </select>
-            </label>
-          </div>
-
-          <div class="touch-tap5command control toggle">
-            <label>
-              5本指タッチ
-              <select data-setting-name="touch.tap5command">
-                ${commands}
-              </select>
-            </label>
-          </div>
-
-          <div class="debugControl control toggle">
-            <label>
-              <input type="checkbox" class="checkbox" data-setting-name="debug">
-              デバッグモード
-            </label>
-          </div>
-
-          <div class="debugOnly">
-            <p class="caption sub">生データ(FutatsumeWatch設定)</p>
-            <span class="example">丸ごとコピペで保存/復元可能。 ここを消すと設定がリセットされます。</span>
-            <textarea class="futatsumeAdvancedSetting-rawData"></textarea>
-
-            <p class="caption sub">生データ(プレイリスト)</p>
-            <span class="example">丸ごとコピペで保存/復元可能。 編集は自己責任で</span>
-            <textarea class="futatsumeAdvancedSetting-playlistData"></textarea>
-
           </div>
 
         </div>

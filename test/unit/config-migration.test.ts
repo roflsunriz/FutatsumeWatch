@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import {
-  migrateAddonConfig,
-  migrateConfig,
-  migrateImportedConfig,
-  migrateSharedStorage,
-} from '../../src/config-migration';
+import { migrateConfig, migrateImportedConfig, migrateSharedStorage } from '../../src/config-migration';
 
 describe('旧設定の移行', () => {
   it('既存の新設定を優先し、旧値と無関係なデータを保持する', () => {
@@ -31,40 +26,13 @@ describe('旧設定の移行', () => {
     expect(storage.getItem('ZenzaWatch_volume')).toBe('{broken');
   });
 
-  it('移行済みの旧版から名称変更した設定と視聴ページ設定を引き継ぐ', () => {
-    const storage = new JSDOM('', { url: 'https://www.nicovideo.jp' }).window.localStorage;
-    storage.setItem('FutatsumeWatch_storageVersion', '1');
-    storage.setItem('ZenzaWatch_autoZenTube', 'false');
-    storage.setItem('FutatsumeWatch_autoZenTube', 'true');
-    storage.setItem('FutatsumeWatch_bestZenTube', 'true');
-    storage.setItem('FutatsumeWatch_autoPlay:ginza', 'false');
-    storage.setItem('ZenzaWatch_unrecognized', 'true');
-    migrateConfig(storage, ['autoFutatsumeTube', 'bestFutatsumeTube', 'autoPlay:ginza']);
-    expect(storage.getItem('FutatsumeWatch_autoFutatsumeTube')).toBe('true');
-    expect(storage.getItem('FutatsumeWatch_bestFutatsumeTube')).toBe('true');
-    expect(storage.getItem('FutatsumeWatch_autoPlay:ginza')).toBe('false');
-    expect(storage.getItem('FutatsumeWatch_unrecognized')).toBeNull();
-    expect(storage.getItem('FutatsumeWatch_storageVersion')).toBe('3');
-  });
-
-  it('v1移行後にリセットした通常設定と旧名称の設定を復活させない', () => {
+  it('v1移行後にリセットした通常設定を復活させない', () => {
     const storage = new JSDOM('', { url: 'https://www.nicovideo.jp' }).window.localStorage;
     storage.setItem('FutatsumeWatch_storageVersion', '1');
     storage.setItem('ZenzaWatch_volume', '0.8');
-    storage.setItem('ZenzaWatch_autoZenTube', 'true');
-    migrateConfig(storage, ['volume', 'autoFutatsumeTube']);
+    migrateConfig(storage, ['volume']);
     expect(storage.getItem('FutatsumeWatch_volume')).toBeNull();
-    expect(storage.getItem('FutatsumeWatch_autoFutatsumeTube')).toBeNull();
     expect(storage.getItem('ZenzaWatch_volume')).toBe('0.8');
-  });
-
-  it('未移行の場合は旧ブランドの改名設定と視聴ページ設定を引き継ぐ', () => {
-    const storage = new JSDOM('', { url: 'https://www.nicovideo.jp' }).window.localStorage;
-    storage.setItem('ZenzaWatch_autoZenTube', 'true');
-    storage.setItem('ZenzaWatch_autoPlay:ginza', 'false');
-    migrateConfig(storage, ['autoFutatsumeTube', 'autoPlay:ginza']);
-    expect(storage.getItem('FutatsumeWatch_autoFutatsumeTube')).toBe('true');
-    expect(storage.getItem('FutatsumeWatch_autoPlay:ginza')).toBe('false');
   });
 
   it('旧NGワードと単一正規表現を1行1表現の正規表現一覧へ移す', () => {
@@ -83,42 +51,18 @@ describe('旧設定の移行', () => {
     expect(storage.getItem('FutatsumeWatch_wordFilter')).toBe(JSON.stringify(['a.b', 'slash/value']));
   });
 
-  it('旧設定ファイルを変換し、現行キーと元の入力を保護する', () => {
+  it('旧NG設定ファイルを変換し、元の入力を保護する', () => {
     const old = {
-      autoZenTube: true,
-      bestZenTube: true,
-      bestFutatsumeTube: false,
       volume: 0.4,
       wordFilter: ['a.b'],
       wordRegFilter: '^blocked$',
       wordRegFilterFlags: 'i',
     };
     expect(migrateImportedConfig(old)).toEqual({
-      autoFutatsumeTube: true,
-      bestFutatsumeTube: false,
       volume: 0.4,
       wordRegFilter: ['/a\\.b/i', '/^blocked$/i'],
     });
-    expect(old.autoZenTube).toBe(true);
-  });
-
-  it('HLSとGamePadの既知の設定を移行し、リセット後に旧値を復活させない', () => {
-    const storage = new JSDOM('', { url: 'https://www.nicovideo.jp' }).window.localStorage;
-    storage.setItem('ZenzaWatch_video.hls.capLevelToPlayerSize', 'true');
-    storage.setItem('ZenzaWatch_video.hls.debug', '{broken');
-    storage.setItem('ZenzaGamePad_config_needFocus', 'true');
-    storage.setItem('ZenzaGamePad_config_enabled', 'true');
-    storage.setItem('FutatsumeGamePad_config_enabled', 'false');
-    migrateAddonConfig(storage, 'hls', ['capLevelToPlayerSize', 'debug']);
-    migrateAddonConfig(storage, 'gamepad', ['needFocus', 'enabled']);
-    expect(storage.getItem('FutatsumeWatch_video.hls.capLevelToPlayerSize')).toBe('true');
-    expect(storage.getItem('FutatsumeWatch_video.hls.debug')).toBeNull();
-    expect(storage.getItem('FutatsumeGamePad_config_needFocus')).toBe('true');
-    expect(storage.getItem('FutatsumeGamePad_config_enabled')).toBe('false');
-    storage.removeItem('FutatsumeGamePad_config_needFocus');
-    migrateAddonConfig(storage, 'gamepad', ['needFocus', 'enabled']);
-    expect(storage.getItem('FutatsumeGamePad_config_needFocus')).toBeNull();
-    expect(storage.getItem('ZenzaGamePad_config_needFocus')).toBe('true');
+    expect(old.volume).toBe(0.4);
   });
 
   it('プレイリスト・許可ホスト・MylistPocket同期を引き継ぐ', () => {

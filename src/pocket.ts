@@ -3688,21 +3688,10 @@ void AntiPrototypeJs().then(() => {
             window.open(protocol + '//www.nicovideo.jp/mylistcomment/video/' + (param as string));
             break;
           case 'futatsume-open-now':
-            if (
-              (window as unknown as PocketWindow).FutatsumeWatch!.config &&
-              (window as unknown as PocketWindow).FutatsumeWatch!.config.getValue('enableSingleton')
-            ) {
-              (window as unknown as PocketWindow).FutatsumeWatch!.external.sendOrExecCommand('openNow', param);
-            } else {
-              (window as unknown as PocketWindow).FutatsumeWatch!.external.execCommand('openNow', param);
-            }
+            (window as unknown as PocketWindow).FutatsumeWatch!.external.execCommand('openNow', param);
             break;
           case 'futatsume-open':
-            if ((window as unknown as PocketWindow).FutatsumeWatch!.config.getValue('enableSingleton')) {
-              (window as unknown as PocketWindow).FutatsumeWatch!.external.sendOrOpen(param);
-            } else {
-              (window as unknown as PocketWindow).FutatsumeWatch!.external.open(param);
-            }
+            (window as unknown as PocketWindow).FutatsumeWatch!.external.open(param);
             break;
           case 'playlist-inert':
             (window as unknown as PocketWindow).FutatsumeWatch!.external.playlist.insert(param);

@@ -36,7 +36,6 @@ import { LikeApi } from '../packages/lib/src/nico/like-api.js';
 import type { EmitterCallback } from '../packages/lib/src/emitter';
 import type { ConfigStore } from './config';
 import type { Uq, UqFactory } from './comment-panel';
-import type { ThumbInfoOk } from '../packages/lib/src/nico/parse-thumb-info';
 import type { CommentPlayerOptions } from './comment-player';
 
 interface DialogPlayerConfig extends ConfigStore {
@@ -59,7 +58,6 @@ interface VideoWatchOptionBag {
   openNow?: boolean;
   autoCloseFullScreen?: boolean;
   reloadCount?: number;
-  isAutoFutatsumeTubeDisabled?: boolean;
   currentTime?: string | number;
   [key: string]: unknown;
 }
@@ -248,7 +246,7 @@ class PlayerConfig {
           }
           break;
         case 'others':
-          if (['autoPlay', 'screenMode', 'overrideWatchLink'].includes(key)) {
+          if (['autoPlay', 'screenMode'].includes(key)) {
             return `${key}:${mode}`;
           }
           break;
@@ -318,9 +316,6 @@ class VideoWatchOptions {
   get isReload(): boolean {
     return (this._options.reloadCount as number) > 0;
   }
-  get isAutoFutatsumeTubeDisabled() {
-    return !!this._options.isAutoFutatsumeTubeDisabled;
-  }
   get reloadCount() {
     return this._options.reloadCount;
   }
@@ -339,7 +334,6 @@ class VideoWatchOptions {
     delete this._options.economy;
     _.defaults(options, this._options);
     options.openNow = true;
-    options.isAutoFutatsumeTubeDisabled = false;
     options.currentTime = 0;
     options.reloadCount = 0;
     options.query = {};
@@ -348,8 +342,6 @@ class VideoWatchOptions {
   createForReload(options: VideoWatchOptionBag | undefined): VideoWatchOptionBag {
     options = options || {};
     delete this._options.economy;
-    options.isAutoFutatsumeTubeDisabled =
-      typeof options.isAutoFutatsumeTubeDisabled === 'boolean' ? options.isAutoFutatsumeTubeDisabled : true;
     _.defaults(options, this._options);
     options.openNow = true;
     options.reloadCount = options.reloadCount ? options.reloadCount + 1 : 1;
@@ -481,15 +473,6 @@ class NicoVideoPlayerDialogView extends Emitter {
         onMouseMoveEnd();
       }, 100)
     );
-
-    $dialog.on('dblclick', (e: Event) => {
-      if (!e.target || (e.target as Element).id !== 'futatsumeVideoPlayerDialog') {
-        return;
-      }
-      if (config.props.enableDblclickClose) {
-        this.emit('command', 'close');
-      }
-    });
 
     this.hoverMenu = new VideoHoverMenu({
       playerContainer: container,
@@ -753,7 +736,6 @@ class NicoVideoPlayerDialogView extends Emitter {
       (objUtil.toMap({
         isAbort: 'is-abort',
         isShowComment: 'is-showComment',
-        isDebug: 'is-debug',
         isError: 'is-error',
         isLoading: 'is-loading',
         isMute: 'is-mute',
@@ -1531,7 +1513,6 @@ class NicoVideoPlayerDialog extends Emitter {
   declare private _lastOpenAt: number;
   private reloadPlayback: boolean | undefined;
   private commentRequestSequence = 0;
-  declare private _nextVideo: unknown;
   declare private _threadInfo: unknown;
   constructor(params: NicoVideoPlayerDialogParams) {
     super();
@@ -1832,9 +1813,6 @@ class NicoVideoPlayerDialog extends Emitter {
           this.execCommand('alert', error instanceof Error ? error.message : 'コメント付き画像の保存に失敗しました');
         });
         break;
-      case 'nextVideo':
-        this._nextVideo = param;
-        break;
       case 'nicosSeek':
         this._onNicosSeek(param as number);
         break;
@@ -2090,25 +2068,11 @@ class NicoVideoPlayerDialog extends Emitter {
     let timer = window.setTimeout(unlock, 10000);
 
     watchId = watchId || this._videoInfo.watchId;
-    let description = '';
     if (!this._mylistApiLoader) {
       this._mylistApiLoader = MylistApiLoader;
     }
-    const { enableAutoMylistComment } = this._playerConfig.props;
-    void (() => {
-      if (watchId === this._watchId || !enableAutoMylistComment) {
-        return Promise.resolve(this._videoInfo);
-      }
-      return ThumbInfoLoader.load(watchId);
-    })()
-      .then((info) => {
-        const thumbInfo = info as DialogVideoInfo | ThumbInfoOk;
-        const originalVideoId = thumbInfo.originalVideoId ? `元動画: ${thumbInfo.originalVideoId}` : '';
-        description = enableAutoMylistComment
-          ? `投稿者: ${thumbInfo.owner!.name} ${thumbInfo.owner!.linkId} ${originalVideoId}`
-          : '';
-      })
-      .then(() => this._mylistApiLoader!.addDeflistItem(watchId, description))
+    void this._mylistApiLoader
+      .addDeflistItem(watchId, '')
       .then((result) => this.execCommand('notify', (result as { message?: unknown }).message))
       .catch((err: unknown) =>
         this.execCommand('alert', (err as { message?: unknown }).message || 'とりあえずマイリストに登録失敗')
@@ -2176,18 +2140,13 @@ class NicoVideoPlayerDialog extends Emitter {
     this._state.isUpdatingMylist = true;
     let timer = window.setTimeout(unlock, 10000);
 
-    const owner = this._videoInfo.owner;
-    const originalVideoId = this._videoInfo.originalVideoId ? `元動画: ${this._videoInfo.originalVideoId}` : '';
     const watchId = this._videoInfo.watchId;
-    const description = this._playerConfig.getValue('enableAutoMylistComment')
-      ? `投稿者: ${owner.name} ${owner.linkId} ${originalVideoId}`
-      : '';
     if (!this._mylistApiLoader) {
       this._mylistApiLoader = MylistApiLoader;
     }
 
     void this._mylistApiLoader
-      .addMylistItem(watchId, groupId, description)
+      .addMylistItem(watchId, groupId, '')
       .then((result) =>
         this.execCommand('notify', `${(result as { message?: unknown }).message as string}: ${mylistName}`)
       )
@@ -2665,18 +2624,6 @@ class NicoVideoPlayerDialog extends Emitter {
     if (this._videoWatchOptions.eventType === 'playlist' && this.isOpen) {
       this.play();
     }
-    if (this._nextVideo) {
-      const nextVideo = this._nextVideo as string;
-      this._nextVideo = null;
-      if (this._playerConfig.props.enableNicosJumpVideo) {
-        const nv = this._playlist.findByWatchId(nextVideo) as unknown as { isPlayed(): boolean } | undefined;
-        if (nv && nv.isPlayed()) {
-          return;
-        } // 既にリストにあって再生済みなら追加しない(無限ループ対策)
-        this.execCommand('notify', `@ジャンプ: ${nextVideo}`);
-        this.execCommand('playlistInsert', nextVideo);
-      }
-    }
   }
   _onVideoPlay(): void {
     this._state.setPlaying();
@@ -2771,7 +2718,7 @@ class NicoVideoPlayerDialog extends Emitter {
     this.emit('error', e);
     if (e.fallback) {
       this.videoRecovery.schedule(() => {
-        if (this.isOpen) this.reload({ isAutoFutatsumeTubeDisabled: true });
+        if (this.isOpen) this.reload();
       });
     }
   }
@@ -3883,12 +3830,6 @@ class VideoHoverMenu {
 
 VideoHoverMenu.__tpl__ = `
     <div class="hoverMenuContainer">
-      <div class="menuItemContainer leftTop">
-          <div class="menuButton toggleDebugButton" data-command="toggle-debug">
-            <div class="menuButtonInner">debug mode</div>
-          </div>
-      </div>
-
       <div class="menuItemContainer rightTop">
         <div class="scalingUI">
           <div class="menuButton toggleLikeButton forMember" data-command="toggle-like">

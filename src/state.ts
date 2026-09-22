@@ -131,7 +131,6 @@ class PlayerState extends BaseState {
   declare public isCommentPosting: boolean;
   declare public isCommunity: boolean;
   declare public isWaybackMode: boolean;
-  declare public isDebug: boolean;
   declare public isError: boolean;
   declare public isEnded: boolean;
   declare public isLoading: boolean;
@@ -180,7 +179,6 @@ class PlayerState extends BaseState {
       isCommentPosting: false,
       isCommunity: false,
       isWaybackMode: false,
-      isDebug: config.props.debug,
       isError: false,
       isEnded: false,
       isLoading: false,

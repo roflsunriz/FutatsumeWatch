@@ -13,7 +13,6 @@ const defaults = {
   'commentLayer.textShadowType': '',
   'commentLayer.easyCommentOpacity': 0.5,
   wordRegFilter: [],
-  autoFutatsumeTube: false,
 };
 describe('設定ファイルの型と範囲', () => {
   test('既知キーの型・数値境界・刻み・enum・regexを読み込み前に拒否する', () => {
@@ -45,7 +44,6 @@ describe('設定ファイルの型と範囲', () => {
       commandFilter: 'red',
       sharedNgLevel: 'NONE',
       'commentLayer.textShadowType': 'shadow-type3',
-      autoZenTube: true,
       retiredKey: 'ignored',
     };
     const result = validateImportedConfig(migrateImportedConfig(source), defaults);
@@ -56,10 +54,8 @@ describe('設定ファイルの型と範囲', () => {
       commandFilter: 'red',
       sharedNgLevel: 'NONE',
       'commentLayer.textShadowType': 'shadow-type3',
-      autoFutatsumeTube: true,
     });
     expect(source.baseChatScale).toBe('1.2');
-    expect(source.autoZenTube).toBe(true);
   });
   test('Config.importJsonは1項目でも不正なら既存値と保存領域を全て維持する', async () => {
     await Config.promise('restore');

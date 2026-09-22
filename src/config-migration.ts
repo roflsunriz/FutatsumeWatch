@@ -1,10 +1,6 @@
 import { formatLiteralNgRegexpInput, formatNgRegexpInput } from './ng-regexp-input';
 
-// 旧名称を知るのはこの移行境界だけ。元データは復旧用に残す。
-const renamedConfigKeys: Readonly<Record<string, string>> = {
-  autoFutatsumeTube: 'autoZenTube',
-  bestFutatsumeTube: 'bestZenTube',
-};
+const renamedConfigKeys: Readonly<Record<string, string>> = {};
 
 function copyStoredValue(storage: Storage, target: string, sources: readonly string[], json = true): void {
   if (storage.getItem(target) !== null) return;
@@ -98,15 +94,6 @@ export function migrateImportedConfig(data: unknown): Record<string, unknown> {
   delete result.wordFilter;
   delete result.wordRegFilterFlags;
   return result;
-}
-
-export function migrateAddonConfig(storage: Storage, addon: 'hls' | 'gamepad', keys: readonly string[]): void {
-  const prefix = addon === 'hls' ? 'FutatsumeWatch_video.hls.' : 'FutatsumeGamePad_config_';
-  const oldPrefix = addon === 'hls' ? 'ZenzaWatch_video.hls.' : 'ZenzaGamePad_config_';
-  const versionKey = `FutatsumeWatch_${addon}StorageVersion`;
-  if (storage.getItem(versionKey) === '1') return;
-  for (const key of keys) copyStoredValue(storage, prefix + key, [oldPrefix + key]);
-  storage.setItem(versionKey, '1');
 }
 
 export function migrateSharedStorage(local: Storage, session: Storage): void {

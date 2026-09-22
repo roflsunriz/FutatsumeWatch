@@ -64,9 +64,6 @@ interface VideoInfoPanelParams {
   dialog: InstanceType<typeof Emitter>;
   node?: Element | null;
 }
-interface CanPlayOptions {
-  isAutoFutatsumeTubeDisabled?: boolean;
-}
 interface VideoSearchProps {
   ownerOnly: boolean;
   mode: unknown;
@@ -162,7 +159,6 @@ class VideoInfoPanel extends Emitter {
   _relatedInfoMenu!: RelatedInfoMenu;
   _videoMetaInfo!: VideoMetaInfo;
   _videoInfo!: VideoInfoModel;
-  _futatsumeTubeUrl: string | null | undefined;
   _relatedVideoList?: RelatedVideoList;
   _pocket!: PocketApi;
   _activeTabName?: string;
@@ -277,7 +273,6 @@ class VideoInfoPanel extends Emitter {
    */
   async _updateVideoDescription(html: string, series: VideoSeriesInfo | null = null) {
     this._description.textContent = '';
-    this._futatsumeTubeUrl = null;
     if (series) {
       if (series.video.prev || series.video.next) {
         html += `<br><br>「${textUtil.escapeHtml(series.title)}」 シリーズ前後の動画`;
@@ -387,7 +382,6 @@ class VideoInfoPanel extends Emitter {
         seriesLink(a);
       } else if (/^https?:\/\/((www\.|)youtube\.com\/watch|youtu\.be)/.test(href)) {
         youtube(a);
-        this._futatsumeTubeUrl = href;
       }
     }
     for (const e of $description.query<HTMLElement>('[style*="color: #000000;"],[style*="color: black;"]')) {
@@ -400,7 +394,7 @@ class VideoInfoPanel extends Emitter {
 
     this._description.append($description[0]!);
   }
-  async _onVideoCanPlay(watchId: string, videoInfo: VideoInfoModel, options: CanPlayOptions) {
+  async _onVideoCanPlay(watchId: string, videoInfo: VideoInfoModel) {
     const generation = ++this.playbackGeneration;
     // 動画の再生を優先するため、比較的どうでもいい要素はこのタイミングで初期化するのがよい
     if (!this._relatedVideoList) {
@@ -412,18 +406,6 @@ class VideoInfoPanel extends Emitter {
       this._relatedVideoList.on('command', this._onCommand.bind(this) as unknown as EmitterCallback);
     }
 
-    if (this._config.props.autoFutatsumeTube && this._futatsumeTubeUrl && !options.isAutoFutatsumeTubeDisabled) {
-      const url = this._futatsumeTubeUrl;
-      void sleep(100).then(() => {
-        if (
-          generation !== this.playbackGeneration ||
-          this._videoInfo !== videoInfo ||
-          !this._config.props.autoFutatsumeTube
-        )
-          return;
-        this.emit('command', 'setVideo', url);
-      });
-    }
     await sleep.idle();
     if (generation !== this.playbackGeneration || this._videoInfo !== videoInfo) return;
     void this._relatedVideoList.fetchRecommend(

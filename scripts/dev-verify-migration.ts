@@ -44,10 +44,10 @@ try {
   };
   if (navigation.errorText) throw new Error(`移行検証ページの読込失敗: ${navigation.errorText}`);
   await page.send('Page.bringToFront');
-  const ready = `window.FutatsumeWatch?.ready && localStorage.getItem('FutatsumeWatch_gamepadStorageVersion') === '1' && window.MylistPocket?.isReady`;
+  const ready = `window.FutatsumeWatch?.ready && window.MylistPocket?.isReady`;
   const deadline = Date.now() + 30000;
   while (!(await evaluate(page, ready)) && Date.now() < deadline) await Bun.sleep(200);
-  await check(ready, '現行名称で本体と追加機能を初期化');
+  await check(ready, '現行名称で本体とマイリスト機能を初期化');
   await check(
     `JSON.stringify(window.__migrationEvents) === JSON.stringify(['BeforeFutatsumeWatchInitialize','FutatsumeWatchInitialize'])`,
     '新しい初期化イベントを各1回通知'
@@ -62,20 +62,12 @@ try {
     '移行済みの旧版でリセットした設定を復活させない'
   );
   await check(
-    'window.FutatsumeWatch.config.props.autoFutatsumeTube === true && window.FutatsumeWatch.config.props.bestFutatsumeTube === true',
-    '旧設定名を本体の設定モデルへ反映'
-  );
-  await check(
     `JSON.stringify(window.FutatsumeWatch.config.props.wordRegFilter)===JSON.stringify(['/a\\\\.b/i','/slash\\\\/value/i','/^blocked$/gi']) && localStorage.getItem('FutatsumeWatch_wordFilter')===${JSON.stringify(fixture.local.FutatsumeWatch_wordFilter)}`,
     '旧NGワードと単一正規表現を1行1表現の一覧へ移行'
   );
   await check(
-    'window.FutatsumeWatch.debug.hlsConfig.capLevelToPlayerSize === true',
-    'HLS旧設定を実際の設定モデルへ反映'
-  );
-  await check(
-    `localStorage.getItem('FutatsumeGamePad_config_needFocus') === 'true' && localStorage.getItem('MylistPocket_config_ng.syncFutatsume') === 'true'`,
-    'GamePadとMylistPocketの保存キーを移行'
+    `localStorage.getItem('MylistPocket_config_ng.syncFutatsume') === 'true'`,
+    'MylistPocketの保存キーを移行'
   );
   await check(
     `JSON.stringify(JSON.parse(sessionStorage.getItem('FutatsumeWatchPlaylist'))) === JSON.stringify({items:[{watchId:'sm9'}]})`,
@@ -112,7 +104,7 @@ try {
   console.error(
     await evaluate(
       page,
-      `({title:document.title,ready:window.FutatsumeWatch?.ready,gamepad:!!window.FutatsumeWatch?.FutatsumeGamePad,pocket:window.MylistPocket?.isReady,entry:document.querySelector('[data-futatsume-entry]')?.outerHTML,wordRegFilter:window.FutatsumeWatch?.config?.props?.wordRegFilter,storageVersion:localStorage.getItem('FutatsumeWatch_storageVersion'),legacyWordFilter:localStorage.getItem('FutatsumeWatch_wordFilter')})`
+      `({title:document.title,ready:window.FutatsumeWatch?.ready,pocket:window.MylistPocket?.isReady,entry:document.querySelector('[data-futatsume-entry]')?.outerHTML,wordRegFilter:window.FutatsumeWatch?.config?.props?.wordRegFilter,storageVersion:localStorage.getItem('FutatsumeWatch_storageVersion'),legacyWordFilter:localStorage.getItem('FutatsumeWatch_wordFilter')})`
     )
   );
   throw error;

@@ -38,23 +38,19 @@
 
 `effect`欄は保存確認と別の観測である。利用側モデルへの到達だけを、実機入力・検出API・外部サービスとの連携まで確認したとは解釈しない。範囲や未確認事項はスイート結果とverification.mdに残す。
 
-| ID    | 操作／期待結果                                                         | 対応する自動検証                                                                     |
-| ----- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| P2-01 | 利用可能な画質のみ表示、選択→実デコード寸法、時刻と停止状態保持        | functionality、video-info単体                                                        |
-| P2-02 | GitHubの実クリック→正しい新規タブURL                                   | verify-menu-actions（functionalityから実行）                                         |
-| P2-03 | 再読み込み→同じ動画・時刻・設定、連続変更も反映                        | functionality、verify-menu-actions                                                   |
-| P2-04 | 実保存ボタン→映像・コメントPNG、未読込／CORS失敗                       | verify-menu-actions、player、video-capture単体                                       |
-| P2-05 | 公式ページを開く→現在の動画ID                                          | verify-menu-actions                                                                  |
-| P2-06 | 書き出し、読み込み、取消、不正形式、部分保存失敗と復旧                 | settings、settings-storage／settings-input／config-migration単体                     |
-| P2-07 | 一般プレイヤー設定の全入力、再生・クリック・全画面・Storyboardへの接続 | settings、settings-autoplay／settings-playback-effects／settings-library-effects単体 |
-| P2-08 | コメント設定の全入力・描画パラメータへの反映                           | settings、settings-comment-presentation単体                                          |
-| P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                   | settings、settings-filter等の単体                                                    |
-| P2-10 | 詳細設定全入力・正規表現・ダブルクリック・複数指入力と取消             | settings、settings-input／settings-filter単体                                        |
-| P2-11 | HLS全入力・明示保存・実HLS設定への到達                                 | settings                                                                             |
-| P2-12 | MaskedWatch入力、固定検出結果と実描画                                  | settingsの追加機能検証                                                               |
-| P2-13 | GamePad入力、フェイク機器の接続・押下・軸・切断                        | settingsの追加機能検証                                                               |
-| P2-14 | HeatSync入力、既知密度と実速度、除外条件・手動速度保持・切替復帰       | settingsの追加機能検証、settings-heatsync単体                                        |
-| P2-15 | 全パネル・カテゴリ、背景／内部クリック、Escape、フォーカス、各寸法     | settings、settings-dialog単体                                                        |
+| ID    | 操作／期待結果                                                          | 対応する自動検証                                                                     |
+| ----- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| P2-01 | 利用可能な画質のみ表示、選択→実デコード寸法、時刻と停止状態保持         | functionality、video-info単体                                                        |
+| P2-02 | GitHubの実クリック→正しい新規タブURL                                    | verify-menu-actions（functionalityから実行）                                         |
+| P2-03 | 再読み込み→同じ動画・時刻・設定、連続変更も反映                         | functionality、verify-menu-actions                                                   |
+| P2-04 | 実保存ボタン→映像・コメントPNG、未読込／CORS失敗                        | verify-menu-actions、player、video-capture単体                                       |
+| P2-05 | 公式ページを開く→現在の動画ID                                           | verify-menu-actions                                                                  |
+| P2-06 | 書き出し、読み込み、取消、不正形式、部分保存失敗と復旧                  | settings、settings-storage／settings-input／config-migration単体                     |
+| P2-07 | 一般プレイヤー6設定の全入力、再生・クリック・全画面・Storyboardへの接続 | settings、settings-autoplay／settings-playback-effects／settings-library-effects単体 |
+| P2-08 | コメント設定の全入力・描画パラメータへの反映                            | settings、settings-comment-presentation単体                                          |
+| P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                    | settings、settings-filter等の単体                                                    |
+| P2-10 | 詳細設定2項目、ダブルクリック全画面と終端時の全画面解除                 | settings、settings-video-events単体                                                  |
+| P2-15 | 一般・詳細の全カテゴリ、背景／内部クリック、Escape、フォーカス、各寸法  | settings、settings-dialog単体                                                        |
 
 ## 一覧・タグ・投稿
 
@@ -85,20 +81,16 @@
 
 ## 実環境と代替検証の境界
 
-設定の入力・保存・再表示・復元は`verify-settings-fields.ts`の88子IDを正本とし、実DOMとのキー差分も検査する。機能効果は、次の補足ケースと組み合わせて判定する。レポートの`fields[].effect`はその入力直後に同じブラウザで観測した範囲だけであり、単体での効果まで一律に合格へ変更しない。
+設定の入力・保存・再表示・復元は`verify-settings-fields.ts`の36子IDを正本とし、実DOMとのキー差分も検査する。機能効果は、次の補足ケースと組み合わせて判定する。レポートの`fields[].effect`はその入力直後に同じブラウザで観測した範囲だけであり、単体での効果まで一律に合格へ変更しない。
 
-| 設定の効果                                                     | 追加の検証先と層                                                                                                               |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 自動再生・途中再開・YouTube最高画質                            | `settings-autoplay`・`settings-playback-effects`単体、settingsの実media                                                        |
-| クリック・ダブルクリック全画面・自動全画面・タッチ有効化／取消 | `verify-settings-player`の実入力と描画                                                                                         |
-| 複数起動・リンク置換・公式プレイヤー置換・前回セッション       | `settings-entry-effects`の実分岐・DOM・Storage・Broadcast境界                                                                  |
-| Storyboard・投稿者説明の付与                                   | `settings-library-effects`のWorker／HTTP境界・対象ID・世代検査                                                                 |
-| 配信方式の選択・HLS必須条件・関連チャンネル                    | `settings-stream-effects`の実Loader／Model／Session生成経路。DMCは保存済み旧形式の選択条件であり、現サービスの配信成功ではない |
-| 終端時の全画面解除・説明欄の自動YouTube切替                    | `settings-video-events`のイベント接続とON/OFF・動画別指定・遅延取消                                                            |
-| NG・コメント表示・影・フォント                                 | `settings-filter`・`settings-filter-sync`・`settings-comment-presentation`と、playerのCanvas画素・NG・比率・保存検証           |
-| HeatSyncの短動画／タグ除外・手動速度・切替                     | `settings-heatsync`の実制御タイマーと、settingsの密度別実速度                                                                  |
-| MaskedWatchの対応API・マスク解除                               | settingsの別コンテキストによるAPI不在・理由表示と、固定検出結果を通す実Worker・マスク画素                                      |
+| 設定の効果                                 | 追加の検証先と層                                                                                                     |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| 自動再生・途中再開                         | `settings-autoplay`・`settings-playback-effects`単体、settingsの実media                                              |
+| クリック・ダブルクリック全画面・自動全画面 | `verify-settings-player`の実入力と描画                                                                               |
+| Storyboard                                 | `settings-library-effects`のWorker／HTTP境界・対象ID・世代検査                                                       |
+| 終端時の全画面解除                         | `settings-video-events`のON/OFF・動画別指定                                                                          |
+| NG・コメント表示・影・フォント             | `settings-filter`・`settings-filter-sync`・`settings-comment-presentation`と、playerのCanvas画素・NG・比率・保存検証 |
 
-生成HLSの再生は実mediaで確認するが、元動画の公開配信を再確認したことにはならない。状態付きフェイクAPIへの反映は実サービスへの公開投稿ではない。固定のGamePad入力・検出結果は実機器／実検出APIの確認ではない。専用Chromeへの配布物注入はTampermonkey・Violentmonkey・Greasemonkeyの導入確認ではない。
+生成HLSの再生は実mediaで確認するが、元動画の公開配信を再確認したことにはならない。状態付きフェイクAPIへの反映は実サービスへの公開投稿ではない。専用Chromeへの配布物注入はTampermonkey・Violentmonkey・Greasemonkeyの導入確認ではない。
 
 実サイト・マネージャ・Firefox・実機の条件が揃わない項目は、代替結果とともにverification.mdへ阻害要因・リスク・再開条件を残す。上の対応表だけを根拠に全機能確認済みとしない。

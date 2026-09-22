@@ -129,12 +129,7 @@ async function main(): Promise<void> {
     await until(session, `!${root}.debug.nicoCommentPlayer._view._isShow`, 'コメント非表示', 5000);
     await click(session, 'toggle-showComment');
     await until(session, `${root}.debug.nicoCommentPlayer._view._isShow`, 'コメント再表示', 5000);
-    await until(
-      session,
-      `!!window.MylistPocket?.isReady && !!window.MaskedWatch && !!window.HeatSync && !!${root}.FutatsumeGamePad && !!window.uQuery`,
-      '追加機能の初期化',
-      10000
-    );
+    await until(session, `!!window.MylistPocket?.isReady && !!window.uQuery`, 'マイリスト・DOM補助機能の初期化', 10000);
     await evaluate(
       session,
       `window.__fwQuery = function find(selector, root=document) { const found=root.querySelector(selector); if(found) return found; for(const element of root.querySelectorAll('*')) { if(element.shadowRoot) {const found=find(selector,element.shadowRoot);if(found)return found;} } return null; };`
@@ -161,33 +156,6 @@ async function main(): Promise<void> {
       session,
       `!document.querySelector('.futatsumeAdvancedSettingPanel.show') && ${root}.config.getValue('${setting}') === ${String(oldSetting)}`,
       '詳細設定を復元して閉じる',
-      5000
-    );
-    for (const [command, opened] of [
-      ['toggleHLSDebug', `document.querySelector('video-debug-dialog')?.isOpen`],
-      ['toggleFutatsumeGamePadConfig', `!!window.__fwQuery('.FutatsumeGamePadConfigPanel[open]')`],
-      ['toggleHeatSyncDialog', `!!window.__fwQuery('.HeatSyncConfigPanel.is-Visible')`],
-    ]) {
-      await evaluate(session, `window.__fwQuery('[data-command="${command}"]').click()`);
-      await until(session, opened!, `${command}: 設定画面を開く`, 5000);
-      await exec(session, command!);
-      await until(session, `!(${opened})`, `${command}: 設定画面を閉じる`, 5000);
-    }
-    await evaluate(session, `window.MaskedWatch.dialog.toggle()`);
-    await until(
-      session,
-      `!!document.querySelector('maskedwatch-dialog').shadowRoot.querySelector('dialog[open]')`,
-      'MaskedWatch設定を開く',
-      5000
-    );
-    await evaluate(
-      session,
-      `document.querySelector('maskedwatch-dialog').shadowRoot.querySelector('.close-button').click()`
-    );
-    await until(
-      session,
-      `!document.querySelector('maskedwatch-dialog').shadowRoot.querySelector('dialog[open]')`,
-      'MaskedWatch設定を閉じる',
       5000
     );
     const playlistEnabled = await evaluate(session, `${root}.debug.playlist.isEnable`);

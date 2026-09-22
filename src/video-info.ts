@@ -21,10 +21,6 @@ interface DomandRawData {
   isStoryboardAvailable: boolean;
 }
 
-interface LinkedChannelVideo {
-  linkedVideoId: string;
-}
-
 interface VideoDetail {
   id: string;
   v: string;
@@ -106,7 +102,6 @@ interface RawVideoInfoData {
   ngFilters: NgFilterItem[];
   msgInfo: MessageInfo;
   domandInfo?: DomandRawData;
-  linkedChannelVideo?: LinkedChannelVideo | null;
   playlist: { playlist?: RelatedVideoItem[] };
   playlistToken: string;
   watchAuthKey: string;
@@ -145,16 +140,14 @@ class JSONable {
 class DomandInfo extends JSONable {
   private readonly _rawData: DomandRawData;
   private readonly _videoDetail: VideoDetail;
-  private readonly _linkedChannelVideo: LinkedChannelVideo | null | undefined;
-  constructor(rawData: DomandRawData, videoDetail: VideoDetail, linkedChannelVideo?: LinkedChannelVideo | null) {
+  constructor(rawData: DomandRawData, videoDetail: VideoDetail) {
     super();
     this._rawData = rawData;
     this._videoDetail = videoDetail;
-    this._linkedChannelVideo = linkedChannelVideo;
   }
 
   get videoId(): string {
-    return this._linkedChannelVideo != null ? this._linkedChannelVideo.linkedVideoId : this._videoDetail.id;
+    return this._videoDetail.id;
   }
 
   get accessRightKey(): string {
@@ -305,10 +298,7 @@ class VideoInfoModel extends JSONable {
     this._videoDetail = info.watchApiData.videoDetail;
     this._ngFilters = info.ngFilters;
     this._msgInfo = info.msgInfo;
-    this._domandInfo =
-      info.domandInfo != null
-        ? new DomandInfo(info.domandInfo, info.watchApiData.videoDetail, info.linkedChannelVideo)
-        : null;
+    this._domandInfo = info.domandInfo != null ? new DomandInfo(info.domandInfo, info.watchApiData.videoDetail) : null;
     this._relatedVideo = info.playlist; // playlistという名前だが実質は関連動画
     this._playlistToken = info.playlistToken;
     this._watchAuthKey = info.watchAuthKey;

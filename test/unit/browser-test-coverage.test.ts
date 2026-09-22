@@ -61,8 +61,8 @@ function complete(suite: BrowserSuite) {
 
 test('必須操作を全部報告した各suiteだけを成功として数える', () => {
   for (const suite of browserSuites) expect(assertBrowserCoverage(suite, complete(suite)).count).toBeGreaterThan(0);
-  expect(requiredSettingsFields).toHaveLength(77);
-  expect(assertBrowserCoverage('settings', complete('settings')).settings).toBe(77);
+  expect(requiredSettingsFields).toHaveLength(36);
+  expect(assertBrowserCoverage('settings', complete('settings')).settings).toBe(36);
 });
 test('0件、成功フラグ欠落、成功フラグとエラーの矛盾を拒否する', () => {
   expect(() => assertBrowserCoverage('entry', { completed: true, checks: [] })).toThrow('必須ケース');
@@ -100,10 +100,10 @@ test('複合P3-02/03ラベルは両IDを示すが無関係な数字を親IDに�
   // 市場撤去のP3-03は複合ラベルを外すと欠落し、無関係な数字では補えない。
   expect(() => assertBrowserCoverage('library', report)).toThrow('P3-03');
 });
-test('設定が76件・重複・キー違いなら成功宣言でも拒否する', () => {
+test('設定が35件・重複・キー違いなら成功宣言でも拒否する', () => {
   const missing = complete('settings');
   missing.fields.pop();
-  expect(() => assertBrowserCoverage('settings', missing)).toThrow('設定77件');
+  expect(() => assertBrowserCoverage('settings', missing)).toThrow('設定36件');
   const duplicate = complete('settings');
   duplicate.fields[1] = duplicate.fields[0]!;
   expect(() => assertBrowserCoverage('settings', duplicate)).toThrow('重複設定');

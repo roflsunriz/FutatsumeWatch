@@ -4,7 +4,6 @@ import { clickVisible } from './dev-ui';
 import { verifySettingsFields } from './verify-settings-fields';
 import type { SettingsFieldResult } from './verify-settings-fields';
 import {
-  verifySettingsHlsActions,
   verifySettingsImportFailures,
   verifySettingsStorage,
   captureSettingsExport,
@@ -13,18 +12,11 @@ import {
 } from './verify-settings-storage';
 import { verificationDirectory } from './dev-verification-output';
 import { verifyPlayerSettingEffects } from './verify-settings-player';
-import {
-  settingsDetectorFixture,
-  verifyGamepadEffects,
-  verifyHeatSyncEffects,
-  verifyMaskedEffects,
-  verifyMaskedUnavailable,
-} from './verify-settings-addons';
 
 const output = verificationDirectory;
 const checks: string[] = [];
 const fields: SettingsFieldResult[] = [];
-const panels = ['general', 'advanced', 'hls', 'masked', 'gamepad', 'heatsync'] as const;
+const panels = ['general', 'advanced'] as const;
 const panel = (name: string): string => `window.__settingsQuery('[data-fw-settings="${name}"]')`;
 export async function check(session: CdpSession, expression: string, label: string, timeout = 8000): Promise<void> {
   const deadline = Date.now() + timeout;
@@ -77,10 +69,6 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
     ['filters', 'general'],
     ['data', 'general'],
     ['advanced', 'advanced'],
-    ['hls', 'hls'],
-    ['masked', 'masked'],
-    ['gamepad', 'gamepad'],
-    ['heatsync', 'heatsync'],
     ['player', 'general'],
   ]) {
     await clickInside(session, current, `[data-settings-tab="${tab}"]`);
@@ -154,7 +142,6 @@ async function main(): Promise<void> {
       mobile: false,
     });
     const source = await Bun.file(new URL('../dist/FutatsumeWatch.user.js', import.meta.url)).text();
-    await session.send('Page.addScriptToEvaluateOnNewDocument', { source: settingsDetectorFixture });
     await session.send('Page.addScriptToEvaluateOnNewDocument', {
       source: `document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true})`,
     });
@@ -215,8 +202,8 @@ async function main(): Promise<void> {
     await verifyTabs(session, 1280);
     await check(
       session,
-      `window.FutatsumeWatch.config.props.enableTogglePlayOnClick===false&&window.__settingsQuery('[data-config-name="enabled"]',${panel('gamepad')}).checked===false&&window.__settingsQuery('[data-config-name="turbo.enabled"]',${panel('heatsync')}).checked===false`,
-      '画面クリック・GamePad・HeatSyncの初期値はOFF'
+      `window.FutatsumeWatch.config.props.enableTogglePlayOnClick===false`,
+      '画面クリックの初期値はOFF'
     );
     // The all-fields pass outlasts the generated media. Pause through the real
     // transport button so end-of-video transitions cannot replace its subject.
@@ -228,12 +215,7 @@ async function main(): Promise<void> {
     await verifySettingsFields(session, { open, clickInside, check }, fields);
     await verifySettingsStorage(session, { open, clickInside, check });
     await verifySettingsImportFailures(session, { open, clickInside, check });
-    await verifySettingsHlsActions(session, { open, clickInside, check });
     await verifyPlayerSettingEffects(session, { open, clickInside, check });
-    await verifyGamepadEffects(session, { open, clickInside, check });
-    await verifyHeatSyncEffects(session, { open, clickInside, check });
-    await verifyMaskedEffects(session, { open, clickInside, check });
-    await verifyMaskedUnavailable(session, { open, clickInside, check });
     for (const [name, selector, storage] of [
       ['general', '[data-setting-name="autoPlay"]', 'FutatsumeWatch_autoPlay'],
       [
@@ -241,9 +223,6 @@ async function main(): Promise<void> {
         '[data-setting-name="enableFullScreenOnDoubleClick"]',
         'FutatsumeWatch_enableFullScreenOnDoubleClick',
       ],
-      ['hls', 'input[name="capLevelToPlayerSize"]', 'FutatsumeWatch_video.hls.capLevelToPlayerSize'],
-      ['gamepad', '[data-config-name="needFocus"]', 'FutatsumeGamePad_config_needFocus'],
-      ['heatsync', '[data-config-name="turbo.enabled"]', 'HeatSync_config_turbo.enabled'],
     ] as const) {
       await open(session, name);
       if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
@@ -257,7 +236,6 @@ async function main(): Promise<void> {
             )
           : storage;
       await clickInside(session, name, selector);
-      if (name === 'hls') await clickInside(session, name, 'button[data-command="save"]');
       await check(
         session,
         `${checked}!==${String(before)} && JSON.parse(localStorage.getItem(${JSON.stringify(storageKey)}))===${String(!before)}`,
@@ -268,22 +246,9 @@ async function main(): Promise<void> {
       if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
       await check(session, `${checked}===${String(!before)}`, `${name}: 再表示後の保存値`);
       await clickInside(session, name, selector);
-      if (name === 'hls') await clickInside(session, name, 'button[data-command="save"]');
       await check(session, `${checked}===${String(before)}`, `${name}: 設定値を復元`);
       await mouse(session, 3, 3);
     }
-    await open(session, 'masked');
-    const fast = await evaluate(session, `${panel('masked')}.querySelector('input[name="fastMode"]:checked').value`);
-    await clickInside(session, 'masked', `input[name="fastMode"][value="${fast === 'true' ? 'false' : 'true'}"]`);
-    await mouse(session, 3, 3);
-    await open(session, 'masked');
-    await check(
-      session,
-      `${panel('masked')}.querySelector('input[name="fastMode"]:checked').value!==${JSON.stringify(fast)}`,
-      'masked: ラジオ設定の保存と再表示'
-    );
-    await clickInside(session, 'masked', `input[name="fastMode"][value="${String(fast)}"]`);
-    await mouse(session, 3, 3);
     await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 100, y: 160 });
     await Bun.sleep(180);
     await clickVisible(session, '[data-shell-action="fullscreen"]');
@@ -318,11 +283,11 @@ async function main(): Promise<void> {
       if (width === 390) await verifyTabs(session, width);
     }
     await verifySettingsRoundtrip(session, { open, clickInside, check });
-    await open(session, 'heatsync');
+    await open(session, 'advanced');
     await evaluate(session, `window.FutatsumeWatch.external.execCommand('close')`);
     await check(
       session,
-      `!${panel('heatsync')}.open && !document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
+      `!${panel('advanced')}.open && !document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
       'プレイヤー終了時に設定と背景も閉じる'
     );
     if (errors.length) throw Error(errors.join('\n'));

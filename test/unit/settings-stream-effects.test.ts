@@ -24,13 +24,11 @@ Object.assign(globalThis, {
 });
 const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog');
 const originalFetch = netUtil.fetch;
-const originalLinked = Config.getValue('loadLinkedChannelVideo');
 const originalHls = global.debug.isHLSSupported;
 let log: ReturnType<typeof spyOn<typeof console, 'log'>>;
 let errors: ReturnType<typeof spyOn<typeof window.console, 'error'>>;
 let expectedErrors = 0;
 beforeEach(() => {
-  Config.setValue('loadLinkedChannelVideo', false);
   global.debug.isHLSSupported = true;
   // 動画情報全体のdebug出力だけを抑える。失敗ログは下で想定件数を照合する。
   log = spyOn(console, 'log').mockImplementation(() => {});
@@ -42,7 +40,6 @@ afterEach(() => {
   errors.mockRestore();
   log.mockRestore();
   netUtil.fetch = originalFetch;
-  Config.setValue('loadLinkedChannelVideo', originalLinked);
   global.debug.isHLSSupported = originalHls;
 });
 
@@ -85,89 +82,6 @@ test('P2-07/enableStoryboard: 会員別の応答値に関係なくStoryboard取�
   const data = await load();
   expect(data.domandInfo?.isStoryboardAvailable).toBe(true);
   expect(new VideoInfoModel(data).hasStoryboard).toBe(true);
-});
-
-test('P2-10/loadLinkedChannelVideo: ON時だけ加入済みの関連動画を取得し、その配信資産へ切り替える', async () => {
-  for (const enabled of [false, true]) {
-    Config.setValue('loadLinkedChannelVideo', enabled);
-    const requests: string[] = [];
-    netUtil.fetch = (url) => {
-      requests.push(url);
-      if (url === 'https://www.nicovideo.jp/watch/so9001?responseType=json')
-        return Promise.resolve(Response.json(response({ watchId: 'so9001', domand: false, paid: true, anime: true })));
-      if (url === 'https://public-api.ch.nicovideo.jp/v1/user/channelVideoDAnimeLinks?videoId=so9001&_frontendId=6')
-        return Promise.resolve(
-          Response.json({
-            data: {
-              items: [
-                { linkedVideoId: 'so9003', isChannelMember: false },
-                { linkedVideoId: 'so9002', isChannelMember: true },
-              ],
-            },
-          })
-        );
-      if (url === 'https://www.nicovideo.jp/watch/so9002?responseType=json')
-        return Promise.resolve(Response.json(response({ watchId: 'so9002' })));
-      throw new Error('未登録要求: ' + url);
-    };
-    if (!enabled) {
-      expectedErrors++;
-      const failure: unknown = await VideoInfoLoader.load('so9001', {}).then(
-        () => null,
-        (error: unknown) => error
-      );
-      expect(failure).not.toBeNull();
-      expect(requests).toEqual(['https://www.nicovideo.jp/watch/so9001?responseType=json']);
-    } else {
-      const result = (await VideoInfoLoader.load('so9001', {})) as RawVideoInfoData;
-      const model = new VideoInfoModel(result);
-      expect(requests).toHaveLength(3);
-      expect(requests[2]).toBe('https://www.nicovideo.jp/watch/so9002?responseType=json');
-      expect(model.watchId).toBe('so9001');
-      expect(model.domandInfo!.videoId).toBe('so9002');
-      expect(model.isDomandAvailable).toBe(true);
-    }
-  }
-});
-test('P2-10/loadLinkedChannelVideo-unrelated: 元動画が再生可能・非アニメ・無料なら関連チャンネルを探さない', async () => {
-  Config.setValue('loadLinkedChannelVideo', true);
-  for (const options of [
-    { domand: true, paid: true, anime: true },
-    { domand: false, paid: true, anime: false },
-    { domand: false, paid: false, anime: true },
-  ]) {
-    const requests: string[] = [];
-    netUtil.fetch = (url) => {
-      requests.push(url);
-      return Promise.resolve(Response.json(response(options)));
-    };
-    if (!options.domand) expectedErrors++;
-    const result: unknown = await VideoInfoLoader.load('sm9', {}).catch((error: unknown) => error);
-    expect(requests).toEqual(['https://www.nicovideo.jp/watch/sm9?responseType=json']);
-    if (options.domand) expect(new VideoInfoModel(result as RawVideoInfoData).domandInfo!.videoId).toBe('sm9');
-  }
-});
-test('P2-10/loadLinkedChannelVideo-membership: 非加入候補だけなら勝手に別動画へ切り替えない', async () => {
-  Config.setValue('loadLinkedChannelVideo', true);
-  const requests: string[] = [];
-  netUtil.fetch = (url) => {
-    requests.push(url);
-    return Promise.resolve(
-      Response.json(
-        url.includes('/watch/')
-          ? response({ domand: false, paid: true, anime: true })
-          : { data: { items: [{ linkedVideoId: 'so9002', isChannelMember: false }] } }
-      )
-    );
-  };
-  expectedErrors++;
-  const failure: unknown = await VideoInfoLoader.load('sm9', {}).then(
-    () => null,
-    (error: unknown) => error
-  );
-  expect(failure).not.toBeNull();
-  expect(requests).toHaveLength(2);
-  expect(requests.some((url) => url.includes('/watch/so9002'))).toBe(false);
 });
 
 async function choose(raw: RawVideoInfoData) {

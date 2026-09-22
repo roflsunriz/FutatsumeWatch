@@ -16,14 +16,19 @@
 - Nアニメのカード全体リンクとニコ百埋め込み内のリンクは、起動ボタンが見えていても透明なクリック層で覆うことがある。文書capture段階で起動ボタンの矩形内にある実クリック／タップを受け取り、元リンクへ到達する前に起動する。モバイルの埋め込みボタンは`hover:none`／`pointer:coarse`で常時表示し、44px以上を確保する。回帰は`watch-entry.test.ts`・entry・addonsスイート。
 - 追加承認後の単発実測では、Nアニメ`so46805846`とニコ百`/v/sm9`の各起動・HLS・コメント描画まで成功した。両方ともnv-commentのOPTIONS／POSTはHTTP 200で、標準XMLHttpRequestの`Origin`も許可されたため、GM API未使用を400原因とは扱わない。旧要求の`text/plain`・常時空`additionals`等を現行契約へ直した0.0.13以後の結果である。詳細は`docs/live-once-verification.md`。
 
+## 設定と追加機能の簡素化（2026-09-22、未リリース）
+
+- 設定画面は一般設定4カテゴリと詳細設定の計5カテゴリ・36項目だけを扱う。詳細設定は「画面ダブルクリックでフルスクリーン切り換え」「再生終了時に自動でフルスクリーン解除」の2項目だけにする。
+- 複数タブ起動、公式プレイヤー／動画リンク置換、マイリスト投稿者説明、動画ID指定の＠ジャンプ、タッチジェスチャ、FutatsumeTubeの自動画質・自動切替、期限切れアニメの別映像取得を復活させない。保存済みの旧キーは読み込み対象外として保持する。
+- HLSの設定画面・保存値・キャッシュ調整機能、MaskedWatch、GamePad、HeatSyncは削除済み。Domand動画の再生に必要なHLS処理と画質選択は固定内部設定で維持し、「HLS削除」を再生本体の削除と解釈しない。設定台帳は`scripts/verify-settings-fields.ts`、回帰はsettingsスイートの36子IDを正本とする。
+
 ## オフライン検証の終了と設定効果（2026-09-20）
 
 - オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。
-- HeatSyncは動画切替の除外判定より前に適用済み速度を上書きしない。短動画・除外タグへ切替時は自分の加速だけ戻し、手動速度は残す。除外語・タグを同じ大文字化で照合する。回帰は`settings-heatsync.test.ts`。
 - 動画情報パネルへ届くイベント名は`canPlay`。小文字の`canplay`では関連取得と説明欄の自動YouTube切替が接続されない。自動切替の遅延は、設定OFF・新動画・hideで古い応答を無効化する。`settings-video-events.test.ts`は実Emitterからの接続も確認する。提供者取得機能は0.0.15で削除した。
 - Storyboardは`media.domand.isStoryboardAvailable`の会員別値をtrueへ正規化し、設定ONなら`access-rights/storyboard`を実際に要求して資産可否を判定する。UIからプレミアム表記を外し、OFF・動画切替・遅延応答の世代判定を維持する。オフライン環境はStoryboard access-rights・JSON・画像を登録する。
-- 0.0.15では画面クリック再生・GamePad・HeatSyncの既定値をfalseへ変更した。既存の保存値は利用者の選択として保持する。削除した広告提供者・UI倍率・コメント速度／背面・影2種の設定と処理を復活させない。0.0.17以降のNG正規表現は、一般設定の「NG・フィルター」にある1行1つの`/パターン/フラグ`一覧を正本とし、詳細設定に重複配置しない。コメント行のNGwordは本文を`i`付きリテラル正規表現へ変換してこの一覧へ追加する。旧NGワードと旧単一正規表現／フラグは設定移行版3で一覧へ統合する。NGタグ／投稿者も同じタブを正本とする。
-- 映像配信は現行のDomand HLSだけを使用する。終了したDMC/HTTP方式の選択設定、フォールバック、Worker、ストーリーボード、HeatSync分岐を復活させず、画質設定と検証はDomandの利用可能な画質を対象にする。
+- 0.0.17以降のNG正規表現は、一般設定の「NG・フィルター」にある1行1つの`/パターン/フラグ`一覧を正本とし、詳細設定に重複配置しない。コメント行のNGwordは本文を`i`付きリテラル正規表現へ変換してこの一覧へ追加する。旧NGワードと旧単一正規表現／フラグは設定移行版3で一覧へ統合する。NGタグ／投稿者も同じタブを正本とする。
+- 映像配信は現行のDomand HLSだけを使用する。終了したDMC/HTTP方式の選択設定、フォールバック、Worker、ストーリーボード分岐を復活させず、画質設定と検証はDomandの利用可能な画質を対象にする。
 - 新規タブとService Workerは専用BrowserContextに限定したbrowser-level監視で初回要求から捕捉する。初期化前popupではFetch・Runtime監視を先にキューへ送り、resumeと全応答を待つ。初回がchrome-errorになったリンクを再読み込みで成功へ変えない。guardはページ・専用Worker・iframe・popup・Service Workerの未登録5要求とWorker先頭例外2件を照合する。
 - Service Workerのエントリーはtarget生成前に取得されるため、guardだけ専用loopbackサーバーの完全一致GETで供給する。別ポート・外部への禁止プロキシは維持する。映像は`test/fixtures/functionality/media-spec.ts`を正本にID別の長さ・比率・色を持ち、表示IDだけで切替成功にしない。
 - 再読み込みの一時的な自動再生指定は、その再読み込みが完了する前に別動画を開いた場合にも解除する。`verify-media-switch.ts`は通信境界でA応答を保留→Bの実映像を確認→A応答の受信完了→Bを維持、という順序を固定する。
@@ -82,7 +87,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 - 製品・テスト・スクリプトはTypeScript。tsconfigはstrict、allowJs:false、allowUmdGlobalAccess:false。any禁止を維持する。ただし既存の構造型キャストは残るため、型検査だけで実動作を保証しない。
 - BunでVite 8＋vite-plugin-monkeyを実行する。Vite内部はRolldownでありBun.buildではない。設定はvite.config.mts、入口はsrc/main.ts、配線はsrc/runtime.ts。build.js・webpack・Babel・mochaは退役した。
-- 配布物はdist/FutatsumeWatch.user.jsの1件のみ。開発用も同じファイルを使う。HLS・GamePad・詳細設定・MylistPocket・MaskedWatch・HeatSync・CapTube・ブログパーツ・マイリスト絞り込み・uQueryを同梱する。SystemJS・lodash・jQuery・lit・hls.jsも同梱し、外部@requireに依存しない。
+- 配布物はdist/FutatsumeWatch.user.jsの1件のみ。開発用も同じファイルを使う。Domand HLS再生・詳細設定・MylistPocket・CapTube・ブログパーツ・マイリスト絞り込み・uQueryを同梱する。SystemJS・lodash・jQuery・lit・hls.jsも同梱し、外部@requireに依存しない。
 - scripts/build.tsはvm.Scriptでclassic scriptとして解析し、配布件数・版・外部@requireの不在を確認する。node --checkはESM自動検出のため、この判定の代わりにならない。
 - 初期化はAntiPrototypeJs→設定復元→runtimeのモジュール評価→API/Worker/描画依存の配線→HLS→initialize→追加機能。モジュール評価時にConfig.propsを読む既存箇所があるため、Configのrestore前にruntimeを静的importしない。
 - useDefineForClassFields:falseは必須。ES2022既定では型用フィールド宣言が親の初期化済みDOM参照をundefinedで上書きする。型用宣言をdeclareへ統一するまで従来の生成規則を維持する。
@@ -104,7 +109,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - scripts/dev-verify-addons.tsは隔離コンテキスト・通信遮断・固定HTML・実際にエンコードした映像でCapTubeとブログパーツを検証する。公開サイトの実測とは区別する。
 - CDPヘルパーはプロトコルエラーと評価中例外を失敗にし、15秒でタイムアウトする。Worker例外も収集する。結果・画像はdev-assets/verificationに保存し、認証情報や署名URLをGitへ含めない。
 - 実ページはNicoCache系プロキシ経由で他の拡張コードが混在する場合がある。広告等の既知の第三者通信失敗と製品例外を分ける。動画・コメントは製品の状態とDOMから判定する。
-- 認証操作（公開API実測で401）、実ゲームパッド、Firefox/Violentmonkey/Greasemonkey、MaskedWatchの顔・文字検出API、現行マイリストページの構造への追従は未検証としてverification.mdで追跡する。
+- 認証操作（公開API実測で401）、Firefox/Violentmonkey/Greasemonkey、現行マイリストページの構造への追従は未検証としてverification.mdで追跡する。
 - LICENSEファイルは未整備で、引き継いだソースのライセンス表記の確認が必要。利用者の判断なしに一律のLICENSEを作成しない。
 
 ## 記録再生フィクスチャ
@@ -148,9 +153,8 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 共通設定パネル（2026-09-20、0.0.6）
 
-- 6種類の設定の開閉は`packages/components/src/settings-dialog.ts`、共通配色・寸法は`settings-dialog-theme.ts`を正本とする。標準dialogと`::backdrop`を使い、設定内容のDOM・保存処理は各機能に保持する。外側は画面全体、内側の`.fw-modal-content`が可視パネル。入力欄・パネル内の余白クリックや内側からのドラッグを背景クリックとして扱わない。
-- Generalはlitのrender完了後に開く。GamePad/HeatSyncの遅延closeは撤去し、背景・Escapeでも各機能のisOpen/isVisibleを同期する。古いcloseイベントが再表示後の状態を壊さないようにし、プレイヤー終了時にも共通パネルを閉じる。
-- HLSの各入力部品にもShadow DOMがあるため、外側テーマだけでは入力欄の固定幅・配色を変更できない。共有のfield themeを入力側へ入れる。スライダー値は疑似要素でなくoutputへ描画する。
+- 一般設定と詳細設定の開閉は`packages/components/src/settings-dialog.ts`、共通配色・寸法は`settings-dialog-theme.ts`を正本とする。標準dialogと`::backdrop`を使い、設定内容のDOM・保存処理は各機能に保持する。外側は画面全体、内側の`.fw-modal-content`が可視パネル。入力欄・パネル内の余白クリックや内側からのドラッグを背景クリックとして扱わない。
+- Generalはlitのrender完了後に開く。背景・Escapeでも各機能のisOpen/isVisibleを同期し、プレイヤー終了時にも共通パネルを閉じる。
 - `bun run dev:verify:settings`は配布物注入による実入力検証。各設定の開閉・保存と復元・全画面・複数寸法を確認し、結果と画像を`dev-assets/verification/settings-*`へ残す。機器の入力や検出APIの実機能検証とは区別する。
 - 自動再生など一部の設定は`PlayerConfig.wrapKey`で視聴ページ用の`:ginza`へ解決される。保存検証は`getStorageKey(getNativeKey(key))`で実際のキーを調べ、nullを「変更前と違う」だけで保存成功にしない。
 - `dev-verify.ts`のWorker監視は終了時に新規購読を止め、発行済みのRuntime.enable要求を待ってからauto-attachを解除する。解除を先にすると購読対象sessionが消え、製品操作が成功しても検証自身がNo sessionエラーになる。
@@ -158,7 +162,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## 設定サイドバー（2026-09-20、0.0.7）
 
 - 設定画面の内側は960×720pxを基本とし、小さい画面だけ利用可能な幅・高さへ収める。Shadow DOM内と通常DOM内のパネルで外枠寸法をそろえるため、共通テーマでbox-sizingを明示する。本文とサイドバーは別々にスクロールする。
-- 一般設定の`data-settings-section`を持つ4区画は同じDOMを保持してhiddenを切り替える。ほかの5設定への移動は`configureSettingsNavigation`から既存の開閉処理へ接続する。タブ・区画の識別は表示文言に依存させない。
+- 一般設定の`data-settings-section`を持つ4区画は同じDOMを保持してhiddenを切り替える。詳細設定への移動は`configureSettingsNavigation`から既存の開閉処理へ接続する。タブ・区画の識別は表示文言に依存させない。
 - Generalのコマンド付きボタンのclick処理はformに置く。共通ダイアログがclickの外部伝播を止めるため、外側の#rootへ置くと設定書き出しなどのコマンドが届かない。書き出し検証ではダウンロードを捕捉し、生成JSONと現在の設定を比較する。
 - 0.0.8では設定前の左メニューを設定・画質・GitHub・その他操作の4項目に集約した。個別設定への実操作検証も「設定」→設定内タブを通る。削除した入口の有効化監視やclick分岐は残さず、`configureSettingsNavigation`の接続を使う。
 
@@ -172,8 +176,8 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## 名称の全面移行とlint（2026-09-20、未リリース）
 
 - 現行コード・DOM・イベント・追加機能はFutatsumeWatch / Futatsume系、プレイヤーのパッケージは`packages/futatsume`へ統一した。旧ブランド文字列は`src/config-migration.ts`の読み込み境界と移行テスト、由来・上流URL・過去の記録だけに残す。`escapeToZenkaku`、`frozen`、資料内の全角空白`zen_space`はブランド名ではない。
-- `main.ts`で共有保存値・プレイリスト・前回再生状態を移し、Configの復元前に本体設定を、HLS/GamePadの初期化時に各既定キーを移す。本体の移行版は3。マーカー1では名称変更したTube設定だけをFutatsumeWatchの旧キーから移し、マーカー3では旧NGワードと旧単一正規表現／フラグを正規表現一覧へ統合する。リセットした値を旧ブランドのバックアップから復活させず、旧値は保持し、新キーを優先する。旧設定JSONは`Config.import`でキーを変換する。
-- GamePadの公開オブジェクトはプレイヤーを開いてから設定される。起動前の移行確認では保存キーを確認し、操作は起動後に検証する。`dev:verify:migration`は隔離コンテキストで移行とHLSエラー種別を検証する。
+- `main.ts`で共有保存値・プレイリスト・前回再生状態を移し、Configの復元前に本体設定を移す。本体の移行版は3。マーカー3では旧NGワードと旧単一正規表現／フラグを正規表現一覧へ統合する。リセットした値を旧ブランドのバックアップから復活させず、旧値は保持し、新キーを優先する。削除済みキーは設定JSONの読み込み時にも無視する。
+- `dev:verify:migration`は隔離ブラウザコンテキストで本体・MylistPocket・プレイリスト・前回再生状態の移行と、固定HLSのエラー種別を検証する。
 - lintは`--max-warnings 0`・未使用宣言error。継承・公開契約に必要な未使用引数だけ意図を明示し、未使用の代入を外す際は初期化や入力検証の副作用を残す。
 - Bun 1.4.0の`install --lockfile-only --ignore-scripts`は`--force`付きでも既存lockfileのルートnameを更新しなかった。今回だけルートnameをpackage.jsonへ合わせ、依存解決情報を変えず`--frozen-lockfile`で整合性を確認する。
 

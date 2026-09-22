@@ -27,19 +27,12 @@ async function start(): Promise<void> {
     await import('./blog');
     return;
   }
-  if (['live.nicovideo.jp', 'embed.nicovideo.jp', 'sp.nicovideo.jp'].includes(location.hostname)) {
-    await import('./shape');
-    return;
-  }
   const { startPlayer, openVideo } = await import('./runtime');
   await startPlayer();
   entry?.ready(openVideo);
   if (window === window.top) {
     if (location.hostname === 'www.nicovideo.jp') await import('../packages/lib/src/nico/modern-lazyload');
     await import('./pocket');
-    await import('./gamepad');
-    await import('./heatsync');
-    await import('./shape');
     await import('./setting');
     if (location.hostname === 'www.nicovideo.jp' && location.pathname.startsWith('/my/mylist')) {
       await import('./my4');

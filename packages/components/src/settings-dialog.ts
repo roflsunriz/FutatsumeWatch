@@ -1,19 +1,9 @@
 import { SETTINGS_DIALOG_THEME } from './settings-dialog-theme';
 
-export type SettingsPanel = 'general' | 'advanced' | 'hls' | 'masked' | 'gamepad' | 'heatsync';
+export type SettingsPanel = 'general' | 'advanced';
 type GeneralSection = 'player' | 'comments' | 'filters' | 'data';
 type SettingsTab = GeneralSection | Exclude<SettingsPanel, 'general'>;
-const tabs: readonly SettingsTab[] = [
-  'player',
-  'comments',
-  'filters',
-  'data',
-  'advanced',
-  'hls',
-  'masked',
-  'gamepad',
-  'heatsync',
-];
+const tabs: readonly SettingsTab[] = ['player', 'comments', 'filters', 'data', 'advanced'];
 const isGeneralSection = (tab: SettingsTab): tab is GeneralSection =>
   ['player', 'comments', 'filters', 'data'].includes(tab);
 const navigation: { section: GeneralSection; open?: (panel: SettingsPanel) => void; focusTab: boolean } = {
@@ -32,10 +22,6 @@ const labels = {
     data: '設定の入出力',
     navigation: '設定カテゴリ',
     advanced: '詳細設定',
-    hls: 'HLS',
-    masked: 'MaskedWatch',
-    gamepad: 'GamePad',
-    heatsync: 'HeatSync',
     close: '閉じる',
   },
   en: {
@@ -46,10 +32,6 @@ const labels = {
     data: 'Import & export',
     navigation: 'Settings categories',
     advanced: 'Advanced settings',
-    hls: 'HLS',
-    masked: 'MaskedWatch',
-    gamepad: 'GamePad',
-    heatsync: 'HeatSync',
     close: 'Close',
   },
 };

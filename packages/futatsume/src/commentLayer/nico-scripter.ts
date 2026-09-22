@@ -379,7 +379,7 @@ class NicoScriptParser {
     //＠ジャンプ ジャンプ先 メッセージ 再生開始位置 戻り秒数 戻りメッセージ
     const tmp = NicoScriptParser.parseNicosParams(str);
     const target = tmp[1] || '';
-    let type = 'JUMP';
+    let type = 'IGNORE';
     let time: number | string = 0;
     let m: RegExpExecArray | null;
     if ((m = /^#(\d+):(\d+)$/.exec(target)) !== null) {
@@ -406,7 +406,6 @@ class NicoScripter extends Emitter {
   declare _hasSort: boolean;
   declare _list: NicoChat[];
   declare _eventScript: Array<{ p: ParsedScript; nicos: NicoChat }>;
-  declare _nextVideo: string | null;
   declare _marker: Record<string, number>;
   declare _inviewEvents: Record<number, boolean>;
   declare _currentTime: number;
@@ -420,7 +419,6 @@ class NicoScripter extends Emitter {
     this._hasSort = false;
     this._list = [];
     this._eventScript = [];
-    this._nextVideo = null;
     this._marker = {};
     this._inviewEvents = {};
     this._currentTime = 0;
@@ -434,10 +432,6 @@ class NicoScripter extends Emitter {
 
   get isEmpty(): boolean {
     return this._list.length === 0;
-  }
-
-  getNextVideo(): string {
-    return this._nextVideo || '';
   }
 
   getEventScript(): Array<{ p: ParsedScript; nicos: NicoChat }> {
@@ -508,12 +502,6 @@ class NicoScripter extends Emitter {
     // どうせ全動画の1%も使われていないので
     // 最適化もへったくれもない
     const eventFunc: Record<string, (p: ParsedScript, nicos: NicoChat) => void> = {
-      JUMP: (p) => {
-        const target = String((p.params as NicoScriptJumpParams).target);
-        if (/^([a-z]{2}|)[0-9]+$/.test(target)) {
-          this._nextVideo = target;
-        }
-      },
       SEEK: (p, nicos) => {
         if (assigned[p.id]) {
           return;

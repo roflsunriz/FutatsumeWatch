@@ -1,7 +1,5 @@
 import { MylistApiLoader } from '../packages/lib/src/nico/mylist-api-loader';
 import { nicoUtil } from '../packages/lib/src/nico/nico-util';
-import { ThumbInfoLoader } from '../packages/lib/src/nico/thumb-info-loader';
-import { Config } from './config';
 
 const labels = {
   ja: {
@@ -107,15 +105,7 @@ export async function openMylistPicker(watchId: string): Promise<void> {
     for (const button of dialog.querySelectorAll<HTMLButtonElement>('[data-mylist-choice], [data-mylist-reload]'))
       button.disabled = true;
     try {
-      let description = '';
-      if (Config.getValue('enableAutoMylistComment')) {
-        const info = await ThumbInfoLoader.load(watchId);
-        if (version !== generation) return;
-        if (info.status !== 'ok' || !info.owner) throw new Error(text.failed);
-        const originalVideoId = info.originalVideoId ? `元動画: ${info.originalVideoId}` : '';
-        description = `投稿者: ${info.owner.name} ${info.owner.linkId} ${originalVideoId}`;
-      }
-      await MylistApiLoader.addMylistItem(watchId, id, description);
+      await MylistApiLoader.addMylistItem(watchId, id, '');
       if (version !== generation) return;
       status.textContent = `${text.added}: ${name}`;
       dialog.dataset.state = 'success';

@@ -31,10 +31,6 @@ async function click(session: CdpSession, action: string): Promise<void> {
   await reveal(session);
   const settingsTabs: Record<string, string> = {
     advanced: 'advanced',
-    masked: 'masked',
-    toggleHLSDebug: 'hls',
-    toggleFutatsumeGamePadConfig: 'gamepad',
-    toggleHeatSyncDialog: 'heatsync',
   };
   const tab = settingsTabs[action];
   if (tab) {
@@ -266,34 +262,6 @@ async function main(): Promise<void> {
     await screenshot(session, 'advanced');
     await clickVisible(session, '.futatsumeAdvancedSetting-close');
     await check(session, `!document.querySelector('.futatsumeAdvancedSettingPanel.show')`, '詳細設定を閉じる');
-    for (const [action, opened, close] of [
-      [
-        'toggleHLSDebug',
-        `document.querySelector('video-debug-dialog')?.isOpen`,
-        `${root}.external.execCommand('toggleHLSDebug')`,
-      ],
-      [
-        'toggleFutatsumeGamePadConfig',
-        `!!window.__fwQuery('.FutatsumeGamePadConfigPanel[open]')`,
-        `${root}.external.execCommand('toggleFutatsumeGamePadConfig')`,
-      ],
-      [
-        'toggleHeatSyncDialog',
-        `!!window.__fwQuery('.HeatSyncConfigPanel.is-Visible')`,
-        `${root}.external.execCommand('toggleHeatSyncDialog')`,
-      ],
-      [
-        'masked',
-        `!!document.querySelector('maskedwatch-dialog')?.shadowRoot.querySelector('dialog[open]')`,
-        `document.querySelector('maskedwatch-dialog').shadowRoot.querySelector('.close-button').click()`,
-      ],
-    ]) {
-      await click(session, 'settings');
-      await click(session, action!);
-      await check(session, opened!, `左メニューから${action}を開く`);
-      await evaluate(session, close!);
-      await check(session, `!(${opened})`, `${action}を閉じる`);
-    }
     await click(session, 'details');
     await check(
       session,

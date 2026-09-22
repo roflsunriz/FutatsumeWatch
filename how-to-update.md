@@ -18,11 +18,11 @@ BunとGitを用意し、リポジトリ直下で作業します。ブラウザ�
 6. 自動検証は`bun run test:browser all --offline`で別途実行します（モード省略時もオフライン）。ビルド後、手動環境と異なるheadless Chromeで生成HLS・固定APIを使ったブラウザテストを実行し、成功・失敗時ともに停止します。結果は`dev-assets/verification/<実行日時>-<モード>-<ID>/<スイート>/`と`run.json`に保存され、Gitには含めません。
 7. `git diff --stat` と生成物の差分を確認します。生成物の手修正は行いません。
 
-UIだけを確認する場合は`bun run test:browser ui`を実行します。配布物を注入し、中央操作、左右パネル、一般設定の実入力、追加設定への導線、ABリピート、狭幅・低高さ・4Kを確認します。画像と結果は`dev-assets/verification/shell-*`へ保存します。コメント投稿フォームも、音量バー横の配置、パレット、実入力、Enter・投稿ボタン、失敗時の本文保持と再送、全画面・各寸法を確認します。送信結果は専用タブ内で制御し、公開コメント投稿やタグ編集の送信は行いません。
+UIだけを確認する場合は`bun run test:browser ui`を実行します。配布物を注入し、中央操作、左右パネル、一般・詳細設定の導線、ABリピート、狭幅・低高さ・4Kを確認します。画像と結果は`dev-assets/verification/shell-*`へ保存します。コメント投稿フォームも、音量バー横の配置、パレット、実入力、Enter・投稿ボタン、失敗時の本文保持と再送、全画面・各寸法を確認します。送信結果は専用タブ内で制御し、公開コメント投稿やタグ編集の送信は行いません。
 
-設定パネルは`bun run test:browser settings`で、6種類すべての背景クリック・Escape・閉じるボタン、入力と保存・再表示、全画面、狭幅・低高さを確認します。保存先は`dev-assets/verification/settings-*`です。設定値は自動テスト用プロファイル内だけで変更し、確認後に元の値へ戻します。
+設定パネルは`bun run test:browser settings`で、一般設定と詳細設定の背景クリック・Escape・閉じるボタン、36項目の入力と保存・再表示、全画面、狭幅・低高さを確認します。保存先は`dev-assets/verification/settings-*`です。設定値は自動テスト用プロファイル内だけで変更し、確認後に元の値へ戻します。
 
-同じ検証で、サイドバーの9カテゴリを巡回し、外枠の位置・幅・高さが変わらないこととキーボード操作を確認します。一般設定の入力DOMの保持は単体テストでも確認します。設定書き出しのダウンロードは捕捉し、利用者の保存先へファイルを作りません。
+同じ検証で、サイドバーの5カテゴリを巡回し、外枠の位置・幅・高さが変わらないこととキーボード操作を確認します。一般設定の入力DOMの保持は単体テストでも確認します。設定書き出しのダウンロードは捕捉し、利用者の保存先へファイルを作りません。
 
 自動テストは`all`・`entry`・`player`・`ui`・`settings`・`migration`・`addons`・`functionality`・`library`・`guard`を選択できます。手動用は9333と既存ChromeDev、自動用は9334と`dev-assets/browser-tests/profile`です。ランナーは接続先を自動用へ固定し、継承された`FUTATSUME_DEV_PORT`で手動環境へ接続しません。同時実行は拒否します。強制中断後にブラウザが残った場合は`bun run test:browser:stop`で回復します。
 
@@ -38,9 +38,9 @@ TMで登録したスクリプトのページへの適用だけを確認したい
 
 ソースファイルを改名するときはケバブケースにそろえ、静的/動的import・テストデータ・文書の参照も更新します。Windowsの大文字小文字だけの改名は、一時名を経由した`git mv`で記録してください。型検査に加えてGit上のファイル名も確認し、`bun run build`で配布物を再生成します。lintはファイル名の規則も検査します。
 
-名称移行後の連携先は`window.FutatsumeWatch`、初期化イベントは`BeforeFutatsumeWatchInitialize` / `FutatsumeWatchInitialize`です。DOMの`zenza` / `zen`接頭辞は`futatsume`へ、GamePadのコマンドは`toggleFutatsumeGamePadConfig`へ変わります。旧名を使う外部連携も同時に更新してください。lintは警告を含めて0件を必須にします。
+名称移行後の連携先は`window.FutatsumeWatch`、初期化イベントは`BeforeFutatsumeWatchInitialize` / `FutatsumeWatchInitialize`です。DOMの`zenza` / `zen`接頭辞は`futatsume`へ変更済みです。旧名を使う外部連携も同時に更新してください。lintは警告を含めて0件を必須にします。
 
-設定の移行元キーは`src/config-migration.ts`だけで管理します。旧設定ファイルのTube設定名も読み込み時に変換します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。配布物は`bun run build`で再生成します。
+設定の移行元キーは`src/config-migration.ts`だけで管理します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。削除済みの設定キーは読み込み時に無視します。配布物は`bun run build`で再生成します。
 
 名称や保存キーの変更時は`bun run test:browser migration`で隔離したブラウザコンテキストへ旧設定フィクスチャを読み込み、初期化イベント・実設定モデル・保存キー・旧データ保持を確認します。
 

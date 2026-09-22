@@ -5,7 +5,6 @@ import { DataStorage } from '../packages/lib/src/infra/data-storage';
 import { validateImportedConfig } from './config-validation';
 
 export interface ConfigProps {
-  debug: boolean;
   volume: number;
   forceEnable: boolean;
   showComment: boolean;
@@ -20,15 +19,12 @@ export interface ConfigProps {
   'screenMode:others': string;
   autoFullScreen: boolean;
   autoCloseFullScreen: boolean;
-  continueNextPage: boolean;
   autoPauseCommentInput: boolean;
   sharedNgLevel: string;
   enablePushState: boolean;
   enableHeatMap: boolean;
   enableCommentPreview: boolean;
-  enableAutoMylistComment: boolean;
   enableTogglePlayOnClick: boolean;
-  enableDblclickClose: boolean;
   enableFullScreenOnDoubleClick: boolean;
   enableStoryboard: boolean;
   enableStoryboardBar: boolean;
@@ -64,18 +60,13 @@ export interface ConfigProps {
   baseFontBolder: boolean;
   cssFontWeight: string;
   allowOtherDomain: boolean;
-  overrideWatchLink: boolean;
-  'overrideWatchLink:others': boolean;
   speakLark: boolean;
   speakLarkVolume: number;
-  enableSingleton: boolean;
-  loadLinkedChannelVideo: boolean;
   commentLayerOpacity: number;
   'commentLayer.textShadowType': string;
   'commentLayer.ownerCommentShadowColor': string;
   'commentLayer.easyCommentOpacity': number;
   'commentLayer.aiCommentOpacity': number;
-  overrideGinza: boolean;
   enableGinzaSlayer: boolean;
   lastPlayerId: string;
   playbackRate: number;
@@ -83,7 +74,6 @@ export interface ConfigProps {
   message: string;
   enableVideoSession: boolean;
   domandVideoQuality: string;
-  enableNicosJumpVideo: boolean;
   'videoSearch.ownerOnly': boolean;
   'videoSearch.mode': string;
   'videoSearch.order': string;
@@ -91,17 +81,10 @@ export interface ConfigProps {
   'videoSearch.word': string;
   'screenshot.prefix': string;
   'search.limit': number;
-  'touch.enable': boolean;
-  'touch.tap2command': string;
-  'touch.tap3command': string;
-  'touch.tap4command': string;
-  'touch.tap5command': string;
   'navi.favorite': unknown[];
   'navi.playlistButtonMode': string;
   'navi.ownerFilter': boolean;
   'navi.lastSearchQuery': string;
-  autoFutatsumeTube: boolean;
-  bestFutatsumeTube: boolean;
   KEY_CLOSE: number;
   KEY_RE_OPEN: number;
   KEY_HOME: number;
@@ -180,7 +163,6 @@ interface DataStorageOptions {
 //@require ../packages/lib/src/infra/data-storage.js
 const Config = (() => {
   const DEFAULT_CONFIG = {
-    debug: false,
     volume: 0.3,
     forceEnable: false,
     showComment: true,
@@ -195,15 +177,12 @@ const Config = (() => {
     'screenMode:others': 'normal',
     autoFullScreen: false,
     autoCloseFullScreen: true, // 再生終了時に自動でフルスクリーン解除するかどうか
-    continueNextPage: false, // 動画再生中にリロードやページ切り替えしたら続きから開き直す
     autoPauseCommentInput: true, // コメント入力時に自動停止する
     sharedNgLevel: 'MID', // NG共有の強度 NONE, LOW, MID, HIGH, MAX
     enablePushState: true, // ブラウザの履歴に乗せる
     enableHeatMap: true,
     enableCommentPreview: false,
-    enableAutoMylistComment: false, // マイリストコメントに投稿者を入れる
     enableTogglePlayOnClick: false, // 画面クリック時に再生/一時停止するかどうか
-    enableDblclickClose: true, //
     enableFullScreenOnDoubleClick: true,
     enableStoryboard: true, // シークバーサムネイル関連
     enableStoryboardBar: false, // シーンサーチ
@@ -250,19 +229,10 @@ const Config = (() => {
 
     allowOtherDomain: true,
 
-    overrideWatchLink: false, // すべての動画リンクをFutatsumeWatchで開く
-    'overrideWatchLink:others': false, // すべての動画リンクをFutatsumeWatchで開く
-
     speakLark: false, // 一発ネタのコメント読み上げ機能. 飽きたら消す
     speakLarkVolume: 1.0, // 一発ネタのコメント読み上げ機能. 飽きたら消す
 
     // enableCommentLayoutWorker: true, // コメントの配置計算を一部マルチスレッド化(テスト中)
-
-    enableSingleton: false,
-
-    // 無料期間の過ぎた動画と同じのがdアニメにあったら、
-    // コメントはそのままに映像だけ持ってくる (当然ながらdアニメ加入は必要)
-    loadLinkedChannelVideo: false,
 
     commentLayerOpacity: 1.0, //
     'commentLayer.textShadowType': '', // フォントの修飾タイプ
@@ -270,7 +240,6 @@ const Config = (() => {
     'commentLayer.easyCommentOpacity': 0.5, // かんたんコメントの透明度
     'commentLayer.aiCommentOpacity': 0.5, // かんたんコメントの透明度
 
-    overrideGinza: false, // 動画視聴ページでもGinzaの代わりに起動する
     enableGinzaSlayer: false, // まだ実験中
     lastPlayerId: '',
     playbackRate: 1.0,
@@ -280,7 +249,6 @@ const Config = (() => {
     enableVideoSession: true,
     domandVideoQuality: 'auto', // 優先する画質 auto, 1080p, 720, 480p, 360p, 144p
 
-    enableNicosJumpVideo: true, // @ジャンプを有効にするかどうか
     'videoSearch.ownerOnly': true,
     'videoSearch.mode': 'tag',
     'videoSearch.order': 'desc',
@@ -291,21 +259,10 @@ const Config = (() => {
 
     'search.limit': 300, // 検索する最大件数(最大1600) 100件ごとにAPIを叩くので多くするほど遅くなる
 
-    //タッチパネルがある場合は null ない場合は undefined になるらしい
-    //うちのデスクトップは無いのに null だが…
-    'touch.enable': window.ontouchstart !== undefined,
-    'touch.tap2command': '',
-    'touch.tap3command': 'toggle-mute',
-    'touch.tap4command': 'toggle-showComment',
-    'touch.tap5command': 'screenShot',
-
     'navi.favorite': [],
     'navi.playlistButtonMode': 'insert',
     'navi.ownerFilter': false,
     'navi.lastSearchQuery': '',
-
-    autoFutatsumeTube: false,
-    bestFutatsumeTube: false,
 
     KEY_CLOSE: 27, // ESC
     KEY_RE_OPEN: 27 + 0x1000, // SHIFT + ESC
@@ -354,7 +311,6 @@ const Config = (() => {
   };
 
   if (navigator && navigator.userAgent && navigator.userAgent.match(/(Android|iPad;|CriOS)/i)) {
-    DEFAULT_CONFIG.overrideWatchLink = true;
     DEFAULT_CONFIG.autoFullScreen = true;
     DEFAULT_CONFIG.autoCloseFullScreen = false;
     DEFAULT_CONFIG.volume = 1.0;
@@ -364,7 +320,7 @@ const Config = (() => {
   if (location.host === 'www.nicovideo.jp') migrateConfig(localStorage, Object.keys(DEFAULT_CONFIG));
   const store = (DataStorage as unknown as DataStorageModule).create(DEFAULT_CONFIG, {
     prefix: PRODUCT,
-    ignoreExportKeys: ['message', 'lastPlayerId', 'lastWatchId', 'debug'],
+    ignoreExportKeys: ['message', 'lastPlayerId', 'lastWatchId'],
     readonly: !location || location.host !== 'www.nicovideo.jp',
     storage: localStorage,
   });

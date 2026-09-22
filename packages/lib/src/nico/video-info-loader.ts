@@ -50,12 +50,6 @@ interface WatchVideoTag {
   name: string;
 }
 
-interface LinkedChannelVideo {
-  linkedVideoId: string;
-  isChannelMember?: boolean;
-  [key: string]: unknown;
-}
-
 interface WatchApiData {
   channel?: {
     id: string;
@@ -107,15 +101,6 @@ interface LoadError {
   info?: unknown;
 }
 
-interface LinkedChannelVideoHolder {
-  linkedChannelVideo: LinkedChannelVideo | null | undefined;
-  watchApiData: { videoDetail: { id: string } };
-  domandInfo?: DomandDelivery | null;
-  isPlayable: boolean;
-  isDomand: boolean;
-}
-
-import { Config } from '../../../../src/config';
 import { global } from '../../../../src/futatsume-watch-index';
 const { emitter, debug } = global;
 
@@ -395,7 +380,6 @@ const VideoInfoLoader = (function () {
       isMemberFree,
       isNeedPayment,
       isPremiumFree,
-      linkedChannelVideo: null as LinkedChannelVideo | null | undefined,
       resumeInfo,
     };
 
@@ -403,42 +387,7 @@ const VideoInfoLoader = (function () {
     return result;
   };
 
-  const loadLinkedChannelVideoInfo = (originalData: LinkedChannelVideoHolder) => {
-    const linkedChannelVideo = originalData.linkedChannelVideo;
-    const originalVideoId = originalData.watchApiData.videoDetail.id;
-    const videoId = linkedChannelVideo!.linkedVideoId;
-
-    if (originalVideoId === videoId) {
-      originalData.linkedChannelVideo = null;
-      return Promise.reject();
-    }
-
-    const url = `https://www.nicovideo.jp/watch/${videoId}?responseType=json`;
-    return new Promise((r) => {
-      setTimeout(r, 1000);
-    })
-      .then(() => (netUtil as unknown as NetUtilLike).fetch(url, { credentials: 'include' }))
-      .then((res: Response) => res.json())
-      .then((json: WatchApiResponse) => {
-        const data = parseWatchApiData(json);
-        //window.console.info('linkedChannelData', data);
-        originalData.domandInfo = data.domandInfo;
-        originalData.isPlayable = data.isPlayable;
-        originalData.isDomand = data.isDomand;
-        return originalData;
-      })
-      .catch(() => {
-        originalData.linkedChannelVideo = null;
-        return Promise.reject({ reason: 'network', message: '通信エラー(loadLinkedChannelVideoInfo)' });
-      });
-  };
-
-  const onLoadPromise = async (
-    watchId: string,
-    options: WatchLoadOptions,
-    isRetry: boolean,
-    resp: WatchApiResponse
-  ) => {
+  const onLoadPromise = (watchId: string, options: WatchLoadOptions, isRetry: boolean, resp: WatchApiResponse) => {
     const data = parseWatchApiData(resp);
     debug.watchApiData = data;
     if (!data) {
@@ -455,25 +404,6 @@ const VideoInfoLoader = (function () {
     if (data.isPlayable) {
       void emitter.emitAsync('loadVideoInfo', data, 'WATCH_API', watchId);
       return data;
-    }
-
-    if (data.isNeedPayment && data.genreKey === 'anime' && Config.getValue('loadLinkedChannelVideo')) {
-      const query = new URLSearchParams({
-        videoId: data.watchApiData.videoDetail.id,
-        _frontendId: String(data.msgInfo.frontendId),
-      });
-      const url = `https://public-api.ch.nicovideo.jp/v1/user/channelVideoDAnimeLinks?${query.toString()}`;
-      const linkedRaw: unknown = await (netUtil as unknown as NetUtilLike)
-        .fetch(url, { credentials: 'include' })
-        .then((r: Response) => r.json())
-        .catch(() => ({}));
-      const linkedChannelVideos = linkedRaw as { data?: { items?: Array<LinkedChannelVideo> } };
-      data.linkedChannelVideo = linkedChannelVideos.data?.items?.find((ch) => {
-        return !!ch.isChannelMember;
-      });
-      if (data.linkedChannelVideo != null) {
-        return await loadLinkedChannelVideoInfo(data);
-      }
     }
 
     const error = (({ isMemberFree, isNeedPayment, isPremiumFree }) => {

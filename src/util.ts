@@ -94,8 +94,7 @@ for (const k of Object.keys(window.console)) {
     ))
 );
 
-console = Config.props.debug ? window.console : dummyConsole;
-Config.onkey('debug', (v) => (console = v ? window.console : dummyConsole));
+console = dummyConsole;
 
 //@require css
 Object.assign(util, css);
