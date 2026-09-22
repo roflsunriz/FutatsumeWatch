@@ -1,0 +1,33 @@
+name: 文書の指摘・提案
+description: README・更新手順・検証記録などの文書に関する指摘・提案をする
+title: '[文書]: '
+labels: ['documentation']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: input
+    id: target
+    attributes:
+      label: 対象の文書
+      description: 'ファイル名と該当する見出しや手順番号（例: how-to-update.md「ビルドと検証」）'
+      placeholder: README.md「使い方」
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 不足・矛盾・陳腐化の内容
+      description: 現在の記載と実際の実装・設定・手順との差を書く
+      placeholder: ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案する記載
+      description: 可能なら具体的な文案や参照先を書く
+      placeholder: ...
+    validations:
+      required: false

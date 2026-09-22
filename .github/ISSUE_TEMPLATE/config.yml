@@ -1,0 +1,49 @@
+name: 設定・動作環境の相談
+description: 設定項目や動作環境に関する相談・確認をする
+title: '[設定]: '
+labels: ['question']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: input
+    id: version
+    attributes:
+      label: スクリプトの版
+      description: '設定画面や配布物に表示される版（例: 0.0.21）'
+      placeholder: 0.0.21
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: ブラウザとスクリプトマネージャ
+      description: ブラウザの種類と版、マネージャの種類と版
+      placeholder: Firefox 156 / Tampermonkey 5.5
+    validations:
+      required: true
+  - type: textarea
+    id: setting
+    attributes:
+      label: 対象の設定項目
+      description: カテゴリ名と項目名、現在の設定値
+      placeholder: ...
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 達成したい目的
+      description: 最終的にどう使いたいか
+      placeholder: ...
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: 試した内容
+      description: 変更した設定や確認した手順
+      placeholder: ...
+    validations:
+      required: false

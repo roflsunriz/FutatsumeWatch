@@ -4,6 +4,11 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+### Added
+
+- 共通指針の求める報告・議論の入口が欠けていたため、PRテンプレート、Issueテンプレート（bug-report・config・documentation）、Discussionテンプレート（general・ideas・q-a）を追加した。秘密情報を貼らずに版・環境・再現手順を集められるようにした。
+- 依存更新と変更範囲の把握が欠けていたため、Dependabot設定とlabeler設定、PRへ自動でラベルを付けるワークフローを追加した。リリースワークフローはCHANGELOGの対象版を自動抽出する現行の検査を維持する。
+
 ## [0.0.21] - 2026-09-22
 
 ### Changed

@@ -1,0 +1,20 @@
+title: 質問と回答
+body:
+  - type: markdown
+    attributes:
+      value: |
+        使い方の質問はこちらへ。Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: input
+    id: version
+    attributes:
+      label: スクリプトの版
+      description: '設定画面や配布物に表示される版（例: 0.0.21）'
+    validations:
+      required: false
+  - type: textarea
+    id: question
+    attributes:
+      label: 質問内容
+      description: 試した手順と困っている点を書く
+    validations:
+      required: true

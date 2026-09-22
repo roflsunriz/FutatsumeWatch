@@ -1,0 +1,13 @@
+title: 自由な議論
+body:
+  - type: markdown
+    attributes:
+      value: |
+        雑談や方向性の議論はこちらへ。Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: textarea
+    id: topic
+    attributes:
+      label: 話題
+      description: 議論したい内容と背景
+    validations:
+      required: true

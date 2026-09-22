@@ -1,0 +1,20 @@
+title: 機能のアイデア
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能提案はこちらへ。Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 達成したい目的
+      description: 利用者が最終的に何を観測できれば成功か
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案する変更
+      description: 対象の画面や導線、既存設定との関係
+    validations:
+      required: true

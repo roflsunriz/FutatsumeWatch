@@ -1,0 +1,59 @@
+name: バグ報告
+description: 再現する不具合を報告する
+title: '[不具合]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: input
+    id: version
+    attributes:
+      label: スクリプトの版
+      description: '設定画面や配布物に表示される版（例: 0.0.21）'
+      placeholder: 0.0.21
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: ブラウザとスクリプトマネージャ
+      description: ブラウザの種類と版、Tampermonkey / Violentmonkey / Greasemonkey の種類と版
+      placeholder: Chrome 153 / Tampermonkey 5.5
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 操作の順序と対象ページを書く
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した挙動
+      description: 利用者が最終的に観測したかった状態
+      placeholder: ...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の挙動
+      description: 観測できた症状、表示、エラーメッセージ
+      placeholder: ...
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: 補足情報
+      description: 併用中の拡張やスクリプト、試した代替手段（秘密情報を除く）
+      placeholder: ...
+    validations:
+      required: false
