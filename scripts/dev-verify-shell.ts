@@ -98,6 +98,12 @@ async function main(): Promise<void> {
       `document.querySelector('.fw-title').textContent.length > 0 && document.querySelectorAll('.fw-stats span').length===5`,
       'タイトル・投稿日時・4種類の件数'
     );
+    await check(
+      session,
+      `(()=>{const tags=document.querySelector('.fw-tags .TagListView')?.shadowRoot?.querySelectorAll('.tagItem')??[];if(!tags.length)return false;const box=document.querySelector('.fw-tags').getBoundingClientRect(),meta=document.querySelector('.fw-stats').getBoundingClientRect();return box.top>=meta.bottom-1})()`,
+      'タイトルと動画メタデータの下にタグ一覧を表示',
+      25000
+    );
     await click(session, 'togglePlay');
     await check(session, `${video}.paused`, '中央ボタンで一時停止');
     await clickVisible(session, '.seekBar');

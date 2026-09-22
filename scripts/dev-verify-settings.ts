@@ -99,6 +99,12 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
         `${width}px: ${tab}だけ表示`
       );
     await capture(session, `tabs-${tab}-${width}`);
+    if (tab === 'filters')
+      await check(
+        session,
+        `(()=>{const root=${panel(current)},boxes=[...root.querySelectorAll('[data-settings-section="filters"] input:is([type=checkbox],[type=radio])')].map(e=>e.getBoundingClientRect());for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>0&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>0)return false;}return boxes.length>0})()`,
+        `${width}px: フィルターのトグルが重ならない`
+      );
   }
   await session.send('Input.dispatchKeyEvent', {
     type: 'keyDown',

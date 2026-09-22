@@ -1,5 +1,12 @@
 # 検証記録
 
+## 2026-09-22：トグル重なり解消とホバーヘッダのタグ一覧（0.0.21）
+
+- NG・フィルターのトグル重なりの原因は、金属調トグル（50×28）へ移行した後に旧来の`transform: scale(2)`が残り、実矩形が100×56となって隣の行へ16px食い込んでいたことだった。`setting-panel-element.ts`と`setting.ts`の旧指定を除去し、共通テーマの寸法へ一本化した。詳細設定の2項目も同じ原因だったため同時に修正した。
+- 再生中にホバーで表示されるタイトルと動画メタデータは現行シェルの`.fw-header`が正本であり、旧`VideoHeaderPanel`はシェル表示では`display:none`のため、タグ一覧はシェルの`.fw-heading`内（タイトル・メタデータの下）へ詳細タブと同じ閲覧専用`TagListView`で表示する。旧ヘッダへの仮実装は取り消した。
+- 0.0.21の最終`bun run test:browser all --offline`は全9スイート成功（settingsに「フィルターのトグルが重ならない」を追加）。証跡は`dev-assets/verification/2026-09-22T11-53-48-178Z-offline-2ca9e93c/run.json`、画像は同ディレクトリの`settings/settings-tabs-filters-1280.png`と`dev-assets/verification/header-tags-hover.png`、配布物SHA-256は`e474d4152fac98b0dc6af55f897c9a280ace19be24f83cf60fa6c39e51cf4d69`。
+- `bun install --frozen-lockfile`、lint、整形、型検査、ビルド、全単体388件（2,696アサーション）、`bun audit`（243パッケージ・脆弱性0件）に成功した。公開サイト通信、実アカウント操作は行っていない。
+
 ## 2026-09-22：利用可能フォントのプルダウン（0.0.19）
 
 - コメントのフォント名を自由入力から選択式へ変更した。ブラウザ既定・sans-serif・serif・monospaceは常設し、Windows・macOS・Linuxの代表的なローカルフォント候補はCanvasの文字幅が3種類のフォールバックと異なる場合だけ表示する。権限要求やChromium限定のLocal Font Access APIには依存しない。

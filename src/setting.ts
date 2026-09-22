@@ -278,7 +278,6 @@ interface SettingScriptCssUtil {
       }
 
       .futatsumeAdvancedSettingPanel input[type=checkbox] {
-        transform: scale(2);
         margin-left: 8px;
         margin-right: 16px;
         cursor: pointer;

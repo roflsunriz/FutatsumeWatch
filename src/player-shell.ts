@@ -2,6 +2,7 @@ import type { ConfigStore } from './config';
 import type { PlayerState } from './state';
 import { closeSettingsDialog, configureSettingsNavigation } from '../packages/components/src/settings-dialog';
 import { shellButton, shellIcon, shellText } from './player-shell-view';
+import { TagListView } from './tag-list-view';
 
 interface ShellPlayer {
   currentTime: number;
@@ -12,6 +13,7 @@ interface ShellVideo {
   title: string;
   postedAt: string | number;
   count: { view: number; comment: number; mylist: number; like?: number };
+  tagList?: { name?: string }[];
   domandInfo?: { availableVideos: ReadonlyArray<{ label?: string; height: number }> } | null;
 }
 export class ABRepeat {
@@ -44,6 +46,7 @@ export class PlayerShell {
   private readonly volume: HTMLInputElement;
   private readonly speed: HTMLSelectElement;
   private readonly timeLabel: HTMLElement;
+  private readonly tagListView: TagListView;
   private readonly ab = new ABRepeat();
   private panel: 'details' | null = null;
   private detailsLocked = false;
@@ -90,7 +93,7 @@ export class PlayerShell {
     this.controls.innerHTML = `
       <header class="fw-header">
         ${shellButton('settings', t.settings, 'menu')}
-        <div class="fw-heading"><div class="fw-title"></div><div class="fw-stats"></div></div>
+        <div class="fw-heading"><div class="fw-title"></div><div class="fw-stats"></div><div class="fw-tags"></div></div>
         ${shellButton('details', t.details, 'details', 'aria-expanded="false" aria-controls="fw-details"')}
         ${shellButton('close', t.close, 'close')}
       </header>
@@ -127,6 +130,7 @@ export class PlayerShell {
     this.volume = this.require('[data-shell-volume]');
     this.speed = this.require('[data-shell-speed]');
     this.timeLabel = this.require('.fw-time');
+    this.tagListView = new TagListView({ parentNode: this.require('.fw-tags') });
     this.volume.after(this.require('.commentInputPanel'));
     for (const root of [this.controls, this.info]) {
       root.addEventListener('click', (e) => this.onClick(e));
@@ -427,6 +431,9 @@ export class PlayerShell {
       item.append(document.createTextNode(value));
       stats.append(item);
     }
+    this.tagListView.update({
+      tagList: (video.tagList ?? []).flatMap((tag) => (tag.name ? [{ name: tag.name }] : [])),
+    });
   }
   private sync(): void {
     const playing = this.state.isPlaying;

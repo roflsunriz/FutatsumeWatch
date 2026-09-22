@@ -562,7 +562,6 @@ const { SettingPanelElement } = (() => {
           }
           input[type='checkbox'],
           input[type='radio'] {
-            transform: scale(2);
             margin-right: 8px;
           }
           input[type='text'],

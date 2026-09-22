@@ -54,7 +54,8 @@
 }
 #futatsumeVideoPlayerDialog .fw-controls button,
 #futatsumeVideoPlayerDialog .fw-controls input,
-#futatsumeVideoPlayerDialog .fw-controls select {
+#futatsumeVideoPlayerDialog .fw-controls select,
+#futatsumeVideoPlayerDialog .fw-controls .fw-tags a {
   pointer-events: auto;
 }
 #futatsumeVideoPlayerDialog .fw-controls button {
@@ -119,6 +120,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+#futatsumeVideoPlayerDialog .fw-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 6px;
+  font-size: clamp(11px, 1.2vw, 14px);
+  text-shadow: 0 2px 8px #000;
 }
 #futatsumeVideoPlayerDialog .fw-stats svg {
   width: 16px;
