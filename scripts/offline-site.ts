@@ -102,7 +102,6 @@ export function createOfflineSite() {
   function watch(id: WatchId) {
     const data = structuredClone(base);
     const spec = mediaSpec[id];
-    data.data.response.tag.items = library.tags.get(id) ?? data.data.response.tag.items;
     data.data.response.client.watchId = id;
     data.data.response.video.id = id;
     data.data.response.video.title = '機能テスト映像 ' + (ids.indexOf(id) + 1);

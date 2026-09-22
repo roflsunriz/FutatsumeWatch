@@ -51,7 +51,6 @@ interface VideoInfoModel {
   watchId: string;
   videoId: string;
   csrfToken: string;
-  tagEdit: { editKey: string } | null;
   isCommunityVideo: boolean;
   isMymemory: boolean;
   isChannel: boolean;
@@ -246,10 +245,6 @@ class VideoInfoPanel extends Emitter {
     this._videoMetaInfo.update(videoInfo);
     this._tagListView.update({
       tagList: videoInfo.tagList,
-      watchId: videoInfo.watchId,
-      videoId: videoInfo.videoId,
-      token: videoInfo.csrfToken,
-      tagEdit: videoInfo.tagEdit,
     });
 
     this._seriesList.textContent = '';
@@ -474,7 +469,6 @@ class VideoInfoPanel extends Emitter {
   }
   close() {
     this._tagListView?.update({});
-    this._videoHeaderPanel.close();
   }
   clear(): undefined {
     this._tagListView?.update({});
@@ -1294,7 +1288,6 @@ class VideoHeaderPanel extends Emitter {
   _videoTitle!: HTMLElement;
   _searchForm!: VideoSearchForm;
   _seriesCover!: HTMLElement;
-  _tagListView!: TagListView;
   _relatedInfoMenu!: RelatedInfoMenu;
   _videoMetaInfo!: VideoMetaInfo;
   _videoInfo!: VideoInfoModel;
@@ -1322,10 +1315,6 @@ class VideoHeaderPanel extends Emitter {
 
     $view.on('wheel', (e: Event) => e.stopPropagation(), { passive: true });
     this._seriesCover = view.querySelector('.series-thumbnail') as unknown as HTMLElement;
-
-    this._tagListView = new TagListView({
-      parentNode: view.querySelector('.videoTagsContainer')!,
-    });
 
     this._relatedInfoMenu = new RelatedInfoMenu({
       parentNode: view.querySelector('.relatedInfoMenuContainer')!,
@@ -1361,16 +1350,7 @@ class VideoHeaderPanel extends Emitter {
 
     this._videoTitle.title = this._videoTitle.textContent = videoInfo.title;
 
-    const watchId = videoInfo.watchId;
     this._videoMetaInfo.update(videoInfo);
-
-    this._tagListView.update({
-      tagList: videoInfo.tagList,
-      watchId,
-      videoId: videoInfo.videoId,
-      token: videoInfo.csrfToken,
-      tagEdit: videoInfo.tagEdit,
-    });
 
     this._relatedInfoMenu.update(videoInfo);
 
@@ -1418,14 +1398,10 @@ class VideoHeaderPanel extends Emitter {
     }
     this.classList.remove('show');
   }
-  close() {
-    this._tagListView?.update({});
-  }
   clear(): undefined {
     if (!this._$view) {
       return;
     }
-    this._tagListView?.update({});
     this.classList.add('initializing');
 
     this._videoTitle.textContent = '';
@@ -1692,8 +1668,6 @@ VideoHeaderPanel.__tpl__ = `
         <span class="videoMetaInfoContainer"></span>
         <span class="relatedInfoMenuContainer"></span>
       </p>
-      <div class="videoTagsContainer videoHeader">
-      </div>
       <div class="series-thumbnail-cover"><div class="series-thumbnail"></div></div>
     </div>
   `.trim();

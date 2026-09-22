@@ -161,67 +161,20 @@ async function main() {
       throw Error('シリーズv2の取得要求が一致しません');
     checks.push('P3-12 シリーズv2を1回だけ取得');
     await clickVisible(session, '[data-shell-tab="videoInfoTab"]');
-    const tagRoot = `document.querySelector('.fw-tags')`;
+    const tagRoot = `document.querySelector('#fw-details .videoTagsContainer.sideTab')`;
     await check(
       session,
       `['陰陽師','レッツゴー！陰陽師'].every(name=>[...${find('.videoTagsInner', tagRoot)}.querySelectorAll('.tagItem')].find(item=>item.dataset.tagId===name)?.querySelector('futatsume-tag-item-menu').dataset.hasNicodic==='1')`,
       'P4-04-existing 公式記事照会で既存タグの誤falseを補正'
     );
-    await deepClick(session, '[data-command="toggleInput"]', tagRoot);
     await check(
       session,
-      `(()=>{const input=${find('.tagInputText', tagRoot)};return input&&!input.disabled&&input.getBoundingClientRect().height>0&&input.getRootNode().activeElement===input})()`,
-      'P4-01-edit タグ編集入力を表示してフォーカスする'
+      `!${find('[data-command="toggleEdit"],[data-command="toggleInput"],[data-command="refresh"],[data-command="removeTag"]', tagRoot)}`,
+      'タグ閲覧専用UIに編集・追加・更新・削除操作を表示しない'
     );
-    await replaceInput(session, '.tagInputText', 'fixture-denied', tagRoot);
-    await deepClick(session, 'button.submit', tagRoot);
-    await check(
-      session,
-      `${find('[data-tag-status]', tagRoot)}.textContent.includes('403')&&${find('.tagInputText', tagRoot)}.value==='fixture-denied'`,
-      'P4-02 拒否時に本文とエラーを保持'
-    );
-    const tag = 'FutatsumeWatch検証不存在20260920';
-    await replaceInput(session, '.tagInputText', tag, tagRoot);
-    await deepClick(session, 'button.submit', tagRoot);
-    await check(
-      session,
-      `!!${find(`[data-tag-id="${tag}"]`, tagRoot)}&&${find('.tagInputText', tagRoot)}.value===''`,
-      'P4-02 UIからタグ追加して一覧へ反映'
-    );
-    await deepClick(session, '[data-command="refresh"]', tagRoot);
-    await check(
-      session,
-      `!!${find(`[data-tag-id="${tag}"]`, tagRoot)}&&!${find('.root', tagRoot)}.classList.contains('is-Updating')`,
-      'P4-03 再取得して追加したタグを確認'
-    );
-    await check(
-      session,
-      `(()=>{const tag=${find(`[data-tag-id="${tag}"]`, tagRoot)};const menu=tag.querySelector('futatsume-tag-item-menu');return menu.dataset.hasNicodic==='0'&&!menu.shadowRoot.querySelector('.root').classList.contains('has-nicodic')&&tag.querySelector('a.nicodic').href===${JSON.stringify('https://dic.nicovideo.jp/a/' + encodeURIComponent(tag))}})()`,
-      'P4-04 404を大百科なしアイコンへ反映'
-    );
-    await deepClick(session, '[data-command="toggleEdit"]', tagRoot);
-    await deepClick(session, `[data-tag-id="${tag}"] [data-command="removeTag"]`, tagRoot);
-    await check(session, `!${find(`[data-tag-id="${tag}"]`, tagRoot)}`, 'P4-02 タグ削除して一覧へ反映');
-    await deepClick(session, '[data-command="refresh"]', tagRoot);
-    await check(
-      session,
-      `!${find(`[data-tag-id="${tag}"]`, tagRoot)}&&!${find('.root', tagRoot)}.classList.contains('is-Updating')`,
-      'P4-03 再取得して削除を確認'
-    );
-    const tagWrites = requests.filter(
-      (request) => request.method === 'POST' && new URL(request.url).pathname === '/v2/videos/sm9/tags'
-    );
-    if (
-      tagWrites.length !== 2 ||
-      tagWrites.filter((request) => new URL(request.url).searchParams.get('tag') === tag).length !== 1
-    )
-      throw Error('タグ追加の要求回数が一致しません');
-    if (
-      requests.filter((request) => request.method === 'DELETE' && new URL(request.url).searchParams.get('tag') === tag)
-        .length !== 1
-    )
-      throw Error('タグ削除の要求回数が一致しません');
-    checks.push('P4-02 追加と削除が各1書込要求');
+    if (requests.some((request) => new URL(request.url).pathname === '/v2/videos/sm9/tags'))
+      throw Error('閲覧専用タグUIがタグAPIを要求しました');
+    checks.push('タグ閲覧専用UIはタグAPIを要求しない');
     await clickVisible(session, '[data-shell-tab="relatedVideoTab"]');
     const relatedRoot = `document.querySelector('#fw-tab-relatedVideoTab')`;
     await check(
@@ -417,6 +370,7 @@ async function main() {
       JSON.stringify(
         {
           completed: true,
+          cases: [{ id: 'P4-01', label: 'タグを閲覧専用で表示' }],
           checks,
           errors,
           links,
@@ -430,7 +384,7 @@ async function main() {
     await screenshot(session, 'failure');
     const diagnostic = await evaluate(
       session,
-      `({tagStatus:window.__libraryFind?.('[data-tag-status]',document.querySelector('.fw-tags'))?.textContent,tagInput:window.__libraryFind?.('.tagInputText',document.querySelector('.fw-tags'))?.value,panel:document.querySelector('.fw-player')?.dataset.panel,tab:window.FutatsumeWatch?.debug.dialog?._state.currentTab})`
+      `({tagCount:window.__libraryFind?.('.videoTagsInner',document.querySelector('#fw-details'))?.querySelectorAll('.tagItem').length,panel:document.querySelector('.fw-player')?.dataset.panel,tab:window.FutatsumeWatch?.debug.dialog?._state.currentTab})`
     ).catch(() => null);
     await Bun.write(
       new URL('library-report.json', out),

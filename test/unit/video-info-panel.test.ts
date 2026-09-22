@@ -4,7 +4,7 @@ Object.assign(globalThis, { HTMLElement: window.HTMLElement });
 await Config.promise('restore');
 const { VideoInfoPanel, VideoHeaderPanel } = await import('../../src/video-info-panel');
 
-test('P3-03 市場撤去後も投稿者・説明・シリーズ・タグ・関連動画の表示先を保持する', () => {
+test('P3-03 投稿者・説明・シリーズ・関連動画を保ち、タグは詳細だけに表示する', () => {
   const template = document.createElement('template');
   template.innerHTML = VideoInfoPanel.__tpl__;
   for (const selector of [
@@ -21,5 +21,5 @@ test('P3-03 市場撤去後も投稿者・説明・シリーズ・タグ・関�
   expect(template.content.querySelector('[class*="ichiba"], [class*="Ichiba"]')).toBeNull();
   expect(template.content.textContent).not.toContain('ニコニコ市場');
   template.innerHTML = VideoHeaderPanel.__tpl__;
-  expect(template.content.querySelector('.videoTagsContainer')).not.toBeNull();
+  expect(template.content.querySelector('.videoTagsContainer')).toBeNull();
 });

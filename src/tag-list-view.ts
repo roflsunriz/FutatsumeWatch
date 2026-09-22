@@ -1,9 +1,6 @@
-import { FutatsumeWatch } from './futatsume-watch-index';
 import { BaseViewComponent } from '../packages/futatsume/src/parts/base-view-component';
-import { TagEditApi, type TagApiResult } from '../packages/lib/src/nico/tag-edit-api';
 import { Config } from './config';
 import { textUtil } from '../packages/lib/src/text/text-util';
-import { nicoUtil } from '../packages/lib/src/nico/nico-util';
 import { getNicodicArticleExists } from '../packages/lib/src/nico/nico-dic-api';
 
 export interface TagListTagData {
@@ -14,25 +11,14 @@ export interface TagListTagData {
 
 export interface TagListUpdateParams {
   tagList?: TagListTagData[];
-  watchId?: string | null;
-  videoId?: string | null;
-  token?: string | null;
-  tagEdit?: { editKey: string; isEditable?: boolean } | null;
 }
 
 interface TagListViewState {
-  isInputing: boolean;
-  isUpdating: boolean;
-  isEditing: boolean;
   isEmpty?: boolean;
 }
 
 interface TagListElmTable {
-  videoTags: Element;
   videoTagsInner: HTMLElement;
-  tagInput: HTMLInputElement;
-  form: HTMLFormElement;
-  status: HTMLElement;
 }
 
 interface TagListBaseView {
@@ -62,13 +48,8 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   protected _elm!: TagListElmTable;
   protected _shadow!: ShadowRoot | null;
   protected _view!: Element;
-  protected _boundOnBodyClick!: (e: Event) => void;
-  private _tagEditApi!: TagEditApi;
   private _generation = 0;
   private _tags: TagListTagData[] = [];
-  private _watchId!: string;
-  private _videoId!: string;
-  private _tagEdit: { editKey: string; isEditable?: boolean } | null = null;
   constructor({ parentNode }: { parentNode: Element }) {
     super({
       parentNode,
@@ -78,13 +59,7 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
       css: TagListView.__css__,
     });
 
-    this._state = {
-      isInputing: false,
-      isUpdating: false,
-      isEditing: false,
-    };
-
-    this._tagEditApi = new TagEditApi();
+    this._state = {};
   }
 
   _initDom(...args: unknown[]): void {
@@ -92,69 +67,13 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
 
     const v = this._shadow || this._view;
     Object.assign(this._elm, {
-      videoTags: v.querySelector('.videoTags') as Element,
       videoTagsInner: v.querySelector('.videoTagsInner') as HTMLElement,
-      tagInput: v.querySelector('.tagInputText') as HTMLInputElement,
-      form: v.querySelector('form') as HTMLFormElement,
-      status: v.querySelector('[data-tag-status]') as HTMLElement,
-    });
-
-    this._elm.tagInput.addEventListener('keydown', this._onTagInputKeyDown.bind(this));
-    this._elm.form.addEventListener('submit', this._onTagInputSubmit.bind(this));
-    v.addEventListener('keydown', (e) => {
-      if (this._state.isInputing) {
-        e.stopPropagation();
-      }
     });
     v.addEventListener('click', (e: Event) => e.stopPropagation());
-
-    FutatsumeWatch.emitter.on('hideHover', () => {
-      if (this._state.isEditing) {
-        this._endEdit();
-      }
-    });
   }
 
   _onCommand(command: string, param: unknown): void {
-    if (this._state.isUpdating && command !== 'tag-search') return;
     switch (command) {
-      case 'refresh':
-        void this._refreshTag();
-        break;
-      case 'toggleEdit':
-        if (this._state.isEditing) {
-          this._endEdit();
-        } else {
-          this._beginEdit();
-        }
-        break;
-      case 'toggleInput':
-        if (this._state.isInputing) {
-          this._endInput();
-        } else {
-          this._beginInput();
-        }
-        break;
-      case 'beginInput':
-        this._beginInput();
-        break;
-      case 'endInput':
-        this._endInput();
-        break;
-      case 'addTag':
-        void this._addTag(param as string);
-        break;
-      case 'removeTag': {
-        const elm = Array.from(this._elm.videoTags.querySelectorAll<HTMLElement>('.tagItem')).find(
-          (item) => item.dataset.tagId === param
-        );
-        if (!elm || elm.classList.contains('is-Locked')) {
-          return;
-        }
-        const data = JSON.parse(elm.getAttribute('data-tag') as string) as { name: string };
-        void this._removeTag(param as string, data.name);
-        break;
-      }
       case 'tag-search':
         this._onTagSearch(param as string);
         break;
@@ -190,30 +109,9 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     super._onCommand('playlistSetSearchVideo', { word, option });
   }
 
-  update({ tagList = [], watchId = null, videoId = null, tagEdit = null }: TagListUpdateParams): void {
+  update({ tagList = [] }: TagListUpdateParams): void {
     this._generation++;
-    document.body.removeEventListener('click', this._boundOnBodyClick);
-    this._watchId = watchId || '';
-    this._videoId = videoId || '';
-    this._tagEdit = tagEdit;
-    this._elm.tagInput.value = '';
-    this._elm.status.textContent = '';
-    this.setState({
-      isInputing: false,
-      isUpdating: false,
-      isEditing: false,
-      isEmpty: false,
-    });
     this._update(tagList);
-
-    this._boundOnBodyClick = this._onBodyClick.bind(this);
-  }
-
-  _onClick(e: unknown): void {
-    if (this._state.isInputing || this._state.isEditing) {
-      (e as { stopPropagation(): void }).stopPropagation();
-    }
-    super._onClick(e);
   }
 
   _update(tagList: TagListTagData[] = []): void {
@@ -222,13 +120,6 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     this._tags.forEach((tag) => {
       tags.push(this._createTag(tag));
     });
-    if (this._canEdit()) {
-      tags.push(this._createToggleInput());
-    } else {
-      tags.push(
-        `<span class="text">${nicoUtil.isLogin() ? 'この動画のタグは編集できません' : 'ログインしていません'}</span>`
-      );
-    }
     this.setState({ isEmpty: tagList.length < 1 });
     this._elm.videoTagsInner.innerHTML = tags.join('');
     const generation = this._generation;
@@ -247,66 +138,6 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     }
   }
 
-  _createToggleInput() {
-    return `
-        <div
-          class="button command toggleInput"
-          data-command="toggleInput"
-          data-tooltip="タグ追加">
-          <span class="icon">&#8853;</span>
-        </div>`.trim();
-  }
-
-  private _canEdit(): boolean {
-    return nicoUtil.isLogin() && !!this._videoId && !!this._tagEdit?.editKey && this._tagEdit.isEditable !== false;
-  }
-
-  private async _runUpdate(operation: () => Promise<TagApiResult>, clearInput = false): Promise<void> {
-    if (this._state.isUpdating) return;
-    const generation = this._generation;
-    this._elm.status.textContent = '';
-    this.setState({ isUpdating: true });
-    try {
-      const result = await operation();
-      if (generation !== this._generation) return;
-      this._update(result.tags);
-      if (clearInput) this._elm.tagInput.value = '';
-      this._endInput();
-      this._endEdit();
-    } catch (error) {
-      if (generation !== this._generation) return;
-      this._elm.status.textContent =
-        error instanceof Error
-          ? error.message
-          : typeof error === 'string'
-            ? error
-            : 'タグの処理に失敗しました。再試行してください。';
-    } finally {
-      if (generation === this._generation) this.setState({ isUpdating: false });
-    }
-  }
-
-  _addTag(tag: string): Promise<void> {
-    const value = tag.trim();
-    if (!this._canEdit() || !value || this._tags.some((item) => item.name === value)) return Promise.resolve();
-    return this._runUpdate(
-      () => this._tagEditApi.add({ videoId: this._videoId, tag: value, editKey: this._tagEdit!.editKey }),
-      true
-    );
-  }
-
-  _removeTag(_tagId: string, tag = ''): Promise<void> {
-    if (!this._canEdit() || this._tags.some((item) => item.name === tag && item.isLocked)) return Promise.resolve();
-    return this._runUpdate(() =>
-      this._tagEditApi.remove({ videoId: this._videoId, tag, editKey: this._tagEdit!.editKey })
-    );
-  }
-
-  _refreshTag(): Promise<void> {
-    if (!this._videoId) return Promise.resolve();
-    return this._runUpdate(() => this._tagEditApi.load(this._videoId, this._tagEdit?.editKey || ''));
-  }
-
   _createDicIcon(text: string, hasDic?: boolean): string {
     const href = `https://dic.nicovideo.jp/a/${encodeURIComponent(text)}`;
     const src = hasDic
@@ -322,16 +153,6 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
         data-has-nicodic="${hasNicodic}"
         title="${title}"
       ><a target="_blank" class="nicodic" href="${href}">${icon}</a></futatsume-tag-item-menu>`;
-  }
-
-  _createDeleteButton(id: string): string {
-    let deletTag: string;
-    if (nicoUtil.isLogin()) {
-      deletTag = `<span target="_blank" class="deleteButton command" title="削除" data-command="removeTag" data-param="${id}">－</span>`;
-    } else {
-      deletTag = `<span target="_blank" class="deleteButton command" title="ログインしてください" data-command="none" data-param="${id}">×</span>`;
-    }
-    return deletTag;
   }
 
   _createLink(text: string): string {
@@ -355,176 +176,25 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     const tagName = tag.name;
     const dic = this._createDicIcon(tagName, tag.isNicodicArticleExists);
     const escapedName = textUtil.escapeHtml(tagName);
-    const del = this._createDeleteButton(escapedName);
     const link = this._createLink(tagName);
     const search = this._createSearch(tagName);
     const data = (textUtil as unknown as TagTextUtil).escapeHtml(JSON.stringify(tag));
     const className = tag.isLocked ? 'tagItem is-Locked' : 'tagItem';
 
-    return `<li class="${className}" data-tag="${data}" data-tag-id="${escapedName}">${dic}${del}${link}${search}</li>`;
-  }
-
-  _onTagInputKeyDown(e: KeyboardEvent): void {
-    if (this._state.isUpdating) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    switch (e.keyCode) {
-      case 27: // ESC
-        e.preventDefault();
-        e.stopPropagation();
-        this._endInput();
-        break;
-    }
-  }
-
-  _onTagInputSubmit(e: Event): void {
-    e.preventDefault();
-    e.stopPropagation();
-    if (this._state.isUpdating) return;
-    const val = (this._elm.tagInput.value || '').trim();
-    if (!val) {
-      this._endInput();
-      return;
-    }
-    this._onCommand('addTag', val);
-  }
-
-  _onBodyClick(): void {
-    this._endInput();
-    this._endEdit();
-  }
-
-  _beginEdit(): void {
-    if (!this._canEdit() || this._state.isUpdating) return;
-    this.setState({ isEditing: true });
-    document.body.addEventListener('click', this._boundOnBodyClick);
-  }
-
-  _endEdit(): void {
-    document.body.removeEventListener('click', this._boundOnBodyClick);
-    this.setState({ isEditing: false });
-  }
-
-  _beginInput(): void {
-    if (!this._canEdit() || this._state.isUpdating) return;
-    this.setState({ isInputing: true });
-    document.body.addEventListener('click', this._boundOnBodyClick);
-    this._elm.tagInput.value = '';
-    window.setTimeout(() => {
-      if (this._state.isInputing) this._elm.tagInput.focus();
-    }, 100);
-  }
-
-  _endInput(): void {
-    this._elm.tagInput.blur();
-    document.body.removeEventListener('click', this._boundOnBodyClick);
-    this.setState({ isInputing: false });
+    return `<li class="${className}" data-tag="${data}" data-tag-id="${escapedName}">${dic}${link}${search}</li>`;
   }
 }
 
 TagListView.__shadow__ = `
     <style>
       :host-context(.videoTagsContainer.sideTab) .tagLink {
-        color: #000 !important;
+        color: #fff !important;
         text-decoration: none;
       }
 
       .TagListView {
         position: relative;
         user-select: none;
-      }
-
-      .TagListView.is-Updating {
-        cursor: wait;
-      }
-
-      :host-context(.videoTagsContainer.sideTab) .TagListView.is-Updating {
-        overflow: hidden;
-      }
-
-      .TagListView.is-Updating:after {
-        content: '${'\\0023F3'}';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        text-align: center;
-        transform: translate(-50%, -50%);
-        z-index: 10001;
-        color: #fe9;
-        font-size: 24px;
-        letter-spacing: 3px;
-        text-shadow: 0 0 4px #000;
-        pointer-events: none;
-      }
-
-      .TagListView.is-Updating:before {
-        content: ' ';
-        background: rgba(0, 0, 0, 0.6);
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        padding: 8px;
-        z-index: 10000;
-        box-shadow: 0 0 8px #000;
-        border-radius: 8px;
-        pointer-events: none;
-      }
-
-      .TagListView.is-Updating * {
-        pointer-events: none;
-      }
-
-      *[data-tooltip] {
-        position: relative;
-      }
-
-      .TagListView .button {
-        position: relative;
-        display: inline-block;
-        min-width: 40px;
-        min-height: 24px;
-        cursor: pointer;
-        user-select: none;
-        transition: 0.2s transform, 0.2s box-shadow, 0.2s background;
-        text-align: center;
-      }
-
-      .TagListView .button:hover {
-        background: #666;
-      }
-
-      .TagListView .button:active {
-        transition: none;
-        box-shadow: 0 0 2px #000 inset;
-      }
-      .TagListView .button .icon {
-        position: absolute;
-        display: inline-block;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
-
-      .TagListView *[data-tooltip]:hover:after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: 50%;
-        bottom: 100%;
-        transform: translate(-50%, 0) scale(0.9);
-        pointer-events: none;
-        background: rgba(192, 192, 192, 0.9);
-        box-shadow: 0 0 4px #000;
-        color: black;
-        font-size: 12px;
-        margin: 0;
-        padding: 2px 4px;
-        white-space: nowrap;
-        z-index: 10000;
-        letter-spacing: 2px;
       }
 
       .videoTags {
@@ -548,10 +218,6 @@ TagListView.__shadow__ = `
         align-items: center;
       }
 
-      .TagListView .tagItem:first-child {
-        margin-left: 100px;
-      }
-
       .tagLink {
         color: #fff;
         text-decoration: none;
@@ -566,50 +232,6 @@ TagListView.__shadow__ = `
         line-height: 20px;
         cursor: pointer;
         vertical-align: middle;
-      }
-
-      .TagListView.is-Editing .tagItemMenu,
-      .TagListView.is-Editing .nicodic,
-      .TagListView:not(.is-Editing) .deleteButton {
-        display: none !important;
-      }
-
-      .TagListView .deleteButton {
-        display: inline-block;
-        margin: 0px;
-        line-height: 20px;
-        width: 20px;
-        height: 20px;
-        font-size: 16px;
-        background: #f66;
-        color: #fff;
-        cursor: pointer;
-        border-radius: 100%;
-        transition: transform 0.2s, background 0.4s;
-        text-shadow: none;
-        transform: scale(1.2);
-        text-align: center;
-        opacity: 0.8;
-      }
-
-      .TagListView.is-Editing .deleteButton:hover {
-        transform: rotate(0) scale(1.2);
-        background: #f00;
-        opacity: 1;
-      }
-
-      .TagListView.is-Editing .deleteButton:active {
-        transform: rotate(360deg) scale(1.2);
-        transition: none;
-        background: #888;
-      }
-
-      .TagListView.is-Editing .is-Locked .deleteButton {
-        visibility: hidden;
-      }
-      
-      .TagListView .is-Removing .deleteButton {
-        background: #666;
       }
 
       .tagItem .playlistAppend {
@@ -649,223 +271,25 @@ TagListView.__shadow__ = `
         transform: scale(1.4);
       }
 
-      .tagItem.is-Removing {
-        transform-origin: right !important;
-        transform: translate(0, 150vh) !important;
-        opacity: 0 !important;
-        max-width: 0 !important;
-        transition:
-          transform 2s ease 0.2s,
-          opacity 1.5s linear 0.2s,
-          max-width 0.5s ease 1.5s
-        !important;
-        pointer-events: none;
-        overflow: hidden !important;
-        white-space: nowrap;
-      }
-
-      .is-Editing .playlistAppend {
-        visibility: hidden !important;
-      }
-
-      .is-Editing .tagLink {
-        pointer-events: none;
-      }
-      .is-Editing .dicIcon {
-        display: none;
-      }
-
-      .tagItem:not(.is-Locked) {
-        transition: transform 0.2s, text-shadow 0.2s;
-      }
-
-      .is-Editing .tagItem.is-Locked {
-        position: relative;
-        cursor: not-allowed;
-      }
-
-      .is-Editing .tagItem.is-Locked *{
-        pointer-events: none;
-      }
-
-      .is-Editing .tagItem.is-Locked:hover:after {
-        content: '${'\\01F6AB'} ロックタグ';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: #ff9;
-        white-space: nowrap;
-        background: rgba(0, 0, 0, 0.6);
-      }
-
-      .is-Editing .tagItem:nth-child(11).is-Locked:hover:after {
-        content: '${'\\01F6AB'} ロックマン';
-      }
-
-      .is-Editing .tagItem:not(.is-Locked) {
-        text-shadow: 0 4px 4px rgba(0, 0, 0, 0.8);
-      }
-
-      .is-Editing .tagItem.is-Category * {
-        color: #ff9;
-      }
-      .is-Editing .tagItem.is-Category.is-Locked:hover:after {
-        content: '${'\\01F6AB'} カテゴリタグ';
-      }
-
-
-      .tagInputContainer {
-        display: none;
-        padding: 4px 8px;
-        background: #666;
-        z-index: 5000;
-        box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.8);
-        font-size: 16px;
-      }
-
-      :host-context(.videoTagsContainer.sideTab)     .tagInputContainer {
-        position: absolute;
-        background: #999;
-      }
-
-      .tagInputContainer .tagInputText {
-        width: 200px;
-        font-size: 20px;
-      }
-
-      .tagInputContainer .submit {
-        font-size: 20px;
-      }
-
-      .is-Inputing .tagInputContainer {
-        display: inline-block;
-      }
-
-      .is-Updating .tagInputContainer {
-        pointer-events: none;
-      }
-
-        .tagInput {
-          border: 1px solid;
-        }
-
-        .tagInput:active {
-          box-shadow: 0 0 4px #fe9;
-        }
-
-        .submit, .cancel {
-          background: #666;
-          color: #ccc;
-          cursor: pointer;
-          border: 1px solid;
-          text-align: center;
-        }
-
-      .TagListView .tagEditContainer {
-        position: absolute;
-        left: 0;
-        top: 0;
-        z-index: 1000;
-        display: inline-block;
-      }
-
-      .TagListView.is-Empty .tagEditContainer {
-        position: relative;
-      }
-
-      .TagListView:hover .tagEditContainer {
-        display: inline-block;
-      }
-
-      .TagListView.is-Updating .tagEditContainer * {
-        pointer-events: none;
-      }
-
-      .TagListView .tagEditContainer .button,
-      .TagListView .videoTags .button {
-        border-radius: 16px;
-        font-size: 24px;
-        line-height: 24px;
-        margin: 0;
-      }
-
-      .TagListView.is-Editing .button.toggleEdit,
-      .TagListView .button.toggleEdit:hover {
-        background: #c66;
-      }
-
-      .TagListView .button.tagRefresh .icon {
-        transform: translate(-50%, -50%) rotate(90deg);
-        transition: transform 0.2s ease;
-        font-family: STIXGeneral;
-      }
-
-      .TagListView .button.tagRefresh:active .icon {
-        transform: translate(-50%, -50%) rotate(-330deg);
-        transition: none;
-      }
-
-      .TagListView.is-Inputing .button.toggleInput {
-        display: none;
-      }
-
-      .TagListView  .button.toggleInput:hover {
-        background: #66c;
-      }
-
-      .tagEditContainer form {
-        display: inline;
-      }
-
     </style>
     <div class="root TagListView">
-      <div class="tagEditContainer">
-        <div
-          class="button command toggleEdit"
-          data-command="toggleEdit"
-          data-tooltip="タグ編集">
-          <span class="icon">&#9999;</span>
-        </div>
-
-        <div class="button command tagRefresh"
-          data-command="refresh"
-          data-tooltip="リロード">
-          <span class="icon">&#8635;</span>
-        </div>
-      </div>
-
       <div class="videoTags">
         <span class="videoTagsInner"></span>
-        <div class="tagInputContainer">
-          <form action="javascript: void">
-            <input type="text" name="tagText" class="tagInputText">
-            <button class="submit button">O K</button>
-          </form>
-        </div>
       </div>
-      <div data-tag-status role="status" aria-live="polite"></div>
     </div>
   `.trim();
 
 TagListView.__css__ = `
 
     /* Firefox用 ShaowDOMサポートしたら不要 */
-    .videoTagsContainer.sideTab .is-Updating {
-      overflow: hidden;
-    }
     .videoTagsContainer.sideTab a {
-      color: #000 !important;
+      color: #fff !important;
       text-decoration: none !important;
     }
     .videoTagsContainer.videoHeader a {
       color: #fff !important;
       text-decoration: none !important;
     }
-    .videoTagsContainer.sideTab .tagInputContainer {
-      position: absolute;
-    }
-
   `.trim();
 
 class TagItemMenu extends HTMLElement {

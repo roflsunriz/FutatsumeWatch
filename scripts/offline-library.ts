@@ -1,5 +1,4 @@
 import type { FixtureReply, FixtureRequest } from './offline-site';
-import base from '../test/fixtures/functionality/watch-response.json';
 import dictionary from '../test/fixtures/functionality/nicodic-articles.json';
 import { mediaSpec } from '../test/fixtures/functionality/media-spec';
 import type { MediaWatchId } from '../test/fixtures/functionality/media-spec';
@@ -11,7 +10,6 @@ const json = (data: object, status = 200): FixtureReply => ({
   body: JSON.stringify({ meta: { status }, data }),
 });
 export function createLibraryRoutes() {
-  const tags = new Map(ids.map((id) => [id, structuredClone(base.data.response.tag.items)]));
   const writes: FixtureRequest[] = [];
   const watchLater = new Map<string, string>();
   const mylist = new Map<string, string>();
@@ -60,44 +58,11 @@ export function createLibraryRoutes() {
         body: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="#900"/></svg>',
       };
     if (url.origin !== 'https://nvapi.nicovideo.jp') return null;
-    const tagMatch = /^\/v2\/videos\/(sm9|sm2057168|sm100)\/tags$/.exec(path);
     if (
       method === 'OPTIONS' &&
-      (tagMatch ||
-        /^\/v1\/(recommend|playlist\/user-uploaded\/4|users\/me\/(watch-later|mylists(?:\/42(?:\/items)?)?))$/.test(
-          path
-        ))
+      /^\/v1\/(recommend|playlist\/user-uploaded\/4|users\/me\/(watch-later|mylists(?:\/42(?:\/items)?)?))$/.test(path)
     )
       return { status: 204, mime: 'text/plain', body: '' };
-    if (tagMatch) {
-      if (request.postData) return null;
-      const id = tagMatch[1]!,
-        current = tags.get(id)!;
-      if (method === 'GET' && !url.search) return json({ tags: current });
-      const name = url.searchParams.get('tag');
-      if (!name || url.searchParams.size !== 1 || !['POST', 'DELETE'].includes(method)) return null;
-      const key = Object.entries(request.headers ?? {}).find(([key]) => key.toLowerCase() === 'x-tag-edit-key')?.[1];
-      if (key !== base.data.response.tag.edit.editKey) return json({}, 403);
-      if (name === 'fixture-denied') return json({}, 403);
-      if (name.length > 100) return json({}, 400);
-      if (method === 'POST') {
-        if (current.some((tag) => tag.name === name)) return json({}, 409);
-        current.push({
-          name,
-          isCategory: false,
-          isCategoryCandidate: false,
-          isNicodicArticleExists: true,
-          isLocked: false,
-        });
-      } else {
-        const index = current.findIndex((tag) => tag.name === name);
-        if (index < 0) return json({}, 404);
-        if (current[index]!.isLocked) return json({}, 403);
-        current.splice(index, 1);
-      }
-      writes.push(request);
-      return json({ tags: current });
-    }
     if (method === 'GET' && path === '/v1/recommend') {
       if (
         url.searchParams.size !== 4 ||
@@ -182,5 +147,5 @@ export function createLibraryRoutes() {
     }
     return null;
   }
-  return { writes, tags, watchLater, mylist, reply: (request: FixtureRequest) => Promise.resolve(reply(request)) };
+  return { writes, watchLater, mylist, reply: (request: FixtureRequest) => Promise.resolve(reply(request)) };
 }

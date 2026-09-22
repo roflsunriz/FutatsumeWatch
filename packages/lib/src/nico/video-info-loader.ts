@@ -73,7 +73,7 @@ interface WatchApiData {
   payment: { video: { isAdmission: boolean; isPpv: boolean; isPremium: boolean } };
   player: { initialPlayback?: { type?: string; positionSec?: number } | null };
   series?: unknown;
-  tag: { edit: unknown; items: Array<WatchVideoTag> };
+  tag: { items: Array<WatchVideoTag> };
   video: {
     count: { comment: number; like: number; mylist: number; view: number };
     description: string;
@@ -171,7 +171,6 @@ const VideoInfoLoader = (function () {
       // smartphone,
       // system,
       tag: {
-        edit: tagEdit,
         // hasR18Tag,
         // isPublishedNicoscript,
         items: tags,
@@ -351,7 +350,6 @@ const VideoInfoLoader = (function () {
         viewCount,
 
         tagList,
-        tagEdit,
       },
       viewerInfo,
       channelInfo,

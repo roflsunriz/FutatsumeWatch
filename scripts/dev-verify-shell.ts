@@ -267,19 +267,24 @@ async function main(): Promise<void> {
       '右の4タブを開く'
     );
     await screenshot(session, '1280-details');
-    await deepClick(session, '[data-command="toggleEdit"]', '.fw-tags');
     await check(
       session,
-      `document.querySelector('.fw-tags .TagListView').classList.contains('is-Editing')`,
-      'タグ編集モードを開く（送信なし）'
+      `!window.__fwQuery('[data-command="toggleEdit"],[data-command="toggleInput"],[data-command="refresh"]',document.querySelector('#fw-details'))`,
+      'タグ編集・追加・更新操作を表示しない'
     );
-    await deepClick(session, '[data-command="toggleEdit"]', '.fw-tags');
+    await click(session, 'details-lock');
+    await check(
+      session,
+      `(()=>{const c=${container},v=c.querySelector('.videoPlayer').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect(),b=document.querySelector('.fw-backdrop');return c.dataset.detailsLocked==='true'&&c.dataset.panel==='details'&&!c.querySelector('.fw-controls').inert&&getComputedStyle(b).display==='none'&&v.right<=p.left+1&&v.width>0&&p.width>0})()`,
+      '詳細を固定するとぼかしを外し映像を左側へ収める'
+    );
+    await screenshot(session, '1280-details-locked');
     for (const name of ['relatedVideoTab', 'comment', 'playlist', 'videoInfoTab']) {
       await clickVisible(session, `[data-shell-tab="${name}"]`);
       await check(
         session,
-        `document.querySelector('.tabs.${name}').classList.contains('activeTab')`,
-        `${name}タブを実クリックで表示`
+        `document.querySelector('.tabs.${name}').classList.contains('activeTab')&&document.querySelector('.fw-details-lock').getBoundingClientRect().width>0&&${container}.dataset.detailsLocked==='true'`,
+        `${name}タブを固定したまま実クリックで表示`
       );
       await screenshot(session, `1280-${name}`);
     }
@@ -297,8 +302,26 @@ async function main(): Promise<void> {
     });
     await check(
       session,
-      `${container}.dataset.panel==='' && document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
-      'Escapeは詳細だけを閉じる'
+      `${container}.dataset.panel==='details'&&${container}.dataset.detailsLocked==='true'`,
+      '固定中はEscapeでも詳細を維持'
+    );
+    await click(session, 'details-lock');
+    await session.send('Input.dispatchKeyEvent', {
+      type: 'keyDown',
+      key: 'Escape',
+      code: 'Escape',
+      windowsVirtualKeyCode: 27,
+    });
+    await session.send('Input.dispatchKeyEvent', {
+      type: 'keyUp',
+      key: 'Escape',
+      code: 'Escape',
+      windowsVirtualKeyCode: 27,
+    });
+    await check(
+      session,
+      `${container}.dataset.panel==='' && ${container}.dataset.detailsLocked==='false' && document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
+      '固定解除後のEscapeは詳細だけを閉じる'
     );
     await click(session, 'fullscreen');
     await check(session, `!!document.fullscreenElement`, '全画面ボタンで全画面へ');

@@ -40,7 +40,7 @@ export class PlayerShell {
   private readonly menu: HTMLElement;
   private readonly backdrop: HTMLButtonElement;
   private readonly info: HTMLElement;
-  private readonly tagStrip: HTMLElement;
+  private readonly detailsLockButton: HTMLButtonElement;
   private readonly playButton: HTMLButtonElement;
   private readonly abButton: HTMLButtonElement;
   private readonly volume: HTMLInputElement;
@@ -48,6 +48,7 @@ export class PlayerShell {
   private readonly timeLabel: HTMLElement;
   private readonly ab = new ABRepeat();
   private panel: 'settings' | 'details' | null = null;
+  private detailsLocked = false;
   private hideTimer: ReturnType<typeof setTimeout> | undefined;
   private clockTimer: ReturnType<typeof setInterval> | undefined;
   private focusReturn: HTMLElement | null = null;
@@ -72,6 +73,13 @@ export class PlayerShell {
     this.info.setAttribute('aria-label', this.text.details);
     this.info.setAttribute('role', 'region');
     this.info.inert = true;
+    this.detailsLockButton = document.createElement('button');
+    this.detailsLockButton.type = 'button';
+    this.detailsLockButton.className = 'fw-details-lock';
+    this.detailsLockButton.dataset.shellAction = 'details-lock';
+    this.detailsLockButton.setAttribute('aria-pressed', 'false');
+    this.updateDetailsLockButton();
+    this.require('.tabSelectContainer').append(this.detailsLockButton);
     this.controls = document.createElement('div');
     this.controls.className = 'fw-controls';
     const t = this.text;
@@ -128,20 +136,14 @@ export class PlayerShell {
       e.stopPropagation();
       this.setPanel(null);
     });
-    this.tagStrip = document.createElement('section');
-    this.tagStrip.className = 'fw-tags';
-    this.tagStrip.setAttribute('aria-label', t.tags);
-    const tags = container.querySelector('.futatsumeWatchVideoHeaderPanel .videoTagsContainer');
-    if (tags) this.tagStrip.append(tags);
-    this.tagStrip.inert = true;
-    container.append(this.controls, this.backdrop, this.tagStrip, this.menu);
+    container.append(this.controls, this.backdrop, this.menu);
     this.playButton = this.require('[data-shell-action="togglePlay"]');
     this.abButton = this.require('[data-shell-action="ab"]');
     this.volume = this.require('[data-shell-volume]');
     this.speed = this.require('[data-shell-speed]');
     this.timeLabel = this.require('.fw-time');
     this.volume.after(this.require('.commentInputPanel'));
-    for (const root of [this.controls, this.menu]) {
+    for (const root of [this.controls, this.menu, this.info]) {
       root.addEventListener('click', (e) => this.onClick(e));
       root.addEventListener('keydown', (e) => e.stopPropagation());
     }
@@ -205,9 +207,9 @@ export class PlayerShell {
     return element;
   }
   private onClick(event: MouseEvent): void {
-    event.stopPropagation();
     const target = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-shell-action]') : null;
     if (!target) return;
+    event.stopPropagation();
     const action = target.dataset.shellAction!;
     switch (action) {
       case 'settings':
@@ -216,6 +218,11 @@ export class PlayerShell {
         break;
       case 'dismiss':
         this.setPanel(null);
+        break;
+      case 'details-lock':
+        this.detailsLocked = !this.detailsLocked;
+        this.updateDetailsLockButton();
+        this.setPanel('details', true);
         break;
       case 'general':
         this.setPanel(null);
@@ -287,17 +294,26 @@ export class PlayerShell {
       }
     }
   }
-  setPanel(panel: 'settings' | 'details' | null): void {
+  private updateDetailsLockButton(): void {
+    const label = this.detailsLocked ? this.text.unlockDetails : this.text.lockDetails;
+    this.detailsLockButton.title = label;
+    this.detailsLockButton.setAttribute('aria-label', label);
+    this.detailsLockButton.setAttribute('aria-pressed', String(this.detailsLocked));
+    this.detailsLockButton.innerHTML = shellIcon(this.detailsLocked ? 'lock' : 'unlock');
+    this.container.dataset.detailsLocked = String(this.detailsLocked);
+  }
+  setPanel(panel: 'settings' | 'details' | null, force = false): void {
+    if (!force && this.detailsLocked && this.panel === 'details' && panel !== 'details') return;
     if (!this.panel && panel)
       this.focusReturn = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.panel = panel;
     this.container.dataset.panel = panel ?? '';
     this.menu.inert = panel !== 'settings';
     this.info.inert = panel !== 'details';
-    this.tagStrip.inert = panel !== 'details';
-    this.controls.inert = panel !== null;
+    const isModal = panel !== null && !(panel === 'details' && this.detailsLocked);
+    this.controls.inert = isModal;
     this.container.querySelectorAll<HTMLElement>('.videoControlBar,.commentInputPanel').forEach((element) => {
-      element.inert = panel !== null;
+      element.inert = isModal;
     });
     for (const name of ['settings', 'details'])
       this.require(`[data-shell-action="${name}"]`).setAttribute('aria-expanded', String(panel === name));
@@ -323,7 +339,7 @@ export class PlayerShell {
         this.container.contains(active) &&
         (active.matches('input,select,textarea,[contenteditable="true"]') || this.keyboardFocus);
       if (
-        this.panel ||
+        (this.panel && !(this.panel === 'details' && this.detailsLocked)) ||
         this.pointerDown ||
         editing ||
         this.container.querySelector(
@@ -340,7 +356,9 @@ export class PlayerShell {
     this.clockTimer = setInterval(() => this.tick(), 80);
   }
   close(): void {
-    this.setPanel(null);
+    this.detailsLocked = false;
+    this.updateDetailsLockButton();
+    this.setPanel(null, true);
     clearTimeout(this.hideTimer);
     clearInterval(this.clockTimer);
     this.ab.clear();

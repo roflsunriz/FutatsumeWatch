@@ -40,8 +40,6 @@ export const requiredBrowserParents: Readonly<Partial<Record<BrowserSuite, reado
     'P3-11',
     'P3-12',
     'P4-01',
-    'P4-02',
-    'P4-03',
     'P4-04',
   ],
 };
@@ -227,10 +225,9 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     'P3-12-import-corrupt 破損JSONを拒否して一覧を維持',
     'P3-12-import-shape 不正な動画情報を拒否して一覧を維持',
     'P3-12-import-restore 保存したJSONから順序・選択・設定を復元',
-    'P4-02 拒否時に本文とエラーを保持',
-    'P4-03 再取得して削除を確認',
+    'タグ閲覧専用UIに編集・追加・更新・削除操作を表示しない',
+    'タグ閲覧専用UIはタグAPIを要求しない',
     'P4-04-existing 公式記事照会で既存タグの誤falseを補正',
-    'P4-04 404を大百科なしアイコンへ反映',
   ],
   guard: [],
 };

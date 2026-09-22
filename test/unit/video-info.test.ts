@@ -58,7 +58,6 @@ const loadRaw = (): RawVideoInfoData => {
                   : undefined,
             }))
           : [],
-        tagEdit: detail.tagEdit,
         width: typeof detail.width === 'number' || typeof detail.width === 'string' ? detail.width : 0,
         height: typeof detail.height === 'number' || typeof detail.height === 'string' ? detail.height : 0,
         length: numberOr(detail.length, 0),

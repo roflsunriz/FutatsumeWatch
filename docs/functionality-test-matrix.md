@@ -4,7 +4,7 @@
 
 ## 判定と実行
 
-2026-09-21の承認済み実測はP1-01（再生）、P4-07（投稿受理）、P3-04（通常マイリスト追加）を確認した。P4-02（タグ追加）はKEY_EXPIRED、個別項目削除は公式画面停止で未送信。P4-09の投稿後再取得は未実施。新配布物のP4-05はヘッダー不在もオフラインで回帰確認する。公開操作の再試行は追加承認後のみ。詳細は[単発検証記録](live-once-verification.md)を参照。
+2026-09-21の承認済み実測はP1-01（再生）、P4-07（投稿受理）、P3-04（通常マイリスト追加）を確認した。過去のP4-02（タグ追加）はKEY_EXPIRED、個別項目削除は公式画面停止で未送信だったが、2026-09-22にタグ書き込みUI・APIを削除したため現行対象外。P4-09の投稿後再取得は未実施。新配布物のP4-05はヘッダー不在もオフラインで回帰確認する。公開操作の再試行は追加承認後のみ。詳細は[単発検証記録](live-once-verification.md)を参照。
 
 - 単体・結合: `bun run test`。テスト名に前提・操作・期待結果を記す。
 - 配布物の実操作: `bun run test:browser all --offline`。既存のentry/player/ui/settings/migration/addonsと、新規functionality/library/guardを実行する。
@@ -68,9 +68,9 @@
 | P3-10 | 連続再生・リストリピート                                   | library、playlist-navigation単体                              |
 | P3-11 | 全ソート・逆順・シャッフル、選択ID保持                     | library、playlist-model単体                                   |
 | P3-12 | 行再生・削除・未視聴・消去・保存／復元                     | library、playlist-model／playlist-session単体                 |
-| P4-01 | タグ編集開始・終了・権限                                   | library、tag-edit単体                                         |
-| P4-02 | 追加・削除・失敗保持・ロック・古い応答                     | library、tag-edit単体                                         |
-| P4-03 | タグ更新→再取得、一貫した状態                              | library、tag-edit単体                                         |
+| P4-01 | タグを閲覧専用で表示し、書き込み操作・通信がない           | library                                                       |
+| P4-02 | 削除済み：タグ追加・削除                                   | 対象外                                                        |
+| P4-03 | 削除済み：タグ再取得ボタン                                 | 対象外                                                        |
 | P4-04 | 大百科あり／なし・表示とリンク                             | library、tag-edit単体                                         |
 | P4-05 | ゲスト／ログイン表示、投稿キー401・本文保持・回復後1回送信 | functionalityのverify-authentication、comment-input-panel単体 |
 | P4-06 | 入力・パレット・IME・75/76文字・投稿不可状態               | ui、comment-input-panel単体                                   |

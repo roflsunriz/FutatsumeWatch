@@ -36,6 +36,8 @@ const ja = {
   original: '公式視聴ページ',
   helpAB: '1回目でA、2回目でB、3回目で解除',
   tags: 'タグ',
+  lockDetails: '詳細パネルを固定',
+  unlockDetails: '詳細パネルの固定を解除',
 };
 const en: typeof ja = {
   settings: 'Settings',
@@ -75,6 +77,8 @@ const en: typeof ja = {
   original: 'Official watch page',
   helpAB: 'First click: A. Second: B. Third: clear.',
   tags: 'Tags',
+  lockDetails: 'Pin details panel',
+  unlockDetails: 'Unpin details panel',
 };
 export const shellText = (language: string): typeof ja => (language.startsWith('ja') ? ja : en);
 
@@ -98,6 +102,8 @@ const paths = {
   date: '<circle cx="12" cy="12" r="9"/><path d="M12 6v6h5"/>',
   mylists: '<path d="M6 3h12v18l-6-4-6 4z"/>',
   likes: '<path d="M7 10h-4v11h4zm0 10h11l3-10h-7V3h-3l-4 8"/>',
+  lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>',
+  unlock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 7-2.6M12 14v3"/>',
 };
 export type ShellIcon = keyof typeof paths;
 export function shellIcon(name: ShellIcon): string {

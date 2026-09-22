@@ -233,24 +233,6 @@ test('armは深いコピーを保持し、入力や公開statusを書き換え�
   state[0]!.consumed = false;
   expect(guard.decide(commentRequest()).action).toBe('deny');
 });
-test('タグの追加/削除は指定動画・名前・methodを各一度だけ許す', () => {
-  const guard = new LiveWritePermitGuard(),
-    tag = '日本語 & 記号/#';
-  guard.arm({ id: 'tag-add-once', kind: 'tag-add', videoId: 'sm9', tag });
-  guard.arm({ id: 'tag-remove-once', kind: 'tag-remove', videoId: 'sm9', tag });
-  const url = 'https://nvapi.nicovideo.jp/v2/videos/sm9/tags?' + new URLSearchParams({ tag }).toString();
-  for (const wrong of [
-    { method: 'POST', url: url + '&tag=other' },
-    { method: 'POST', url: url.replace('sm9', 'sm100') },
-    { method: 'POST', url, postData: 'tag=other' },
-    { method: 'PUT', url },
-  ])
-    expect(guard.decide(wrong).action).toBe('deny');
-  for (const method of ['POST', 'DELETE']) {
-    expect(guard.decide({ method, url }).action).toBe('allow-write');
-    expect(guard.decide({ method, url }).action).toBe('deny');
-  }
-});
 test('非公開list作成は公式formの必須5fieldsを照合し公開化・sort変更・未知fieldsを拒否する', () => {
   for (const defaultSortOrder of ['asc', 'desc'] as const) {
     const permit = { ...create, defaultSortOrder };

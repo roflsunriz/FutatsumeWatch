@@ -10,7 +10,6 @@ export type LiveWritePermit = BasePermit &
         readonly commands: readonly string[];
         readonly vposMs: { readonly min: number; readonly max: number };
       }
-    | { readonly kind: 'tag-add' | 'tag-remove'; readonly videoId: string; readonly tag: string }
     | {
         readonly kind: 'mylist-create';
         readonly name: string;
@@ -100,9 +99,6 @@ function validPermit(value: unknown): value is LiveWritePermit {
         value.vposMs.min >= 0 &&
         value.vposMs.max >= value.vposMs.min
       );
-    case 'tag-add':
-    case 'tag-remove':
-      return exact('videoId', 'tag') && videoId(value.videoId) && nonempty(value.tag);
     case 'mylist-create':
       return (
         exact('name', 'description', 'isPublic', 'defaultSortKey', 'defaultSortOrder', 'encoding') &&
@@ -210,14 +206,6 @@ function target(permit: LiveWritePermit): {
         method: 'POST',
         query: { pc: '1' },
       };
-    case 'tag-add':
-    case 'tag-remove':
-      return {
-        origin: nvapi,
-        path: `/v2/videos/${permit.videoId}/tags`,
-        method: permit.kind === 'tag-add' ? 'POST' : 'DELETE',
-        query: { tag: permit.tag },
-      };
     case 'mylist-create':
       return { origin: nvapi, path: '/v1/users/me/mylists', method: 'POST', query: {} };
     case 'mylist-add':
@@ -243,12 +231,7 @@ function bodyMatches(permit: LiveWritePermit, request: LiveWriteRequest): Denial
   const mime = request.contentType
     ?.match(/^\s*(application\/(?:json|x-www-form-urlencoded))\s*(?:;\s*charset\s*=\s*(?:utf-8|"utf-8")\s*)?$/i)?.[1]
     ?.toLowerCase();
-  if (
-    permit.kind === 'tag-add' ||
-    permit.kind === 'tag-remove' ||
-    permit.kind === 'mylist-item-remove' ||
-    permit.kind === 'mylist-remove'
-  )
+  if (permit.kind === 'mylist-item-remove' || permit.kind === 'mylist-remove')
     return raw === '' ? null : 'invalid-body';
   const encoding = permit.kind === 'comment-post' ? 'json' : permit.kind === 'mylist-create' ? permit.encoding : 'form';
   if (mime !== (encoding === 'json' ? 'application/json' : 'application/x-www-form-urlencoded')) return 'content-type';

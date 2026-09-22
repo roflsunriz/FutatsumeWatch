@@ -1,26 +1,5 @@
 import { expect, test } from 'bun:test';
 import { createLibraryRoutes } from '../../scripts/offline-library';
-import base from '../fixtures/functionality/watch-response.json';
-
-test('P0/P4 タグフェイクは本文・権限・動画を照合し、成功した変更だけ保持する', async () => {
-  const library = createLibraryRoutes();
-  const request = {
-    url: 'https://nvapi.nicovideo.jp/v2/videos/sm9/tags?tag=test',
-    method: 'POST',
-    headers: { 'X-Tag-Edit-Key': base.data.response.tag.edit.editKey },
-  };
-  expect((await library.reply({ ...request, headers: {} }))?.status).toBe(403);
-  expect(library.tags.get('sm9')!.some((tag) => tag.name === 'test')).toBe(false);
-  expect((await library.reply(request))?.status).toBe(200);
-  expect(library.tags.get('sm9')!.filter((tag) => tag.name === 'test')).toHaveLength(1);
-  expect(library.tags.get('sm100')!.some((tag) => tag.name === 'test')).toBe(false);
-  expect((await library.reply(request))?.status).toBe(409);
-  expect((await library.reply({ ...request, method: 'DELETE' }))?.status).toBe(200);
-  expect(library.tags.get('sm9')!.some((tag) => tag.name === 'test')).toBe(false);
-  expect(library.writes).toHaveLength(2);
-  expect(await library.reply({ ...request, url: request.url + '&unexpected=1' })).toBeNull();
-  expect(await library.reply({ ...request, url: request.url.replace('nvapi.nicovideo.jp', 'example.com') })).toBeNull();
-});
 test('P0/P3 フェイクの後で見るは1件だけ追加し、拒否時に保存結果を変えない', async () => {
   const library = createLibraryRoutes();
   const request = {
