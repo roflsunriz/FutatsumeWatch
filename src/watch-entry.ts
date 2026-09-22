@@ -27,7 +27,8 @@ export function supportsWatchEntryPage(url: Pick<Location, 'hostname' | 'pathnam
 // 公式の意味を持つdata属性とプロフィールURLを使い、生成クラス名に依存しない。
 // 一覧系のサムネ特定は公式構造だけを正本にする。nicocache_nl / filter-matome 由来の
 // 付加クラス（nl-cached / ncnl- / filter-matome / cacheIcon）や付加文言へは結合しない。
-const THUMB_BOX_SELECTOR = 'div.pos_relative,.StageRecommendVideoCard-thumbnailContainer,.NC-Thumbnail';
+const THUMB_BOX_SELECTOR =
+  'div.pos_relative,.StageRecommendVideoCard-thumbnailContainer,.NC-Thumbnail,.nicoad_article_slide_item_thumb';
 
 function isContaminationBadge(element: Element): boolean {
   return (
@@ -52,20 +53,34 @@ function isThumbAnchor(link: HTMLAnchorElement): boolean {
   return findThumbBox(link) !== null;
 }
 
-// duration表記（「6:47」「2:02」等）だけの短いラベルは起動ボタンの説明に使わない。
+// duration表記（「6:47」や画質付加の「2:02 480p·192k」等）だけの短いラベルは
+// 起動ボタンの説明に使わない。直後にタイトルが続く場合は実タイトルとして扱う。
 function isDurationLabel(value: string): boolean {
-  return /^\d{1,3}:\d{2}(\s*\S*)?$/.test(value.trim());
+  return /^\d{1,3}:\d{2}(\s*[\d.]+\s*[pk](·[\d.]+\s*k)?)?\s*$/.test(value.trim());
 }
 
 function labelForLink(link: HTMLAnchorElement): string | null {
+  // 本文の実タイトルを最優先する。本文アイコン画像（例: 大百科の exit 画像）の
+  // alt で上書きしない。先頭の duration＋画質トークンや末尾の再生数は
+  // 付帯表示として取り除く。サムネ側の duration 表記は実タイトルとして使わない。
+  const raw = link.textContent?.trim() ?? '';
+  const stripped = raw
+    .replace(/^\d{1,3}:\d{2}(\s*[\d.]+\s*[pk](·[\d.]+\s*k)?)?\s+/, '')
+    .replace(/[\s]+\d{4,}$/, '')
+    .trim();
+  if (stripped && !isDurationLabel(stripped)) return stripped;
   const alt = link.querySelector<HTMLImageElement>('img[alt]')?.alt.trim() ?? '';
   if (alt) return alt;
   const accessible = link.getAttribute('aria-label')?.trim() || link.title.trim() || '';
-  if (accessible && !isDurationLabel(accessible)) return accessible;
-  const text = link.textContent?.trim() ?? '';
-  if (text && !isDurationLabel(text)) return text;
   if (accessible) return accessible;
-  return text || null;
+  return raw || null;
+}
+
+// Nアニメ等のカード全体リンクのように公式のサムネ内箱を持たないカードは、
+// リンク自体へ重ねる。行内テキストリンク（高さが小さい）には重ねない。
+function isCardAnchor(link: HTMLAnchorElement): boolean {
+  const rect = link.getBoundingClientRect();
+  return rect.width >= 100 && rect.height >= 80;
 }
 export function findWatchEntrySlot(doc: Document): { parent: HTMLElement; before: Element } | null {
   const headings = [...doc.querySelectorAll('h1')].filter((heading) => !heading.closest('#futatsumeVideoPlayerDialog'));
@@ -202,7 +217,9 @@ export function installWatchEntry(): WatchEntry {
     [data-futatsume-launch][data-state=failed]{border-color:#e66;cursor:help}
     [data-futatsume-open]{width:40px;height:40px;padding:8px;align-self:center;margin-inline:auto}
     [data-futatsume-video]{margin:4px 6px 4px 0;position:relative;z-index:2147483646;isolation:isolate;pointer-events:auto}
-    div.pos_relative>[data-futatsume-video],.StageRecommendVideoCard-thumbnailContainer>[data-futatsume-video],.NC-Thumbnail>[data-futatsume-video]{position:absolute;top:6px;right:6px;left:auto;bottom:auto;margin:0;box-shadow:0 1px 6px rgba(0,0,0,.65)}
+    div.pos_relative>[data-futatsume-video],.StageRecommendVideoCard-thumbnailContainer>[data-futatsume-video],.NC-Thumbnail>[data-futatsume-video],.nicoad_article_slide_item_thumb>[data-futatsume-video]{position:absolute;top:6px;right:6px;left:auto;bottom:auto;margin:0;box-shadow:0 1px 6px rgba(0,0,0,.65)}
+    a:has(>[data-futatsume-video]){position:relative}
+    a>[data-futatsume-video]{position:absolute;top:6px;right:6px;left:auto;bottom:auto;margin:0;box-shadow:0 1px 6px rgba(0,0,0,.65)}
     @media(max-width:700px){[data-futatsume-open]{width:32px;height:32px;padding:4px;margin-inline:6px}}
   `;
   document.head.append(marker, style);
@@ -240,11 +257,12 @@ export function installWatchEntry(): WatchEntry {
       if (!id || link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')) continue;
       const rawLabel = labelForLink(link);
       if (!rawLabel) continue;
-      const thumb = isThumbAnchor(link);
+      const box = findThumbBox(link);
+      const thumb = box !== null || isThumbAnchor(link);
       const label = thumb ? (titleById.get(id) ?? rawLabel) : rawLabel;
-      // サムネ内へ深く統合するためサムネ側リンクを優先する。タイトル行の後ろへ
-      // ボタンを足して行を崩さない。
-      const priority = thumb ? 3 : 1;
+      // 公式のサムネ内箱を持つリンクを最優先し、次にサムネ側リンクを優先する。
+      // タイトル行の後ろへボタンを足して行を崩さない。
+      const priority = box !== null ? 4 : thumb ? 3 : 1;
       const style = window.getComputedStyle(link);
       const notHidden =
         style.display !== 'none' &&
@@ -281,9 +299,11 @@ export function installWatchEntry(): WatchEntry {
         if (id) open(id);
       });
       // サムネ内の相対ボックス先頭へ重ねて統合する。hover待ちの表示切り替えはしない。
-      // ボックスが無い旧来配置だけリンク直後へ置く。
+      // 箱を持たないカード全体リンク（Nアニメ等）はリンク自体の先頭へ重ね、
+      // 行内テキストリンクにだけ従来どおり直後へ置く。
       const box = findThumbBox(link);
       if (box) box.prepend(control);
+      else if (isCardAnchor(link)) link.prepend(control);
       else link.after(control);
       mounted.set(id, { link, control });
     }

@@ -168,6 +168,44 @@ describe('初めて使う人の起動導線', () => {
     expect(control.parentElement?.firstElementChild).toBe(control);
     expect(control.getAttribute('aria-label')).toContain('トップの動画');
   });
+  it('大百科の広告スライド箱へ統合し、本文アイコン付きリンクより優先する', () => {
+    document.body.innerHTML =
+      '<p><a id="body" href="https://www.nicovideo.jp/watch/sm9">らき☆すた動画(sm9)<img alt="exit_nicovideo"></a></p>' +
+      '<div><a id="slide" href="https://www.nicovideo.jp/watch/sm9"><div class="nicoad_article_slide_item_thumb"><img alt="スライド画像"><span>5:20</span></div><div>スライドのタイトル</div></a></div>';
+    ui = installWatchEntry();
+    ui.ready(() => {});
+    expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
+    const control = document.querySelector('[data-futatsume-video="sm9"]')!;
+    expect(control.parentElement?.classList.contains('nicoad_article_slide_item_thumb')).toBe(true);
+    expect(control.parentElement?.firstElementChild).toBe(control);
+    expect(document.querySelector('#body')?.nextElementSibling).toBeNull();
+    expect(control.getAttribute('aria-label')).toContain('スライドのタイトル');
+    expect(control.getAttribute('aria-label')).not.toMatch(/^[^:]*: \d{1,3}:\d{2}\s/);
+  });
+  it('本文アイコン画像のaltで説明文を上書きしない', () => {
+    document.body.innerHTML =
+      '<p><a id="body" href="https://www.nicovideo.jp/watch/sm9">らき☆すた動画(sm9)<img alt="exit_nicovideo"></a></p>';
+    ui = installWatchEntry();
+    ui.ready(() => {});
+    const control = document.querySelector('[data-futatsume-video="sm9"]')!;
+    expect(control.getAttribute('aria-label')).toContain('らき☆すた動画(sm9)');
+    expect(control.getAttribute('aria-label')).not.toContain('exit_nicovideo');
+  });
+  it('箱を持たないカード全体リンクはリンク自体の先頭へ重ねる', () => {
+    document.body.innerHTML =
+      '<a id="card" href="https://www.nicovideo.jp/watch/so1"><div><img alt="カード画像"></div><div>カードのタイトル 18172496</div></a>';
+    const anchor = document.querySelector<HTMLAnchorElement>('#card')!;
+    anchor.getBoundingClientRect = () =>
+      ({ left: 0, top: 0, right: 240, bottom: 207, width: 240, height: 207 }) as DOMRect;
+    ui = installWatchEntry();
+    ui.ready(() => {});
+    expect(document.querySelectorAll('[data-futatsume-video="so1"]')).toHaveLength(1);
+    const control = document.querySelector('[data-futatsume-video="so1"]')!;
+    expect(control.parentElement).toBe(anchor);
+    expect(anchor.firstElementChild).toBe(control);
+    expect(control.getAttribute('aria-label')).toContain('カードのタイトル');
+    expect(control.getAttribute('aria-label')).not.toContain('18172496');
+  });
   it('見える起動アイコンがカードの透明リンクに覆われても、その位置の実クリックで起動する', () => {
     document.body.innerHTML =
       '<article><a href="https://www.nicovideo.jp/watch/sm9">表示中の動画</a><div id="cover"></div></article>';
