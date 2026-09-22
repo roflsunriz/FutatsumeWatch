@@ -6,7 +6,8 @@
 - 再生中にホバーで表示されるタイトルと動画メタデータは現行シェルの`.fw-header`が正本であり、旧`VideoHeaderPanel`はシェル表示では`display:none`のため、タグ一覧はシェルの`.fw-heading`内（タイトル・メタデータの下）へ詳細タブと同じ閲覧専用`TagListView`で表示する。旧ヘッダへの仮実装は取り消した。
 - 0.0.21の最終`bun run test:browser all --offline`は全9スイート成功（settingsに「フィルターのトグルが重ならない」を追加）。証跡は`dev-assets/verification/2026-09-22T11-53-48-178Z-offline-2ca9e93c/run.json`、画像は同ディレクトリの`settings/settings-tabs-filters-1280.png`と`dev-assets/verification/header-tags-hover.png`、配布物SHA-256は`ac9d43e4cc04c8be026b7c16b09831b476d3fbeae20d5bc2f3ea0302a7d7c9e9`。
 - `bun install --frozen-lockfile`、lint、整形、型検査、ビルド、全単体388件（2,696アサーション）、`bun audit`（243パッケージ・脆弱性0件）に成功した。公開サイト通信、実アカウント操作は行っていない。
-- CI初回は単体テストが`tag-list-view.ts`のモジュール直下`extends HTMLElement`で失敗した。`player-shell.ts`がタグ表示のために同モジュールを読み込むようになり、DOMグローバルなしで読み込むテスト経路で壊れた。カスタム要素の定義を`typeof HTMLElement`で守り、読み込み自体は常に成功するようにした。公開後のCI再実行で確認する。
+- CI初回は単体テストが`tag-list-view.ts`のモジュール直下`extends HTMLElement`で失敗した。`player-shell.ts`がタグ表示のために同モジュールを読み込むようになり、DOMグローバルなしで読み込むテスト経路で壊れた。カスタム要素の定義を`typeof HTMLElement`で守り、読み込み自体は常に成功するようにした。修正後のタグ実行は成功し、リリースv0.0.21を公開した。
+- CIでは低速runner特有のharness側の競合も各1回観測した（migrationのpocketウォームアップ要求がFetch捕捉なしで観測される件、functionality終了時の`Invalid InterceptionId`）。いずれも同一コミットの再実行では成功し、製品コードの変更では直さず再実行で確認した。
 
 ## 2026-09-22：利用可能フォントのプルダウン（0.0.19）
 
