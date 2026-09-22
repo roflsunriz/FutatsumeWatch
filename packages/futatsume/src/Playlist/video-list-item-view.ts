@@ -151,7 +151,6 @@ class VideoListItemView {
 
   .thumbnailContainer .playlistAppend,
   .playlistRemove,
-  .thumbnailContainer .deflistAdd,
   .thumbnailContainer .pocket-info {
     position: absolute;
     display: none;
@@ -176,10 +175,6 @@ class VideoListItemView {
     right: 8px;
     top: 0;
   }
-  .thumbnailContainer .deflistAdd {
-    right: 0;
-    bottom: 0;
-  }
   .thumbnailContainer .pocket-info {
     display: none !important;
     right: 24px;
@@ -202,7 +197,6 @@ class VideoListItemView {
 
   .playlist .videoItem:not(.is-active):hover .playlistRemove,
   .videoItem:hover .thumbnailContainer .playlistAppend,
-  .videoItem:hover .thumbnailContainer .deflistAdd,
   .videoItem:hover .thumbnailContainer .pocket-info {
     display: inline-block;
     border: 1px outset;
@@ -210,7 +204,6 @@ class VideoListItemView {
 
   .playlist .videoItem:not(.is-active):hover .playlistRemove:hover,
   .videoItem:hover .thumbnailContainer .playlistAppend:hover,
-  .videoItem:hover .thumbnailContainer .deflistAdd:hover,
   .videoItem:hover .thumbnailContainer .pocket-info:hover {
     transform: scale(1.5);
     box-shadow: 2px 2px 2px #000;
@@ -218,17 +211,10 @@ class VideoListItemView {
 
   .playlist .videoItem:not(.is-active):hover .playlistRemove:active,
   .videoItem:hover .thumbnailContainer .playlistAppend:active,
-  .videoItem:hover .thumbnailContainer .deflistAdd:active,
   .videoItem:hover .thumbnailContainer .pocket-info:active {
     transform: scale(1.3);
     border: 1px inset;
     transition: none;
-  }
-
-  .videoItem.is-updating .thumbnailContainer .deflistAdd {
-    transform: scale(1.0) !important;
-    border: 1px inset !important;
-    pointer-events: none;
   }
 
   .thumbnailContainer .duration {
@@ -247,19 +233,6 @@ class VideoListItemView {
     height: 100%;
     padding-left: 4px;
   }
-  .thumbnailContainer .mylistSelect {
-    position: absolute;
-    top: 0;
-    right: 0;
-    padding: 3px 5px;
-    border: 1px solid #718098;
-    border-radius: 3px;
-    background: #293b55;
-    color: #fff;
-    font: 12px sans-serif;
-    cursor: pointer;
-  }
-
   .postedAt {
     font-size: 12px;
     color: #aab4c6;
@@ -404,19 +377,9 @@ class VideoListItemView {
                   title="プレイリストに追加"
                   >▶</span
                 >
-                <span
-                  class="command deflistAdd"
-                  data-command="deflistAdd"
-                  data-param=${watchId}
-                  title="とりあえずマイリスト"
-                  >&#x271A;</span
-                >
                 <span class="command pocket-info" data-command="pocket-info" data-param=${watchId} title="動画情報"
                   >？</span
                 >
-                <button type="button" class="command mylistSelect" data-command="mylistSelect" data-param=${watchId}
-                  title=${navigator.language.startsWith('ja') ? 'マイリストに追加' : 'Add to mylist'}
-                  aria-label=${navigator.language.startsWith('ja') ? 'マイリストに追加' : 'Add to mylist'}>＋M</button>
               </div>
               <div class="videoInfo">
                 <div class="postedAt">${new Date(item.postedAt as string | number).toLocaleString()}</div>

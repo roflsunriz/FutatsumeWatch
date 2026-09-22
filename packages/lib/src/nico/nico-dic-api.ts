@@ -19,19 +19,7 @@ export function getNicodicArticleExists(title: string): Promise<boolean | undefi
       const response = raw as Response;
       if (response.status === 404) return false;
       if (!response.ok) return undefined;
-      const data: unknown = await response.json();
-      if (
-        typeof data !== 'object' ||
-        data === null ||
-        !('id' in data) ||
-        typeof data.id !== 'number' ||
-        data.id <= 0 ||
-        !('url' in data) ||
-        typeof data.url !== 'string'
-      )
-        return undefined;
-      const url = new URL(data.url);
-      return url.origin === 'https://dic.nicovideo.jp' && url.pathname.startsWith('/a/') ? true : undefined;
+      return true;
     } catch {
       return undefined;
     }

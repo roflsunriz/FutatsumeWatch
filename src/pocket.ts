@@ -1599,28 +1599,6 @@ void AntiPrototypeJs().then(() => {
               </div>
             </div>
             <div class="footer-menu scalingUI">
-              <div class="regular-menu">
-                <button
-                  class="mylistPocketButton deflist-add pocket-button command command-watch-id wwwFutatsumeOnly"
-                  data-command="deflist-add"
-                  tooltip="とりあえずマイリスト"
-                >とり</button>
-                <button
-                  class="pocket-button command command-watch-id"
-                  data-command="mylist-window"
-                  tooltip="マイリスト"
-                >マイ</button>
-                <button
-                  class="pocket-button command command-watch-id"
-                  data-command="open-mylist-open"
-                  tooltip="公開マイリスト"
-                >公開</button>
-                 <button
-                  class="pocket-button command command-video-id"
-                  data-command="twitter-hash-open"
-                  tooltip="Twitterの反応"
-                >#Twitter</button>
-              </div>
 
 
               <div class="futatsume-menu">
@@ -1641,144 +1619,8 @@ void AntiPrototypeJs().then(() => {
                 >▶</button>
               </div>
 
-              <div class="setting-menu">
-                <button
-                  class="pocket-button command"
-                  data-command="toggle-setting"
-                >設 定</button>
-              </div>
 
             </div>
-          </div>
-          <div class="setting-panel">
-
-            <div class="setting-panel-main scrollable">
-              <h2>MylistPocket 設定</h2>
-              <label class="setting-label">
-                <input
-                  type="checkbox"
-                  class="setting-form"
-                  data-config-name="openNewWindow"
-                >
-                <span>タグやリンクを新しいタブで開く (次回から反映)</span>
-              </label>
-
-              <label class="setting-label">
-                <input
-                  type="checkbox"
-                  class="setting-form"
-                  data-config-name="enableAutoComment"
-                  data-config-namespace="mylist"
-                >
-                <span>マイリストコメントに投稿者名を入れる</span>
-              </label>
-
-              <label class="setting-label">
-                <input
-                  type="checkbox"
-                  class="setting-form"
-                  data-config-name="responsive.matrix"
-                  data-config-namespace=""
-                >
-                <span>カスタムランキングのサムネイルを画面幅に合わせて小さくする</span>
-              </label>
-
-              <h2>NG設定(リロード後に反映)</h2>
-              <label class="setting-label">
-                <input
-                  type="checkbox"
-                  class="setting-form"
-                  data-config-name="enable"
-                  data-config-namespace="ng"
-                >
-                <span>簡易NG＆強調機能を使う</span>
-              </label>
-
-              <label class="setting-label">
-                <input
-                  type="checkbox"
-                  class="setting-form"
-                  data-config-name="hide"
-                  data-config-namespace="nicoad"
-                >
-                <span>検索結果やランキングのニコニ広告を消す</span>
-              </label>
-
-              <label class="setting-label wwwOnly wwwFutatsumeOnly setting-ng-label">
-                <input
-                  type="checkbox"
-                  class="setting-form"
-                  data-config-name="syncFutatsume"
-                  data-config-namespace="ng"
-                >
-                <span>NGタグ・投稿者をFutatsumeWatchにも反映する</span>
-              </label>
-
-              <div class="setting-ng-textarea setting-ng">
-                <div class="setting-ng-text-column">
-                  投稿者ID
-                  <textarea
-                    class="setting-form"
-                    data-config-name="owner"
-                    data-config-namespace="ng"
-                  ></textarea>
-                </div>
-                <div class="setting-ng-text-column">
-                  タグ
-                  <textarea
-                    class="setting-form"
-                    data-config-name="tag"
-                    data-config-namespace="ng"
-                  ></textarea>
-                </div>
-                <div class="setting-ng-text-column">
-                  タイトル・説明文
-                  <textarea
-                    class="setting-form"
-                    data-config-name="word"
-                    data-config-namespace="ng"
-                  ></textarea>
-                </div>
-               </div>
-              <h2 class="setting-fav">強調表示設定</h2>
-              <div class="setting-fav-textarea setting-fav">
-                <div class="setting-fav-text-column">
-                  投稿者ID
-                  <textarea
-                    class="setting-form"
-                    data-config-name="owner"
-                    data-config-namespace="fav"
-                  ></textarea>
-                </div>
-                <div class="setting-fav-text-column">
-                  タグ
-                  <textarea
-                    class="setting-form"
-                    data-config-name="tag"
-                    data-config-namespace="fav"
-                  ></textarea>
-                </div>
-                <div class="setting-fav-text-column">
-                  タイトル・説明文
-                  <textarea
-                    class="setting-form"
-                    data-config-name="word"
-                    data-config-namespace="fav"
-                  ></textarea>
-                </div>
-               </div>
-
-             </div>
-
-            <div class="footer-menu">
-              <div class="close-setting-menu">
-                <button
-                  class="pocket-button command"
-                  data-command="toggle-setting"
-                >戻 る</button>
-              </div>
-            </div>
-
           </div>
         </div>
       </template>
@@ -2752,12 +2594,7 @@ void AntiPrototypeJs().then(() => {
         this._shadowRoot.addEventListener('mousedown', (e) => {
           e.stopPropagation();
         });
-        this._rootDom.querySelector('.setting-panel-main')!.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
-
         this._initSettingPanel();
-
         const updateNgEnable = (v: unknown): void => {
           this.toggleClass('is-ng-enable', v as boolean);
         };
@@ -2968,9 +2805,6 @@ void AntiPrototypeJs().then(() => {
         const command = elm.getAttribute('data-command');
         const param = elm.getAttribute('data-param');
         switch (command) {
-          case 'toggle-setting':
-            this.toggleSettingPanel();
-            break;
           case 'add-ng-tag':
           case 'add-fav-tag':
           case 'toggle-ng-tag':
@@ -3393,60 +3227,6 @@ void AntiPrototypeJs().then(() => {
       }
     }
 
-    const deflistAdd = (watchId: string): Promise<unknown> => {
-      const enableAutoComment = config.props.mylist.enableAutoComment;
-      if (location.host === 'www.nicovideo.jp') {
-        return (() => {
-          if (!enableAutoComment) {
-            return Promise.resolve({});
-          }
-          return ThumbInfoLoader.load(watchId);
-        })().then((info) => {
-          const thumb = info as ThumbInfoOk;
-          const originalVideoId = thumb.originalVideoId ? `元動画: ${thumb.originalVideoId}` : '';
-          const description = enableAutoComment
-            ? `投稿者: ${thumb.owner!.name} ${thumb.owner!.linkId} ${originalVideoId}`
-            : '';
-          return MylistApiLoader.addDeflistItem(watchId, description);
-        });
-      }
-
-      let futatsume: FutatsumeLike;
-      let token: unknown;
-      return FutatsumeDetector.detect()
-        .then((z) => {
-          futatsume = z as FutatsumeLike;
-        })
-        .then(() => {
-          return CsrfTokenLoader.load().then(
-            (t) => {
-              token = t;
-            },
-            () => {
-              return Promise.resolve();
-            }
-          );
-        })
-        .then(() => {
-          if (!enableAutoComment) {
-            return {};
-          }
-          return ThumbInfoLoader.load(watchId);
-        })
-        .then((info) => {
-          if (!enableAutoComment) {
-            return futatsume.external.deflistAdd({ watchId, token });
-          }
-
-          const thumb = info as ThumbInfoOk;
-          const originalVideoId = thumb.originalVideoId ? `元動画: ${thumb.originalVideoId}` : '';
-          const description = enableAutoComment
-            ? `投稿者: ${thumb.owner!.name} ${thumb.owner!.linkId} ${originalVideoId}`
-            : '';
-          return futatsume.external.deflistAdd({ watchId, description, token });
-        });
-    };
-
     const deflistRemove = (watchId: string): Promise<unknown> => {
       if (location.host === 'www.nicovideo.jp') {
         return MylistApiLoader.removeDeflistItem(watchId);
@@ -3671,19 +3451,6 @@ void AntiPrototypeJs().then(() => {
               }
               return { status: 'default', result: res };
             });
-          case 'mylist-window':
-            window.open(
-              protocol + '//www.nicovideo.jp/mylist_add/video/' + (param as string),
-              'nicomylistadd',
-              'width=500, height=400, menubar=no, scrollbars=no'
-            );
-            break;
-          case 'twitter-hash-open':
-            window.open('https://twitter.com/hashtag/' + (param as string) + '?src=hash');
-            break;
-          case 'open-mylist-open':
-            window.open(protocol + '//www.nicovideo.jp/openlist/' + (param as string));
-            break;
           case 'mylist-comment-open':
             window.open(protocol + '//www.nicovideo.jp/mylistcomment/video/' + (param as string));
             break;
@@ -3699,20 +3466,6 @@ void AntiPrototypeJs().then(() => {
           case 'playlist-queue':
             (window as unknown as PocketWindow).FutatsumeWatch!.external.playlist.add(param);
             break;
-          case 'deflist-add':
-            (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate();
-
-            return deflistAdd(param as string)
-              .then(util.getSleepPromise(1000, 'deflist-add'))
-              .then(
-                (result) => {
-                  (src as HoverMenu | VideoInfoView).notifyEndDeflistUpdate(result as PocketCommandResult);
-                },
-                (err: unknown) => {
-                  console.error('deflist-add-result', err);
-                  (src as HoverMenu | VideoInfoView).notifyFailDeflistUpdate(err as PocketCommandResult);
-                }
-              );
           case 'deflist-remove':
             (src as HoverMenu | VideoInfoView).notifyBeginDeflistUpdate();
 

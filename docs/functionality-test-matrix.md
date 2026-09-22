@@ -59,7 +59,7 @@
 | P3-01 | 投稿者一覧→プレイリストのID・順序、複数ページ              | library、playlist-api単体                                     |
 | P3-02 | プロフィールの正しいリンク先                               | library                                                       |
 | P3-03 | 市場入口・空白枠・ローダー撤去、周辺UI維持                 | library、video-info-panel単体                                 |
-| P3-04 | 関連から後で見る／通常マイリスト選択→再取得                | library、tag-mylist-picker／tag-mylist-api単体                |
+| P3-04 | 関連動画・プレイリスト行にマイリスト／後で見る追加がない   | library                                                       |
 | P3-05 | 詳細タブ・動画リンク・行と対象ID                           | library、ui                                                   |
 | P3-06 | コメント自動スクロール切替                                 | library                                                       |
 | P3-07 | 日時・過去ログ・再取得・通常表示への復帰                   | library、thread-post単体                                      |

@@ -1,5 +1,5 @@
 import { cleanupCdp } from './dev-cdp';
-import { attach, attachBrowser, evaluate, evaluateAsync, listTargets } from './dev-cdp';
+import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
 import { verificationDirectory } from './dev-verification-output';
@@ -180,7 +180,7 @@ async function main() {
       `${find('[data-tag-status]', tagRoot)}.textContent.includes('403')&&${find('.tagInputText', tagRoot)}.value==='fixture-denied'`,
       'P4-02 拒否時に本文とエラーを保持'
     );
-    const tag = '機能テストタグ & symbol';
+    const tag = 'FutatsumeWatch検証不存在20260920';
     await replaceInput(session, '.tagInputText', tag, tagRoot);
     await deepClick(session, 'button.submit', tagRoot);
     await check(
@@ -196,8 +196,8 @@ async function main() {
     );
     await check(
       session,
-      `(()=>{const tag=${find(`[data-tag-id="${tag}"]`, tagRoot)};const menu=tag.querySelector('futatsume-tag-item-menu');return menu.dataset.hasNicodic==='1'&&getComputedStyle(menu.shadowRoot.querySelector('.toggle'),'::after').content.includes('百')&&tag.querySelector('a.nicodic').href===${JSON.stringify('https://dic.nicovideo.jp/a/' + encodeURIComponent(tag))}})()`,
-      'P4-04 大百科ありアイコンと記号付きURL'
+      `(()=>{const tag=${find(`[data-tag-id="${tag}"]`, tagRoot)};const menu=tag.querySelector('futatsume-tag-item-menu');return menu.dataset.hasNicodic==='0'&&!menu.shadowRoot.querySelector('.root').classList.contains('has-nicodic')&&tag.querySelector('a.nicodic').href===${JSON.stringify('https://dic.nicovideo.jp/a/' + encodeURIComponent(tag))}})()`,
+      'P4-04 404を大百科なしアイコンへ反映'
     );
     await deepClick(session, '[data-command="toggleEdit"]', tagRoot);
     await deepClick(session, `[data-tag-id="${tag}"] [data-command="removeTag"]`, tagRoot);
@@ -229,76 +229,18 @@ async function main() {
       `!!${find('[data-watch-id="sm2057168"] .videoLink', relatedRoot)}`,
       'P3-05 関連動画のiframe行を表示'
     );
-    await deepClick(session, '[data-watch-id="sm2057168"] .thumbnailContainer', relatedRoot, true);
-    await deepClick(session, '[data-watch-id="sm2057168"] [data-command="deflistAdd"]', relatedRoot);
-    await check(session, `${state}.dialog._state.isUpdatingDeflist`, 'P3-04 後で見るの書込を開始');
-    await check(session, `!${state}.dialog._state.isUpdatingDeflist`, 'P3-04 関連動画から後で見るへ追加', 15000);
-    const later = await evaluateAsync(
-      session,
-      `fetch('https://nvapi.nicovideo.jp/v1/users/me/watch-later?sortKey=addedAt&sortOrder=desc&pageSize=100&page=1',{credentials:'include',headers:{'X-Frontend-Id':'6'}}).then(r=>r.json()).then(v=>v.data.watchLater.items.map(i=>i.watchId))`
-    );
-    if (!Array.isArray(later) || later.filter((id) => id === 'sm2057168').length !== 1)
-      throw Error('後で見るの再取得結果が一致しません');
-    if (
-      requests.filter(
-        (request) => request.method === 'POST' && new URL(request.url).pathname === '/v1/users/me/watch-later'
-      ).length !== 1
-    )
-      throw Error('後で見るが重複送信されました');
-    checks.push('P3-04 後で見るを再取得して対象が1件だけ存在');
-    await deepClick(session, '[data-watch-id="sm2057168"] [data-command="mylistSelect"]', relatedRoot);
     await check(
       session,
-      `!!document.querySelector('[data-mylist-picker="sm2057168"] [data-mylist-choice="42"]')`,
-      'P3-04 関連動画の追加先マイリストを取得'
+      `!${find('[data-command="deflistAdd"],[data-command="mylistSelect"]', relatedRoot)}`,
+      'P3-04 関連動画からマイリスト追加ボタンを削除'
     );
-    await clickVisible(session, '[data-mylist-choice="42"]');
+    await clickVisible(session, '[data-shell-tab="playlist"]');
+    const playlistTabRoot = `document.querySelector('#fw-tab-playlist')`;
     await check(
       session,
-      `document.querySelector('[data-mylist-picker]').dataset.state==='success'`,
-      'P3-04 選択したマイリストへ追加'
+      `!${find('[data-command="deflistAdd"],[data-command="mylistSelect"]', playlistTabRoot)}`,
+      'P3-04 プレイリストからマイリスト追加ボタンを削除'
     );
-    await screenshot(session, 'mylist-success');
-    const mylist = await evaluateAsync(
-      session,
-      `fetch('https://nvapi.nicovideo.jp/v1/users/me/mylists/42?pageSize=100&page=1',{credentials:'include',headers:{'X-Frontend-Id':'6'}}).then(r=>r.json()).then(v=>v.data.mylist.items.map(i=>i.watchId))`
-    );
-    if (!Array.isArray(mylist) || mylist.filter((id) => id === 'sm2057168').length !== 1)
-      throw Error('マイリストの再取得結果が一致しません');
-    checks.push('P3-04 マイリスト再取得で対象が1件だけ存在');
-    await clickVisible(session, '[data-mylist-close]');
-    await check(session, `!document.querySelector('[data-mylist-picker]')`, 'P3-04 マイリスト選択を閉じる');
-    await session.send('Emulation.setDeviceMetricsOverride', {
-      width: 390,
-      height: 844,
-      deviceScaleFactor: 1,
-      mobile: false,
-    });
-    await deepClick(session, '[data-watch-id="sm100"] [data-command="mylistSelect"]', relatedRoot);
-    await check(
-      session,
-      `(()=>{const d=document.querySelector('[data-mylist-picker]'),r=d?.getBoundingClientRect();return d?.open&&r.x>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&!!d.querySelector('[data-mylist-choice="42"]')})()`,
-      'P3-04-mylist-narrow 390pxで追加先と閉じるを表示'
-    );
-    await clickVisible(session, '[data-mylist-choice="42"]');
-    await check(
-      session,
-      `document.querySelector('[data-mylist-picker="sm100"]')?.dataset.state==='success'`,
-      'P3-04-mylist-narrow-add 390pxで追加先を実クリック'
-    );
-    await screenshot(session, 'mylist-390');
-    await clickVisible(session, '[data-mylist-close]');
-    await check(
-      session,
-      `!document.querySelector('[data-mylist-picker]')`,
-      'P3-04-mylist-narrow-close 390pxで選択画面を閉じる'
-    );
-    await session.send('Emulation.setDeviceMetricsOverride', {
-      width: 1280,
-      height: 800,
-      deviceScaleFactor: 1,
-      mobile: false,
-    });
     await clickVisible(session, '[data-shell-tab="comment"]');
     const commentRoot = `document.querySelector('#fw-tab-comment')`;
     await check(session, `!!${find('.commentListItem .text', commentRoot)}`, 'P3-06 コメント一覧をiframeへ表示');

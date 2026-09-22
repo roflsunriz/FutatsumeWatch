@@ -169,7 +169,6 @@ class PlayList extends VideoList {
       playlist: this,
     });
     this.view.on('command', this._onCommand.bind(this));
-    this.view.on('deflistAdd', this._onDeflistAdd.bind(this));
     this.view.on('moveItem', this._onMoveItem.bind(this));
   }
   _onCommand(command: unknown, param: unknown, itemId?: unknown): void {

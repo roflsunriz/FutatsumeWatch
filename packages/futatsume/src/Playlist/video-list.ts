@@ -58,7 +58,6 @@ class VideoList extends Emitter {
 
     const bounceUtil = bounce as unknown as BounceLike;
     this.view.on('command', this._onCommand.bind(this));
-    this.view.on('deflistAdd', bounceUtil.time(this._onDeflistAdd.bind(this), 300));
     this.view.on('playlistAppend', bounceUtil.time(this._onPlaylistAppend.bind(this), 300));
   }
   update(listData: unknown, watchId: unknown): void {
@@ -81,12 +80,6 @@ class VideoList extends Emitter {
     this.emit('command', 'playlistAppend', watchId);
     const item = (this.model.findByItemId(itemId as string | number) ||
       this.model.findByWatchId(watchId as string | number)) as VideoListItem;
-    item.isUpdating = true;
-    window.setTimeout(() => (item.isUpdating = false), 1000);
-  }
-  _onDeflistAdd(watchId: unknown, itemId: unknown): void {
-    this.emit('command', 'deflistAdd', watchId);
-    const item = this.model.findByItemId(itemId as string | number) as VideoListItem;
     item.isUpdating = true;
     window.setTimeout(() => (item.isUpdating = false), 1000);
   }

@@ -217,9 +217,9 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   }
 
   _update(tagList: TagListTagData[] = []): void {
-    this._tags = tagList.map((tag) => ({ ...tag }));
+    this._tags = tagList.map((tag) => ({ ...tag, isNicodicArticleExists: undefined }));
     const tags: string[] = [];
-    tagList.forEach((tag) => {
+    this._tags.forEach((tag) => {
       tags.push(this._createTag(tag));
     });
     if (this._canEdit()) {
@@ -233,7 +233,6 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     this._elm.videoTagsInner.innerHTML = tags.join('');
     const generation = this._generation;
     for (const tag of this._tags) {
-      if (tag.isNicodicArticleExists === true) continue;
       void getNicodicArticleExists(tag.name).then((exists) => {
         if (generation !== this._generation) return;
         const current = this._tags.find((value) => value.name === tag.name);

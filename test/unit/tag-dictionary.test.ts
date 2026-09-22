@@ -12,22 +12,18 @@ test('P4-04 記号付きの記事名を公式APIへ照会し、同時照会を�
     calls++;
     expect(url).toBe('https://api.dic.nicovideo.jp/v1/articles/article/' + encodeURIComponent(title));
     expect(options?.credentials).toBe('omit');
-    return Promise.resolve(
-      Response.json({ id: 354273, url: 'https://dic.nicovideo.jp/a/' + encodeURIComponent(title) })
-    );
+    return Promise.resolve(Response.json({ meta: { status: 200 }, data: { articleId: 354273 } }));
   };
   expect(await Promise.all([getNicodicArticleExists(title), getNicodicArticleExists(title)])).toEqual([true, true]);
   expect(calls).toBe(1);
 });
-test('P4-04 404だけを不存在とし、通信失敗・拒否・不正応答を未知と区別する', async () => {
+test('P4-04 2xxを存在、404を不存在とし、通信失敗と他の拒否を未知にする', async () => {
   netUtil.fetch = () => Promise.resolve(Response.json({ error: 'not found' }, { status: 404 }));
   expect(await getNicodicArticleExists('辞書存在しないテスト')).toBe(false);
   for (const status of [403, 429, 500]) {
     netUtil.fetch = () => Promise.resolve(Response.json({ error: 'failure' }, { status }));
     expect(await getNicodicArticleExists('辞書失敗テスト' + status)).toBeUndefined();
   }
-  netUtil.fetch = () => Promise.resolve(Response.json({ url: 'https://dic.nicovideo.jp/a/test' }));
-  expect(await getNicodicArticleExists('辞書形式不正')).toBeUndefined();
-  netUtil.fetch = () => Promise.resolve(Response.json({ id: 1, url: 'https://dic.nicovideo.jp/a/test' }));
-  expect(await getNicodicArticleExists('辞書形式不正')).toBe(true);
+  netUtil.fetch = () => Promise.resolve(Response.json({ any: 'official response shape' }));
+  expect(await getNicodicArticleExists('辞書200')).toBe(true);
 });

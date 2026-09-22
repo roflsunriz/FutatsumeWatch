@@ -166,6 +166,12 @@ async function main(): Promise<void> {
       'MylistPocketの動画情報を取得して表示',
       10000
     );
+    await until(
+      session,
+      `!window.__fwQuery('[data-command="deflist-add"],[data-command="mylist-window"],[data-command="open-mylist-open"],[data-command="twitter-hash-open"],[data-command="toggle-setting"]',document.querySelector('#mylistPocket-popup').shadowRoot)`,
+      '動画詳細情報から不要な5ボタンを削除',
+      5000
+    );
     await evaluate(session, `window.MylistPocket.external.hide()`);
     await until(
       session,

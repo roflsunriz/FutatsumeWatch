@@ -129,7 +129,6 @@ class PlayListView extends Emitter {
       enablePocketWatch: false,
     }));
     listView.on('command', this._onCommand.bind(this));
-    listView.on('deflistAdd', this._onDeflistAdd.bind(this));
     listView.on('moveItem', (src: unknown, dest: unknown) => this.emit('moveItem', src, dest));
     listView.on('filedrop', (data: unknown) => this.emit('command', 'importFile', data));
 
@@ -168,9 +167,6 @@ class PlayListView extends Emitter {
         this.emit('command', command, param, itemId);
         break;
     }
-  }
-  _onDeflistAdd(watchId: unknown, itemId: unknown): void {
-    this.emit('deflistAdd', watchId, itemId);
   }
   _onPlaylistCommandClick(e: MouseEvent): void {
     const globalLike = global as unknown as GlobalEmitterLike;

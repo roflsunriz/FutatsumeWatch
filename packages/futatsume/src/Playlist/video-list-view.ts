@@ -496,9 +496,6 @@ class VideoListView extends Emitter {
     const { command, param } = (target as HTMLElement).dataset;
     const itemId = item ? item.itemId : 0;
     switch (command) {
-      case 'deflistAdd':
-        this.emit('deflistAdd', param, itemId);
-        break;
       case 'playlistAppend':
         this.emit('playlistAppend', param, itemId);
         break;

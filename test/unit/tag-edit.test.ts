@@ -127,9 +127,18 @@ test('P4-03 更新失敗で一覧を消さず、同じ動画へ戻っても古�
   await old;
   expect(f.tags()).toEqual(['新しい一覧']);
 });
-test('P4-01/04 権限が消えた動画では編集せず、引用符を含むタグの大百科有無とURLを保つ', async () => {
+test('P4-01/04 権限が消えた動画では編集せず、API結果で大百科アイコンを補正する', async () => {
   const f = create();
   const tag = '日本語 " & <tag>';
+  let writes = 0;
+  util.fetch = (url) => {
+    const name = decodeURIComponent(new URL(url).pathname.slice('/v1/articles/article/'.length));
+    if (name === tag) return Promise.resolve(Response.json({ error: 'not found' }, { status: 404 }));
+    if (name === 'なし') return Promise.resolve(Response.json({ data: { articleId: 1 } }));
+    if (name === '未取得') return Promise.resolve(Response.json({}, { status: 500 }));
+    writes++;
+    return Promise.reject(new Error('送信禁止'));
+  };
   f.view.update({
     watchId: 'sm10',
     videoId: 'sm10',
@@ -139,19 +148,16 @@ test('P4-01/04 権限が消えた動画では編集せず、引用符を含む�
       { name: '未取得' },
     ],
   });
-  let count = 0;
-  stubFetch(() => {
-    count++;
-    return Promise.reject(new Error('送信禁止'));
-  });
+  for (let index = 0; index < 8; index++) await Promise.resolve();
   f.view._beginInput();
   await f.view._addTag('不可');
-  expect(count).toBe(0);
+  expect(writes).toBe(0);
   expect(f.tags()).toEqual([tag, 'なし', '未取得']);
   const menus = f.root.querySelectorAll<HTMLElement>('futatsume-tag-item-menu');
-  expect(menus[0]!.dataset.hasNicodic).toBe('1');
-  expect(menus[0]!.shadowRoot!.querySelector('.root')!.classList.contains('has-nicodic')).toBe(true);
-  expect(menus[1]!.dataset.hasNicodic).toBe('0');
+  expect(menus[0]!.dataset.hasNicodic).toBe('0');
+  expect(menus[0]!.shadowRoot!.querySelector('.root')!.classList.contains('has-nicodic')).toBe(false);
+  expect(menus[1]!.dataset.hasNicodic).toBe('1');
+  expect(menus[1]!.shadowRoot!.querySelector('.root')!.classList.contains('has-nicodic')).toBe(true);
   expect(menus[2]!.dataset.hasNicodic).toBe('unknown');
   expect(menus[0]!.querySelector('a')!.href).toBe(`https://dic.nicovideo.jp/a/${encodeURIComponent(tag)}`);
 });

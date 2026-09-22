@@ -26,7 +26,6 @@ import { PlayerState } from './state';
 import { ClassList } from '../packages/lib/src/dom/class-list-wrapper';
 import { objUtil } from '../packages/lib/src/infra/obj-util';
 import { MylistApiLoader } from '../packages/lib/src/nico/mylist-api-loader';
-import { openMylistPicker, closeMylistPicker } from './mylist-picker';
 import { ThumbInfoLoader } from '../packages/lib/src/nico/thumb-info-loader';
 import { WatchInfoCacheDb } from '../packages/lib/src/nico/watch-info-cache-db';
 import { css, cssUtil } from '../packages/lib/src/css/css';
@@ -1691,9 +1690,6 @@ class NicoVideoPlayerDialog extends Emitter {
           (param as { mylistId: string; mylistName: string }).mylistId,
           (param as { mylistId: string; mylistName: string }).mylistName
         );
-      case 'mylistSelect':
-        void openMylistPicker(param as string);
-        break;
       case 'mylistRemove':
         return this._onMylistRemove(
           (param as { mylistId: string; mylistName: string }).mylistId,
@@ -2778,7 +2774,6 @@ class NicoVideoPlayerDialog extends Emitter {
     });
   }
   close(): void {
-    closeMylistPicker();
     if (this.isPlaying) {
       this._savePlaybackPosition(this._watchId, this.currentTime);
     }
