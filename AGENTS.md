@@ -9,11 +9,12 @@
 ## 外部サイトの起動導線（2026-09-21、0.0.12／0.0.15）
 
 - ニコ百の記事内起動は親ページの`/v/<ID>`ではなく、`ext.nicovideo.jp/thumb/<ID>`の埋め込みサムネイルにある`blog.ts`のボタンを正本とする。子フレームからの`postMessage`は`document.referrer`全文をtargetOriginへ渡さず、検証したニコニコ配下の親originへ正規化する。動画IDはpathnameから取り、クエリを混ぜない。回帰は`blog-entry.test.ts`とaddonsスイート。
-- `watch-entry.ts`は同一文書内で動画IDごとに起動ボタンを1個だけ持つ。タイトル等のテキストリンクを優先しつつ、非表示・覆われた候補より表示中の候補を選ぶ。Nアニメ等の本体を初期化する外部ホストにも適用し、外部ホストからの映像・コメントはentryスイートの固定ページで確認する。
+- `watch-entry.ts`は同一文書内で動画IDごとに起動ボタンを1個だけ持つ。タイトル行の後ろへ足して行を崩さず、サムネ側リンクを優先して公式のサムネ内相対ボックス（新UIの`div.pos_relative`／旧トップの`StageRecommendVideoCard-thumbnailContainer`・`NC-Thumbnail`）先頭へ常時表示で重ねる。右上配置で再生時間（右下）・ランク王冠（左上）を避ける。説明文は同一IDのタイトル行から取り、duration表記だけのラベルにしない。非表示・覆われた候補より表示中の候補を選ぶ。Nアニメ等の本体を初期化する外部ホストにも適用し、外部ホストからの映像・コメントはentryスイートの固定ページで確認する。
+- 9222の実利用Chromeはnicocache_nl／filter-matome由来の付加（`nl-cached`／`ncnl-`／`filter-matome`／`cacheIcon`、画質付加文言）が分離コンテキストにも残るため、実測は公式構造だけを正本にし、付加クラス・付加要素・付加文言へ結合しない。公式箱へのmarker付与では除外せず、汚染バッジ内だけを避ける。回帰は`watch-entry.test.ts`・entryスイート。
 - nv-commentの取得・投稿・削除・ニコるは`https://*.nvcomment.nicovideo.jp`の資格情報なしXMLHttpRequestを直接使い、外部ページでもiframeブリッジへ通さない。他ホストは既存ブリッジを維持する。通常取得はfilter-matomeの`{params,threadKey}`・`application/json`・frontend/client OSヘッダーに合わせ、過去ログ時だけ`additionals.when`を追加する。取得失敗を別threadKeyで自動再送しない。回帰は`net-util.test.ts`・`thread-post.test.ts`・entryスイート。
 - 0.0.18以降はコメント言語設定と日本語／英語／中国語の切り替えを持たず、日本語だけを扱う。コメント一覧メニューは位置順・新しい順・ニコる数の3項目だけにする。`nvComment.params`は動画APIが発行した要求契約としてそのまま送り、欠落時の内部既定だけ`ja-jp`とする。回帰は`thread-post.test.ts`とlibraryブラウザースイート。
 - 0.0.16の実利用Tampermonkey再検証では、同じニコ百記事内の`sm9`で本文言語`ja-jp`・threadKeyあり・target 3件のPOSTがHTTP 200となり、コメント786件とHLS時間進行を確認した。失敗時の`sm11793256`は再読込後のDOMになく、同IDの再実行ではない。詳細は`docs/live-once-verification.md`。
-- Nアニメのカード全体リンクとニコ百埋め込み内のリンクは、起動ボタンが見えていても透明なクリック層で覆うことがある。文書capture段階で起動ボタンの矩形内にある実クリック／タップを受け取り、元リンクへ到達する前に起動する。モバイルの埋め込みボタンは`hover:none`／`pointer:coarse`で常時表示し、44px以上を確保する。回帰は`watch-entry.test.ts`・entry・addonsスイート。
+- Nアニメのカード全体リンクとニコ百埋め込み内のリンクは、起動ボタンが見えていても透明なクリック層で覆うことがある。文書capture段階で起動ボタンの矩形内にある実クリック／タップを受け取り、元リンクへ到達する前に起動する。モバイルの埋め込みボタンは`hover:none`／`pointer:coarse`で常時表示し、44px以上を確保する。ニコ百埋め込みボタンはhover待ち表示をやめ常時表示にする。回帰は`watch-entry.test.ts`・entry・addonsスイート。
 - 追加承認後の単発実測では、Nアニメ`so46805846`とニコ百`/v/sm9`の各起動・HLS・コメント描画まで成功した。両方ともnv-commentのOPTIONS／POSTはHTTP 200で、標準XMLHttpRequestの`Origin`も許可されたため、GM API未使用を400原因とは扱わない。旧要求の`text/plain`・常時空`additionals`等を現行契約へ直した0.0.13以後の結果である。詳細は`docs/live-once-verification.md`。
 
 ## 設定と追加機能の簡素化（2026-09-22、0.0.19）

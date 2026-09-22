@@ -25,6 +25,48 @@ export function supportsWatchEntryPage(url: Pick<Location, 'hostname' | 'pathnam
 }
 
 // 公式の意味を持つdata属性とプロフィールURLを使い、生成クラス名に依存しない。
+// 一覧系のサムネ特定は公式構造だけを正本にする。nicocache_nl / filter-matome 由来の
+// 付加クラス（nl-cached / ncnl- / filter-matome / cacheIcon）や付加文言へは結合しない。
+const THUMB_BOX_SELECTOR = 'div.pos_relative,.StageRecommendVideoCard-thumbnailContainer,.NC-Thumbnail';
+
+function isContaminationBadge(element: Element): boolean {
+  return (
+    element.classList.contains('cacheIcon') ||
+    element.hasAttribute('data-ncnl-cache-icon') ||
+    element.closest('.cacheIcon,[data-ncnl-cache-icon]') !== null
+  );
+}
+
+function findThumbBox(link: HTMLAnchorElement): HTMLElement | null {
+  // 公式のサムネ箱を選ぶ。nicocache_nl が公式の箱へ付与する marker クラス
+  //（ncnl-cache-thumbnail-host 等）では除外せず、汚染バッジ内だけを避ける。
+  for (const box of link.querySelectorAll<HTMLElement>(THUMB_BOX_SELECTOR)) {
+    if (!isContaminationBadge(box)) return box;
+  }
+  return null;
+}
+
+function isThumbAnchor(link: HTMLAnchorElement): boolean {
+  if (link.querySelector('img')) return true;
+  if (link.querySelector('.NC-Thumbnail-image,[data-thumbnail],time')) return true;
+  return findThumbBox(link) !== null;
+}
+
+// duration表記（「6:47」「2:02」等）だけの短いラベルは起動ボタンの説明に使わない。
+function isDurationLabel(value: string): boolean {
+  return /^\d{1,3}:\d{2}(\s*\S*)?$/.test(value.trim());
+}
+
+function labelForLink(link: HTMLAnchorElement): string | null {
+  const alt = link.querySelector<HTMLImageElement>('img[alt]')?.alt.trim() ?? '';
+  if (alt) return alt;
+  const accessible = link.getAttribute('aria-label')?.trim() || link.title.trim() || '';
+  if (accessible && !isDurationLabel(accessible)) return accessible;
+  const text = link.textContent?.trim() ?? '';
+  if (text && !isDurationLabel(text)) return text;
+  if (accessible) return accessible;
+  return text || null;
+}
 export function findWatchEntrySlot(doc: Document): { parent: HTMLElement; before: Element } | null {
   const headings = [...doc.querySelectorAll('h1')].filter((heading) => !heading.closest('#futatsumeVideoPlayerDialog'));
   for (const heading of headings) {
@@ -160,6 +202,7 @@ export function installWatchEntry(): WatchEntry {
     [data-futatsume-launch][data-state=failed]{border-color:#e66;cursor:help}
     [data-futatsume-open]{width:40px;height:40px;padding:8px;align-self:center;margin-inline:auto}
     [data-futatsume-video]{margin:4px 6px 4px 0;position:relative;z-index:2147483646;isolation:isolate;pointer-events:auto}
+    div.pos_relative>[data-futatsume-video],.StageRecommendVideoCard-thumbnailContainer>[data-futatsume-video],.NC-Thumbnail>[data-futatsume-video]{position:absolute;top:6px;right:6px;left:auto;bottom:auto;margin:0;box-shadow:0 1px 6px rgba(0,0,0,.65)}
     @media(max-width:700px){[data-futatsume-open]{width:32px;height:32px;padding:4px;margin-inline:6px}}
   `;
   document.head.append(marker, style);
@@ -180,18 +223,28 @@ export function installWatchEntry(): WatchEntry {
       return;
     }
     const candidates = new Map<string, { link: HTMLAnchorElement; label: string; priority: number }>();
-    for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href*="/watch/"]')) {
+    const titleById = new Map<string, string>();
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href*="/watch/"]')];
+    for (const link of links) {
       const id = watchIdFromUrl(link.href);
       if (!id || link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')) continue;
-      const text = link.textContent?.trim() ?? '';
-      const accessible =
-        link.getAttribute('aria-label')?.trim() ||
-        link.title.trim() ||
-        link.querySelector<HTMLImageElement>('img[alt]')?.alt.trim() ||
-        '';
-      const label = text || accessible;
-      if (!label) continue;
-      const priority = text && !link.querySelector('img') ? 2 : 1;
+      // タイトル行の実タイトルを同一IDの説明文として保持する。サムネ側のdurationや
+      // 外部付加文言（例: 画質表記）で上書きしない。
+      if (!link.querySelector('img') && !isThumbAnchor(link)) {
+        const title = labelForLink(link);
+        if (title && !isDurationLabel(title) && !titleById.has(id)) titleById.set(id, title);
+      }
+    }
+    for (const link of links) {
+      const id = watchIdFromUrl(link.href);
+      if (!id || link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')) continue;
+      const rawLabel = labelForLink(link);
+      if (!rawLabel) continue;
+      const thumb = isThumbAnchor(link);
+      const label = thumb ? (titleById.get(id) ?? rawLabel) : rawLabel;
+      // サムネ内へ深く統合するためサムネ側リンクを優先する。タイトル行の後ろへ
+      // ボタンを足して行を崩さない。
+      const priority = thumb ? 3 : 1;
       const style = window.getComputedStyle(link);
       const notHidden =
         style.display !== 'none' &&
@@ -227,7 +280,11 @@ export function installWatchEntry(): WatchEntry {
         const id = watchIdFromUrl(link.href);
         if (id) open(id);
       });
-      link.after(control);
+      // サムネ内の相対ボックス先頭へ重ねて統合する。hover待ちの表示切り替えはしない。
+      // ボックスが無い旧来配置だけリンク直後へ置く。
+      const box = findThumbBox(link);
+      if (box) box.prepend(control);
+      else link.after(control);
       mounted.set(id, { link, control });
     }
   };

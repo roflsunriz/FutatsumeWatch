@@ -116,12 +116,12 @@ try {
     );
     site.documents.set(
       'https://anime.nicovideo.jp/',
-      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}main{position:relative}a{display:inline-block;padding:20px}.card-cover{position:absolute;inset:0;z-index:100}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a><div class="card-cover"></div></main></body></html>'
+      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}main{position:relative}a{display:inline-block;padding:20px}.card-cover{position:absolute;inset:0;z-index:100}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a id="thumb-anime" href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a><div class="card-cover"></div></main></body></html>'
     );
     await page.send('Page.navigate', { url: 'https://anime.nicovideo.jp/' });
     await until(
       page,
-      `window.FutatsumeWatch?.ready&&document.querySelectorAll('[data-futatsume-video="sm9"]').length===1&&document.querySelector('#visible-anime')?.nextElementSibling?.dataset.futatsumeVideo==='sm9'`,
+      `window.FutatsumeWatch?.ready&&document.querySelectorAll('[data-futatsume-video="sm9"]').length===1&&document.querySelector('#thumb-anime')?.nextElementSibling?.dataset.futatsumeVideo==='sm9'&&document.querySelector('#visible-anime')?.nextElementSibling?.dataset.futatsumeVideo!=='sm9'`,
       'Nアニメ相当ページは表示中の同一IDリンクへ1個だけ起動ボタンを表示'
     );
     await clickVisible(page, '[data-futatsume-video="sm9"]');

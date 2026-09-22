@@ -64,7 +64,7 @@ describe('初めて使う人の起動導線', () => {
   });
   it('検索結果のテキストリンクに操作ボタンを加え、現在の動画IDを開く', async () => {
     document.body.innerHTML =
-      '<a href="/watch/sm9"><img alt="thumbnail"></a><a id="title" href="/watch/sm9">動画タイトル</a>';
+      '<a id="thumb" href="/watch/sm9"><img alt="動画タイトル"></a><a id="title" href="/watch/sm9">動画タイトル</a>';
     const open = mock((id: string) => id);
     ui = installWatchEntry();
     ui.ready(open);
@@ -73,8 +73,8 @@ describe('初めて使う人の起動導線', () => {
     expect(document.body.querySelector('[data-futatsume-entry]')).toBeNull();
     document.querySelector<HTMLButtonElement>('[data-futatsume-video="sm9"]')!.click();
     expect(open).toHaveBeenLastCalledWith('sm9');
-    document.querySelector('#title')!.setAttribute('href', '/watch/so123');
-    document.querySelector('#title')!.textContent = '別の動画';
+    document.querySelector('#thumb')!.setAttribute('href', '/watch/so123');
+    document.querySelector('#thumb img')!.setAttribute('alt', '別の動画');
     await flush();
     document.querySelector<HTMLButtonElement>('[data-futatsume-video="so123"]')!.click();
     expect(open).toHaveBeenLastCalledWith('so123');
@@ -119,13 +119,13 @@ describe('初めて使う人の起動導線', () => {
     ui = installWatchEntry();
     ui.ready(open);
     expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
-    expect(document.querySelector('#title')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
+    expect(document.querySelector('#image')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
     document.querySelector<HTMLButtonElement>('[data-futatsume-video="sm9"]')!.click();
     expect(open).toHaveBeenCalledWith('sm9');
-    document.querySelector('#title')!.remove();
+    document.querySelector('#image')!.remove();
     await flush();
     expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
-    expect(document.querySelector('#duplicate')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
+    expect(document.querySelector('#title')?.nextElementSibling?.getAttribute('data-futatsume-video')).toBe('sm9');
   });
   it('同じ動画IDでは非表示リンクを避けて表示中のリンクへ1個だけ置く', () => {
     document.body.innerHTML =
@@ -138,6 +138,35 @@ describe('初めて使う人の起動導線', () => {
     expect(
       document.querySelector('#hidden')?.nextElementSibling?.getAttribute('data-futatsume-video') ?? null
     ).toBeNull();
+  });
+  it('サムネ内の相対ボックス先頭へ重ねて統合し、タイトルを行の説明に使う', () => {
+    document.body.innerHTML =
+      '<div class="pos_relative"><a id="thumb" href="/watch/sm9"><div class="pos_relative ncnl-cache-thumbnail-host"><img alt="サムネ"><div class="pos_absolute"><time><span>6:47</span></time></div></div></a></div>' +
+      '<div><a id="title" href="/watch/sm9">動画1のタイトル</a></div>';
+    ui = installWatchEntry();
+    ui.ready(() => {});
+    expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
+    const control = document.querySelector('[data-futatsume-video="sm9"]')!;
+    expect(control.parentElement?.classList.contains('pos_relative')).toBe(true);
+    expect(control.parentElement?.firstElementChild).toBe(control);
+    expect(document.querySelector('#title')?.nextElementSibling).toBeNull();
+    expect(control.getAttribute('aria-label')).toContain('動画1のタイトル');
+  });
+  it('旧トップのサムネ容器へ統合し、汚染由来の付加要素へ結合しない', () => {
+    document.body.innerHTML =
+      '<div class="StageRecommendVideoCard"><a id="top" href="https://www.nicovideo.jp/watch/sm9">' +
+      '<div class="StageRecommendVideoCard-thumbnailContainer"><div class="NC-Thumbnail">' +
+      '<div class="NC-Thumbnail-image" data-thumbnail="" style="background-image:url(&quot;https://example.com/t.jpg&quot;)"></div>' +
+      '</div><span class="cacheIcon ncnl-cache-icon">480p</span></div>' +
+      '<div class="StageRecommendVideoCard-title">トップの動画</div></a></div>';
+    ui = installWatchEntry();
+    ui.ready(() => {});
+    expect(document.querySelectorAll('[data-futatsume-video="sm9"]')).toHaveLength(1);
+    const control = document.querySelector('[data-futatsume-video="sm9"]')!;
+    expect(control.closest('.cacheIcon')).toBeNull();
+    expect(control.parentElement?.classList.contains('StageRecommendVideoCard-thumbnailContainer')).toBe(true);
+    expect(control.parentElement?.firstElementChild).toBe(control);
+    expect(control.getAttribute('aria-label')).toContain('トップの動画');
   });
   it('見える起動アイコンがカードの透明リンクに覆われても、その位置の実クリックで起動する', () => {
     document.body.innerHTML =

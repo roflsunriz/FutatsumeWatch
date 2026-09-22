@@ -74,9 +74,6 @@ export function getBlogPartsContext(href: string, referrer: string): BlogPartsCo
       padding: 4px 4px;
       cursor: pointer;
       font-weight: bolder;
-      display: none;
-    }
-    body:hover #futatsumeButton {
       display: inline-block;
     }
     @media (hover: none), (pointer: coarse) {
