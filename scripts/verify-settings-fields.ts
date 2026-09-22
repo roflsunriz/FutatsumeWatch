@@ -130,7 +130,7 @@ async function inventory(session: CdpSession, panel: Panel, category: string): P
   const root =
     panel === 'general'
       ? `${panelRoot(panel)}.querySelector('[data-settings-section="${category}"]')`
-      : panelRoot(panel);
+      : `${panelRoot(panel)}.querySelector('.fw-modal-body')`;
   return (await evaluate(
     session,
     `(()=>{

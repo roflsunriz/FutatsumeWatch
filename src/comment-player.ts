@@ -112,6 +112,9 @@ class NicoCommentPlayer extends Emitter {
   setAspectRatio(ratio: number): void {
     this._view.setAspectRatio(ratio);
   }
+  resize(): void {
+    this._view.resize();
+  }
   appendTo(node: Node): void {
     if (!(node instanceof HTMLElement)) throw new TypeError('コメント描画先がHTMLElementではありません');
     this._view.appendTo(node);

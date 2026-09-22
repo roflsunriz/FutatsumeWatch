@@ -529,7 +529,8 @@ class NicoVideoPlayerDialogView extends Emitter {
       state,
       this._dialog,
       (name, param) => this._onCommand(name, param),
-      () => this.toggleSettingPanel()
+      () => this.toggleSettingPanel(),
+      () => this._dialog.resizeCommentLayer()
     );
     this._initializeResponsive();
 
@@ -1516,6 +1517,9 @@ class NicoVideoPlayerDialog extends Emitter {
   constructor(params: NicoVideoPlayerDialogParams) {
     super();
     this.initialize(params);
+  }
+  resizeCommentLayer(): void {
+    this._nicoVideoPlayer?.resizeCommentLayer();
   }
   initialize(params: NicoVideoPlayerDialogParams): void {
     // this._offScreenLayer = params.offScreenLayer;

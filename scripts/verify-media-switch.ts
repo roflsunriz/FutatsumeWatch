@@ -62,9 +62,11 @@ export async function verifyDelayedMediaSwitch(page: CdpSession, check: MediaIde
     await check(page, `window.FutatsumeWatch.debug.playlist.hasNext`, 'P1-04/race: 切替先をプレイリストへ用意', 15000);
     armed = true;
     await click('[data-shell-action="settings"]');
-    if (!(await evaluate(page, `document.querySelector('.fw-settings>details').open`)))
-      await click('.fw-settings>details>summary');
-    await click('[data-shell-action="reload"]');
+    await clickVisible(
+      page,
+      '[data-settings-action="reload"]',
+      `document.querySelector('futatsume-setting-panel').shadowRoot`
+    );
     await until(() => blocked, 'Aの要求が通信境界へ届きませんでした');
     armed = false;
     await check(page, `window.FutatsumeWatch.debug.dialog._state.isLoading`, 'P1-04/race: Aの再取得を遅延させる');

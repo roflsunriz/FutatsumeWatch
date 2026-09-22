@@ -165,7 +165,7 @@ export class CommentOverlayView {
     if (Number.isFinite(ratio) && ratio > 0) this.ratio = 1 / ratio;
     this.resize();
   }
-  private resize(): void {
+  resize(): void {
     // container query単位により動画の比率を維持し、全画面・縦長にも追従する。
     this.surface.style.width = `min(100%, ${this.ratio * 100}cqh)`;
     this.surface.style.height = `min(100%, ${100 / this.ratio}cqw)`;

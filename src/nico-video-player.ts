@@ -445,6 +445,9 @@ class NicoVideoPlayer extends Emitter {
     this._videoPlayer.appendTo(node as Element);
     this._commentPlayer.appendTo(node as Element);
   }
+  resizeCommentLayer(): void {
+    this._commentPlayer.resize();
+  }
   close(): void {
     this._videoPlayer.close();
     this._commentPlayer.close();

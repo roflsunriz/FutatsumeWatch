@@ -14,6 +14,7 @@ interface TargetInfo {
 const video = `document.querySelector('futatsume-video')`;
 const native = `${video}?.shadowRoot?.querySelector('video')`;
 const dialog = 'window.FutatsumeWatch.debug.dialog';
+const settingsRoot = `document.querySelector('futatsume-setting-panel')?.shadowRoot`;
 
 async function reveal(session: CdpSession): Promise<void> {
   const point = (await evaluate(
@@ -23,6 +24,7 @@ async function reveal(session: CdpSession): Promise<void> {
   await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...point });
 }
 async function menu(session: CdpSession, more = false): Promise<void> {
+  void more;
   await reveal(session);
   if (await evaluate(session, `document.querySelector('.fw-player').dataset.panel==='details'`)) {
     await session.send('Input.dispatchKeyEvent', {
@@ -38,10 +40,8 @@ async function menu(session: CdpSession, more = false): Promise<void> {
       windowsVirtualKeyCode: 27,
     });
   }
-  if (!(await evaluate(session, `document.querySelector('.fw-player').dataset.panel==='settings'`)))
+  if (!(await evaluate(session, `${settingsRoot}?.querySelector('[data-fw-settings="general"]')?.open===true`)))
     await clickVisible(session, '[data-shell-action="settings"]');
-  if (more && !(await evaluate(session, `document.querySelector('.fw-settings > details').open`)))
-    await clickVisible(session, '.fw-settings > details > summary');
 }
 async function waitForValue<T>(read: () => Promise<T | undefined>, label: string, timeout = 10000): Promise<T> {
   const deadline = Date.now() + timeout;
@@ -53,7 +53,12 @@ async function waitForValue<T>(read: () => Promise<T | undefined>, label: string
   throw new Error(label);
 }
 
-export async function openLink(session: CdpSession, selector: string, expectedUrl: string): Promise<object> {
+export async function openLink(
+  session: CdpSession,
+  selector: string,
+  expectedUrl: string,
+  rootExpression = 'document'
+): Promise<object> {
   const browser = await attachBrowser();
   const source = (await session.send('Target.getTargetInfo')) as { targetInfo: TargetInfo };
   if (!source.targetInfo.browserContextId) {
@@ -71,7 +76,7 @@ export async function openLink(session: CdpSession, selector: string, expectedUr
   let popup: CdpSession | undefined;
   try {
     await session.send('Page.enable');
-    await clickVisible(session, selector);
+    await clickVisible(session, selector, rootExpression);
     await waitForValue(
       () => Promise.resolve(windowOpens.length ? true : undefined),
       '外部リンクのwindowOpenがありません'
@@ -161,14 +166,20 @@ export async function verifyMenuActions(session: CdpSession, check: MenuCheck): 
     report.links.push(
       await openLink(
         session,
-        '.fw-settings > a[href="https://github.com/roflsunriz/FutatsumeWatch"]',
-        'https://github.com/roflsunriz/FutatsumeWatch'
+        '.fw-settings-sidebar-extras a[href="https://github.com/roflsunriz/FutatsumeWatch"]',
+        'https://github.com/roflsunriz/FutatsumeWatch',
+        settingsRoot
       )
     );
     checks.push('P2-02: 実GitHubクリックが指定URLを1つの新規タブへ要求');
     await menu(session, true);
     report.links.push(
-      await openLink(session, '[data-shell-action="openGinza"]', `https://www.nicovideo.jp/watch/${watchId}`)
+      await openLink(
+        session,
+        '[data-settings-action="openGinza"]',
+        `https://www.nicovideo.jp/watch/${watchId}`,
+        settingsRoot
+      )
     );
     await check(
       session,
@@ -200,7 +211,7 @@ export async function verifyMenuActions(session: CdpSession, check: MenuCheck): 
     await menu(session, true);
     watchReload = true;
     try {
-      await clickVisible(session, '[data-shell-action="reload"]');
+      await clickVisible(session, '[data-settings-action="reload"]', settingsRoot);
       await check(
         session,
         `${dialog}._requestId!==${JSON.stringify(before.requestId)} && ${native}.readyState>=2 && !${dialog}._state.isLoading && ${dialog}._state.isCommentReady && window.FutatsumeWatch.debug.videoInfo.watchId===${JSON.stringify(before.watchId)} && Math.abs(${video}.currentTime-${before.time})<1 && ${video}.paused && ${video}.volume===${before.volume} && ${video}.playbackRate===${before.rate} && document.querySelectorAll('futatsume-video').length===1`,
@@ -231,7 +242,7 @@ export async function verifyMenuActions(session: CdpSession, check: MenuCheck): 
     const capture = async (name: string, expectComments: boolean): Promise<void> => {
       await menu(session, true);
       const png = await captureCommentPng(session, () =>
-        clickVisible(session, '[data-shell-action="screenShotWithComment"]')
+        clickVisible(session, '[data-settings-action="screenShotWithComment"]', settingsRoot)
       );
       if (!png.fileName.includes(watchId) || !png.fileName.endsWith('C.png'))
         throw new Error('保存名の動画ID・コメント付き識別が不一致');
@@ -265,7 +276,7 @@ export async function verifyMenuActions(session: CdpSession, check: MenuCheck): 
     );
     try {
       await menu(session, true);
-      await clickVisible(session, '[data-shell-action="screenShotWithComment"]');
+      await clickVisible(session, '[data-settings-action="screenShotWithComment"]', settingsRoot);
       await check(
         session,
         `window.__menuCaptureFailure.alerts.some(value=>value.includes('CORS')) && window.__menuCaptureFailure.downloads===0`,
@@ -296,8 +307,8 @@ export async function verifyMenuActions(session: CdpSession, check: MenuCheck): 
         ),
       async () => {
         await reveal(session);
-        if (await evaluate(session, `document.querySelector('.fw-player').dataset.panel==='settings'`))
-          await clickVisible(session, '[data-shell-action="dismiss"]');
+        if (await evaluate(session, `${settingsRoot}?.querySelector('[data-fw-settings][open]')!==null`))
+          await clickVisible(session, '[data-settings-close]', settingsRoot);
       },
       async () => {
         if ((await evaluate(session, '!!document.fullscreenElement')) !== wasFullscreen)

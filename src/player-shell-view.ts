@@ -1,7 +1,5 @@
 const ja = {
   settings: '設定',
-  chooseSettings: '設定項目を選ぶ',
-  chooseSettingsPrompt: '設定項目を選んでください',
   details: '動画の詳細',
   close: '閉じる',
   quality: '画質',
@@ -35,14 +33,11 @@ const ja = {
   capture: 'コメント付き画像を保存',
   original: '公式視聴ページ',
   helpAB: '1回目でA、2回目でB、3回目で解除',
-  tags: 'タグ',
   lockDetails: '詳細パネルを固定',
   unlockDetails: '詳細パネルの固定を解除',
 };
 const en: typeof ja = {
   settings: 'Settings',
-  chooseSettings: 'Choose a settings category',
-  chooseSettingsPrompt: 'Choose a settings category',
   details: 'Video details',
   close: 'Close',
   quality: 'Video quality',
@@ -76,7 +71,6 @@ const en: typeof ja = {
   capture: 'Save image with comments',
   original: 'Official watch page',
   helpAB: 'First click: A. Second: B. Third: clear.',
-  tags: 'Tags',
   lockDetails: 'Pin details panel',
   unlockDetails: 'Unpin details panel',
 };

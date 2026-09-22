@@ -1,7 +1,6 @@
 import type { ConfigStore } from './config';
 import type { PlayerState } from './state';
-import { VERSION } from './version';
-import { configureSettingsNavigation } from '../packages/components/src/settings-dialog';
+import { closeSettingsDialog, configureSettingsNavigation } from '../packages/components/src/settings-dialog';
 import { shellButton, shellIcon, shellText } from './player-shell-view';
 
 interface ShellPlayer {
@@ -37,7 +36,6 @@ export class ABRepeat {
 export class PlayerShell {
   private readonly text = shellText(navigator.language);
   private readonly controls: HTMLElement;
-  private readonly menu: HTMLElement;
   private readonly backdrop: HTMLButtonElement;
   private readonly info: HTMLElement;
   private readonly detailsLockButton: HTMLButtonElement;
@@ -47,8 +45,10 @@ export class PlayerShell {
   private readonly speed: HTMLSelectElement;
   private readonly timeLabel: HTMLElement;
   private readonly ab = new ABRepeat();
-  private panel: 'settings' | 'details' | null = null;
+  private panel: 'details' | null = null;
   private detailsLocked = false;
+  private qualityLabels: string[] = [];
+  private activeQuality: HTMLSelectElement | null = null;
   private hideTimer: ReturnType<typeof setTimeout> | undefined;
   private clockTimer: ReturnType<typeof setInterval> | undefined;
   private focusReturn: HTMLElement | null = null;
@@ -61,12 +61,16 @@ export class PlayerShell {
     private readonly state: PlayerState,
     private readonly player: ShellPlayer,
     private readonly command: (name: string, param?: string | number) => void,
-    private readonly generalSettings: () => void
+    private readonly generalSettings: () => void,
+    private readonly layoutChanged: () => void
   ) {
-    configureSettingsNavigation((panel) => {
-      if (panel === 'general') this.generalSettings();
-      else this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
-    });
+    configureSettingsNavigation(
+      (panel) => {
+        if (panel === 'general') this.generalSettings();
+        else this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
+      },
+      () => this.createSettingsSidebarExtras()
+    );
     container.classList.add('fw-player');
     this.info = this.require('.futatsumeWatchVideoInfoPanel');
     this.info.id = 'fw-details';
@@ -85,7 +89,7 @@ export class PlayerShell {
     const t = this.text;
     this.controls.innerHTML = `
       <header class="fw-header">
-        ${shellButton('settings', t.settings, 'menu', 'aria-expanded="false" aria-controls="fw-settings"')}
+        ${shellButton('settings', t.settings, 'menu')}
         <div class="fw-heading"><div class="fw-title"></div><div class="fw-stats"></div></div>
         ${shellButton('details', t.details, 'details', 'aria-expanded="false" aria-controls="fw-details"')}
         ${shellButton('close', t.close, 'close')}
@@ -108,25 +112,6 @@ export class PlayerShell {
         ${shellButton('fullscreen', t.fullscreen, 'fullscreen')}
       </div>
       <span class="fw-announcement" role="status" aria-live="polite"></span>`;
-    this.menu = document.createElement('nav');
-    this.menu.id = 'fw-settings';
-    this.menu.className = 'fw-settings';
-    this.menu.setAttribute('aria-label', t.settings);
-    this.menu.innerHTML = `<div class="fw-settings-rail">
-      <div class="fw-menu-heading"><div><strong>FutatsumeWatch</strong><small>v${VERSION}</small></div>${shellButton('dismiss', t.close, 'close')}</div>
-      <button type="button" class="fw-settings-picker" data-shell-action="general"><span aria-hidden="true">☰</span>${t.chooseSettings}</button>
-      <label class="fw-quality">${t.quality}<select data-shell-quality aria-label="${t.quality}">
-        <option value="auto">${t.auto}</option>
-      </select></label>
-      <a href="https://github.com/roflsunriz/FutatsumeWatch" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-      <div class="fw-settings-actions" aria-label="${t.more}">
-        <button type="button" data-shell-action="reload">${t.reload}</button>
-        <button type="button" data-shell-action="screenShotWithComment">${t.capture}</button>
-        <button type="button" data-shell-action="openGinza">${t.original}</button>
-      </div>
-    </div>
-    <div class="fw-settings-home"><p>${t.chooseSettingsPrompt}</p></div>`;
-    this.menu.inert = true;
     this.backdrop = document.createElement('button');
     this.backdrop.type = 'button';
     this.backdrop.className = 'fw-backdrop';
@@ -136,23 +121,19 @@ export class PlayerShell {
       e.stopPropagation();
       this.setPanel(null);
     });
-    container.append(this.controls, this.backdrop, this.menu);
+    container.append(this.controls, this.backdrop);
     this.playButton = this.require('[data-shell-action="togglePlay"]');
     this.abButton = this.require('[data-shell-action="ab"]');
     this.volume = this.require('[data-shell-volume]');
     this.speed = this.require('[data-shell-speed]');
     this.timeLabel = this.require('.fw-time');
     this.volume.after(this.require('.commentInputPanel'));
-    for (const root of [this.controls, this.menu, this.info]) {
+    for (const root of [this.controls, this.info]) {
       root.addEventListener('click', (e) => this.onClick(e));
       root.addEventListener('keydown', (e) => e.stopPropagation());
     }
-    this.menu.addEventListener('click', (e) => e.stopPropagation());
     this.speed.addEventListener('change', () => this.command('playbackRate', Number(this.speed.value)));
     this.volume.addEventListener('input', () => this.command('volume', Number(this.volume.value)));
-    this.require<HTMLSelectElement>('[data-shell-quality]').addEventListener('change', (e) => {
-      this.command('update-domandVideoQuality', (e.target as HTMLSelectElement).value);
-    });
     container.addEventListener('pointermove', () => this.reveal(), { passive: true });
     container.addEventListener(
       'pointerdown',
@@ -212,21 +193,23 @@ export class PlayerShell {
     event.stopPropagation();
     const action = target.dataset.shellAction!;
     switch (action) {
-      case 'settings':
       case 'details':
         this.setPanel(this.panel === action ? null : action);
         break;
-      case 'dismiss':
-        this.setPanel(null);
+      case 'settings':
+        if (this.detailsLocked) {
+          this.detailsLocked = false;
+          this.updateDetailsLockButton();
+        }
+        this.setPanel(null, true);
+        this.layoutChanged();
+        this.generalSettings();
         break;
       case 'details-lock':
         this.detailsLocked = !this.detailsLocked;
         this.updateDetailsLockButton();
         this.setPanel('details', true);
-        break;
-      case 'general':
-        this.setPanel(null);
-        this.generalSettings();
+        this.layoutChanged();
         break;
       case 'ab': {
         const accepted = this.ab.advance(this.player.currentTime);
@@ -302,26 +285,69 @@ export class PlayerShell {
     this.detailsLockButton.innerHTML = shellIcon(this.detailsLocked ? 'lock' : 'unlock');
     this.container.dataset.detailsLocked = String(this.detailsLocked);
   }
-  setPanel(panel: 'settings' | 'details' | null, force = false): void {
+  private createSettingsSidebarExtras(): HTMLElement {
+    const root = document.createElement('div');
+    root.className = 'fw-settings-utilities';
+    const quality = document.createElement('label');
+    quality.className = 'fw-quality';
+    quality.append(document.createTextNode(this.text.quality));
+    const select = document.createElement('select');
+    select.dataset.shellQuality = '';
+    select.setAttribute('aria-label', this.text.quality);
+    select.addEventListener('change', () => this.command('update-domandVideoQuality', select.value));
+    quality.append(select);
+    this.activeQuality = select;
+    this.populateQuality(select);
+    const github = document.createElement('a');
+    github.href = 'https://github.com/roflsunriz/FutatsumeWatch';
+    github.target = '_blank';
+    github.rel = 'noopener noreferrer';
+    github.textContent = 'GitHub ↗';
+    const actions = document.createElement('div');
+    actions.className = 'fw-settings-actions';
+    actions.setAttribute('aria-label', this.text.more);
+    for (const [action, label] of [
+      ['reload', this.text.reload],
+      ['screenShotWithComment', this.text.capture],
+      ['openGinza', this.text.original],
+    ] as const) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.settingsAction = action;
+      button.textContent = label;
+      button.addEventListener('click', () => {
+        closeSettingsDialog();
+        this.command(action);
+      });
+      actions.append(button);
+    }
+    root.append(quality, github, actions);
+    return root;
+  }
+  private populateQuality(select: HTMLSelectElement): void {
+    select.replaceChildren(new Option(this.text.auto, 'auto'));
+    for (const label of this.qualityLabels) select.add(new Option(label, label));
+    select.disabled = select.options.length < 2;
+    const preferred = this.config.props.domandVideoQuality;
+    select.value = [...select.options].some((option) => option.value === preferred)
+      ? preferred
+      : (select.options[1]?.value ?? 'auto');
+  }
+  setPanel(panel: 'details' | null, force = false): void {
     if (!force && this.detailsLocked && this.panel === 'details' && panel !== 'details') return;
     if (!this.panel && panel)
       this.focusReturn = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.panel = panel;
     this.container.dataset.panel = panel ?? '';
-    this.menu.inert = panel !== 'settings';
     this.info.inert = panel !== 'details';
     const isModal = panel !== null && !(panel === 'details' && this.detailsLocked);
     this.controls.inert = isModal;
     this.container.querySelectorAll<HTMLElement>('.videoControlBar,.commentInputPanel').forEach((element) => {
       element.inert = isModal;
     });
-    for (const name of ['settings', 'details'])
-      this.require(`[data-shell-action="${name}"]`).setAttribute('aria-expanded', String(panel === name));
+    this.require('[data-shell-action="details"]').setAttribute('aria-expanded', String(panel === 'details'));
     if (panel) {
-      const focus =
-        panel === 'settings'
-          ? this.menu.querySelector<HTMLElement>('button')
-          : this.info.querySelector<HTMLElement>('.tabSelect.activeTab');
+      const focus = this.info.querySelector<HTMLElement>('.tabSelect.activeTab');
       focus?.focus();
     } else {
       this.focusReturn?.focus();
@@ -359,6 +385,7 @@ export class PlayerShell {
     this.detailsLocked = false;
     this.updateDetailsLockButton();
     this.setPanel(null, true);
+    this.layoutChanged();
     clearTimeout(this.hideTimer);
     clearInterval(this.clockTimer);
     this.ab.clear();
@@ -376,15 +403,10 @@ export class PlayerShell {
     return true;
   }
   updateVideo(video: ShellVideo): void {
-    const quality = this.require<HTMLSelectElement>('[data-shell-quality]');
-    quality.replaceChildren(new Option(this.text.auto, 'auto'));
-    for (const label of new Set(
-      video.domandInfo?.availableVideos.map((item) => item.label ?? `${item.height}p`) ?? []
-    )) {
-      quality.add(new Option(label, label));
-    }
-    quality.disabled = quality.options.length < 2;
-    this.syncQuality();
+    this.qualityLabels = [
+      ...new Set(video.domandInfo?.availableVideos.map((item) => item.label ?? `${item.height}p`) ?? []),
+    ];
+    if (this.activeQuality) this.populateQuality(this.activeQuality);
     this.require('.fw-title').textContent = video.title;
     this.require('.fw-title').title = video.title;
     const stats = this.require('.fw-stats');
@@ -424,11 +446,7 @@ export class PlayerShell {
     this.decorateTabs();
   }
   private syncQuality(): void {
-    const quality = this.require<HTMLSelectElement>('[data-shell-quality]');
-    const preferred = this.config.props.domandVideoQuality;
-    quality.value = [...quality.options].some((option) => option.value === preferred)
-      ? preferred
-      : (quality.options[1]?.value ?? 'auto');
+    if (this.activeQuality) this.populateQuality(this.activeQuality);
   }
   private updateAB(): void {
     const { start, end } = this.ab;

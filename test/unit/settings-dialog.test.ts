@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { SettingsDialog } from '../../packages/components/src/settings-dialog';
+import { configureSettingsNavigation, SettingsDialog } from '../../packages/components/src/settings-dialog';
 
 Object.assign(globalThis, { ShadowRoot: window.ShadowRoot });
 const dialogs: SettingsDialog[] = [];
@@ -34,9 +34,28 @@ afterEach(() => {
     dialog.close();
     dialog.element.remove();
   }
+  configureSettingsNavigation(() => {}, undefined);
 });
 
 describe('設定サイドバー', () => {
+  test('5カテゴリと追加操作を左に保ち、見出しと本文を右へまとめる', () => {
+    configureSettingsNavigation(
+      () => {},
+      () => {
+        const extras = document.createElement('div');
+        extras.dataset.fixtureExtras = '';
+        return extras;
+      }
+    );
+    const { modal, root } = create();
+    modal.open();
+    const sidebar = root.querySelector('.fw-settings-sidebar')!;
+    const main = root.querySelector('.fw-settings-main')!;
+    expect(sidebar.querySelectorAll(':scope > [data-settings-tab]')).toHaveLength(5);
+    expect(sidebar.querySelector('[data-fixture-extras]')).not.toBeNull();
+    expect(main.querySelector('.fw-modal-heading')).not.toBeNull();
+    expect(main.querySelector('.fw-modal-body')).not.toBeNull();
+  });
   test('一般設定のタブは一つだけ表示し、入力した値とDOMを保持する', () => {
     const { modal, root } = create();
     const body = root.querySelector('.fw-modal-body')!;

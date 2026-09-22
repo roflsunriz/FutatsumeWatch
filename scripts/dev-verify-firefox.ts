@@ -454,7 +454,6 @@ try {
   await pointer(seek.x, seek.y, true);
   await check(`Math.abs(${native}.currentTime-25.6)<1`, '実シークバー操作をmedia時刻へ反映');
   await click('[data-shell-action="settings"]');
-  await click('[data-shell-action="general"]');
   const panel = `window.__firefoxFind('[data-fw-settings="general"]')`;
   await check(`${panel}?.open`, '一般設定を実メニューから表示');
   const previous = (await evaluate(`window.FutatsumeWatch.config.getValue('autoPlay')`)) as boolean;
@@ -476,7 +475,6 @@ try {
   await click('[data-futatsume-open]');
   await check(`${native}?.readyState>=2`, '再読み込み後も可視入口から映像を初期化', 30000);
   await click('[data-shell-action="settings"]');
-  await click('[data-shell-action="general"]');
   await check(
     `window.__firefoxFind('[data-setting-name="autoPlay"]',${panel}).checked===${!previous}`,
     '再表示の設定入力が保存値と一致'

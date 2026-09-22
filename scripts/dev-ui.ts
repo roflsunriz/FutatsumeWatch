@@ -1,19 +1,19 @@
 import { evaluate } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 
-export async function clickVisible(session: CdpSession, selector: string): Promise<void> {
+export async function clickVisible(session: CdpSession, selector: string, rootExpression = 'document'): Promise<void> {
   const locate = async (): Promise<{ x: number; y: number }> => {
     const point = await evaluate(
       session,
       `(()=>{
-      const e=document.querySelector(${JSON.stringify(selector)});
+      const root=${rootExpression},e=root?.querySelector(${JSON.stringify(selector)});
       if(!e || e.disabled)throw new Error('操作できる入口がありません');
       e.scrollIntoView({block:'center',inline:'center'});
       const r=e.getBoundingClientRect(),s=getComputedStyle(e);
       const x=r.left+r.width/2,y=r.top+r.height/2;
       if(r.width<=0||r.height<=0||s.display==='none'||s.visibility!=='visible'||Number(s.opacity)===0||x<0||x>=innerWidth||y<0||y>=innerHeight)throw new Error('入口が画面に表示されていません');
       for(const point of [{x,y},{x:r.left+Math.min(6,r.width/4),y},{x:r.right-Math.min(6,r.width/4),y}]) {
-        const hit=document.elementFromPoint(point.x,point.y);
+        const hit=e.getRootNode().elementFromPoint(point.x,point.y);
         if(hit&&e.contains(hit))return point;
       }
       throw new Error('入口が別の要素に覆われています');

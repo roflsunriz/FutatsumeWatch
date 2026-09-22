@@ -38,19 +38,19 @@
 
 `effect`欄は保存確認と別の観測である。利用側モデルへの到達だけを、実機入力・検出API・外部サービスとの連携まで確認したとは解釈しない。範囲や未確認事項はスイート結果とverification.mdに残す。
 
-| ID    | 操作／期待結果                                                          | 対応する自動検証                                                                     |
-| ----- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| P2-01 | 利用可能な画質のみ表示、選択→実デコード寸法、時刻と停止状態保持         | functionality、video-info単体                                                        |
-| P2-02 | GitHubの実クリック→正しい新規タブURL                                    | verify-menu-actions（functionalityから実行）                                         |
-| P2-03 | 再読み込み→同じ動画・時刻・設定、連続変更も反映                         | functionality、verify-menu-actions                                                   |
-| P2-04 | 実保存ボタン→映像・コメントPNG、未読込／CORS失敗                        | verify-menu-actions、player、video-capture単体                                       |
-| P2-05 | 公式ページを開く→現在の動画ID                                           | verify-menu-actions                                                                  |
-| P2-06 | 書き出し、読み込み、取消、不正形式、部分保存失敗と復旧                  | settings、settings-storage／settings-input／config-migration単体                     |
-| P2-07 | 一般プレイヤー6設定の全入力、再生・クリック・全画面・Storyboardへの接続 | settings、settings-autoplay／settings-playback-effects／settings-library-effects単体 |
-| P2-08 | コメント設定の全入力・描画パラメータへの反映                            | settings、settings-comment-presentation単体                                          |
-| P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                    | settings、settings-filter等の単体                                                    |
-| P2-10 | 詳細設定2項目、ダブルクリック全画面と終端時の全画面解除                 | settings、settings-video-events単体                                                  |
-| P2-15 | 初期選択案内、平置き操作、一般・詳細の全カテゴリ、Escape、各寸法        | ui、settings、settings-dialog単体                                                    |
+| ID    | 操作／期待結果                                                           | 対応する自動検証                                                                     |
+| ----- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| P2-01 | 利用可能な画質のみ表示、選択→実デコード寸法、時刻と停止状態保持          | functionality、video-info単体                                                        |
+| P2-02 | GitHubの実クリック→正しい新規タブURL                                     | verify-menu-actions（functionalityから実行）                                         |
+| P2-03 | 再読み込み→同じ動画・時刻・設定、連続変更も反映                          | functionality、verify-menu-actions                                                   |
+| P2-04 | 実保存ボタン→映像・コメントPNG、未読込／CORS失敗                         | verify-menu-actions、player、video-capture単体                                       |
+| P2-05 | 公式ページを開く→現在の動画ID                                            | verify-menu-actions                                                                  |
+| P2-06 | 書き出し、読み込み、取消、不正形式、部分保存失敗と復旧                   | settings、settings-storage／settings-input／config-migration単体                     |
+| P2-07 | 一般プレイヤー6設定の全入力、再生・クリック・全画面・Storyboardへの接続  | settings、settings-autoplay／settings-playback-effects／settings-library-effects単体 |
+| P2-08 | コメント設定の全入力・描画パラメータへの反映                             | settings、settings-comment-presentation単体                                          |
+| P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                     | settings、settings-filter等の単体                                                    |
+| P2-10 | 詳細設定2項目、ダブルクリック全画面と終端時の全画面解除                  | settings、settings-video-events単体                                                  |
+| P2-15 | 左レール常設5カテゴリ・画質・リンク・3操作、金属調トグル、Escape、各寸法 | ui、settings、settings-dialog単体                                                    |
 
 ## 一覧・タグ・投稿
 

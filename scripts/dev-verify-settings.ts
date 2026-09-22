@@ -47,7 +47,6 @@ export async function open(session: CdpSession, name: string): Promise<void> {
   await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 12, y: 150 });
   await Bun.sleep(180);
   await clickVisible(session, '[data-shell-action="settings"]');
-  await clickVisible(session, '[data-shell-action="general"]');
   await check(session, `${panel('general')}?.open`, '設定の入口から共通画面を開く');
   if (name !== 'general') await clickInside(session, 'general', `[data-settings-tab="${name}"]`);
   await check(session, `${panel(name)}?.open && ${panel(name)}.matches(':modal')`, `${name}: 共通モーダルを開く`);
@@ -61,6 +60,11 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
   const frame = await evaluate(
     session,
     `${panel('general')}.querySelector('.fw-modal-content').getBoundingClientRect().toJSON()`
+  );
+  await check(
+    session,
+    `(()=>{const d=${panel('general')},s=d.querySelector('.fw-settings-sidebar'),m=d.querySelector('.fw-settings-main');return s.querySelectorAll(':scope > [data-settings-tab]').length===5&&s.querySelector('[data-shell-quality]').options.length>1&&s.querySelector('a')?.href==='https://github.com/roflsunriz/FutatsumeWatch'&&s.querySelectorAll('[data-settings-action]').length===3&&s.getBoundingClientRect().right<=m.getBoundingClientRect().left+1})()`,
+    `${width}px: 左レールへ全カテゴリ・画質・GitHub・3操作を常時表示`
   );
   let current = 'general';
   for (const [tab, next] of [
@@ -77,6 +81,11 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
       session,
       `${panel(current)}?.open && ${panel(current)}.querySelector('[data-settings-tab="${tab}"]').getAttribute('aria-selected')==='true'`,
       `${width}px: サイドバーで${tab}へ切替`
+    );
+    await check(
+      session,
+      `(()=>{const d=${panel(current)},s=d.querySelector('.fw-settings-sidebar'),m=d.querySelector('.fw-settings-main');return s.getBoundingClientRect().width>0&&s.getBoundingClientRect().right<=m.getBoundingClientRect().left+1})()`,
+      `${width}px: ${tab}でも左レールを表示したまま右内容だけ切替`
     );
     await check(
       session,
@@ -228,6 +237,15 @@ async function main(): Promise<void> {
       if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
       const checked = `window.__settingsQuery(${JSON.stringify(selector)},${panel(name)}).checked`;
       const before = await evaluate(session, checked);
+      const beforeBackground = await evaluate(
+        session,
+        `getComputedStyle(window.__settingsQuery(${JSON.stringify(selector)},${panel(name)})).backgroundImage`
+      );
+      await check(
+        session,
+        `(()=>{const e=window.__settingsQuery(${JSON.stringify(selector)},${panel(name)}),s=getComputedStyle(e);return s.appearance==='none'&&e.getBoundingClientRect().width>=48&&s.backgroundImage.includes('gradient')})()`,
+        `${name}: チェック設定を金属調トグルで表示`
+      );
       const storageKey =
         name === 'general'
           ? await evaluate(
@@ -238,8 +256,8 @@ async function main(): Promise<void> {
       await clickInside(session, name, selector);
       await check(
         session,
-        `${checked}!==${String(before)} && JSON.parse(localStorage.getItem(${JSON.stringify(storageKey)}))===${String(!before)}`,
-        `${name}: 設定の実入力と保存`
+        `${checked}!==${String(before)} && JSON.parse(localStorage.getItem(${JSON.stringify(storageKey)}))===${String(!before)} && getComputedStyle(window.__settingsQuery(${JSON.stringify(selector)},${panel(name)})).backgroundImage!==${JSON.stringify(beforeBackground)}`,
+        `${name}: 金属調トグルの緑・灰状態と保存値を実入力で切替`
       );
       await mouse(session, 3, 3);
       await open(session, name);

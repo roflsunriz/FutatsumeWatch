@@ -34,7 +34,6 @@ async function click(session: CdpSession, action: string): Promise<void> {
   };
   const tab = settingsTabs[action];
   if (tab) {
-    await clickVisible(session, '[data-shell-action="general"]');
     await check(
       session,
       `window.__fwQuery('[data-fw-settings="general"]')?.open && !!window.__fwQuery('[data-fw-settings="general"] [data-settings-tab="${tab}"]')`,
@@ -202,50 +201,49 @@ async function main(): Promise<void> {
       '通常リピートへの切替でAB指定を解除'
     );
     await click(session, 'toggle-loop');
-    await click(session, 'settings');
-    await check(
-      session,
-      `${container}.dataset.panel==='settings' && !document.querySelector('.fw-settings').inert`,
-      '左メニューを開く'
-    );
-    await screenshot(session, '1280-settings');
-    await check(
-      session,
-      `(()=>{const menu=document.querySelector('.fw-settings'),rail=menu.querySelector('.fw-settings-rail'),home=menu.querySelector('.fw-settings-home'),r=menu.getBoundingClientRect();return r.width===innerWidth&&r.height===innerHeight&&rail.querySelectorAll(':scope > .fw-settings-picker').length===1&&rail.querySelectorAll(':scope > .fw-quality').length===1&&rail.querySelectorAll(':scope > a').length===1&&rail.querySelectorAll('.fw-settings-actions > [data-shell-action]').length===3&&!menu.querySelector('details')&&home.textContent.includes('設定項目を選んでください')})()`,
-      'スケッチどおり左メニューと設定選択案内を表示'
-    );
-    await check(
-      session,
-      `document.querySelectorAll('.fw-settings-actions > [data-shell-action]').length===3`,
-      'その他操作をアコーディオンなしで並べる'
-    );
-    await Bun.sleep(3300);
-    await check(session, `${container}.dataset.controls==='visible'`, 'メニュー操作中は自動で隠さない');
-    await clickVisible(session, '.fw-settings [data-shell-action="dismiss"]');
-    await check(
-      session,
-      `${container}.dataset.panel==='' && document.querySelector('.fw-settings').inert`,
-      '閉じるボタンで設定選択画面を閉じる'
-    );
     await evaluate(
       session,
       `window.__fwQuery = function find(selector, root=document) { const found=root.querySelector(selector); if(found)return found; for(const e of root.querySelectorAll('*')) {if(e.shadowRoot){const found=find(selector,e.shadowRoot);if(found)return found;}} return null; }`
     );
     await click(session, 'settings');
-    await click(session, 'general');
     await check(
       session,
       `document.querySelector('futatsume-setting-panel')?.isOpen && !!window.__fwQuery('[data-fw-settings="general"] [data-settings-close]')`,
-      '左メニューから一般設定を開く'
+      '設定ボタンから共通設定を直接開く'
     );
-    await screenshot(session, 'general');
+    await screenshot(session, '1280-settings');
+    await check(
+      session,
+      `(()=>{const d=window.__fwQuery('[data-fw-settings="general"]'),rail=d.querySelector('.fw-settings-sidebar'),body=d.querySelector('.fw-modal-body');return rail.querySelectorAll(':scope > [data-settings-tab]').length===5&&rail.querySelectorAll('.fw-quality').length===1&&rail.querySelector('a')?.href==='https://github.com/roflsunriz/FutatsumeWatch'&&rail.querySelectorAll('[data-settings-action]').length===3&&rail.getBoundingClientRect().right<=body.getBoundingClientRect().left+1&&!d.querySelector('details')})()`,
+      '左レールに5カテゴリ・画質・GitHub・3操作を平置き'
+    );
+    await check(
+      session,
+      `(()=>{const d=window.__fwQuery('[data-fw-settings="general"]'),p=d.querySelector('[data-settings-section="player"]');return !p.hidden&&d.querySelectorAll('[data-settings-section]:not([hidden])').length===1})()`,
+      '初期表示から右側へプレイヤー設定を注入'
+    );
+    await Bun.sleep(3300);
+    await check(
+      session,
+      `window.__fwQuery('[data-fw-settings="general"]')?.open && window.__fwQuery('[data-fw-settings="general"] .fw-settings-sidebar')?.getBoundingClientRect().width>0`,
+      '未操作3秒後も設定と左レールを維持'
+    );
     await deepClick(session, '[data-fw-settings="general"] [data-settings-tab="player"]');
     const oldAutoPlay = await evaluate(session, `${root}.config.props.autoPlay`);
+    await check(
+      session,
+      `(()=>{const e=window.__fwQuery('[data-setting-name="autoPlay"]'),s=getComputedStyle(e);return s.appearance==='none'&&e.getBoundingClientRect().width>=48&&s.backgroundImage.includes('gradient')})()`,
+      'チェック設定を金属調トグルとして表示'
+    );
+    const oldToggleBackground = await evaluate(
+      session,
+      `getComputedStyle(window.__fwQuery('[data-setting-name="autoPlay"]')).backgroundImage`
+    );
     await deepClick(session, '[data-setting-name="autoPlay"]');
     await check(
       session,
-      `${root}.config.props.autoPlay!==${String(oldAutoPlay)} && JSON.parse(localStorage.getItem(${root}.config.getStorageKey(${root}.config.getNativeKey('autoPlay'))))===${String(!oldAutoPlay)}`,
-      '一般設定のチェックボックスを実クリックで保存'
+      `${root}.config.props.autoPlay!==${String(oldAutoPlay)} && JSON.parse(localStorage.getItem(${root}.config.getStorageKey(${root}.config.getNativeKey('autoPlay'))))===${String(!oldAutoPlay)} && getComputedStyle(window.__fwQuery('[data-setting-name="autoPlay"]')).backgroundImage!==${JSON.stringify(oldToggleBackground)}`,
+      '金属調トグルの緑・灰状態と保存値を実クリックで切替'
     );
     await deepClick(session, '[data-setting-name="autoPlay"]');
     await deepClick(session, '[data-fw-settings="general"] [data-settings-close]');
@@ -275,8 +273,18 @@ async function main(): Promise<void> {
     await click(session, 'details-lock');
     await check(
       session,
-      `(()=>{const c=${container},v=c.querySelector('.videoPlayer').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect(),b=document.querySelector('.fw-backdrop');return c.dataset.detailsLocked==='true'&&c.dataset.panel==='details'&&!c.querySelector('.fw-controls').inert&&getComputedStyle(b).display==='none'&&v.right<=p.left+1&&v.width>0&&p.width>0})()`,
-      '詳細を固定するとぼかしを外し映像を左側へ収める'
+      `(()=>{const c=${container},v=c.querySelector('.videoPlayer').getBoundingClientRect(),f=c.querySelector('.commentLayerFrame').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect(),b=document.querySelector('.fw-backdrop');return c.dataset.detailsLocked==='true'&&c.dataset.panel==='details'&&!c.querySelector('.fw-controls').inert&&getComputedStyle(b).display==='none'&&v.right<=p.left+1&&f.right<=p.left+1&&Math.abs(v.width-f.width)<2&&v.width>0&&p.width>0})()`,
+      '詳細固定でぼかしを外し映像・コメント外枠を左側へ収める'
+    );
+    await check(
+      session,
+      `(()=>{const c=${container},o=c.querySelector('[data-futatsume-comment-canvas]'),r=o?.getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect();return r&&r.width>0&&r.right<=p.left+1})()`,
+      '詳細固定でコメントCanvasの表示矩形を右パネルと非重複にする'
+    );
+    await check(
+      session,
+      `(()=>{const o=${container}.querySelector('[data-futatsume-comment-canvas]'),r=o?.getBoundingClientRect();return r&&Math.abs(o.width-r.width*devicePixelRatio)<3&&Math.abs(o.height-r.height*devicePixelRatio)<3})()`,
+      '詳細固定後にコメントCanvasの内部画素を表示寸法へ同期'
     );
     await screenshot(session, '1280-details-locked');
     for (const name of ['relatedVideoTab', 'comment', 'playlist', 'videoInfoTab']) {
@@ -306,6 +314,11 @@ async function main(): Promise<void> {
       '固定中はEscapeでも詳細を維持'
     );
     await click(session, 'details-lock');
+    await check(
+      session,
+      `(()=>{const c=${container},f=c.querySelector('.commentLayerFrame').getBoundingClientRect(),o=c.querySelector('[data-futatsume-comment-canvas]'),r=o.getBoundingClientRect();return c.dataset.detailsLocked==='false'&&Math.abs(f.width-innerWidth)<2&&Math.abs(o.width-r.width*devicePixelRatio)<3&&Math.abs(o.height-r.height*devicePixelRatio)<3})()`,
+      '固定解除でコメント外枠・Canvas内部画素を全幅へ復元'
+    );
     await session.send('Input.dispatchKeyEvent', {
       type: 'keyDown',
       key: 'Escape',

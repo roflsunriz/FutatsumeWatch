@@ -137,7 +137,6 @@ export async function verifyLibraryComments(session: CdpSession, actions: Librar
   const clearFilter = async (key: 'wordRegFilter' | 'userIdFilter') => {
     await clickVisible(session, '.fw-backdrop');
     await clickVisible(session, '[data-shell-action="settings"]');
-    await clickVisible(session, '[data-shell-action="general"]');
     await check(session, `!!${find('[data-fw-settings="general"]')}?.open`, 'P3-08-ng-settings 設定からNGを復元する');
     const general = find('[data-fw-settings="general"]');
     await click(session, '[data-settings-tab="filters"]', general);

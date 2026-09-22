@@ -10,8 +10,13 @@ const navigation: { section: GeneralSection; open?: (panel: SettingsPanel) => vo
   section: 'player',
   focusTab: false,
 };
-export function configureSettingsNavigation(open: (panel: SettingsPanel) => void): void {
+let createSidebarExtras: (() => HTMLElement) | undefined;
+export function configureSettingsNavigation(
+  open: (panel: SettingsPanel) => void,
+  sidebarExtras?: () => HTMLElement
+): void {
   navigation.open = open;
+  createSidebarExtras = sidebarExtras;
 }
 const labels = {
   ja: {
@@ -48,6 +53,7 @@ export class SettingsDialog {
   readonly content: HTMLDivElement;
   private readonly body: HTMLDivElement;
   private readonly sidebar: HTMLElement;
+  private readonly sidebarExtras: HTMLDivElement;
   private readonly heading: HTMLHeadingElement;
   constructor(
     readonly element: HTMLDialogElement,
@@ -116,7 +122,9 @@ export class SettingsDialog {
       });
       this.sidebar.append(button);
     }
-    layout.append(this.sidebar, body);
+    this.sidebarExtras = document.createElement('div');
+    this.sidebarExtras.className = 'fw-settings-sidebar-extras';
+    this.sidebar.append(this.sidebarExtras);
     const header = document.createElement('header');
     header.className = 'fw-modal-heading';
     const title = (this.heading = document.createElement('h2'));
@@ -133,7 +141,11 @@ export class SettingsDialog {
       this.close();
     });
     header.append(title, close);
-    this.content.append(header, layout);
+    const main = document.createElement('div');
+    main.className = 'fw-settings-main';
+    main.append(header, body);
+    layout.append(this.sidebar, main);
+    this.content.append(layout);
     element.append(this.content);
     element.addEventListener(
       'pointerdown',
@@ -178,6 +190,7 @@ export class SettingsDialog {
     });
   }
   open(): void {
+    this.sidebarExtras.replaceChildren(...(createSidebarExtras ? [createSidebarExtras()] : []));
     this.syncTabs();
     if (this.element.open) return;
     if (activeSettings.dialog && activeSettings.dialog !== this) activeSettings.dialog.close();

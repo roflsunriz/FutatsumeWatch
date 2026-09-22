@@ -52,9 +52,12 @@ async function click(selector: string) {
   await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 100, y: 180 });
   await clickVisible(page, selector);
 }
-async function select(selector: string, index: number) {
-  const current = (await evaluate(page, `document.querySelector(${JSON.stringify(selector)}).selectedIndex`)) as number;
-  await click(selector);
+async function select(selector: string, index: number, rootExpression = 'document') {
+  const current = (await evaluate(
+    page,
+    `${rootExpression}.querySelector(${JSON.stringify(selector)}).selectedIndex`
+  )) as number;
+  await clickVisible(page, selector, rootExpression);
   for (let i = 0; i < Math.abs(index - current); i++)
     await key(
       index > current ? 'ArrowDown' : 'ArrowUp',
@@ -74,7 +77,7 @@ async function seek(fraction: number) {
 }
 async function selectQuality(index: number, variant: string) {
   const previous = site.deliveries.length;
-  await select('[data-shell-quality]', index);
+  await select('[data-shell-quality]', index, settingsRoot);
   const deadline = Date.now() + 10000;
   while (Date.now() < deadline) {
     if (site.deliveries.length > previous && site.deliveries.at(-1)?.variant === variant) {
@@ -84,6 +87,11 @@ async function selectQuality(index: number, variant: string) {
     await Bun.sleep(100);
   }
   throw new Error(`P2-01 選択したvariantの配信要求がありません: ${variant}`);
+}
+const settingsRoot = `document.querySelector('futatsume-setting-panel').shadowRoot`;
+async function settingsAction(action: string): Promise<void> {
+  await click('[data-shell-action="settings"]');
+  await clickVisible(page, `[data-settings-action="${action}"]`, settingsRoot);
 }
 async function finish() {
   const cleanup: unknown[] = [];
@@ -203,16 +211,20 @@ try {
   await check(
     'P2-01',
     '利用可能な画質だけを提示',
-    `JSON.stringify([...document.querySelector('[data-shell-quality]').options].map(x=>x.value))===JSON.stringify(['auto','360p','180p'])`
+    `JSON.stringify([...${settingsRoot}.querySelector('[data-shell-quality]').options].map(x=>x.value))===JSON.stringify(['auto','360p','180p'])`
   );
   await selectQuality(2, 'low');
   await check('P2-01', '低画質をデコード映像に反映', `${native}.videoHeight===180`, 30000);
   await selectQuality(1, 'high');
-  await check('P2-01', '高画質の選択値を設定へ反映', `document.querySelector('[data-shell-quality]').value==='360p'`);
+  await check(
+    'P2-01',
+    '高画質の選択値を設定へ反映',
+    `${settingsRoot}.querySelector('[data-shell-quality]').value==='360p'`
+  );
   await check('P2-01', '高画質をデコード映像に反映', `${native}.videoHeight===360`, 30000);
   await check('P2-01', '画質変更前の停止状態と時刻を保持', `${v}.paused && Math.abs(${v}.currentTime-48)<1`);
-  await select('[data-shell-quality]', 0);
-  await click('[data-shell-action="dismiss"]');
+  await select('[data-shell-quality]', 0, settingsRoot);
+  await clickVisible(page, '[data-settings-close]', settingsRoot);
   await seek(0.4);
   await check(
     'P1-09',
@@ -290,10 +302,7 @@ try {
   await click('[data-futatsume-open]');
   await check('P1-02', '同じ入口から再生復帰', `${v}.currentTime>0.5 && !${v}.paused`, 15000);
   site.faults.watchDelayMs = 800;
-  await click('[data-shell-action="settings"]');
-  if (!(await evaluate(page, `document.querySelector('.fw-settings>details').open`)))
-    await click('.fw-settings>details>summary');
-  await click('[data-shell-action="reload"]');
+  await settingsAction('reload');
   await check('P1-02', '再読込を遅延させた読み込み中状態', `window.FutatsumeWatch.debug.dialog._state.isLoading`);
   await click('[data-shell-action="close"]');
   await Bun.sleep(1200);
@@ -307,10 +316,7 @@ try {
   await check('P1-02', '遅延終了後も同じ入口から復帰', `${v}.currentTime>0.5 && !${v}.paused`, 15000);
   site.faults.hlsStatus = 503;
   site.faults.hlsBodyStatus = 201;
-  await click('[data-shell-action="settings"]');
-  if (!(await evaluate(page, `document.querySelector('.fw-settings>details').open`)))
-    await click('.fw-settings>details>summary');
-  await click('[data-shell-action="reload"]');
+  await settingsAction('reload');
   await check(
     'P1-03',
     'HTTP失敗を成功metaで隠さず再生エラーを表示',
@@ -318,10 +324,7 @@ try {
   );
   site.faults.hlsStatus = 200;
   site.faults.hlsBodyStatus = undefined;
-  await click('[data-shell-action="settings"]');
-  if (!(await evaluate(page, `document.querySelector('.fw-settings>details').open`)))
-    await click('.fw-settings>details>summary');
-  await click('[data-shell-action="reload"]');
+  await settingsAction('reload');
   await check(
     'P1-03',
     '配信API回復後に同じ再読込導線で復帰',
