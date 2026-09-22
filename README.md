@@ -10,13 +10,22 @@ ZenzaWatch 後継ユーザースクリプト。どこからでも動画をその
 
 ## 使い方
 
-1. Tampermonkey / Violentmonkey / Greasemonkeyで上記リンクを開き、ユーザースクリプトをインストールする
-2. ニコニコ動画・Nアニメ等の動画リンクや、ニコ百の埋め込みサムネイルに現れる起動ボタンをクリックし、再生
+1. Tampermonkey ([Chrome](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=ja)) ([Firefox](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/)) / Violentmonkey ([Chrome](https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag)) ([Firefox](https://addons.mozilla.org/ja/firefox/addon/violentmonkey/)) / Greasemonkey ([Firefox](https://addons.mozilla.org/ja/firefox/addon/greasemonkey/)) をブラウザにインストールする
+2. 上記リンクを開くとユーザースクリプトマネージャが自動でユーザースクリプトをインストールする
+3. ニコニコ動画・Nアニメ等の動画リンクや、ニコ百の埋め込みサムネイルに現れる起動ボタンをクリックし、再生
+4. スクリプトマネージャでFutatsumeWatchを選択し、随時更新を手動チェック (自動チェックも可能)
 
 ## 同梱機能
 
-- Domand HLS動画再生、コメント表示・投稿、プレイリスト、マイリスト操作、スクリーンショット、ブログ埋め込み起動を単一スクリプトに同梱
-- 設定は実作用を検証できる36項目に限定。HLSの調整画面、MaskedWatch、GamePad、HeatSyncは搭載しない
+- メンテナンスしやすい機能のみに限定。意図的に複雑な機能は削除。
+
+## 特徴
+
+- TypeScript製なので、論理エラー以外の実行時エラーは基本的にない。
+- 豊富な結合テスト・単体テストで検証済み。
+- 主要機能を手動テスト済み。（全部とは言っていない）
+- 現代的なユーザーインターフェース。モバイル環境でも利用可能。
+- comment-overlayエンジンによる高いコメントアート互換性。
 
 ## バグ報告・機能提案
 
