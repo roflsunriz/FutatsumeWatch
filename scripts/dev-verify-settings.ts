@@ -209,6 +209,19 @@ async function main(): Promise<void> {
       await check(session, `!${panel(name)}.open`, `${name}: 共通の閉じるボタン`);
     }
     await verifyTabs(session, 1280);
+    await open(session, 'general');
+    await clickInside(session, 'general', '[data-settings-tab="comments"]');
+    await check(
+      session,
+      `(()=>{const root=${panel('general')},select=window.__settingsQuery('[data-setting-name="baseFontFamily"]',root);return select?.tagName==='SELECT'&&select.options.length>=4&&!window.__settingsQuery('input[type="text"][data-setting-name="baseFontFamily"]',root)})()`,
+      'フォント設定を手入力なしのプルダウンで表示'
+    );
+    await check(
+      session,
+      `(()=>{const select=window.__settingsQuery('[data-setting-name="baseFontFamily"]',${panel('general')}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d'),sample='mmmmmmmmWWWWiiii1111漢字かなカナ',width=family=>{ctx.font='72px '+family;return ctx.measureText(sample).width},fallback=['monospace','serif','sans-serif'];return [...select.options].filter(option=>option.dataset.localFont).every(option=>fallback.some(base=>Math.abs(width("'"+option.dataset.localFont.replaceAll("'","\\\\'")+"', "+base)-width(base))>.01))})()`,
+      'プルダウンのローカルフォントを実描画幅で利用可能と判定'
+    );
+    await mouse(session, 3, 3);
     await check(
       session,
       `window.FutatsumeWatch.config.props.enableTogglePlayOnClick===false`,

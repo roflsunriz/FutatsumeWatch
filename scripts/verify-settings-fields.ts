@@ -198,6 +198,7 @@ async function verifyEffect(
   const checks: Record<string, string> = {
     autoPlay: `document.querySelector('futatsume-video').autoplay===${String(value)} && window.FutatsumeWatch.debug.nicoVideoPlayer.isAutoPlay===${String(value)} && window.FutatsumeWatch.state.player.isAutoPlay===${String(value)}`,
     enableHeatMap: `document.querySelector('.seekBarContainer')?.classList.contains('noHeatMap')===${String(!value)}`,
+    baseFontFamily: `${renderer}.comments.some(comment=>comment.fontFamily===${JSON.stringify(String(value))})`,
     commentLayerOpacity: `${renderer}.settings.commentOpacity===${Number(value)} && getComputedStyle(window.FutatsumeWatch.debug.nicoCommentPlayer._view.element).opacity==='1'`,
     'commentLayer.textShadowType': `${renderer}.settings.shadowIntensity===${JSON.stringify(value === 'shadow-type3' ? 'strong' : 'medium')}`,
   };

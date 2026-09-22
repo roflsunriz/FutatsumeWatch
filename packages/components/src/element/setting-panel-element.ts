@@ -1,6 +1,7 @@
 import { DialogElement } from './dialog-element.js';
 import { domEvent } from '../../../lib/src/dom/dom-event';
 import { normalizeNgRegexpInputLines } from '../../../../src/ng-regexp-input';
+import { getAvailableFontOptions } from '../font-options';
 // import {textUtil} from '../../../lib/src/text/text-util';
 // import {cssUtil} from '../../../lib/src/css/css';
 import type { TemplateResult } from 'lit/html.js';
@@ -151,6 +152,8 @@ const { SettingPanelElement } = (() => {
       `;
     }
     static getCommentSettingMenu(html: HtmlTag, conf: SettingConf): TemplateResult {
+      const currentFont = typeof conf.baseFontFamily === 'string' ? conf.baseFontFamily : '';
+      const fontOptions = getAvailableFontOptions(currentFont);
       return html`
         <section class="comment-setting" data-settings-section="comments">
           <div class="control">
@@ -168,8 +171,20 @@ const { SettingPanelElement } = (() => {
           <div class="control">
             <h3>フォント名</h3>
             <label>
-              <span class="info">入力例: 「'游ゴシック', 'メイリオ', '戦国TURB'」</span>
-              <input type="text" class="textInput" value=${conf.baseFontFamily} data-setting-name="baseFontFamily" />
+              <span class="info">このブラウザで利用できるフォントから選択します。</span>
+              <select class="fontFamilySelect" data-setting-name="baseFontFamily">
+                ${fontOptions.map(
+                  (option) =>
+                    html`<option
+                      value=${option.value}
+                      data-local-font=${option.localName ?? ''}
+                      ?selected=${option.value === currentFont}
+                      ?disabled=${option.disabled === true}
+                    >
+                      ${option.label}
+                    </option>`
+                )}
+              </select>
             </label>
           </div>
           <div class="control">

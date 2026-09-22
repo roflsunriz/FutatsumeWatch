@@ -140,6 +140,8 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     'P2-07: 自動全画面ONで起動アイコンから全画面に入る',
     'P2-07: 自動全画面OFFでは通常表示で起動する',
     '設定の入口から共通画面を開く',
+    'フォント設定を手入力なしのプルダウンで表示',
+    'プルダウンのローカルフォントを実描画幅で利用可能と判定',
     '設定書き出しのJSONが保存設定に一致',
     'プレイヤー終了時に設定と背景も閉じる',
     'P2-06/storage: 容量不足を通知し、UI・モデル・保存値を維持',

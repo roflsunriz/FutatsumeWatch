@@ -47,7 +47,7 @@
 | P2-05 | 公式ページを開く→現在の動画ID                                            | verify-menu-actions                                                                  |
 | P2-06 | 書き出し、読み込み、取消、不正形式、部分保存失敗と復旧                   | settings、settings-storage／settings-input／config-migration単体                     |
 | P2-07 | 一般プレイヤー6設定の全入力、再生・クリック・全画面・Storyboardへの接続  | settings、settings-autoplay／settings-playback-effects／settings-library-effects単体 |
-| P2-08 | コメント設定の全入力・描画パラメータへの反映                             | settings、settings-comment-presentation単体                                          |
+| P2-08 | 利用可能フォントの選択・コメント設定の全入力・描画パラメータへの反映     | settings、font-options／settings-comment-presentation単体                            |
 | P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                     | settings、settings-filter等の単体                                                    |
 | P2-10 | 詳細設定2項目、ダブルクリック全画面と終端時の全画面解除                  | settings、settings-video-events単体                                                  |
 | P2-15 | 左レール常設5カテゴリ・画質・リンク・3操作、金属調トグル、Escape、各寸法 | ui、settings、settings-dialog単体                                                    |
