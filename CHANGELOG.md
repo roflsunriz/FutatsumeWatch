@@ -7,6 +7,7 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 ### Changed
 
 - 依存更新を安全に省力化するため、Dependabot の patch／minor PR を既存 CI の全チェック成功後に自動取り込みし、失敗ジョブを一度再実行する設定を追加した。
+
 ### Added
 
 - 共通指針の求める報告・議論の入口が欠けていたため、PRテンプレート、Issueテンプレート（bug-report・config・documentation）、Discussionテンプレート（general・ideas・q-a）を追加した。秘密情報を貼らずに版・環境・再現手順を集められるようにした。
