@@ -64,3 +64,9 @@ TMで登録したスクリプトのページへの適用だけを確認したい
 `test:browser`は自動用のheadless Chromeを準備し、配布物を文書へ注入して検証します。TMの登録・権限を確認する検証とは区別します。低レベルの`bun scripts/dev-verify.ts --bundle`などを直接実行する場合に限り`FUTATSUME_DEV_PORT`で別の接続先を指定できるため、手動操作中のブラウザを指定しないでください。
 
 旧版へ戻す場合も設定を削除せず配布物を差し戻します。旧Flashスロット設定の保存値は新エンジンでは参照せず残すため、旧版へ戻した際に利用できます。
+
+## Dependabot PR の更新
+
+前提は `.github/dependabot.yml` と PR 用 CI（Quality）です。更新 PR の head SHA と `gh pr checks <PR番号>` の結果を確認してください。patch／minor は全チェック成功後に自動取り込みされます。初回 CI 失敗は failed jobs のみを 1 回再実行し、再失敗した PR は残して手動で修正します。
+
+設定を変えたときは `actionlint .github/workflows/dependabot-automation.yml` と実際の PR の Actions 結果を確認します。問題があれば呼び出し先の共通 workflow SHA を直前の検証済み値へ戻すコミットを push します。取り込まれた依存更新に問題があれば通常の revert コミットで復旧します。

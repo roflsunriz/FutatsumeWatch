@@ -456,3 +456,9 @@ test/fixtures/cdp/scenes/watch-sm9-cdp.jsonは以前採取した実ページのc
 ## 採用したビルド依存
 
 [Vite公式](https://vite.dev/guide/)と[vite-plugin-monkey公式](https://github.com/lisonge/vite-plugin-monkey)の構成に従う。npmメタデータでvite-plugin-monkey 8.1.1のpeerがVite 8、2026-08-30更新であることを確認して採用した。旧ビルダーをプラグインで包む案では連結スコープ問題が残るため、通常のモジュール依存へ移した。lockfileと全検証を更新し、実際のコード・Worker・マネージャ実行で互換性を判定した。
+
+## Dependabot 自動処理（2026-09-23）
+
+`.github/workflows/dependabot-automation.yml` を actionlint で検査し、PR 用 workflow 名（Quality）と一致することを確認する。Dependabot の patch／minor かつ全 PR チェック成功の場合だけ取り込み、major・古い SHA・再失敗は残す。
+
+実際の Dependabot PR がまだない場合、動作経路は未検証として扱う。実 PR 発生後に自動化ジョブ、CI の再試行、マージ結果を確認する。
