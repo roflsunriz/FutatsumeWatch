@@ -235,3 +235,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - 投稿者一覧は`totalCount`と`page`/`pageSize`で全件取得を判定し、途中失敗や古い動画への応答では現在の一覧を置換しない。マイリスト選択画面の再取得はキャッシュを越える明示経路を使う。
 - `setNextAutoPlay`は次の実srcだけに適用し、空映像への切替で消費しない。最新の明示シーク位置はloadingフラグだけに依存せず保持し、close後のmetadata・接続応答・エラー再試行を破棄する。
 - Firefoxの代表検証は`dev-verify-firefox.ts`でraw BiDi、9340、毎回新しい専用プロファイルを使う。既存`firefox-debug.ps1`は利用者プロファイルを編集するためこの用途で使わない。launcher PIDと実Browser PIDが異なる場合があり、listenerの実PID・起動時刻・実行ファイル・専用profileを照合して停止する。マネージャ導入の保証とは区別する。
+
+## GitHub Actionsのラベル設定
+
+- `actions/labeler`の設定は現行の`.github/labeler.yml`と`.github/workflows/labeler.yml`を一緒に確認する。v5以降は各ラベルの条件を`changed-files`などの設定オブジェクトで記述するため、ラベル直下にファイルglob文字列だけを並べる旧形式は実行時エラーになる。バージョン更新後はLabelワークフローの実行結果まで確認する。

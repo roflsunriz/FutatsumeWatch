@@ -2,31 +2,41 @@
 # PR の変更ファイルに応じてラベルを付ける
 
 documentation:
-  - CHANGELOG.md
-  - README.md
-  - how-to-update.md
-  - verification.md
-  - docs/**/*
-  - .github/ISSUE_TEMPLATE/**/*
-  - .github/DISCUSSION_TEMPLATE/**/*
-  - .github/PULL_REQUEST_TEMPLATE.md
+  - changed-files:
+      - any-glob-to-any-file:
+          - CHANGELOG.md
+          - README.md
+          - how-to-update.md
+          - verification.md
+          - docs/**/*
+          - .github/ISSUE_TEMPLATE/**/*
+          - .github/DISCUSSION_TEMPLATE/**/*
+          - .github/PULL_REQUEST_TEMPLATE.md
 
 dependencies:
-  - package.json
-  - bun.lock
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - bun.lock
 
 build:
-  - vite.config.mts
-  - scripts/build.ts
-  - dist/**/*
+  - changed-files:
+      - any-glob-to-any-file:
+          - vite.config.mts
+          - scripts/build.ts
+          - dist/**/*
 
 test:
-  - test/**/*
-  - scripts/test-browser.ts
-  - scripts/dev-verify*.ts
-  - scripts/verify-*.ts
+  - changed-files:
+      - any-glob-to-any-file:
+          - test/**/*
+          - scripts/test-browser.ts
+          - scripts/dev-verify*.ts
+          - scripts/verify-*.ts
 
 ci:
-  - .github/workflows/**/*
-  - .github/dependabot.yml
-  - .github/labeler.yml
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**/*
+          - .github/dependabot.yml
+          - .github/labeler.yml
