@@ -15,6 +15,7 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ### Fixed
 
+- CI と Dependabot の分類の実行順が前後しても更新を取りこぼさないよう、同じ PR 番号と head SHA を再照合する経路を追加した。
 - actions/labeler v7でPRの自動ラベル付けが設定形式エラーにならないよう、ラベル条件を`changed-files`形式へ更新した。
 
 ## [0.0.21] - 2026-09-22
