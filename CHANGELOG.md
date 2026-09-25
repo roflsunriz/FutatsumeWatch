@@ -4,9 +4,7 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
-### Changed
-
-- 依存更新を安全に省力化するため、Dependabot の patch／minor PR を既存 CI の全チェック成功後に自動取り込みし、失敗ジョブを一度再実行する設定を追加した。
+## [0.0.22] - 2026-09-25
 
 ### Added
 
@@ -20,6 +18,7 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ### Changed
 
+- 依存更新を安全に省力化するため、Dependabot の patch／minor PR を既存 CI の全チェック成功後に自動取り込みし、失敗ジョブを一度再実行する設定を追加した。
 - MylistPocketの動画詳細のタグ表示を詳細タブ・再生中メタデータと同じ描画へ共通化し、大百科アイコンの存在解決を公式記事API照会へ一本化した。未取得・あり・なしの表示は共通ヘルパーで統一する。
 
 ### Removed
