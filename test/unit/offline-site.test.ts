@@ -484,6 +484,35 @@ describe('Phase0 非同期通信監査と終了処理', () => {
     expect(offlineReports.get(session)).toMatchObject({ completed: true, errors: [] });
   });
 
+  test('実行中でも登録済みinterceptionの配送期限切れは監査失敗にしない', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    session.fetchErrors.set('stale', 'Invalid InterceptionId.');
+    session.emit('Fetch.requestPaused', {
+      requestId: 'stale',
+      networkId: 'stale-network',
+      request: request('https://fixture.invalid/poster.svg'),
+    });
+    // close開始前に配送まで進め、文書切替でinterceptionが無効になる競合を再現する。
+    await Bun.sleep(50);
+    expect(await closeError(session)).toBe('');
+    expect(offlineReports.get(session)).toMatchObject({ completed: true, errors: [] });
+  });
+
+  test('実行中に未登録要求の配送が期限切れでも未登録通信は失敗にする', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    session.fetchErrors.set('stale-unknown', 'Invalid InterceptionId.');
+    session.emit('Fetch.requestPaused', {
+      requestId: 'stale-unknown',
+      networkId: 'stale-unknown-network',
+      request: request('https://fixture.invalid/unknown'),
+    });
+    await Bun.sleep(50);
+    expect(await closeError(session)).toContain('未登録通信');
+    expect(offlineReports.get(session)).toMatchObject({ completed: false });
+  });
+
   test('close中でもinterception消滅以外のFetchエラーは監査失敗にする', async () => {
     const session = new FakeSession();
     await installOffline(session);

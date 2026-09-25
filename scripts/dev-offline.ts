@@ -144,12 +144,15 @@ export async function installOffline(session: CdpSession, targetId?: string): Pr
               });
             } catch (error) {
               // パーサー・ファイル読込・CDPの失敗でもpaused要求を放置しない。
-              if (closing && isExpiredInterception(error)) return;
+              // 登録済みと確定した要求の配送だけが期限切れになった場合は、要求自体の監査は終わっているため失敗にしない。
+              // 文書切替でinterceptionが無効になる競合は監査実行中にも起きるため、厳密なInvalid InterceptionIdだけを許容する。
+              if (isExpiredInterception(error) && (closing || observation?.matched === true)) return;
               reportError(error);
               try {
                 await channel.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'Failed' });
               } catch (cleanupError) {
-                if (!(closing && isExpiredInterception(cleanupError))) reportError(cleanupError);
+                if (!(isExpiredInterception(cleanupError) && (closing || observation?.matched === true)))
+                  reportError(cleanupError);
               }
             }
           })()
