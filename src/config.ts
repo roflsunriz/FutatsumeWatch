@@ -50,8 +50,6 @@ export interface ConfigProps {
   'filter.extraCommunityThread': boolean;
   'filter.extraNicosThread': boolean;
   'filter.extraEasyThread': boolean;
-  videoTagFilter: string;
-  videoOwnerFilter: string;
   enableCommentPanel: boolean;
   enableCommentPanelAutoScroll: boolean;
   playlistLoop: boolean;
@@ -213,9 +211,6 @@ const Config = (() => {
     'filter.extraCommunityThread': true, // 引用コメント
     'filter.extraNicosThread': true, // ***extra-nicos
     'filter.extraEasyThread': true, // 引用かんたんコメント
-
-    videoTagFilter: '',
-    videoOwnerFilter: '',
 
     enableCommentPanel: true,
     enableCommentPanelAutoScroll: true,

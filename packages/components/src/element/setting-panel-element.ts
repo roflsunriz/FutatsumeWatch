@@ -297,8 +297,6 @@ const { SettingPanelElement } = (() => {
       const wordRegexp = Array.isArray(conf.wordRegFilter) ? conf.wordRegFilter.join('\n') : '';
       const command = Array.isArray(conf.commandFilter) ? conf.commandFilter.join('\n') : conf.commandFilter;
       const userId = Array.isArray(conf.userIdFilter) ? conf.userIdFilter.join('\n') : conf.userIdFilter;
-      const videoTag = typeof conf.videoTagFilter === 'string' ? conf.videoTagFilter : '';
-      const videoOwner = typeof conf.videoOwnerFilter === 'string' ? conf.videoOwnerFilter : '';
       return html`
         <style>
           .filterEdit {
@@ -521,16 +519,6 @@ const { SettingPanelElement } = (() => {
             <h3>NGユーザー</h3>
             <label>
               <textarea class="filterEdit" data-setting-name="userIdFilter" data-type="array">${userId}</textarea>
-            </label>
-            <h3>NGタグ</h3>
-            <p class="info">連続再生中に、このタグがある動画をスキップします。</p>
-            <label>
-              <textarea class="filterEdit" data-setting-name="videoTagFilter">${videoTag}</textarea>
-            </label>
-            <h3>NG投稿者</h3>
-            <p class="info">連続再生中に、この投稿者IDの動画をスキップします。チャンネルはchから入力します。</p>
-            <label>
-              <textarea class="filterEdit" data-setting-name="videoOwnerFilter">${videoOwner}</textarea>
             </label>
           </div>
         </section>

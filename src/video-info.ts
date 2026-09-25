@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { PromiseHandler } from '../packages/lib/src/emitter';
 import type { AnyPromiseHandler } from '../packages/lib/src/emitter';
 
@@ -182,64 +181,6 @@ class DomandInfo extends JSONable {
 
   get isStoryboardAvailable(): boolean {
     return this._rawData.isStoryboardAvailable;
-  }
-}
-
-class VideoFilter {
-  private _ngOwner: string[] = [];
-  private _ngTag: string[] = [];
-  constructor(ngOwner: string | string[], ngTag: string | string[]) {
-    this.ngOwner = ngOwner;
-    this.ngTag = ngTag;
-  }
-
-  get ngOwner(): string[] {
-    return this._ngOwner || [];
-  }
-
-  set ngOwner(owner: string | string[]) {
-    const list: string[] = [];
-    const owners: string[] = _.isArray(owner) ? owner : owner.toString().split(/[\r\n]/);
-    owners.forEach((o) => {
-      list.push(o.replace(/#.*$/, '').trim());
-    });
-    this._ngOwner = list;
-  }
-
-  get ngTag(): string[] {
-    return this._ngTag || [];
-  }
-
-  set ngTag(tag: string | string[]) {
-    const list: string[] = [];
-    const tags: string[] = Array.isArray(tag) ? tag : tag.toString().split(/[\r\n]/);
-    tags.forEach((t) => {
-      list.push(t.toLowerCase().trim());
-    });
-    this._ngTag = list;
-  }
-
-  isNgVideo(videoInfo: { isChannel: boolean; tagList: { name?: string }[]; owner: { id?: string } }): boolean {
-    let isNg = false;
-    const ngTag = this.ngTag;
-
-    videoInfo.tagList.forEach((tag) => {
-      const text = (tag.name ?? '').toLowerCase();
-      if (ngTag.includes(text)) {
-        isNg = true;
-      }
-    });
-    if (isNg) {
-      return true;
-    }
-
-    const owner = videoInfo.owner;
-    const ownerId = owner.id;
-    if (ownerId !== undefined && ownerId !== '' && this.ngOwner.includes(ownerId)) {
-      isNg = true;
-    }
-
-    return isNg;
   }
 }
 
@@ -617,5 +558,5 @@ class VideoInfoModel extends JSONable {
 
 //===END===
 
-export { VideoInfoModel, VideoFilter };
+export { VideoInfoModel };
 export type { RawVideoInfoData, VideoDetail, MessageInfo, ResumeCacheEntry };

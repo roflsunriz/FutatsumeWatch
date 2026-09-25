@@ -226,7 +226,6 @@ test('読込・session・NG・YouTube失敗の実経路はcloseで予約を破�
   };
   NicoVideoPlayerDialog.prototype._onVideoInfoLoaderFail.call(context, 'a', { reason: 'forbidden' });
   NicoVideoPlayerDialog.prototype._onVideoSessionFail.call(context, new Error('fixture'));
-  NicoVideoPlayerDialog.prototype._onVideoFilterMatch.call(context);
   NicoVideoPlayerDialog.prototype._onYouTubeVideoError.call(context, { description: 'fixture', fallback: true });
   NicoVideoPlayerDialog.prototype._refresh.call(context);
   await Bun.sleep(30);

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, spyOn, test } from 'bun:test';
 import { Config } from '../../src/config';
 import { VideoInfoLoader } from '../../packages/lib/src/nico/video-info-loader';
-import { VideoInfoModel, VideoFilter } from '../../src/video-info';
+import { VideoInfoModel } from '../../src/video-info';
 import type { RawVideoInfoData } from '../../src/video-info';
 import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
 import { WatchInfoCacheDb } from '../../packages/lib/src/nico/watch-info-cache-db';
@@ -109,7 +109,6 @@ async function choose(raw: RawVideoInfoData) {
       },
     },
     _state: { setState: (values: Record<string, unknown>) => Object.assign(state, values) },
-    _videoFilter: new VideoFilter([], []),
     setVideo: (url: string) => mediaUrls.push(url),
     emit() {},
     emitResolve() {},

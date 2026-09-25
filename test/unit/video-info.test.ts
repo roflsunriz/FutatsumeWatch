@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
-import { VideoFilter, VideoInfoModel } from '../../src/video-info';
+import { VideoInfoModel } from '../../src/video-info';
 import type { RawVideoInfoData } from '../../src/video-info';
 
 const FIXTURE_PATH = './test/fixtures/video-info-raw-data.json';
@@ -139,28 +139,4 @@ it('Domand画質は入力順に依存せず高品質順で利用可能なもの�
   expect(model.hasStoryboard).toBe(true);
   expect(model.extension).toBe('mp4');
   expect(videos.map((video) => video.id)).toEqual(['low', 'unavailable', 'high', 'middle']);
-});
-
-describe('VideoFilter', () => {
-  it('ng タグ・投稿者に一致したら true', () => {
-    const filter = new VideoFilter(['12345'], ['ngword']);
-    expect(
-      filter.isNgVideo({
-        isChannel: false,
-        tagList: [{ name: 'hello' }, { name: 'NGWord' }],
-        owner: { id: '12345' },
-      })
-    ).toBe(true);
-  });
-
-  it('一致しなければ false', () => {
-    const filter = new VideoFilter(['99999'], ['ngword']);
-    expect(
-      filter.isNgVideo({
-        isChannel: false,
-        tagList: [{ name: 'hello' }],
-        owner: { id: '12345' },
-      })
-    ).toBe(false);
-  });
 });

@@ -10,6 +10,8 @@ import { AntiPrototypeJs } from '../packages/lib/src/infra/anti-prototype-js';
 import { CrossDomainGate } from '../packages/lib/src/infra/cross-domain-gate';
 import { DataStorage } from '../packages/lib/src/infra/data-storage';
 import { parseThumbInfo } from '../packages/lib/src/nico/parse-thumb-info';
+import { getNicodicArticleExists } from '../packages/lib/src/nico/nico-dic-api';
+import { createDicIconHtml } from '../packages/lib/src/nico/nico-dic-icon';
 import { ThumbInfoCacheDb } from '../packages/lib/src/nico/thumb-info-cache-db';
 import { MylistApiLoader } from '../packages/lib/src/nico/mylist-api-loader';
 import { bounce } from '../packages/lib/src/infra/bounce';
@@ -1946,7 +1948,6 @@ void AntiPrototypeJs().then(() => {
         'ng.owner': '',
         'ng.word': '',
         'ng.tag': '',
-        'ng.syncFutatsume': false,
 
         'fav.owner': '',
         'fav.word': '',
@@ -2694,28 +2695,11 @@ void AntiPrototypeJs().then(() => {
 
         const onUpdate = bounce.time(refresh, 100) as unknown as (...args: never[]) => void;
 
-        const syncFutatsume = bounce.time((): void => {
-          if (!this._ngConfig.props.syncFutatsume || !this._isFutatsumeReady) {
-            return;
-          }
-          (window as unknown as PocketWindow).FutatsumeWatch!.config.setValue(
-            'videoTagFilter',
-            this._ngConfig.props.tag
-          );
-          (window as unknown as PocketWindow).FutatsumeWatch!.config.setValue(
-            'videoOwnerFilter',
-            this._ngConfig.props.owner
-          );
-        }, 1000) as unknown as (...args: never[]) => void;
-
         refresh();
 
         this._config.on('update', onUpdate);
         this._favConfig.on('update', onUpdate);
-        this._ngConfig.on('update', (): void => {
-          onUpdate();
-          syncFutatsume();
-        });
+        this._ngConfig.on('update', onUpdate);
       }
 
       _onSettingFormChange(e: Event): void {
@@ -3026,7 +3010,7 @@ void AntiPrototypeJs().then(() => {
         this.removeClass('is-ok');
       }
 
-      _createTagSlot(tag: PocketVideoTag, { isChannel }: PocketVideoInfo): Element {
+      _createTagSlot(tag: PocketVideoTag, { isChannel, watchId }: PocketVideoInfo): Element {
         const text = util.escapeHtml(tag.text);
         const lock = tag.isLocked ? 'is-locked' : '';
         const span = document.createElement('span');
@@ -3067,12 +3051,21 @@ void AntiPrototypeJs().then(() => {
         bt.innerHTML = '&#x2716;'; //'&#8416;'; // &#x2716;
         span.appendChild(bt);
 
-        const menu = `<futatsume-tag-item-menu
-          class="tagItemMenu"
-          data-text="${encodeURIComponent(text)}"
-          data-has-nicodic="0"
-        ></futatsume-tag-item-menu>`;
-        span.insertAdjacentHTML('afterbegin', menu);
+        // 大百科アイコンの描画と存在解決は TagListView と共通化する。
+        // 初期表示は未取得、記事APIの応答で futatsume-tag-item-menu を作り直す。
+        span.insertAdjacentHTML('afterbegin', createDicIconHtml(tag.text));
+        void getNicodicArticleExists(tag.text).then((exists) => {
+          if (this._videoInfo.watchId !== watchId || !span.isConnected) {
+            return;
+          }
+          const menu = span.querySelector('futatsume-tag-item-menu');
+          if (!menu) {
+            return;
+          }
+          const resolved = document.createElement('div');
+          resolved.innerHTML = createDicIconHtml(tag.text, exists);
+          menu.replaceWith(resolved.firstElementChild as Element);
+        });
 
         span.className = 'tag-container';
         span.setAttribute('data-tag', tag.text);

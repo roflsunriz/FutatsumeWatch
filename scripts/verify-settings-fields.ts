@@ -50,7 +50,7 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     name: 'filters',
     panel: 'general',
     id: 'P2-09',
-    keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordRegFilter commandFilter userIdFilter videoTagFilter videoOwnerFilter'.split(
+    keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordRegFilter commandFilter userIdFilter'.split(
       ' '
     ),
   },
@@ -168,7 +168,7 @@ function candidates(field: Field): (string | boolean)[] {
   if (field.key === 'wordRegFilter') return ['/futatsume-settings-fixture/g\n/^second$/i'];
   if (field.key.includes('ShadowColor')) return ['#123456'];
   if (field.key === 'baseFontFamily') return ['monospace'];
-  if (field.key === 'videoOwnerFilter' || field.key === 'userIdFilter') return ['99999999'];
+  if (field.key === 'userIdFilter') return ['99999999'];
   if (field.key === 'commandFilter') return ['invisible'];
   return ['futatsume-settings-fixture'];
 }

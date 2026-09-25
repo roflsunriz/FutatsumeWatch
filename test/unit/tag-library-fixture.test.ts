@@ -37,3 +37,12 @@ test('P0/P3 関連APIはbase64レシピの動画IDと種類を区別する', asy
   expect((await library.reply(request('sm9')))?.status).toBe(200);
   expect(await library.reply(request('sm999'))).toBeNull();
 });
+test('P4-04 pocket動画詳細の合成タグも記事APIの登録済み応答で解決する', async () => {
+  const library = createLibraryRoutes();
+  const article = (name: string) => ({
+    method: 'GET',
+    url: 'https://api.dic.nicovideo.jp/v1/articles/article/' + encodeURIComponent(name),
+  });
+  expect((await library.reply(article('検証')))?.status).toBe(404);
+  expect(await library.reply(article('未登録の合成タグ検証'))).toBeNull();
+});

@@ -1,5 +1,6 @@
 import { afterEach, expect, test } from 'bun:test';
 import { getNicodicArticleExists } from '../../packages/lib/src/nico/nico-dic-api';
+import { createDicIconHtml } from '../../packages/lib/src/nico/nico-dic-icon';
 import { netUtil } from '../../packages/lib/src/infra/net-util';
 const original = netUtil.fetch;
 afterEach(() => {
@@ -26,4 +27,21 @@ test('P4-04 2xxを存在、404を不存在とし、通信失敗と他の拒否�
   }
   netUtil.fetch = () => Promise.resolve(Response.json({ any: 'official response shape' }));
   expect(await getNicodicArticleExists('辞書200')).toBe(true);
+});
+test('大百科アイコンは未取得・あり・なしで共通の描画へ解決する', () => {
+  const unknown = createDicIconHtml('テスト');
+  expect(unknown).toContain('data-has-nicodic="unknown"');
+  expect(unknown).toContain('大百科の有無は未取得');
+  expect(unknown).toContain('tag_icon003.png');
+  const exists = createDicIconHtml('テスト', true);
+  expect(exists).toContain('data-has-nicodic="1"');
+  expect(exists).toContain('大百科あり');
+  expect(exists).toContain('tag_icon002.png');
+  const missing = createDicIconHtml('テスト', false);
+  expect(missing).toContain('data-has-nicodic="0"');
+  expect(missing).toContain('大百科なし');
+  expect(missing).toContain('tag_icon003.png');
+  for (const html of [unknown, exists, missing]) {
+    expect(html).toContain('https://dic.nicovideo.jp/a/' + encodeURIComponent('テスト'));
+  }
 });

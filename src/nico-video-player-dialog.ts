@@ -4,7 +4,7 @@ import { CONSTANT } from './constant';
 import { PlaybackPosition, VideoInfoLoader } from '../packages/lib/src/nico/loader';
 import { Fullscreen, ShortcutKeyEmitter, util } from './util';
 import { NicoVideoPlayer } from './nico-video-player';
-import { VideoFilter, VideoInfoModel } from './video-info';
+import { VideoInfoModel } from './video-info';
 import type { RawVideoInfoData, ResumeCacheEntry } from './video-info';
 import { CommentInputPanel } from './comment-input-panel';
 import { CommentPostSession, normalizeCommentCommands } from './comment-post-session';
@@ -1496,7 +1496,6 @@ class NicoVideoPlayerDialog extends Emitter {
   declare private _keyEmitter: DialogKeyEmitter;
   declare private _id: string;
   declare private _escBlockExpiredAt: number;
-  declare private _videoFilter: VideoFilter;
   declare private _view: NicoVideoPlayerDialogView;
   declare private _$playerContainer: Uq;
   declare private _nicoVideoPlayer: NicoVideoPlayer;
@@ -1545,11 +1544,6 @@ class NicoVideoPlayerDialog extends Emitter {
     this._playerConfig.on('update', this._onPlayerConfigUpdate.bind(this) as EmitterCallback);
 
     this._escBlockExpiredAt = -1;
-
-    this._videoFilter = new VideoFilter(
-      this._playerConfig.props.videoOwnerFilter,
-      this._playerConfig.props.videoTagFilter
-    );
 
     this._savePlaybackPosition = _.throttle(this._savePlaybackPosition.bind(this), 1000, { trailing: false });
 
@@ -2392,10 +2386,6 @@ class NicoVideoPlayerDialog extends Emitter {
     }
     this._videoSession = videoSession;
 
-    if (this._videoFilter.isNgVideo(videoInfo)) {
-      return this._onVideoFilterMatch();
-    }
-
     try {
       const sessionInfo = await videoSession.connect();
       if (this._requestId !== requestId) {
@@ -2524,17 +2514,6 @@ class NicoVideoPlayerDialog extends Emitter {
 
     this.emit('loadVideoPlayStartFail');
     void global.emitter.emitAsync('loadVideoPlayStartFail');
-  }
-  _onVideoFilterMatch(): void {
-    window.console.error('ng video', this._watchId);
-    this._setErrorMessage('再生除外対象の動画または投稿者です');
-    this._state.isError = true;
-    this.emit('error');
-    if (this.isPlaylistEnable) {
-      this.videoRecovery.schedule(() => {
-        if (this.isOpen) this.playNextVideo();
-      });
-    }
   }
   _setErrorMessage(msg: string): void {
     this._state.errorMessage = msg;

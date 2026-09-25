@@ -18,6 +18,14 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 - CI と Dependabot の分類の実行順が前後しても更新を取りこぼさないよう、同じ PR 番号と head SHA を再照合する経路を追加した。
 - actions/labeler v7でPRの自動ラベル付けが設定形式エラーにならないよう、ラベル条件を`changed-files`形式へ更新した。
 
+### Changed
+
+- MylistPocketの動画詳細のタグ表示を詳細タブ・再生中メタデータと同じ描画へ共通化し、大百科アイコンの存在解決を公式記事API照会へ一本化した。未取得・あり・なしの表示は共通ヘルパーで統一する。
+
+### Removed
+
+- 本体のNGタグ・NG投稿者を削除するため、`videoTagFilter`／`videoOwnerFilter`設定・設定画面の入力欄・`VideoFilter`と再生除外・次動画送り・検証台帳・関連テストを削除した。設定は34項目になる。保存済みの旧キーは読み込み対象外として保持する。MylistPocket側のNG・お気に入り判定は維持する。
+
 ## [0.0.21] - 2026-09-22
 
 ### Changed
