@@ -73,11 +73,13 @@ describe('詳細ロックと設定', () => {
     let settingsOpened = 0;
     let layoutChanged = 0;
     const saved: Record<string, unknown> = {};
+    const stored: Record<string, unknown> = { volume: 0.3, domandVideoQuality: 'auto', detailsLocked: initialLocked };
     const config = {
-      props: { volume: 0.3, domandVideoQuality: 'auto', detailsLocked: initialLocked },
+      props: stored,
       onkey: () => undefined,
       setValue: (key: string, value: unknown): void => {
         saved[key] = value;
+        stored[key] = value;
       },
     } as unknown as ConfigStore;
     const state = {
@@ -91,7 +93,7 @@ describe('詳細ロックと設定', () => {
       onkey: () => undefined,
     } as unknown as PlayerState;
     const player = { currentTime: 0, duration: 100, volume: 0.3 };
-    new PlayerShell(
+    const instance = new PlayerShell(
       container,
       config,
       state,
@@ -118,7 +120,12 @@ describe('詳細ロックと設定', () => {
       settingsOpened: () => settingsOpened,
       layoutChanged: () => layoutChanged,
       saved,
-      dispose: () => container.remove(),
+      open: () => instance.open(),
+      close: () => instance.close(),
+      dispose: () => {
+        instance.close();
+        container.remove();
+      },
     };
   };
 
@@ -158,7 +165,7 @@ describe('詳細ロックと設定', () => {
     }
   });
 
-  test('ロック操作を保存し、次回は詳細パネルを開いた状態で復元する', () => {
+  test('ロック操作を保存し、開くたびに詳細パネルを開いた状態で復元する', () => {
     const first = createShell();
     try {
       first.click('details-lock');
@@ -168,11 +175,31 @@ describe('詳細ロックと設定', () => {
     }
     const second = createShell(true);
     try {
+      // 生成直後はボタンの表示だけ復元し、開いたときにパネルも復元する。
       expect(second.container.dataset['detailsLocked']).toBe('true');
       expect(second.lockPressed()).toBe('true');
+      expect(second.container.dataset['panel'] ?? '').toBe('');
+      second.open();
+      expect(second.container.dataset['detailsLocked']).toBe('true');
       expect(second.container.dataset['panel']).toBe('details');
     } finally {
       second.dispose();
+    }
+  });
+
+  test('閉じて開き直しても保存したロックを再現する', () => {
+    const shell = createShell();
+    try {
+      shell.click('details-lock');
+      expect(shell.saved['detailsLocked']).toBe(true);
+      shell.close();
+      expect(shell.container.dataset['detailsLocked']).toBe('false');
+      shell.open();
+      expect(shell.container.dataset['detailsLocked']).toBe('true');
+      expect(shell.lockPressed()).toBe('true');
+      expect(shell.container.dataset['panel']).toBe('details');
+    } finally {
+      shell.dispose();
     }
   });
 });

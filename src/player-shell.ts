@@ -186,10 +186,6 @@ export class PlayerShell {
     this.decorateTabs();
     new MutationObserver(() => this.decorateTabs()).observe(this.require('.tabSelectContainer'), { childList: true });
     this.sync();
-    if (this.detailsLocked) {
-      this.setPanel('details', true);
-      this.layoutChanged();
-    }
   }
   private require<T extends HTMLElement = HTMLElement>(selector: string): T {
     const element = this.container.querySelector<T>(selector);
@@ -386,6 +382,13 @@ export class PlayerShell {
     }, 3000);
   }
   open(): void {
+    // 同一インスタンスを使い回すため、開くたびに保存値からロックを復元する。
+    this.detailsLocked = this.config.props.detailsLocked === true;
+    this.updateDetailsLockButton();
+    if (this.detailsLocked) {
+      this.setPanel('details', true);
+      this.layoutChanged();
+    }
     this.reveal();
     clearInterval(this.clockTimer);
     this.clockTimer = setInterval(() => this.tick(), 80);
