@@ -201,12 +201,11 @@ export class PlayerShell {
         this.setPanel(this.panel === action ? null : action);
         break;
       case 'settings':
-        if (this.detailsLocked) {
-          this.detailsLocked = false;
-          this.updateDetailsLockButton();
+        // ロック中は詳細パネルと配置を維持したまま設定だけを開く。解除はdetails-lock操作に任せる。
+        if (!this.detailsLocked) {
+          this.setPanel(null, true);
+          this.layoutChanged();
         }
-        this.setPanel(null, true);
-        this.layoutChanged();
         this.generalSettings();
         break;
       case 'details-lock':

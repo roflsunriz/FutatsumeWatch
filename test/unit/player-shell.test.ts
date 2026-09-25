@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { ABRepeat } from '../../src/player-shell';
+import { ABRepeat, PlayerShell } from '../../src/player-shell';
 import { shellText } from '../../src/player-shell-view';
 import { VideoListItem } from '../../packages/futatsume/src/Playlist/video-list-item';
+import type { ConfigStore } from '../../src/config';
+import type { PlayerState } from '../../src/state';
 
 describe('AB repeat', () => {
   test('AとBを指定した区間だけを繰り返し、3回目で解除する', () => {
@@ -51,4 +53,102 @@ test('いいね数は一覧の保存・復元で失われず、未取得をゼ�
   const item = new VideoListItem({ id: 'sm9', title: 'video', like: 42, first_retrieve: '2007-03-06' });
   expect(new VideoListItem(item.serialize()).count.like).toBe(42);
   expect(new VideoListItem({ id: 'sm9', title: 'video' }).count.like).toBeUndefined();
+});
+
+describe('詳細ロックと設定', () => {
+  const ensureGlobals = (): void => {
+    const g = globalThis as unknown as Record<string, unknown>;
+    const w = window as unknown as Record<string, unknown>;
+    if (typeof g['Element'] === 'undefined') g['Element'] = w['Element'];
+    if (typeof g['HTMLElement'] === 'undefined') g['HTMLElement'] = w['HTMLElement'];
+    if (typeof g['MutationObserver'] === 'undefined') g['MutationObserver'] = w['MutationObserver'];
+  };
+  const createShell = () => {
+    ensureGlobals();
+    const container = document.createElement('div');
+    container.innerHTML =
+      '<div class="futatsumeWatchVideoInfoPanel"><div class="tabSelectContainer"></div></div>' +
+      '<div class="commentInputPanel"></div>';
+    document.body.append(container);
+    let settingsOpened = 0;
+    let layoutChanged = 0;
+    const config = {
+      props: { volume: 0.3, domandVideoQuality: 'auto' },
+      onkey: () => undefined,
+    } as unknown as ConfigStore;
+    const state = {
+      isPlaying: false,
+      isMute: false,
+      isLoop: false,
+      isShowComment: true,
+      playbackRate: 1,
+      currentTab: 'videoInfoTab',
+      isOpen: true,
+      onkey: () => undefined,
+    } as unknown as PlayerState;
+    const player = { currentTime: 0, duration: 100, volume: 0.3 };
+    new PlayerShell(
+      container,
+      config,
+      state,
+      player,
+      () => undefined,
+      () => {
+        settingsOpened++;
+      },
+      () => {
+        layoutChanged++;
+      }
+    );
+    const click = (action: string): void => {
+      const button = container.querySelector(`[data-shell-action="${action}"]`);
+      if (!button) throw new Error(`ボタンがありません: ${action}`);
+      button.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }));
+    };
+    const lockPressed = (): string | null | undefined =>
+      container.querySelector('[data-shell-action="details-lock"]')?.getAttribute('aria-pressed');
+    return {
+      container,
+      click,
+      lockPressed,
+      settingsOpened: () => settingsOpened,
+      layoutChanged: () => layoutChanged,
+      dispose: () => container.remove(),
+    };
+  };
+
+  test('ロック中に設定を開いてもロックと詳細パネルを維持する', () => {
+    const shell = createShell();
+    try {
+      shell.click('details-lock');
+      expect(shell.container.dataset['detailsLocked']).toBe('true');
+      expect(shell.lockPressed()).toBe('true');
+      expect(shell.container.dataset['panel']).toBe('details');
+      const layoutBefore = shell.layoutChanged();
+      shell.click('settings');
+      expect(shell.settingsOpened()).toBe(1);
+      expect(shell.container.dataset['detailsLocked']).toBe('true');
+      expect(shell.lockPressed()).toBe('true');
+      expect(shell.container.dataset['panel']).toBe('details');
+      expect(shell.layoutChanged()).toBe(layoutBefore);
+    } finally {
+      shell.dispose();
+    }
+  });
+
+  test('ロックなしで設定を開くと詳細パネルを閉じる', () => {
+    const shell = createShell();
+    try {
+      shell.click('details-lock');
+      shell.click('details-lock');
+      expect(shell.container.dataset['detailsLocked']).toBe('false');
+      const layoutBefore = shell.layoutChanged();
+      shell.click('settings');
+      expect(shell.settingsOpened()).toBe(1);
+      expect(shell.container.dataset['panel']).toBe('');
+      expect(shell.layoutChanged()).toBe(layoutBefore + 1);
+    } finally {
+      shell.dispose();
+    }
+  });
 });
