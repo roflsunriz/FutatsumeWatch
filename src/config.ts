@@ -29,6 +29,7 @@ export interface ConfigProps {
   enableStoryboard: boolean;
   enableStoryboardBar: boolean;
   videoInfoPanelTab: string;
+  detailsLocked: boolean;
   fullscreenControlBarMode: string;
   enableFilter: boolean;
   wordRegFilter: string[];
@@ -185,6 +186,7 @@ const Config = (() => {
     enableStoryboard: true, // シークバーサムネイル関連
     enableStoryboardBar: false, // シーンサーチ
     videoInfoPanelTab: 'videoInfoTab',
+    detailsLocked: false,
     fullscreenControlBarMode: 'auto', // 'always-show' 'always-hide'
 
     // forceEconomy: false,

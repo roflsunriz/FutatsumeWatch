@@ -75,6 +75,7 @@ export class PlayerShell {
       () => this.createSettingsSidebarExtras()
     );
     container.classList.add('fw-player');
+    this.detailsLocked = this.config.props.detailsLocked === true;
     this.info = this.require('.futatsumeWatchVideoInfoPanel');
     this.info.id = 'fw-details';
     this.info.setAttribute('aria-label', this.text.details);
@@ -185,6 +186,10 @@ export class PlayerShell {
     this.decorateTabs();
     new MutationObserver(() => this.decorateTabs()).observe(this.require('.tabSelectContainer'), { childList: true });
     this.sync();
+    if (this.detailsLocked) {
+      this.setPanel('details', true);
+      this.layoutChanged();
+    }
   }
   private require<T extends HTMLElement = HTMLElement>(selector: string): T {
     const element = this.container.querySelector<T>(selector);
@@ -210,6 +215,7 @@ export class PlayerShell {
         break;
       case 'details-lock':
         this.detailsLocked = !this.detailsLocked;
+        this.config.setValue('detailsLocked', this.detailsLocked);
         this.updateDetailsLockButton();
         this.setPanel('details', true);
         this.layoutChanged();

@@ -63,7 +63,7 @@ describe('詳細ロックと設定', () => {
     if (typeof g['HTMLElement'] === 'undefined') g['HTMLElement'] = w['HTMLElement'];
     if (typeof g['MutationObserver'] === 'undefined') g['MutationObserver'] = w['MutationObserver'];
   };
-  const createShell = () => {
+  const createShell = (initialLocked = false) => {
     ensureGlobals();
     const container = document.createElement('div');
     container.innerHTML =
@@ -72,9 +72,13 @@ describe('詳細ロックと設定', () => {
     document.body.append(container);
     let settingsOpened = 0;
     let layoutChanged = 0;
+    const saved: Record<string, unknown> = {};
     const config = {
-      props: { volume: 0.3, domandVideoQuality: 'auto' },
+      props: { volume: 0.3, domandVideoQuality: 'auto', detailsLocked: initialLocked },
       onkey: () => undefined,
+      setValue: (key: string, value: unknown): void => {
+        saved[key] = value;
+      },
     } as unknown as ConfigStore;
     const state = {
       isPlaying: false,
@@ -113,6 +117,7 @@ describe('詳細ロックと設定', () => {
       lockPressed,
       settingsOpened: () => settingsOpened,
       layoutChanged: () => layoutChanged,
+      saved,
       dispose: () => container.remove(),
     };
   };
@@ -142,6 +147,7 @@ describe('詳細ロックと設定', () => {
       shell.click('details-lock');
       shell.click('details-lock');
       expect(shell.container.dataset['detailsLocked']).toBe('false');
+      expect(shell.saved['detailsLocked']).toBe(false);
       const layoutBefore = shell.layoutChanged();
       shell.click('settings');
       expect(shell.settingsOpened()).toBe(1);
@@ -149,6 +155,24 @@ describe('詳細ロックと設定', () => {
       expect(shell.layoutChanged()).toBe(layoutBefore + 1);
     } finally {
       shell.dispose();
+    }
+  });
+
+  test('ロック操作を保存し、次回は詳細パネルを開いた状態で復元する', () => {
+    const first = createShell();
+    try {
+      first.click('details-lock');
+      expect(first.saved['detailsLocked']).toBe(true);
+    } finally {
+      first.dispose();
+    }
+    const second = createShell(true);
+    try {
+      expect(second.container.dataset['detailsLocked']).toBe('true');
+      expect(second.lockPressed()).toBe('true');
+      expect(second.container.dataset['panel']).toBe('details');
+    } finally {
+      second.dispose();
     }
   });
 });
