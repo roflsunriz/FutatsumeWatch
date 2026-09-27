@@ -60,6 +60,7 @@ export default defineConfig({
           '*://flapi.nicovideo.jp/*',
           '*://dic.nicovideo.jp/p/*',
           '*://ext.nicovideo.jp/thumb_channel/*',
+          'https://www.nicovideo.jp/local/*',
         ],
         grant: 'none',
         'run-at': 'document-end',

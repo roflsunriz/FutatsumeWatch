@@ -4,6 +4,10 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+## [0.0.25] - 2026-09-27
+
+- https://www.nicovideo.jp/local/* を exclude に追加
+
 ## [0.0.24] - 2026-09-25
 
 ### Fixed
