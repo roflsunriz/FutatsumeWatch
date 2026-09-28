@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
-import { Emitter, Handler } from '../../src/baselib';
+import { Emitter, Handler } from '../../src/shared/baselib';
 
 let called: Record<string, number | undefined> = {};
 let count = 0;

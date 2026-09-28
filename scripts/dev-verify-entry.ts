@@ -3,7 +3,7 @@ import { verificationDirectory } from './dev-verification-output';
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
-import { VERSION } from '../src/version';
+import { VERSION } from '../src/app/version';
 
 const checks: string[] = [];
 const report: { checks: string[]; completed: boolean; error?: string } = { checks, completed: false };

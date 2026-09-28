@@ -55,8 +55,8 @@ interface GlobalLike {
 
 import { Emitter } from '../emitter';
 import type { PromiseHandlerCallback } from '../emitter';
-import { global, PRODUCT } from '../../../../src/futatsume-watch-index';
-import { Config } from '../../../../src/config';
+import { global, PRODUCT } from '../../../../src/app/futatsume-watch-index';
+import { Config } from '../../../../src/config/index';
 import { NicoVideoApi } from '../nico/nico-video-api';
 
 //===BEGIN===

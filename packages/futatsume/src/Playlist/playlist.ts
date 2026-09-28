@@ -11,7 +11,7 @@ import { PlayListSession } from './playlist-session';
 import { VideoListView } from './video-list-view';
 import { PlayListView } from './playlist-view';
 import { textUtil } from '../../../lib/src/text/text-util';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 import type { SearchQueryParams } from '../../../lib/src/nico/video-search';
 
 // lib波が packages/lib/src/nico/playlist-api-loader.ts に export を追加するまでの暫定措置。

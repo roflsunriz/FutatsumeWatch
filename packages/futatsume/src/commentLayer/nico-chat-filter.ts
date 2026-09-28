@@ -1,7 +1,11 @@
 import _ from 'lodash';
 import { Emitter } from '../../../lib/src/emitter';
 import { textUtil } from '../../../lib/src/text/text-util';
-import { formatLiteralNgRegexpInput, formatNgRegexpInput, parseNgRegexpInput } from '../../../../src/ng-regexp-input';
+import {
+  formatLiteralNgRegexpInput,
+  formatNgRegexpInput,
+  parseNgRegexpInput,
+} from '../../../../src/config/ng-regexp-input';
 import type { NicoChatType as NicoChat } from './nico-chat';
 
 export interface NicoChatFilterParams {

@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
 
 Object.assign(globalThis, { HTMLCanvasElement: window.HTMLCanvasElement });
-const { CommentPreviewModel } = await import('../../src/video-control-bar');
+const { CommentPreviewModel } = await import('../../src/video-control-bar/index');
 
 test('コメントプレビューは動画位置に合わせて昇順コメント範囲を選ぶ', () => {
   const model = new CommentPreviewModel();

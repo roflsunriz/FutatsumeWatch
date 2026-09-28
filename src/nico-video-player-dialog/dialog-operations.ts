@@ -1,15 +1,15 @@
 import * as _ from 'lodash';
-import { global } from '../futatsume-watch-index';
+import { global } from '../app/futatsume-watch-index';
 
 import { PlaybackPosition } from '../../packages/lib/src/nico/loader';
-import { Fullscreen, util } from '../util';
-import { NicoVideoPlayer } from '../nico-video-player';
+import { Fullscreen, util } from '../shared/util';
+import { NicoVideoPlayer } from '../nico-video-player/index';
 
-import { normalizeCommentCommands } from '../comment-post-session';
+import { normalizeCommentCommands } from '../comments/comment-post-session';
 
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
 import { NicoChat } from '../../packages/futatsume/src/commentLayer/nico-chat';
-import { CommentPanel } from '../comment-panel';
+import { CommentPanel } from '../comment-panel/index';
 
 import { PlayList, PlayListSession } from '../../packages/futatsume/src/Playlist/playlist';
 import type { PlaylistDescriptor } from '../../packages/futatsume/src/Playlist/playlist';

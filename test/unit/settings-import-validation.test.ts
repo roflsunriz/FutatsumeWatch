@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import { validateImportedConfig } from '../../src/config-validation';
-import { migrateImportedConfig } from '../../src/config-migration';
-import { Config } from '../../src/config';
+import { validateImportedConfig } from '../../src/config/config-validation';
+import { migrateImportedConfig } from '../../src/config/config-migration';
+import { Config } from '../../src/config/index';
 
 const defaults = {
   volume: 0.3,

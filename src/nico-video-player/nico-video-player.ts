@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import { NicoCommentPlayer } from '../comment-player';
-import type { CommentPlayerOptions, CommentPlayerParams, CommentPlayerChatFilter } from '../comment-player';
-import { util, Config, Fullscreen, VideoCaptureUtil } from '../util';
-import { CONSTANT } from '../constant';
-import { global } from '../futatsume-watch-index';
-import { Emitter } from '../baselib';
+import { NicoCommentPlayer } from '../comments/comment-player';
+import type { CommentPlayerOptions, CommentPlayerParams, CommentPlayerChatFilter } from '../comments/comment-player';
+import { util, Config, Fullscreen, VideoCaptureUtil } from '../shared/util';
+import { CONSTANT } from '../shared/constant';
+import { global } from '../app/futatsume-watch-index';
+import { Emitter } from '../shared/baselib';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 import { ContextMenu } from './context-menu';
 import { VideoPlayer } from './video-player';

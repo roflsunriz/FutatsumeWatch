@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import monkey from 'vite-plugin-monkey';
-import { VERSION } from './src/version.ts';
+import { VERSION } from './src/app/version.ts';
 import { readFileSync } from 'node:fs';
 
 export default defineConfig({
@@ -19,7 +19,7 @@ export default defineConfig({
   },
   plugins: [
     monkey({
-      entry: 'src/main.ts',
+      entry: 'src/app/main.ts',
       userscript: {
         name: 'FutatsumeWatch',
         namespace: 'https://github.com/roflsunriz/FutatsumeWatch/',

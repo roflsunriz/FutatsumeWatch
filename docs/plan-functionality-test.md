@@ -28,7 +28,7 @@
 | `test/fixtures/cdp/scene.ts`                                                       | 現行照合はメソッド・URL中心で、`postData`を照合しない。パス一致へのフォールバックもあるため、本文・検索条件の違いを見逃さない設計が必要。                                         |
 | `.github/workflows/ci.yml`                                                         | Ubuntuで静的検査・ビルド・単体・依存監査・dist差分を確認。ブラウザ検証は未接続で、起動補助はWindows用。                                                                           |
 
-主な実装参照先は`src/player-shell.ts`、`src/player-shell-view.ts`、`src/comment-input-panel.ts`、`src/comment-panel.ts`、`src/video-info-panel.ts`、`src/tag-list-view.ts`、`packages/futatsume/src/Playlist/`、`packages/components/src/settings-dialog.ts`、`packages/components/src/element/setting-panel-element.ts`。ブラウザ操作には既存の`dev-cdp.ts`・`dev-ui.ts`を優先し、同じ役割の基盤を作り直さない。
+主な実装参照先は`src/player-shell/player-shell.ts`、`src/player-shell/player-shell-view.ts`、`src/comments/comment-input-panel.ts`、`src/comment-panel/index.ts`、`src/video-info-panel/index.ts`、`src/tags/tag-list-view.ts`、`packages/futatsume/src/Playlist/`、`packages/components/src/settings-dialog.ts`、`packages/components/src/element/setting-panel-element.ts`。ブラウザ操作には既存の`dev-cdp.ts`・`dev-ui.ts`を優先し、同じ役割の基盤を作り直さない。
 
 ## 3. 検証の層と共通基準
 

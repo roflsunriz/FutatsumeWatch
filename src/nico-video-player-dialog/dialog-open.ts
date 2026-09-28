@@ -1,7 +1,7 @@
-import { global } from '../futatsume-watch-index';
+import { global } from '../app/futatsume-watch-index';
 
 import { VideoInfoLoader } from '../../packages/lib/src/nico/loader';
-import { util } from '../util';
+import { util } from '../shared/util';
 
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
 

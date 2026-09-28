@@ -101,7 +101,7 @@ interface LoadError {
   info?: unknown;
 }
 
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 const { emitter, debug } = global;
 
 //===BEGIN===

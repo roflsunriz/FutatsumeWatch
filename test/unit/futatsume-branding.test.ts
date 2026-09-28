@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
-import { STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/version';
+import { STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/app/version';
 
 describe('FutatsumeWatch改名', () => {
   it('製品定数が現行名称を指す', () => {
     // FutatsumeWatchIndex は window 前提の依存を引くため静的 import せず原文で固定する
-    const src = fs.readFileSync('./src/futatsume-watch-index.ts', 'utf8');
+    const src = fs.readFileSync('./src/app/futatsume-watch-index.ts', 'utf8');
     expect(src).toContain(`PRODUCT = 'FutatsumeWatch'`);
     expect(src).not.toContain('LEGACY_PRODUCT');
   });

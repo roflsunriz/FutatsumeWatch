@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { nicoUtil } from '../../../lib/src/nico/nico-util';
-import { PRODUCT } from '../../../../src/futatsume-watch-index';
+import { PRODUCT } from '../../../../src/app/futatsume-watch-index';
 
 interface NicoUtilLike {
   isGinzaWatchUrl(url: string): boolean;

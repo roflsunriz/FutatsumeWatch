@@ -1,4 +1,4 @@
-import { CONSTANT } from '../constant';
+import { CONSTANT } from '../shared/constant';
 export const NICO_VIDEO_PLAYER_DIALOG_VIEW_CSS = `
 
   .futatsumeVideoPlayerDialog {

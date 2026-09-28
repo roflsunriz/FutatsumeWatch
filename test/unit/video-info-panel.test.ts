@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 Object.assign(globalThis, { HTMLElement: window.HTMLElement });
 await Config.promise('restore');
 const { VideoInfoPanel, VideoHeaderPanel, VideoSearchForm, RelatedInfoMenu, VideoMetaInfo } =
-  await import('../../src/video-info-panel');
+  await import('../../src/video-info-panel/index');
 
 test('P3-03 投稿者・説明・シリーズ・関連動画を保ち、タグは詳細だけに表示する', () => {
   const template = document.createElement('template');

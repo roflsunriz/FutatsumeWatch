@@ -1,4 +1,4 @@
-import { VERSION } from '../src/version';
+import { VERSION } from '../src/app/version';
 import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 
 // マネージャの「有効」表示だけで済ませず、新しい文書への実適用を確認する。

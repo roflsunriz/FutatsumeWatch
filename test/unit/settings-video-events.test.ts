@@ -1,8 +1,8 @@
 import { expect, spyOn, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 import { Fullscreen } from '../../packages/lib/src/dom/fullscreen';
-import { VideoInfoModel } from '../../src/video-info';
-import type { RawVideoInfoData } from '../../src/video-info';
+import { VideoInfoModel } from '../../src/video-info-panel/video-info';
+import type { RawVideoInfoData } from '../../src/video-info-panel/video-info';
 import { Emitter } from '../../packages/lib/src/emitter';
 await Config.promise('restore');
 Object.assign(globalThis, {
@@ -17,8 +17,8 @@ Object.assign(globalThis, {
   MutationObserver: window.MutationObserver,
   customElements: window.customElements,
 });
-const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog');
-const { VideoInfoPanel } = await import('../../src/video-info-panel');
+const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog/index');
+const { VideoInfoPanel } = await import('../../src/video-info-panel/index');
 
 test('終端の全画面解除は設定・動画別指定・次動画の継続を尊重する', () => {
   let cancels = 0,

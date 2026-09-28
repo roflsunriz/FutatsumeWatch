@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { Emitter } from '../../packages/lib/src/emitter';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
-import { VideoControlBar } from '../video-control-bar';
+import { VideoControlBar } from '../video-control-bar/index';
 import { css, cssUtil } from '../../packages/lib/src/css/css';
 import type { DialogPlayerConfig, VariablesMapperState } from './types';
 class VariablesMapper {

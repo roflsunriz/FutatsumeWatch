@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { global } from '../futatsume-watch-index';
-import { util } from '../util';
-import { Emitter } from '../baselib';
+import { global } from '../app/futatsume-watch-index';
+import { util } from '../shared/util';
+import { Emitter } from '../shared/baselib';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 import { throttle } from '../../packages/lib/src/infra/bounce';
 import { cssUtil } from '../../packages/lib/src/css/css';

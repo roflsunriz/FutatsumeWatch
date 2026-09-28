@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import { global } from '../futatsume-watch-index';
-import { Emitter } from '../baselib';
+import { global } from '../app/futatsume-watch-index';
+import { Emitter } from '../shared/baselib';
 import { Clipboard } from '../../packages/lib/src/dom/clipboard';
-import type { NicoVideoPlayer } from '../nico-video-player';
+import type { NicoVideoPlayer } from '../nico-video-player/index';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 import { CommentListModel } from './comment-list-model';
 import type { CommentListItem } from './comment-list-item';

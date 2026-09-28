@@ -4,7 +4,7 @@ import {
   formatNgRegexpInput,
   normalizeNgRegexpInputLines,
   parseNgRegexpInput,
-} from '../../src/ng-regexp-input';
+} from '../../src/config/ng-regexp-input';
 
 describe('NG正規表現の統合入力', () => {
   test('パターンとフラグを1つの入力へ往復する', () => {

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Emitter } from '../baselib';
+import { Emitter } from '../shared/baselib';
 import { CommentListItem } from './comment-list-item';
 import type { ChatListData, NicoChatItem } from './types';
 

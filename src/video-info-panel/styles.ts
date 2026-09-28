@@ -1,4 +1,4 @@
-import { CONSTANT } from '../constant';
+import { CONSTANT } from '../shared/constant';
 import { css } from '../../packages/lib/src/css/css';
 import { uq } from '../../packages/lib/src/u-query';
 import type { UqStatic } from './types';

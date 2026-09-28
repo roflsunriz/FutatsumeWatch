@@ -2,12 +2,12 @@ import { describe, expect, test } from 'bun:test';
 import type {
   NicoVideoPlayer as NicoVideoPlayerType,
   VideoPlayer as VideoPlayerType,
-} from '../../src/nico-video-player';
-import { CONSTANT } from '../../src/constant';
-import { PlayerState } from '../../src/state';
-import { Config } from '../../src/config';
+} from '../../src/nico-video-player/index';
+import { CONSTANT } from '../../src/shared/constant';
+import { PlayerState } from '../../src/player-shell/state';
+import { Config } from '../../src/config/index';
 await Config.promise('restore');
-const { NicoVideoPlayer, VideoPlayer } = await import('../../src/nico-video-player');
+const { NicoVideoPlayer, VideoPlayer } = await import('../../src/nico-video-player/index');
 
 function fixture(): {
   player: NicoVideoPlayerType;

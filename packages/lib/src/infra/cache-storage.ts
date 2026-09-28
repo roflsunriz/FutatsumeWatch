@@ -8,7 +8,7 @@ interface CacheItem {
 type LooseStorage = Storage & Record<string, string | undefined>;
 
 const PRODUCT = 'TEST';
-// _ は連結スコープの UMD グローバル（@types/lodash、src/concat-globals.d.ts 参照）。
+// _ は連結スコープの UMD グローバル（@types/lodash、src/shared/userscript-globals.d.ts 参照）。
 //===BEGIN===
 
 const CacheStorage = (() => {

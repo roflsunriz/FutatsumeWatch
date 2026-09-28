@@ -1,24 +1,24 @@
 import * as _ from 'lodash';
-import { global } from '../futatsume-watch-index';
+import { global } from '../app/futatsume-watch-index';
 
-import { Fullscreen, ShortcutKeyEmitter, util } from '../util';
-import type { NicoVideoPlayer } from '../nico-video-player';
-import { VideoInfoModel } from '../video-info';
-import type { RawVideoInfoData, ResumeCacheEntry } from '../video-info';
+import { Fullscreen, ShortcutKeyEmitter, util } from '../shared/util';
+import type { NicoVideoPlayer } from '../nico-video-player/index';
+import { VideoInfoModel } from '../video-info-panel/video-info';
+import type { RawVideoInfoData, ResumeCacheEntry } from '../video-info-panel/video-info';
 
-import { CommentPostSession } from '../comment-post-session';
-import { VideoRecoveryTasks } from '../video-recovery-tasks';
+import { CommentPostSession } from '../comments/comment-post-session';
+import { VideoRecoveryTasks } from '../player-shell/video-recovery-tasks';
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
 
-import type { CommentPanel } from '../comment-panel';
+import type { CommentPanel } from '../comment-panel/index';
 
 import type { PlayList } from '../../packages/futatsume/src/Playlist/playlist';
 
-import { Emitter } from '../baselib';
+import { Emitter } from '../shared/baselib';
 import type { ThreadLoader } from '../../packages/lib/src/nico/thread-loader';
 
 import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
-import type { PlayerState } from '../state';
+import type { PlayerState } from '../player-shell/state';
 
 import type { MylistApiLoader } from '../../packages/lib/src/nico/mylist-api-loader';
 
@@ -29,8 +29,8 @@ import { MediaSessionApi } from '../../packages/lib/src/infra/media-session-api'
 
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 
-import type { Uq } from '../comment-panel';
-import type { CommentPlayerOptions } from '../comment-player';
+import type { Uq } from '../comment-panel/index';
+import type { CommentPlayerOptions } from '../comments/comment-player';
 import type {
   DialogPlayerConfig,
   VideoWatchOptionBag,

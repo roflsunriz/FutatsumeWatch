@@ -162,7 +162,7 @@ interface ChatInfo {
   [key: string]: unknown;
 }
 
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 const debug = global.debug;
 
 //===BEGIN===

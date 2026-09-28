@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 await Config.promise('restore');
-const { VideoPlayer } = await import('../../src/nico-video-player');
+const { VideoPlayer } = await import('../../src/nico-video-player/index');
 
 function fixture(time = 0) {
   const media = document.createElement('video');

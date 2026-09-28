@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { global } from '../futatsume-watch-index';
-import { Emitter } from '../baselib';
+import { global } from '../app/futatsume-watch-index';
+import { Emitter } from '../shared/baselib';
 import { css } from '../../packages/lib/src/css/css';
 import { uq } from '../../packages/lib/src/u-query';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';

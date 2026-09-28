@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { ABRepeat, PlayerShell } from '../../src/player-shell';
-import { shellText } from '../../src/player-shell-view';
+import { ABRepeat, PlayerShell } from '../../src/player-shell/player-shell';
+import { shellText } from '../../src/player-shell/player-shell-view';
 import { VideoListItem } from '../../packages/futatsume/src/Playlist/video-list-item';
-import type { ConfigStore } from '../../src/config';
-import type { PlayerState } from '../../src/state';
+import type { ConfigStore } from '../../src/config/index';
+import type { PlayerState } from '../../src/player-shell/state';
 
 describe('AB repeat', () => {
   test('AとBを指定した区間だけを繰り返し、3回目で解除する', () => {

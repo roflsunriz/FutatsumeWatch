@@ -2,7 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 import { build } from 'vite';
-import { parseUserscriptVersion, STABLE_USERSCRIPT_FILE, VERSION } from '../src/version';
+import { parseUserscriptVersion, STABLE_USERSCRIPT_FILE, VERSION } from '../src/app/version';
 
 await build({ configFile: fileURLToPath(new URL('../vite.config.mts', import.meta.url)) });
 const dist = new URL('../dist/', import.meta.url);

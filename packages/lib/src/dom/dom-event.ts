@@ -1,4 +1,4 @@
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 
 //===BEGIN===
 const domEvent = {

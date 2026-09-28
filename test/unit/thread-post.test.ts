@@ -3,7 +3,7 @@ import { netUtil } from '../../packages/lib/src/infra/net-util';
 import { ThreadLoader } from '../../packages/lib/src/nico/thread-loader';
 import { NicoComment } from '../../packages/futatsume/src/commentLayer/nico-comment';
 import { NicoChat } from '../../packages/futatsume/src/commentLayer/nico-chat';
-import { CommentPostSession, normalizeCommentCommands } from '../../src/comment-post-session';
+import { CommentPostSession, normalizeCommentCommands } from '../../src/comments/comment-post-session';
 
 type MessageInfo = Parameters<typeof ThreadLoader.postChat>[0];
 const context = (): MessageInfo => ({

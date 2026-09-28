@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { Config } from '../config';
-import { global } from '../futatsume-watch-index';
+import { Config } from '../config/index';
+import { global } from '../app/futatsume-watch-index';
 import { css, cssUtil } from '../../packages/lib/src/css/css';
 import { domEvent } from '../../packages/lib/src/dom/dom-event';
 import { Emitter } from '../../packages/lib/src/emitter';

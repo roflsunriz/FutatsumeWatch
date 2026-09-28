@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { migrateConfig, migrateImportedConfig, migrateSharedStorage } from '../../src/config-migration';
+import { migrateConfig, migrateImportedConfig, migrateSharedStorage } from '../../src/config/config-migration';
 
 describe('旧設定の移行', () => {
   it('既存の新設定を優先し、旧値と無関係なデータを保持する', () => {

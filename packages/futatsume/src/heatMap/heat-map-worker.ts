@@ -1,5 +1,5 @@
 import { workerUtil } from '../../../lib/src/infra/worker-util';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 // import {WatchInfoCacheDb} from '../../../lib/src/nico/watch-info-cache-db';
 
 interface HeatMapEmitter {

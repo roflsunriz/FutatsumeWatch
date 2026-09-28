@@ -1,4 +1,4 @@
-import { util } from '../util';
+import { util } from '../shared/util';
 import type { DialogPlayerConfig } from './types';
 class PlayerConfig {
   declare static instance: DialogPlayerConfig;

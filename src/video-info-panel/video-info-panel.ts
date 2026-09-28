@@ -1,7 +1,7 @@
-import { global } from '../futatsume-watch-index';
-import { Config } from '../config';
+import { global } from '../app/futatsume-watch-index';
+import { Config } from '../config/index';
 import { RelatedVideoList } from '../../packages/futatsume/src/Playlist/related-video-list';
-import { TagListView } from '../tag-list-view';
+import { TagListView } from '../tags/tag-list-view';
 import { Emitter } from '../../packages/lib/src/emitter';
 import { sleep } from '../../packages/lib/src/infra/sleep';
 import { Fullscreen } from '../../packages/lib/src/dom/fullscreen';
@@ -13,7 +13,7 @@ import { domEvent } from '../../packages/lib/src/dom/dom-event';
 import { ClassList } from '../../packages/lib/src/dom/class-list-wrapper';
 import { MylistPocketDetector } from '../../packages/futatsume/src/init/mylist-pocket-detector';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
-import type { ConfigProps } from '../config';
+import type { ConfigProps } from '../config/index';
 import type {
   VideoCountInfo,
   VideoInfoModel,

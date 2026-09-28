@@ -1,5 +1,5 @@
-import { global } from '../futatsume-watch-index';
-import { util, BaseViewComponent } from '../util';
+import { global } from '../app/futatsume-watch-index';
+import { util, BaseViewComponent } from '../shared/util';
 import { cssUtil } from '../../packages/lib/src/css/css';
 import type { NvpConfigValue, NvpPlayerState, NvpUtil, NvpBoundHandlers, NvpBaseViewParams } from './types';
 

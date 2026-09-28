@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import fs from 'node:fs';
-import { VideoInfoModel } from '../../src/video-info';
-import type { RawVideoInfoData } from '../../src/video-info';
+import { VideoInfoModel } from '../../src/video-info-panel/video-info';
+import type { RawVideoInfoData } from '../../src/video-info-panel/video-info';
 
 const FIXTURE_PATH = './test/fixtures/video-info-raw-data.json';
 

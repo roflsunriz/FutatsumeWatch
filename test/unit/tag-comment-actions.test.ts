@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
-import { Config } from '../../src/config';
-import { Emitter } from '../../src/baselib';
+import { Config } from '../../src/config/index';
+import { Emitter } from '../../src/shared/baselib';
 import { uq } from '../../packages/lib/src/u-query';
 await Config.promise('restore');
 Object.assign(globalThis, {
@@ -10,7 +10,7 @@ Object.assign(globalThis, {
   Node: window.Node,
   Document: window.Document,
 });
-const { CommentPanel } = await import('../../src/comment-panel');
+const { CommentPanel } = await import('../../src/comment-panel/index');
 type Params = ConstructorParameters<typeof CommentPanel>[0];
 const flush = async () => {
   await Promise.resolve();

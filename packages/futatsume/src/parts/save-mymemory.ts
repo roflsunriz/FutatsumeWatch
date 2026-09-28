@@ -1,4 +1,4 @@
-import { FutatsumeWatch } from '../../../../src/futatsume-watch-index';
+import { FutatsumeWatch } from '../../../../src/app/futatsume-watch-index';
 
 interface MymemoryPlayer {
   currentTime: number;

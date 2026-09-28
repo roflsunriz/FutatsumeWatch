@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeEach, expect, spyOn, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 import type { StoryboardRawData } from '../../packages/futatsume/src/storyboard/storyboard-info-model';
 import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
 

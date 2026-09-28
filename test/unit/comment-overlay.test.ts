@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test';
 import { CommentRenderer, cloneDefaultSettings } from 'comment-overlay';
 import { NicoChat } from '../../packages/futatsume/src/commentLayer/nico-chat';
 import { NicoComment } from '../../packages/futatsume/src/commentLayer/nico-comment';
-import { overlayEntry, decorateOverlayComment, commentPresentation } from '../../src/comment-overlay-data';
-import { Config } from '../../src/config';
+import { overlayEntry, decorateOverlayComment, commentPresentation } from '../../src/comments/comment-overlay-data';
+import { Config } from '../../src/config/index';
 
 const legacy = (text: string, no: number, extra: Record<string, unknown> = {}) => ({
   chat: { content: text, mail: '', no, thread: 123, vpos: 500, user_id: `user${no}`, ...extra },

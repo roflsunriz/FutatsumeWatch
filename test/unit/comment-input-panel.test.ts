@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from 'bun:test';
-import { CommentInputPanel } from '../../src/comment-input-panel';
-import { commentFormText } from '../../src/comment-input-view';
+import { CommentInputPanel } from '../../src/comments/comment-input-panel';
+import { commentFormText } from '../../src/comments/comment-input-view';
 
 Object.assign(globalThis, { HTMLElement: window.HTMLElement, Element: window.Element, Node: window.Node });
 const containers: HTMLElement[] = [];

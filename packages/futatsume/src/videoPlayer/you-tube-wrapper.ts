@@ -1,6 +1,6 @@
 import _ from 'lodash';
 // import * as _ from 'lodash';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 import { Emitter } from '../../../lib/src/emitter';
 import { textUtil } from '../../../lib/src/text/text-util';
 

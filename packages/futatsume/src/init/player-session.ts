@@ -1,4 +1,4 @@
-import { PRODUCT } from '../../../../src/futatsume-watch-index';
+import { PRODUCT } from '../../../../src/app/futatsume-watch-index';
 
 interface PlayingStatusStore {
   removeItem(key: string): void;

@@ -52,7 +52,7 @@ test('MylistPocket API retains info, NG/favorite display, storage and hide behav
   document.body.addEventListener('MylistPocketInitialized', resolveInitialized, { once: true });
 
   try {
-    await import('../../src/pocket');
+    await import('../../src/pocket/index');
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     await Promise.race([
       initialized,

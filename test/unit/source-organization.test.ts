@@ -7,6 +7,7 @@ const sourceExtensions = new Set(['.css', '.js', '.ts', '.tsx']);
 
 test('srcのソースは1000行以下で、フォルダは直下1階層に整理する', async () => {
   const oversizedFiles: Array<{ path: string; lines: number }> = [];
+  const rootFiles: string[] = [];
 
   async function visit(directory: string, depth: number): Promise<void> {
     const entries = await readdir(directory, { withFileTypes: true });
@@ -24,6 +25,10 @@ test('srcのソースは1000行以下で、フォルダは直下1階層に整理
         continue;
       }
 
+      if (depth === 0) {
+        rootFiles.push(entry.name);
+      }
+
       const content = await readFile(path, 'utf8');
       const normalized = content.replace(/\r\n?/gu, '\n').replace(/\n$/u, '');
       const lines = normalized === '' ? 0 : normalized.split('\n').length;
@@ -34,5 +39,6 @@ test('srcのソースは1000行以下で、フォルダは直下1階層に整理
   }
 
   await visit(sourceRoot, 0);
+  expect(rootFiles).toEqual([]);
   expect(oversizedFiles).toEqual([]);
 });

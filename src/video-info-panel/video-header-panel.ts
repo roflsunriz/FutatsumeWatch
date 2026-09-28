@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { CONSTANT } from '../constant';
-import { global } from '../futatsume-watch-index';
+import { CONSTANT } from '../shared/constant';
+import { global } from '../app/futatsume-watch-index';
 import { Emitter } from '../../packages/lib/src/emitter';
 import { Fullscreen } from '../../packages/lib/src/dom/fullscreen';
 import { css, cssUtil } from '../../packages/lib/src/css/css';

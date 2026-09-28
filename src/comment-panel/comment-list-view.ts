@@ -1,8 +1,8 @@
 import _ from 'lodash';
-import { global } from '../futatsume-watch-index';
+import { global } from '../app/futatsume-watch-index';
 import { FrameLayer } from '../../packages/futatsume/src/parts/frame-layer';
-import { CONSTANT } from '../constant';
-import { Emitter } from '../baselib';
+import { CONSTANT } from '../shared/constant';
+import { Emitter } from '../shared/baselib';
 import { throttle } from '../../packages/lib/src/infra/bounce';
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
 import { uq } from '../../packages/lib/src/u-query';

@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { global } from '../futatsume-watch-index';
-import { BaseViewComponent } from '../util';
+import { global } from '../app/futatsume-watch-index';
+import { BaseViewComponent } from '../shared/util';
 import type { ThreadInfo } from './types';
 
 interface TimeMachineViewParams {

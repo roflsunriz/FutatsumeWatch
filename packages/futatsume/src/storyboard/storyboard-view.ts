@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { Emitter } from '../../../lib/src/emitter';
 import type { StoryboardInfoModel } from './storyboard-info-model';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 import { cssUtil } from '../../../lib/src/css/css';
 import { textUtil } from '../../../lib/src/text/text-util';
 import { uq } from '../../../lib/src/u-query';

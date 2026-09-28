@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { CONSTANT } from '../../src/constant';
+import { CONSTANT } from '../../src/shared/constant';
 
 describe('constant', () => {
   it('レイアウト定数が正の数値である', () => {

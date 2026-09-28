@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { FutatsumeWatch } from '../../../../src/futatsume-watch-index';
+import { FutatsumeWatch } from '../../../../src/app/futatsume-watch-index';
 import { uq } from '../../../lib/src/u-query';
 import { nicoUtil } from '../../../lib/src/nico/nico-util';
 import { cssUtil } from '../../../lib/src/css/css';

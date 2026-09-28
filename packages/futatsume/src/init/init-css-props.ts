@@ -1,6 +1,6 @@
 import { cssUtil } from '../../../lib/src/css/css';
-import { CONSTANT } from '../../../../src/constant';
-import { global } from '../../../../src/futatsume-watch-index';
+import { CONSTANT } from '../../../../src/shared/constant';
+import { global } from '../../../../src/app/futatsume-watch-index';
 
 interface CssUtilLike {
   s(value: number): unknown;

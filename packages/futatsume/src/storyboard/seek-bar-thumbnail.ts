@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { cssUtil } from '../../../lib/src/css/css';
 import { uQuery } from '../../../lib/src/u-query';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 import { StoryboardWorker } from './storyboard-worker';
 import { ClassList } from '../../../lib/src/dom/class-list-wrapper';
 

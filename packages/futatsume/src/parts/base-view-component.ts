@@ -1,5 +1,5 @@
 import { Emitter } from '../../../lib/src/emitter';
-import { PRODUCT } from '../../../../src/futatsume-watch-index';
+import { PRODUCT } from '../../../../src/app/futatsume-watch-index';
 import { cssUtil } from '../../../lib/src/css/css';
 import { ClassList } from '../../../lib/src/dom/class-list-wrapper';
 

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { Emitter } from '../../../lib/src/emitter';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 import { bounce } from '../../../lib/src/infra/bounce';
 import { cssUtil } from '../../../lib/src/css/css';
 import { uq } from '../../../lib/src/u-query';
@@ -10,7 +10,7 @@ import { VideoListItemView } from './video-list-item-view';
 import type { VideoListItem } from './video-list-item';
 import type { VideoListModel } from './video-list-model';
 import { MylistPocketDetector } from '../init/mylist-pocket-detector.js';
-import { CONSTANT } from '../../../../src/constant';
+import { CONSTANT } from '../../../../src/shared/constant';
 import { FrameLayer } from '../parts/frame-layer';
 import { dll } from '../../../components/src/dll';
 

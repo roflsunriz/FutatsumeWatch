@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { DataStorage } from '../../packages/lib/src/infra/data-storage';
-import { BaseState } from '../../src/state';
+import { BaseState } from '../../src/player-shell/state';
 
 class PlaybackState extends BaseState {
   declare rate: number;

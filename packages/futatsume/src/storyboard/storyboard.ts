@@ -4,7 +4,7 @@ import { StoryboardView } from './storyboard-view';
 import { StoryboardInfoModel } from './storyboard-info-model';
 import { SeekBarThumbnail } from './seek-bar-thumbnail';
 import { StoryboardWorker } from './storyboard-worker';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 import type { StoryboardRawData } from './storyboard-info-model';
 
 interface PlayerConfigLike {

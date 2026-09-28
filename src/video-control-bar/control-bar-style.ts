@@ -1,5 +1,5 @@
-import { CONSTANT } from '../constant';
-import { util } from '../util';
+import { CONSTANT } from '../shared/constant';
+import { util } from '../shared/util';
 import type { VcbUtil } from './types';
 (util as unknown as VcbUtil).addStyle(
   `

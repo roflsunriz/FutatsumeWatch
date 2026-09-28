@@ -48,7 +48,7 @@ interface GateInitializeParams {
 
 import { Emitter, PromiseHandler } from '../emitter';
 import type { AnyPromiseHandler } from '../emitter';
-import { PRODUCT } from '../../../../src/futatsume-watch-index';
+import { PRODUCT } from '../../../../src/app/futatsume-watch-index';
 import { BroadcastEmitter } from '../message/message-util';
 
 const TOKEN = 'ranbu';

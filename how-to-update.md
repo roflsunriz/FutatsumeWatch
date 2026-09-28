@@ -40,11 +40,11 @@ TMで登録したスクリプトのページへの適用だけを確認したい
 
 名称移行後の連携先は`window.FutatsumeWatch`、初期化イベントは`BeforeFutatsumeWatchInitialize` / `FutatsumeWatchInitialize`です。DOMの`zenza` / `zen`接頭辞は`futatsume`へ変更済みです。旧名を使う外部連携も同時に更新してください。lintは警告を含めて0件を必須にします。
 
-設定の移行元キーは`src/config-migration.ts`だけで管理します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。削除済みの設定キーは読み込み時に無視します。配布物は`bun run build`で再生成します。
+設定の移行元キーは`src/config/config-migration.ts`だけで管理します。既存の新名称側の値を優先し、復旧用の旧値は削除しません。削除済みの設定キーは読み込み時に無視します。配布物は`bun run build`で再生成します。
 
 名称や保存キーの変更時は`bun run test:browser migration`で隔離したブラウザコンテキストへ旧設定フィクスチャを読み込み、初期化イベント・実設定モデル・保存キー・旧データ保持を確認します。
 
-- プッシュ時は `src/version.ts` と `package.json`、READMEの版を更新します。ユーザースクリプトの版と説明はVite設定から生成します。
+- プッシュ時は `src/app/version.ts` と `package.json`、READMEの版を更新します。ユーザースクリプトの版と説明はVite設定から生成します。
 - CHANGELOGのUnreleasedを対象版へ整理し、ユーザースクリプトのdescriptionにも変更要点を反映します。
 - 型検査・ビルドだけを動作確認の代わりにしません。未検証の認証操作やブラウザは明記します。
 - プッシュを依頼された場合にmainと`v<version>`形式のリリースタグを公開します。タグの品質検証が成功すると、CIがCHANGELOGの対象版を自動抽出し、配布物を添付したGitHubリリースを作成します。

@@ -5,7 +5,7 @@ import { Emitter } from '../../../lib/src/emitter';
 import { cssUtil } from '../../../lib/src/css/css';
 import { ClassList } from '../../../lib/src/dom/class-list-wrapper';
 import { uq } from '../../../lib/src/u-query';
-import { global } from '../../../../src/futatsume-watch-index';
+import { global } from '../../../../src/app/futatsume-watch-index';
 
 interface PlayListViewParams {
   container: Element;

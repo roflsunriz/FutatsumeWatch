@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { VERSION, STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/version';
+import { VERSION, STABLE_USERSCRIPT_FILE, parseUserscriptVersion } from '../../src/app/version';
 import packageJson from '../../package.json';
 
 describe('version', () => {

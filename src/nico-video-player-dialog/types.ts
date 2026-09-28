@@ -1,9 +1,9 @@
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
-import type { ConfigStore } from '../config';
-import type { UqFactory } from '../comment-panel';
+import type { ConfigStore } from '../config/index';
+import type { UqFactory } from '../comment-panel/index';
 
-import type { PlayerState } from '../state';
-import type { NicoVideoPlayer } from '../nico-video-player';
+import type { PlayerState } from '../player-shell/state';
+import type { NicoVideoPlayer } from '../nico-video-player/index';
 import type { NicoVideoPlayerDialog } from './dialog-controller';
 
 export interface DialogPlayerConfig extends ConfigStore {

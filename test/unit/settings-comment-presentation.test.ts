@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 import { NicoChat } from '../../packages/futatsume/src/commentLayer/nico-chat';
-import { commentPresentation, decorateOverlayComment, overlayEntry } from '../../src/comment-overlay-data';
+import { commentPresentation, decorateOverlayComment, overlayEntry } from '../../src/comments/comment-overlay-data';
 import { CommentRenderer, cloneDefaultSettings } from 'comment-overlay';
 
 const keys = [

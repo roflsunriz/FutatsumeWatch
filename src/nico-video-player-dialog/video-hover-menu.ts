@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import { MylistApiLoader } from '../../packages/lib/src/nico/mylist-api-loader';
-import { util } from '../util';
-import { global } from '../futatsume-watch-index';
+import { util } from '../shared/util';
+import { global } from '../app/futatsume-watch-index';
 
-import type { PlayerState } from '../state';
+import type { PlayerState } from '../player-shell/state';
 import type { DialogUtilView, VideoHoverMenuParams } from './types';
 class VideoHoverMenu {
   declare private _container: Element;

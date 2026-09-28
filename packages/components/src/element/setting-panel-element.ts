@@ -1,6 +1,6 @@
 import { DialogElement } from './dialog-element.js';
 import { domEvent } from '../../../lib/src/dom/dom-event';
-import { normalizeNgRegexpInputLines } from '../../../../src/ng-regexp-input';
+import { normalizeNgRegexpInputLines } from '../../../../src/config/ng-regexp-input';
 import { getAvailableFontOptions } from '../font-options';
 // import {textUtil} from '../../../lib/src/text/text-util';
 // import {cssUtil} from '../../../lib/src/css/css';

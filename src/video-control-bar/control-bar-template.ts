@@ -1,4 +1,4 @@
-import { FutatsumeWatch } from '../futatsume-watch-index';
+import { FutatsumeWatch } from '../app/futatsume-watch-index';
 import type { VcbTemplateInfo } from './types';
 export const VIDEO_CONTROL_BAR_TEMPLATE = `
     <div class="videoControlBar" data-command="nop">

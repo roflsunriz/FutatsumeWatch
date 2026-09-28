@@ -1,6 +1,6 @@
-import type { ConfigStore } from '../config';
-import type { PlayerState, VideoControlState } from '../state';
-import type { NicoVideoPlayer } from '../nico-video-player';
+import type { ConfigStore } from '../config/index';
+import type { PlayerState, VideoControlState } from '../player-shell/state';
+import type { NicoVideoPlayer } from '../nico-video-player/index';
 export interface VcbQuery {
   [index: number]: Element;
   readonly length: number;

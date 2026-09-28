@@ -1,5 +1,5 @@
-import { CONSTANT } from '../constant';
-import { NICORU } from '../nicoru-icon';
+import { CONSTANT } from '../shared/constant';
+import { NICORU } from '../shared/nicoru-icon';
 import type { CommentListItem } from './comment-list-item';
 
 interface CommentListItemViewParams {

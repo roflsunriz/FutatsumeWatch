@@ -1,12 +1,12 @@
 import _ from 'lodash';
-import { global } from '../futatsume-watch-index';
-import { SeekBarThumbnail } from '../storyboard';
-import { util, BaseViewComponent } from '../util';
+import { global } from '../app/futatsume-watch-index';
+import { SeekBarThumbnail } from '../storyboard/storyboard';
+import { util, BaseViewComponent } from '../shared/util';
 import { throttle } from '../../packages/lib/src/infra/bounce';
 import { TextLabel } from '../../packages/lib/src/ui/text-label';
 import { cssUtil } from '../../packages/lib/src/css/css';
 import { WindowResizeObserver } from '../../packages/lib/src/infra/observable';
-import type { PlayerState } from '../state';
+import type { PlayerState } from '../player-shell/state';
 import type { VcbBaseViewParams, VcbQuery, VcbSeekBarThumbnail, VcbStoryboard, VcbTextLabel, VcbUtil } from './types';
 export class SeekBarToolTip {
   declare static __css__: string;

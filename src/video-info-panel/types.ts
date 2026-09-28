@@ -1,5 +1,5 @@
 import type { Emitter } from '../../packages/lib/src/emitter';
-import type { TagListTagData } from '../tag-list-view';
+import type { TagListTagData } from '../tags/tag-list-view';
 export interface VideoOwnerInfo {
   icon: string;
   url: string;

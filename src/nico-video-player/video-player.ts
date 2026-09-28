@@ -1,8 +1,8 @@
-import { global } from '../futatsume-watch-index';
-import { util, Config } from '../util';
+import { global } from '../app/futatsume-watch-index';
+import { util, Config } from '../shared/util';
 import { YouTubeWrapper } from '../../packages/futatsume/src/videoPlayer/you-tube-wrapper';
-import { CONSTANT } from '../constant';
-import { Emitter } from '../baselib';
+import { CONSTANT } from '../shared/constant';
+import { Emitter } from '../shared/baselib';
 import { MediaTimeline } from '../../packages/lib/src/dom/media-timeline';
 import { ClassList } from '../../packages/lib/src/dom/class-list-wrapper';
 import type { NvpUtil, NvpVideoPlayerParams, NvpYouTubePlayer } from './types';

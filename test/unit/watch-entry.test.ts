@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test';
-import { installWatchEntry, supportsWatchEntryPage, watchIdFromUrl } from '../../src/watch-entry';
-import type { WatchEntry } from '../../src/watch-entry';
+import { installWatchEntry, supportsWatchEntryPage, watchIdFromUrl } from '../../src/entry/watch-entry';
+import type { WatchEntry } from '../../src/entry/watch-entry';
 
 let ui: WatchEntry | undefined;
 let nodes: ChildNode[];

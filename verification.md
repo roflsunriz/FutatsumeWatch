@@ -7,6 +7,12 @@
 - 最終 `bun run test:browser all --offline` は全9スイート・850チェック成功。配布物注入で起動、再生、コメント描画、MylistPocket、設定、検索・関連・ライブラリ操作を確認した。証跡は `dev-assets/verification/2026-09-28T12-19-43-474Z-offline-c05ce72a/run.json`。配布物SHA-256は `3272db335c4a2c998d5fe52b687b1739cca673aed2c05623e62ae0e3c705464f`。
 - 公式サイトへの通信を伴う実測は実施していない。サンプルHTML、動画fixture、Tampermonkey配布バンドルは採取データまたは第三者生成物のため分割対象外。
 
+## 2026-09-28：src全製品コードの深さ1フォルダ整理
+
+- `src`直下に残っていた製品モジュールを責務別の17フォルダへ移し、既存のプレイヤー・コメント・HLS・MylistPocket分割と合わせて全実装を`src/<機能>/`直下へ統一した。Vite entry、TypeScript import、テスト・開発スクリプト、運用文書の参照も更新し、`src`直下の実装ファイルをなくした。
+- `test/unit/source-organization.test.ts`を更新し、src直下にソースが残る場合、二段以上のフォルダがある場合、1,000行を超える場合に失敗することを確認した。最大は`src/pocket/index.ts`の978行。
+- `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test`が成功し、単体テストは400件・2,893 assertions。`bun run test:browser all --offline`は全9スイート・850チェック成功。証跡は`dev-assets/verification/2026-09-28T13-05-12-016Z-offline-3c5ff640/run.json`、配布物SHA-256は`895785968d6bf6d154c296a83cdf911c3691e2fa17d321c031c8938de48f0876`。
+
 ## 2026-09-28：CI修正と依存更新
 
 - jQuery 4.0.0は公式移行ガイドの削除対象APIをコードが使わないことを確認して更新。Litは3.3.3へ、ESLint 10.11.0、jsdom 30.1.1、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新した。
@@ -238,7 +244,7 @@
 ## 2026-09-20：lint警告解消と名称の全面移行（未リリース）
 
 - 既存192警告を解消し、lintはエラー0・警告0。未使用宣言をerror、実行条件を`--max-warnings 0`にした。型検査・整形・ビルド・単体158件（1009アサーション）が成功し、依存監査は243パッケージ・脆弱性0件。配布物は`bun run build`で再生成した。
-- 現行コード・表示・DOM・イベント・公開名・パッケージの旧ブランドをFutatsume系へ移行した。旧グローバル別名は廃止。移行元キーは`src/config-migration.ts`に集約し、既定キーだけを移す。旧値保持、新値優先、壊れたJSONの除外、移行済み旧版からの更新、失敗後の再実行、設定JSONの読み込みを単体で確認した。
+- 現行コード・表示・DOM・イベント・公開名・パッケージの旧ブランドをFutatsume系へ移行した。旧グローバル別名は廃止。移行元キーは`src/config/config-migration.ts`に集約し、既定キーだけを移す。旧値保持、新値優先、壊れたJSONの除外、移行済み旧版からの更新、失敗後の再実行、設定JSONの読み込みを単体で確認した。
 - 専用headless Chrome for Testing、ポート9339、`dev-assets/name-migration-profile`で配布物を注入して検証した。初回はサンドボックス内のGPU子プロセスが権限エラーで停止したため、同じ専用プロファイルを昇格起動して再開した。実利用Firefox・既存の開発Chromeは変更していない。
 - `dev:verify --bundle`の55項目、`dev:verify:settings`の266項目、`dev:verify:ui`の76項目、`dev:verify:entry --bundle`の10項目が成功。再生・コメント・保存HTML/PNG・シーク・NG・設定の実入力と保存/復元・全画面・動画切替・ABリピート・検索/タグ検索/SPA遷移/戻るを確認し、製品例外0件。390×844、640×480、844×390、1280×800、1920×1080、3840×2160を各検証の対象に含めた。
 - `dev:verify:migration`の12項目が成功。隔離ブラウザコンテキストへ旧設定を投入し、新イベントの各1回発火・旧window名の不在・本体/HLSの実モデル・GamePad/MylistPocket/プレイリスト/前回再生状態の保存値・旧値保持を確認した。GamePadの公開オブジェクトはプレイヤー起動時に作られるため、起動前の判定は移行キーを使う。HLSの算出済みエラー種別を通知に反映する修正も、実配布物の動画要素へ通信/デコード/未知のエラーを投入して検証した。

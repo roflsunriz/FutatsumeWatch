@@ -1,8 +1,8 @@
 import { expect, spyOn, test } from 'bun:test';
-import { VideoRecoveryTasks } from '../../src/video-recovery-tasks';
+import { VideoRecoveryTasks } from '../../src/player-shell/video-recovery-tasks';
 import { MediaSessionApi } from '../../packages/lib/src/infra/media-session-api';
-import { Config } from '../../src/config';
-import { ABRepeat, PlayerShell } from '../../src/player-shell';
+import { Config } from '../../src/config/index';
+import { ABRepeat, PlayerShell } from '../../src/player-shell/player-shell';
 await Config.promise('restore');
 Object.assign(globalThis, {
   HTMLElement: window.HTMLElement,
@@ -16,7 +16,7 @@ Object.assign(globalThis, {
   CustomEvent: window.CustomEvent,
   MutationObserver: window.MutationObserver,
 });
-const { NicoVideoPlayerDialog, VideoWatchOptions } = await import('../../src/nico-video-player-dialog');
+const { NicoVideoPlayerDialog, VideoWatchOptions } = await import('../../src/nico-video-player-dialog/index');
 
 test('Bが実終端のABリピートは通常終端・プレイリスト遷移より先にAへ戻す', () => {
   const ab = new ABRepeat();

@@ -1,22 +1,22 @@
 import * as _ from 'lodash';
 import { Emitter } from '../../packages/lib/src/emitter';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
-import { CONSTANT } from '../constant';
-import { Fullscreen, util } from '../util';
-import { PlayerShell } from '../player-shell';
-import type { NicoVideoPlayer } from '../nico-video-player';
-import type { VideoInfoModel } from '../video-info';
+import { CONSTANT } from '../shared/constant';
+import { Fullscreen, util } from '../shared/util';
+import { PlayerShell } from '../player-shell/player-shell';
+import type { NicoVideoPlayer } from '../nico-video-player/index';
+import type { VideoInfoModel } from '../video-info-panel/video-info';
 import { sleep } from '../../packages/lib/src/infra/sleep';
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
 import { objUtil } from '../../packages/lib/src/infra/obj-util';
 import { ClassList } from '../../packages/lib/src/dom/class-list-wrapper';
-import { global } from '../futatsume-watch-index';
-import type { PlayerState } from '../state';
-import { CommentInputPanel } from '../comment-input-panel';
-import { VideoControlBar } from '../video-control-bar';
-import { VideoInfoPanel } from '../video-info-panel';
+import { global } from '../app/futatsume-watch-index';
+import type { PlayerState } from '../player-shell/state';
+import { CommentInputPanel } from '../comments/comment-input-panel';
+import { VideoControlBar } from '../video-control-bar/index';
+import { VideoInfoPanel } from '../video-info-panel/index';
 import { closeSettingsDialog } from '../../packages/components/src/settings-dialog';
-import type { Uq } from '../comment-panel';
+import type { Uq } from '../comment-panel/index';
 import type {
   DialogPlayerConfig,
   NicoVideoPlayerDialogViewParams,

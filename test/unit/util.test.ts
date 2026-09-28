@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 
 // 製品（main.ts 初期化順序）と同じく、先に Config の restore 完了を待ってから
 // util モジュールを評価する。util.ts はモジュール評価時に Config.props.debug を読む。
 await Config.promise('restore');
-const { util: importedUtil } = await import('../../src/util');
+const { util: importedUtil } = await import('../../src/shared/util');
 
-// NOTE: src/util.js は //@require 連結で機能を集約するため、
+// NOTE: src/shared/util.ts は //@require 連結で機能を集約するため、
 // TS の JS 推論では dateToString / sortedLastIndex が見えない。
 // 境界で unknown を受けて型ガードで絞り込む。
 interface TestUtil {

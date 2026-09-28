@@ -1,8 +1,8 @@
 import { afterEach, expect, spyOn, test } from 'bun:test';
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
-import { Config } from '../../src/config';
-import { VideoInfoModel } from '../../src/video-info';
-import type { RawVideoInfoData } from '../../src/video-info';
+import { Config } from '../../src/config/index';
+import { VideoInfoModel } from '../../src/video-info-panel/video-info';
+import type { RawVideoInfoData } from '../../src/video-info-panel/video-info';
 import { WatchInfoCacheDb } from '../../packages/lib/src/nico/watch-info-cache-db';
 import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
 import { MediaSessionApi } from '../../packages/lib/src/infra/media-session-api';
@@ -24,7 +24,7 @@ Object.assign(globalThis, {
   HTMLCollection: window.HTMLCollection,
   NodeList: window.NodeList,
 });
-const { NicoVideoPlayerDialog, NicoVideoPlayerDialogView } = await import('../../src/nico-video-player-dialog');
+const { NicoVideoPlayerDialog, NicoVideoPlayerDialogView } = await import('../../src/nico-video-player-dialog/index');
 afterEach(() => {
   nicoUtil.beginWatchViewer('cleanup');
   nicoUtil.clearWatchViewer('cleanup');

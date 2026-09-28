@@ -6,7 +6,7 @@
 
 import { attach, attachBrowser, evaluate, listTargets, waitFor } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
-import { VERSION } from '../src/version';
+import { VERSION } from '../src/app/version';
 import { tampermonkeyOrigin } from './dev-tampermonkey';
 
 const DIST = `${import.meta.dir}/../dist`;

@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, expect, spyOn, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 import { VideoInfoLoader } from '../../packages/lib/src/nico/video-info-loader';
-import { VideoInfoModel } from '../../src/video-info';
-import type { RawVideoInfoData } from '../../src/video-info';
+import { VideoInfoModel } from '../../src/video-info-panel/video-info';
+import type { RawVideoInfoData } from '../../src/video-info-panel/video-info';
 import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
 import { WatchInfoCacheDb } from '../../packages/lib/src/nico/watch-info-cache-db';
 import { netUtil } from '../../packages/lib/src/infra/net-util';
-import { global } from '../../src/futatsume-watch-index';
+import { global } from '../../src/app/futatsume-watch-index';
 import captured from '../fixtures/functionality/watch-response.json';
 
 await Config.promise('restore');
@@ -22,7 +22,7 @@ Object.assign(globalThis, {
   CustomEvent: window.CustomEvent,
   MutationObserver: window.MutationObserver,
 });
-const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog');
+const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog/index');
 const originalFetch = netUtil.fetch;
 const originalHls = global.debug.isHLSSupported;
 let log: ReturnType<typeof spyOn<typeof console, 'log'>>;

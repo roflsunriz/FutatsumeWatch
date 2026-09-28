@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { getBlogPartsContext } from '../../src/blog';
+import { getBlogPartsContext } from '../../src/entry/blog';
 
 describe('埋め込みサムネイルの起動導線', () => {
   it('ニコ百の文書URLをoriginへ正規化し、クエリを除いた動画IDを返す', () => {

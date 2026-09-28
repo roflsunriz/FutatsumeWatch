@@ -1,16 +1,16 @@
 import { describe, expect, test } from 'bun:test';
-import { Config } from '../../src/config';
+import { Config } from '../../src/config/index';
 import { DataStorage } from '../../packages/lib/src/infra/data-storage';
 import { NicoChatFilter } from '../../packages/futatsume/src/commentLayer/nico-chat-filter';
 import { NicoChat } from '../../packages/futatsume/src/commentLayer/nico-chat';
-import type { NicoVideoPlayerDialog as Dialog } from '../../src/nico-video-player-dialog';
+import type { NicoVideoPlayerDialog as Dialog } from '../../src/nico-video-player-dialog/index';
 await Config.promise('restore');
 Object.assign(globalThis, {
   HTMLCanvasElement: window.HTMLCanvasElement,
   HTMLElement: window.HTMLElement,
   customElements: window.customElements,
 });
-const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog');
+const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog/index');
 
 async function fixture(): Promise<{ config: DataStorage; filter: NicoChatFilter; dialog: Dialog }> {
   const config = DataStorage.create(

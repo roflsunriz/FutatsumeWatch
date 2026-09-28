@@ -97,7 +97,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## 現在のビルド・初期化（2026-09-19）
 
 - 製品・テスト・スクリプトはTypeScript。tsconfigはstrict、allowJs:false、allowUmdGlobalAccess:false。any禁止を維持する。ただし既存の構造型キャストは残るため、型検査だけで実動作を保証しない。
-- BunでVite 8＋vite-plugin-monkeyを実行する。Vite内部はRolldownでありBun.buildではない。設定はvite.config.mts、入口はsrc/main.ts、配線はsrc/runtime.ts。build.js・webpack・Babel・mochaは退役した。
+- BunでVite 8＋vite-plugin-monkeyを実行する。Vite内部はRolldownでありBun.buildではない。設定はvite.config.mts、入口はsrc/app/main.ts、配線はsrc/app/runtime.ts。build.js・webpack・Babel・mochaは退役した。
 - TypeScript 7系は`typescript-eslint` 8.70.1のpeer dependency範囲`<6.1.0`から外れるため、parser側の対応版が出るまでTypeScript 6系を維持し、更新時は両方を確認する（2026-09-28）。
 - 配布物はdist/FutatsumeWatch.user.jsの1件のみ。開発用も同じファイルを使う。Domand HLS再生・詳細設定・MylistPocket・CapTube・ブログパーツ・マイリスト絞り込み・uQueryを同梱する。SystemJS・lodash・jQuery・lit・hls.jsも同梱し、外部@requireに依存しない。
 - scripts/build.tsはvm.Scriptでclassic scriptとして解析し、配布件数・版・外部@requireの不在を確認する。node --checkはESM自動検出のため、この判定の代わりにならない。
@@ -105,7 +105,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - useDefineForClassFields:falseは必須。ES2022既定では型用フィールド宣言が親の初期化済みDOM参照をundefinedで上書きする。型用宣言をdeclareへ統一するまで従来の生成規則を維持する。
 - Workerへ関数・クラスのtoStringを渡す経路が残る。バンドル時の匿名化・名前変更・自由変数を実行検証すること。StoryboardInfoModelは明示的なfactoryとEmitter引数でWorkerへ渡す。minifyを有効化する前に全Worker経路を再検証する。
 - lodash/jQueryは各モジュールからimportする。ホストページのwindow._/$/jQueryを上書きしない。現行の公開名はwindow.FutatsumeWatch。利用者の全面移行指示により、旧window名・イベント・DOM名の互換別名は廃止した。
-- 設定はsrc/config-migration.tsで旧ZenzaWatch_キーから既知の設定だけ移す。新キーの値を優先し旧キーは残す。プレイリスト保存失敗でsessionStorage.clear()してはならない。
+- 設定はsrc/config/config-migration.tsで旧ZenzaWatch_キーから既知の設定だけ移す。新キーの値を優先し旧キーは残す。プレイリスト保存失敗でsessionStorage.clear()してはならない。
 - 旧連結版で実測した初期化停止はconsoleのconstへの再代入、uQueryの空生成時undefined参照。移行後は動画情報のdmcInfo:null、Workerクラスの文字列化、未接続のConfig/イベント/デバッグ情報も修正した。
 - 動画ページにはdata-futatsume-openボタンから起動できる導線がある。検証はexternal.openだけで済ませず、この導線から行う。
 
@@ -132,9 +132,9 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## ソースファイルの分割と配置
 
-- `src`のTypeScript・JavaScript・CSSは1ファイル1,000行以下を維持する。大きな責務は`src/<機能>/`の直下へ分け、フォルダを二段以上にネストしない。単独で複数責務を持つルート実装を作らない。
-- 分割後も既存import利用があるルートファイルは、互換用の再エクスポートだけを残す。クラス拡張や初期化副作用を別モジュールへ移す場合は、エントリーからの評価順とWorker文字列化を確認し、分割前後の回帰テストを通す。行数上限は`test/unit/source-organization.test.ts`で監視する。
-- `src/main.ts`はMylistPocketを動的importするだけで初期化関数を直接呼ばないため、`src/pocket.ts`のimportが従来どおり初期化を起こすことを維持する。HLSのStorage Workerは関数の`toString()`からWorkerコードを作るため、関数本体から外側スコープの値やimportを参照させない。
+- `src`のTypeScript・JavaScript・CSSは全て`src/<機能>/`直下へ配置し、`src`直下に実装ファイルを置かない。各ファイル1,000行以下、フォルダは一段だけとし、機能のimport参照も移動先へ更新する。`test/unit/source-organization.test.ts`で配置と行数を監視する。
+- クラス拡張や初期化副作用を別モジュールへ移す場合は、Viteの入口・評価順・公開API・Worker文字列化を確認し、分割前後の回帰テストを通す。
+- `src/app/main.ts`はMylistPocketを動的importするだけで初期化関数を直接呼ばないため、`src/pocket/index.ts`のimportが従来どおり初期化を起こすことを維持する。HLSのStorage Workerは関数の`toString()`からWorkerコードを作るため、関数本体から外側スコープの値やimportを参照させない。
 
 ## 導線の確認漏れからの修正（2026-09-20）
 
@@ -163,7 +163,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## スケッチに基づくプレイヤーUI（2026-09-20）
 
-- `src/player-shell.ts`は既存のDialogコマンド・Config・PlayerStateへ接続し、`src/player-layout.css`でブラウザ表示領域を使う。通常の動画・コメントの比率は既存プレイヤーに任せる。操作UIは未操作3秒で隠すが、パネル・入力・ドラッグ中は保持する。
+- `src/player-shell/player-shell.ts`は既存のDialogコマンド・Config・PlayerStateへ接続し、`src/player-shell/player-layout.css`でブラウザ表示領域を使う。通常の動画・コメントの比率は既存プレイヤーに任せる。操作UIは未操作3秒で隠すが、パネル・入力・ドラッグ中は保持する。
 - 右の動画情報・関連動画・コメント・プレイリストは既存のパネルとモデルを使う。タグは既存ヘッダーから同じDOMを移動する。関連動画とコメント一覧は隔離iframeなので、外側CSSだけで配色や表示を変更できない。仮想スクロールの固定行高は変えない。
 - ABリピートは動画切替・closeで消す。Bが動画終端でもプレイリストの自動遷移に先行してAへ戻す。新規UIの実操作検証は`bun scripts/dev-verify-shell.ts`。配布物注入による検証で、マネージャへの登録確認とは区別する。
 - 一般設定の`DialogElement.getContentsTemplate`はPromiseを返す。litへPromiseをそのまま渡すと`[object Promise]`だけが表示されるため、`getTemplate`でawaitする。`isOpen`だけの確認ではこの不具合を検出できない。設定項目の表示・実入力・保存・閉じるまで検証する。
@@ -193,7 +193,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 名称の全面移行とlint（2026-09-20、未リリース）
 
-- 現行コード・DOM・イベント・追加機能はFutatsumeWatch / Futatsume系、プレイヤーのパッケージは`packages/futatsume`へ統一した。旧ブランド文字列は`src/config-migration.ts`の読み込み境界と移行テスト、由来・上流URL・過去の記録だけに残す。`escapeToZenkaku`、`frozen`、資料内の全角空白`zen_space`はブランド名ではない。
+- 現行コード・DOM・イベント・追加機能はFutatsumeWatch / Futatsume系、プレイヤーのパッケージは`packages/futatsume`へ統一した。旧ブランド文字列は`src/config/config-migration.ts`の読み込み境界と移行テスト、由来・上流URL・過去の記録だけに残す。`escapeToZenkaku`、`frozen`、資料内の全角空白`zen_space`はブランド名ではない。
 - `main.ts`で共有保存値・プレイリスト・前回再生状態を移し、Configの復元前に本体設定を移す。本体の移行版は3。マーカー3では旧NGワードと旧単一正規表現／フラグを正規表現一覧へ統合する。リセットした値を旧ブランドのバックアップから復活させず、旧値は保持し、新キーを優先する。削除済みキーは設定JSONの読み込み時にも無視する。
 - `dev:verify:migration`は隔離ブラウザコンテキストで本体・MylistPocket・プレイリスト・前回再生状態の移行と、固定HLSのエラー種別を検証する。
 - lintは`--max-warnings 0`・未使用宣言error。継承・公開契約に必要な未使用引数だけ意図を明示し、未使用の代入を外す際は初期化や入力検証の副作用を残す。
@@ -201,8 +201,8 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 到達不能コードの整理（2026-09-28）
 
-- 未使用ファイルはTypeScriptの通常importに加え、`@require`コメント、DOM文字列による生成、ビルド後の配布物も照合して判定する。`packages/components/src/index.ts`は`src/runtime.ts`から到達するため保持する。`packages/components/src/util/util.ts`と`packages/lib/src/dom/define-element.ts`は現行入口から参照されず、旧コメント付きimport以外に利用がないことを確認して削除した。
-- `packages/lib/src/infra/storage-writer.ts`は現行の設定保存経路から参照されず、再ビルドした配布物にも含まれない。`src/config.ts`に残っていた旧`@require`と合わせて削除した。
+- 未使用ファイルはTypeScriptの通常importに加え、`@require`コメント、DOM文字列による生成、ビルド後の配布物も照合して判定する。`packages/components/src/index.ts`は`src/app/runtime.ts`から到達するため保持する。`packages/components/src/util/util.ts`と`packages/lib/src/dom/define-element.ts`は現行入口から参照されず、旧コメント付きimport以外に利用がないことを確認して削除した。
+- `packages/lib/src/infra/storage-writer.ts`は現行の設定保存経路から参照されず、再ビルドした配布物にも含まれない。`src/config/index.ts`に残っていた旧`@require`と合わせて削除した。
 
 ## ソースファイル名
 
