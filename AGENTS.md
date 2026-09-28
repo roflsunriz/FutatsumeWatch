@@ -180,7 +180,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## 不要ファイル整理（2026-09-20、0.0.9）
 
-- 未使用判定はTypeScriptのモジュール解決で`.js`指定から`.ts`への解決も確認する。`components/src/index.ts`と`util/util.ts`、`like-api.ts`は現行製品から参照される。単純な拡張子一致やファイル名検索だけで削除しない。
+- 未使用判定はTypeScriptのモジュール解決で`.js`指定から`.ts`への解決も確認する。`components/src/index.ts`と`like-api.ts`は現行製品から参照される。単純な拡張子一致やファイル名検索だけで削除しない。
 - 旧`test/browser`のイベント検証は`test/unit/uquery.test.ts`へ移した。DOMは同じイベント・関数のリスナーを共有するため、uQueryの名前空間を一つ解除しても別の登録が残る間は実リスナーを消さない。`sample/`は旧コメントアートの比較資料で、実行済みのテストと混同しない。
 - `v<version>`タグでは`.github/workflows/ci.yml`が品質検証後にCHANGELOGの対象版と配布物をリリースへ掲載する。mainの通常プッシュではリリースしない。
 - 既定の`minify: true`はWorker内で`ReferenceError: e/t is not defined`を生み再生を止めた。`rolldownOptions.output.minify`で`mangle:false`・`compress:false`・`codegen.removeWhitespace:true`を指定し、名前と関数構造を保持する。変更時は実配布物の再生・Worker・保存HTMLを再検証する。
@@ -192,6 +192,11 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `dev:verify:migration`は隔離ブラウザコンテキストで本体・MylistPocket・プレイリスト・前回再生状態の移行と、固定HLSのエラー種別を検証する。
 - lintは`--max-warnings 0`・未使用宣言error。継承・公開契約に必要な未使用引数だけ意図を明示し、未使用の代入を外す際は初期化や入力検証の副作用を残す。
 - Bun 1.4.0の`install --lockfile-only --ignore-scripts`は`--force`付きでも既存lockfileのルートnameを更新しなかった。今回だけルートnameをpackage.jsonへ合わせ、依存解決情報を変えず`--frozen-lockfile`で整合性を確認する。
+
+## 到達不能コードの整理（2026-09-28）
+
+- 未使用ファイルはTypeScriptの通常importに加え、`@require`コメント、DOM文字列による生成、ビルド後の配布物も照合して判定する。`packages/components/src/index.ts`は`src/runtime.ts`から到達するため保持する。`packages/components/src/util/util.ts`と`packages/lib/src/dom/define-element.ts`は現行入口から参照されず、旧コメント付きimport以外に利用がないことを確認して削除した。
+- `packages/lib/src/infra/storage-writer.ts`は現行の設定保存経路から参照されず、再ビルドした配布物にも含まれない。`src/config.ts`に残っていた旧`@require`と合わせて削除した。
 
 ## ソースファイル名
 

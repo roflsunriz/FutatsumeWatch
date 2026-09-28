@@ -4,6 +4,10 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+### Removed
+
+- 現行の起動・バンドル経路で使われず配布物にも含まれない旧JSON保存Workerと共通要素ユーティリティを削除し、設定ソースに残っていた旧Worker参照を除去。
+
 ### Fixed
 
 - CIの低速runnerで移行済みプレイリストの動画情報要求が検証終了後まで遅れ、オフライン通信として捕捉できない競合を防ぐため、要求の完了までmigration検証で待つよう修正。

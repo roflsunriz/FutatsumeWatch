@@ -157,7 +157,6 @@ interface DataStorageOptions {
 // let console = window.console;
 
 //===BEGIN===
-//@require ../packages/lib/src/infra/storage-writer.js
 //@require ../packages/lib/src/infra/obj-util.js
 //@require ../packages/lib/src/infra/data-storage.js
 const Config = (() => {
