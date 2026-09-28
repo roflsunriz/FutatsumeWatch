@@ -14,10 +14,22 @@ if (!target) throw new Error('移行検証のタブを取得できません');
 const page = await attach(target);
 const checks: string[] = [];
 const errors: string[] = [];
+const thumbInfoRequestIds = new Set<string>();
+let thumbInfoRequestFinished = false;
+let thumbInfoRequestFailure: string | undefined;
 page.onEvent((method, params) => {
-  if (method !== 'Runtime.exceptionThrown') return;
-  const detail = params.exceptionDetails as { exception?: { description?: string } };
-  errors.push(detail.exception?.description ?? 'ページ例外');
+  if (method === 'Runtime.exceptionThrown') {
+    const detail = params.exceptionDetails as { exception?: { description?: string } };
+    errors.push(detail.exception?.description ?? 'ページ例外');
+  } else if (method === 'Network.requestWillBeSent') {
+    const request = params.request as { url?: string; method?: string };
+    if (request.method === 'GET' && request.url === 'https://ext.nicovideo.jp/api/getthumbinfo/sm9')
+      thumbInfoRequestIds.add(String(params.requestId));
+  } else if (method === 'Network.loadingFinished' && thumbInfoRequestIds.has(String(params.requestId))) {
+    thumbInfoRequestFinished = true;
+  } else if (method === 'Network.loadingFailed' && thumbInfoRequestIds.has(String(params.requestId))) {
+    thumbInfoRequestFailure = typeof params.errorText === 'string' ? params.errorText : '通信失敗';
+  }
 });
 async function check(expression: string, label: string): Promise<void> {
   if (!(await evaluate(page, expression))) throw new Error(`移行検証失敗: ${label}`);
@@ -48,6 +60,12 @@ try {
   const deadline = Date.now() + 30000;
   while (!(await evaluate(page, ready)) && Date.now() < deadline) await Bun.sleep(200);
   await check(ready, '現行名称で本体とマイリスト機能を初期化');
+  const thumbInfoDeadline = Date.now() + 30000;
+  while (!thumbInfoRequestFinished && !thumbInfoRequestFailure && Date.now() < thumbInfoDeadline) await Bun.sleep(200);
+  if (thumbInfoRequestFailure)
+    throw new Error(`移行したプレイリストの動画情報を取得できません: ${thumbInfoRequestFailure}`);
+  if (!thumbInfoRequestFinished) throw new Error('移行したプレイリストの動画情報取得がタイムアウトしました');
+  await check('true', '移行したプレイリストの動画情報取得が完了');
   await check(
     `JSON.stringify(window.__migrationEvents) === JSON.stringify(['BeforeFutatsumeWatchInitialize','FutatsumeWatchInitialize'])`,
     '新しい初期化イベントを各1回通知'

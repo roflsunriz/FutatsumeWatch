@@ -240,3 +240,4 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 ## GitHub Actionsのラベル設定
 
 - `actions/labeler`の設定は現行の`.github/labeler.yml`と`.github/workflows/labeler.yml`を一緒に確認する。v5以降は各ラベルの条件を`changed-files`などの設定オブジェクトで記述するため、ラベル直下にファイルglob文字列だけを並べる旧形式は実行時エラーになる。バージョン更新後はLabelワークフローの実行結果まで確認する。
+- migration検証では、`MylistPocket.isReady`後に始まる保存済みプレイリストの動画情報要求について`Network.loadingFinished`まで待ってからCDPセッションを閉じる。低速runnerでは初期化完了と非同期取得完了の間に遅延があるため、修正時は通信捕捉レポートも確認する（2026-09-28、`scripts/dev-verify-migration.ts`・`verification.md`）。

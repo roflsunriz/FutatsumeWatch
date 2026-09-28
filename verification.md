@@ -1,5 +1,10 @@
 # 検証記録
 
+## 2026-09-28：CIのmigration通信競合
+
+- 失敗したCIの通信レポートでは、移行済みプレイリスト `sm9` の `getthumbinfo` 要求が、`MylistPocket.isReady` の成立後に遅れて開始し、検証用CDPセッション終了と競合していた。migration検証は該当するNetwork要求の完了まで待機し、登録済みフィクスチャ応答を通信終了前に捕捉する。
+- 修正後の `bun run test:browser all --offline` は全9スイート・849チェックに成功し、同要求は `page:fetch` で捕捉され登録済みフィクスチャに一致した。証跡は `dev-assets/verification/2026-09-28T07-45-42-772Z-offline-863b3d52/run.json`。
+
 ## 2026-09-22：トグル重なり解消とホバーヘッダのタグ一覧（0.0.21）
 
 - NG・フィルターのトグル重なりの原因は、金属調トグル（50×28）へ移行した後に旧来の`transform: scale(2)`が残り、実矩形が100×56となって隣の行へ16px食い込んでいたことだった。`setting-panel-element.ts`と`setting.ts`の旧指定を除去し、共通テーマの寸法へ一本化した。詳細設定の2項目も同じ原因だったため同時に修正した。
