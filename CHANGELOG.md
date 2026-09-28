@@ -8,6 +8,10 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 - CIの低速runnerで移行済みプレイリストの動画情報要求が検証終了後まで遅れ、オフライン通信として捕捉できない競合を防ぐため、要求の完了までmigration検証で待つよう修正。
 
+### Changed
+
+- 旧jQuery／Lit APIを使わず現行ブラウザー要件に合うよう、jQuery 4・Lit 3へ移行し、互換性のあるTypeScript・lint・build開発依存を修正版へ更新。
+
 ## [0.0.25] - 2026-09-27
 
 - https://www.nicovideo.jp/local/* を exclude に追加

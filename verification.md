@@ -1,5 +1,11 @@
 # 検証記録
 
+## 2026-09-28：CI修正と依存更新
+
+- jQuery 4.0.0は公式移行ガイドの削除対象APIをコードが使わないことを確認して更新。Litは3.3.3へ、ESLint 10.11.0、jsdom 30.1.1、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新した。
+- TypeScript 7.0.2はtypescript-eslintのpeer範囲`<6.1.0`と一致しないため保留。単体テスト・全オフラインブラウザー検証・監査を更新後に再実行する。
+- 更新後の全9ブラウザースイート849チェックと単体テスト394件が成功。`bun audit`は242パッケージ・脆弱性0件。新しい配布物SHA-256は`1bfdc91b1fc6f4ab0470184477d423fa888678cd018e9671846b739f7f38b8a7`で、生成後の`dist/FutatsumeWatch.user.js`を変更として保持する。ブラウザー証跡は`dev-assets/verification/2026-09-28T09-23-31-412Z-offline-9bbb6823/run.json`。
+
 ## 2026-09-28：CIのmigration通信競合
 
 - 失敗したCIの通信レポートでは、移行済みプレイリスト `sm9` の `getthumbinfo` 要求が、`MylistPocket.isReady` の成立後に遅れて開始し、検証用CDPセッション終了と競合していた。migration検証は該当するNetwork要求の完了まで待機し、登録済みフィクスチャ応答を通信終了前に捕捉する。
