@@ -16,7 +16,7 @@ Object.assign(globalThis, {
   CustomEvent: window.CustomEvent,
   MutationObserver: window.MutationObserver,
 });
-const { NicoVideoPlayerDialog } = await import('../../src/nico-video-player-dialog');
+const { NicoVideoPlayerDialog, VideoWatchOptions } = await import('../../src/nico-video-player-dialog');
 
 test('Bが実終端のABリピートは通常終端・プレイリスト遷移より先にAへ戻す', () => {
   const ab = new ABRepeat();
@@ -169,6 +169,33 @@ test('SessionClosedErrorの実ハンドラーは正しいPlayerStateへ到達し
     expect(messages.length).toBe(alreadyFailed ? 0 : 1);
     expect(emitted).toEqual(['loadVideoPlayStartFail']);
   }
+});
+
+test('動画切替・再読込では要求オプションを保持し、動画固有状態を初期化する', () => {
+  const config = { getValue: () => 'eco' } as never;
+  const options = new VideoWatchOptions(
+    'sm9',
+    {
+      eventType: 'click',
+      currentTime: 3.5,
+      economy: false,
+      reloadCount: 2,
+      query: { from: '12', continuous: '1', playlist: { type: 'mylist' }, shuffle: '1' },
+    },
+    config
+  );
+  expect(options.currentTime).toBe(3.5);
+  expect(options.videoLoadOptions).toEqual({ economy: false });
+  expect(options.mylistLoadOptions).toEqual({ shuffle: true, watchId: 'sm9' });
+  expect(options.isPlaylistStartRequest).toBe(true);
+
+  const forVideoChange = options.createForVideoChange({});
+  expect(forVideoChange).toMatchObject({ openNow: true, currentTime: 0, reloadCount: 0, query: {} });
+  expect(forVideoChange.economy).toBeUndefined();
+
+  const forReload = options.createForReload({});
+  expect(forReload).toMatchObject({ openNow: true, reloadCount: 3, query: {} });
+  expect(forReload.economy).toBeUndefined();
 });
 
 test('実動画エラーハンドラーも旧sessionの応答で新動画の通知・reloadを変更しない', async () => {

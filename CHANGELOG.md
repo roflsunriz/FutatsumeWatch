@@ -15,6 +15,7 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ### Changed
 
+- 主要なプレイヤー・コメント・動画情報・HLS・MylistPocket実装を責務別の `src/<機能>/` 直下へ分割し、既存のimport経路を再エクスポートで保ちながら、各ソースを1,000行以下に整理。
 - 旧jQuery／Lit APIを使わず現行ブラウザー要件に合うよう、jQuery 4・Lit 3へ移行し、互換性のあるTypeScript・lint・build開発依存を修正版へ更新。
 
 ## [0.0.25] - 2026-09-27

@@ -68,6 +68,25 @@ test('P3-08 削除失敗は行を残し、成功後だけ除去して連打を1�
   await flush();
   expect(f.model._items).toHaveLength(0);
 });
+test('P3-08 削除失敗を利用者へ通知し、再試行後に成功したら通知しない', async () => {
+  const f = create();
+  const commands: unknown[][] = [];
+  f.panel.on('command', (...args: unknown[]) => commands.push(args));
+
+  f.panel._onCommand('removeComment', null, f.itemId);
+  f.events[0]!.reject(new Error('削除できません'));
+  await flush();
+
+  expect(commands).toEqual([['alert', '削除できません']]);
+  expect(f.model._items).toHaveLength(1);
+
+  f.panel._onCommand('removeComment', null, f.itemId);
+  f.events[1]!.resolve();
+  await flush();
+
+  expect(commands).toEqual([['alert', '削除できません']]);
+  expect(f.model._items).toHaveLength(0);
+});
 test('P3-08 ニコるの拒否では件数と状態を変更せず、受理件数を反映する', async () => {
   const f = create();
   f.panel._onCommand('nicoru', null, f.itemId);

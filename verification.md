@@ -1,5 +1,12 @@
 # 検証記録
 
+## 2026-09-28：大規模ソースの責務分割
+
+- 1,000行を超えていたプレイヤーダイアログ、操作バー、動画情報、コメント、HLS、MylistPocket、NicoVideoPlayerを責務別モジュールへ分割し、実装を `src/<機能>/` 直下へ配置した。従来のルートimportは再エクスポートで維持し、`test/unit/source-organization.test.ts`でsrc内の行数上限とフォルダ深さを監視する。
+- 分割前に追加した回帰単体テストを通過させてから各モジュールを移動した。最終 `bun run lint`、`bun run format`、`bun run type-check`、`bun run build`、`bun run test` は成功し、単体テストは400件・2,880 assertions。
+- 最終 `bun run test:browser all --offline` は全9スイート・850チェック成功。配布物注入で起動、再生、コメント描画、MylistPocket、設定、検索・関連・ライブラリ操作を確認した。証跡は `dev-assets/verification/2026-09-28T12-19-43-474Z-offline-c05ce72a/run.json`。配布物SHA-256は `3272db335c4a2c998d5fe52b687b1739cca673aed2c05623e62ae0e3c705464f`。
+- 公式サイトへの通信を伴う実測は実施していない。サンプルHTML、動画fixture、Tampermonkey配布バンドルは採取データまたは第三者生成物のため分割対象外。
+
 ## 2026-09-28：CI修正と依存更新
 
 - jQuery 4.0.0は公式移行ガイドの削除対象APIをコードが使わないことを確認して更新。Litは3.3.3へ、ESLint 10.11.0、jsdom 30.1.1、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新した。

@@ -130,6 +130,12 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - access-rightsとpublic.nvcommentのコメント取得はPOST。GETへ置き換えると照合しない。コメントの打ち切りは完全なコメント単位としJSON妥当性を保つ。
 - 未登録リクエストはoffline.tsで外部へ出さず失敗させる。実行済み検証・制約・再開条件はverification.md、配布と復旧はhow-to-update.mdを正本とする。
 
+## ソースファイルの分割と配置
+
+- `src`のTypeScript・JavaScript・CSSは1ファイル1,000行以下を維持する。大きな責務は`src/<機能>/`の直下へ分け、フォルダを二段以上にネストしない。単独で複数責務を持つルート実装を作らない。
+- 分割後も既存import利用があるルートファイルは、互換用の再エクスポートだけを残す。クラス拡張や初期化副作用を別モジュールへ移す場合は、エントリーからの評価順とWorker文字列化を確認し、分割前後の回帰テストを通す。行数上限は`test/unit/source-organization.test.ts`で監視する。
+- `src/main.ts`はMylistPocketを動的importするだけで初期化関数を直接呼ばないため、`src/pocket.ts`のimportが従来どおり初期化を起こすことを維持する。HLSのStorage Workerは関数の`toString()`からWorkerコードを作るため、関数本体から外側スコープの値やimportを参照させない。
+
 ## 導線の確認漏れからの修正（2026-09-20）
 
 - 利用者のbun run devで、既存タブの本体未実行を実測した。同じheaded Chromeの新規文書では実行され、既存タブも再読み込みで回復した。拡張の登録タイミングを原因と断定せず、登録/有効化と文書への適用を分けて検証する。利用者の指定によりdev-installは登録・有効化までとし、起動マーカーの実適用確認は明示実行する`bun run dev:check`へ分離した。既存ページの再読み込みは利用者に任せる。
