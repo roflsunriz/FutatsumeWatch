@@ -5,6 +5,9 @@
 - jQuery 4.0.0は公式移行ガイドの削除対象APIをコードが使わないことを確認して更新。Litは3.3.3へ、ESLint 10.11.0、jsdom 30.1.1、Prettier 3.9.9、typescript-eslint 8.70.1、Vite 8.3.1へ更新した。
 - TypeScript 7.0.2はtypescript-eslintのpeer範囲`<6.1.0`と一致しないため保留。単体テスト・全オフラインブラウザー検証・監査を更新後に再実行する。
 - 更新後の全9ブラウザースイート849チェックと単体テスト394件が成功。`bun audit`は242パッケージ・脆弱性0件。新しい配布物SHA-256は`1bfdc91b1fc6f4ab0470184477d423fa888678cd018e9671846b739f7f38b8a7`で、生成後の`dist/FutatsumeWatch.user.js`を変更として保持する。ブラウザー証跡は`dev-assets/verification/2026-09-28T09-23-31-412Z-offline-9bbb6823/run.json`。
+- 2026-09-28のGitHub Quality browser runでは、library終端に再生中の`sm100/high.m3u8`取得が1件遅れて発生し、CDP teardown後の未捕捉要求になった。詳細パネルがロックされて閉じる操作を覆うケースに合わせ、検証後にロック解除→背景操作で詳細パネルを閉じる→プレイヤー終了→状態確認を行ってから監査を閉じる。
+- 修正後の`bun run test:browser library --offline`は91チェック成功し、プレイヤー終了後もオフライン通信の未捕捉0件。証跡は`dev-assets/verification/2026-09-28T09-58-11-418Z-offline-bf77cde7/run.json`。
+- ロック解除後のパネル閉鎖も含む最終`bun run test:browser all --offline`は全9スイート・850チェック成功。2回の`sm100/high.m3u8`取得はどちらも捕捉され、登録済みfixtureに一致した。証跡は`dev-assets/verification/2026-09-28T09-59-47-210Z-offline-f6d7c7f6/run.json`。
 
 ## 2026-09-28：CIのmigration通信競合
 

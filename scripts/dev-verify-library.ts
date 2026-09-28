@@ -363,6 +363,12 @@ async function main() {
       find,
       requests,
     });
+    if (await evaluate(session, `document.querySelector('.fw-details-lock')?.getAttribute('aria-pressed')==='true'`))
+      await clickVisible(session, '[data-shell-action="details-lock"]');
+    if (await evaluate(session, `document.querySelector('.fw-player')?.dataset.panel==='details'`))
+      await clickVisible(session, '.fw-backdrop');
+    await clickVisible(session, '[data-shell-action="close"]');
+    await check(session, `${state}.dialog.isOpen===false`, 'P3-12検証後に再生とHLS取得を終了', 10000);
     await screenshot(session, 'complete');
     if (errors.length) throw Error(errors.join('\n'));
     await Bun.write(
