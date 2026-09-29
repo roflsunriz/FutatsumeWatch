@@ -1,5 +1,11 @@
 # 検証記録
 
+## 2026-09-29：マイリスト導線・編集画面とタブアイコン
+
+- 9222のChromeにある視聴ページと新規の公式マイリスト管理タブから配信資産をraw CDPで採取し、`vendor.js`と`pages_user_UserPage.js`を整形して、通常マイリストの作成・設定更新・削除、登録動画の追加・削除・メモ変更、とりマイの追加・削除・メモ変更の要求形式を照合した。GETによる一覧・とりマイの応答形も確認した。証拠とAPI一覧は[マイリストAPIの検証記録](docs/mylist-api-verification.md)。実アカウントへの書込みは行っていない。
+- 動画リンクホバー、MylistPocket動画詳細、関連動画・プレイリスト行、プレイヤーホバーメニューからマイリスト編集画面を開く経路を追加した。通常マイリスト追加後の暗黙のとりマイ削除を止め、個別削除には登録項目IDを使う。右サイドバーの関連動画・プレイリストの固有アイコンを復元した。
+- `bun run test:browser library --offline`が成功した。状態付きフィクスチャへの実操作でリスト作成・名前／説明編集・削除、動画追加・メモ変更・削除、とりマイ追加・メモ変更・削除を確認した。`dev-assets/verification/2026-09-29T04-49-23-120Z-offline-98c30044/library/library-mylist-manager-390.png`で狭幅の表示を確認した。`bun run test:browser ui --offline`でも固有タブアイコンを確認した。全9スイート・882チェックは`dev-assets/verification/2026-09-29T04-51-27-403Z-offline-94fd15c2/run.json`で成功。後続のentry単独18チェックでは外部ホストの実ホバーから専用画面を開いて追加先一覧を取得し、とりマイへ追加した。全単体テスト、lint・format・type-check・build、`bun audit`（242パッケージ・脆弱性なし）も成功。公開アカウントへの書込み成功と外部ホストのログイン別動作は未検証。
+
 ## 2026-09-29：メタデータ下のタグ編集
 
 - 9222のChromeで公式watch画面から配信された`nvpc_next`資産を読み、`enum-CL_Gp8xK.js`のGET・POST・DELETE定義、`PlayerCurrentTime-C03JZa28.js`の編集キー取得・期限切れ時の更新処理を確認した。`/v2/videos/<videoId>/tags`へ書込みは`tag`クエリ、`X-Tag-Edit-Key`、`X-Request-With`を使う。資産の読取りだけで実サイトへのタグ変更はしていない。

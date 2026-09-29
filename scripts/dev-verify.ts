@@ -168,8 +168,8 @@ async function main(): Promise<void> {
     );
     await until(
       session,
-      `!window.__fwQuery('[data-command="deflist-add"],[data-command="mylist-window"],[data-command="open-mylist-open"],[data-command="twitter-hash-open"],[data-command="toggle-setting"]',document.querySelector('#mylistPocket-popup').shadowRoot)`,
-      '動画詳細情報から不要な5ボタンを削除',
+      `!!window.__fwQuery('[data-command="deflist-add"]',document.querySelector('#mylistPocket-popup').shadowRoot)&&!!window.__fwQuery('[data-command="mylist-select"]',document.querySelector('#mylistPocket-popup').shadowRoot)&&!window.__fwQuery('[data-command="open-mylist-open"],[data-command="twitter-hash-open"],[data-command="toggle-setting"]',document.querySelector('#mylistPocket-popup').shadowRoot)`,
+      '動画詳細情報へとりマイ・マイリスト追加を戻し不要な3ボタンは置かない',
       5000
     );
     await evaluate(session, `window.MylistPocket.external.hide()`);

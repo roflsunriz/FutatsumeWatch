@@ -15,6 +15,7 @@ import { POCKET_TEMPLATE } from './template';
 import { createVideoInfoClass } from './video-info';
 import { createMatchChecker } from './match-checker';
 import { createPocketViews } from './views';
+import { addPocketWatchLater } from './deflist-add';
 import { createPocketPersistence } from './persistence';
 type PocketViews = ReturnType<typeof createPocketViews>;
 type HoverMenuInstance = InstanceType<PocketViews['HoverMenu']>;
@@ -405,6 +406,23 @@ export function initializePocket(): void {
                     );
                   }
                 );
+            case 'deflist-add':
+              (src as HoverMenuInstance | VideoInfoViewInstance).notifyBeginDeflistUpdate();
+              return addPocketWatchLater(param as string, () => FutatsumeDetector.detect()).then(
+                (result) =>
+                  (src as HoverMenuInstance | VideoInfoViewInstance).notifyEndDeflistUpdate(
+                    result as PocketCommandResult
+                  ),
+                (error: unknown) =>
+                  (src as HoverMenuInstance | VideoInfoViewInstance).notifyFailDeflistUpdate(
+                    error as PocketCommandResult
+                  )
+              );
+            case 'mylist-select':
+              void import('../mylist/mylist-manager').then(({ openMylistManager }) =>
+                openMylistManager(param as string)
+              );
+              break;
             case 'add-ng-word':
             case 'add-ng-tag':
             case 'add-ng-owner':
@@ -883,6 +901,9 @@ export function initializePocket(): void {
         }) as unknown as EmitterCallback);
         hoverMenu.on('deflist-remove', ((watchId: string, src: unknown) => {
           dispatcher('deflist-remove', watchId, src);
+        }) as unknown as EmitterCallback);
+        hoverMenu.on('mylist-select', ((watchId: string) => {
+          void import('../mylist/mylist-manager').then(({ openMylistManager }) => openMylistManager(watchId));
         }) as unknown as EmitterCallback);
         hoverMenu.on('playlist-queue', ((watchId: string, src: unknown) => {
           dispatcher('playlist-queue', watchId, src);

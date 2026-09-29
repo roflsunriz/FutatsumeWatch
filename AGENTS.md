@@ -27,7 +27,8 @@
 - 設定画面は一般設定4カテゴリと詳細設定の計5カテゴリ・34項目だけを扱う。詳細設定は「画面ダブルクリックでフルスクリーン切り換え」「再生終了時に自動でフルスクリーン解除」の2項目だけにする。
 - 複数タブ起動、公式プレイヤー／動画リンク置換、マイリスト投稿者説明、動画ID指定の＠ジャンプ、タッチジェスチャ、FutatsumeTubeの自動画質・自動切替、期限切れアニメの別映像取得を復活させない。保存済みの旧キーは読み込み対象外として保持する。
 - HLSの設定画面・保存値・キャッシュ調整機能、MaskedWatch、GamePad、HeatSyncは削除済み。Domand動画の再生に必要なHLS処理と画質選択は固定内部設定で維持し、「HLS削除」を再生本体の削除と解釈しない。設定台帳は`scripts/verify-settings-fields.ts`、回帰はsettingsスイートの34子IDを正本とする。
-- 関連動画・プレイリスト行のマイリスト／後で見る追加と、MylistPocket動画詳細の「とり」「マイ」「公開」「Twitter」「設定」は削除済み。行にはプレイリスト操作と動画情報だけを残し、削除した専用マイリスト選択画面・イベント配線・検証を復活させない。
+- 2026-09-29の利用者指示で、関連動画・プレイリスト行、MylistPocketの動画リンクホバー・動画詳細に「とりマイ」「マイリスト追加」を復活させ、専用の作成・編集画面へ接続した。「公開」「Twitter」「設定」は復活させない。回帰はlibraryスイートの実操作と`mylist-management-api.test.ts`。
+- 9222の公式`pages_user_UserPage.js`と`vendor.js`（2026-09-29）では、通常リスト作成は`POST /v1/users/me/mylists`のform、設定変更は同IDへのPUT、削除はDELETE。動画追加は`POST /items`の`itemId`・`description`クエリ、削除は`DELETE /items?itemIds=<itemId>`、メモは`PUT /items/<itemId>`の`description` form。とりマイのメモは`PUT /watch-later/<itemId>`の`memo` form。両方の書込みに`X-Request-With: https://www.nicovideo.jp`を用いる。通常マイリスト追加後にとりマイを暗黙に削除しない。根拠は`docs/mylist-api-verification.md`、API実装は`mylist-management-api.ts`。
 - 大百科アイコンはwatch応答の真偽値を表示へ直結せず、全タグを`api.dic.nicovideo.jp/v1/articles/article/<タグ>`へ照会する。2xxだけを「あり」、404だけを「なし」、それ以外を「不明」とし、API本文の世代差を存在判定へ持ち込まない。描画（`futatsume-tag-item-menu`の`data-has-nicodic`とアイコン画像）は`packages/lib/src/nico/nico-dic-icon.ts`の共有ヘルパーが正本で、詳細タブ・再生中メタデータ・MylistPocket動画詳細の3箇所が同じ表示を使う。回帰は`tag-dictionary.test.ts`とlibraryスイート。
 - 本体のNGタグ・NG投稿者（`videoTagFilter`／`videoOwnerFilter`設定・設定画面の入力欄・`VideoFilter`と再生除外・次動画送り・検証台帳・関連テスト）は削除済みで復活させない。保存済みの旧キーは読み込み対象外として保持する。MylistPocket側のNG・お気に入り判定は維持する。
 - 設定UIは2026-09-22の手描き案と利用者の訂正を正本とする。設定ボタンから、製品名・版、5カテゴリ、画質、GitHub、再読み込み・コメント付き画像保存・公式視聴ページを平置きした左レールと、選択中カテゴリの内容を入れる右パネルを直接開く。中間の選択案内画面や「その他操作」のdetailsは作らない。左レールは390px幅でも左に維持し、チェック設定はOFFが灰色、ONが緑色の金属調トグルにする。回帰はui/settingsスイートと複数画面寸法の画像。

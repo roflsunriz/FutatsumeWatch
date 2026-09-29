@@ -781,6 +781,7 @@ VideoHoverMenu.__tpl__ = `
             <div class="mylistSelectMenu selectMenu futatsumePopupMenu forMember">
               <div class="triangle"></div>
               <div class="mylistSelectMenuInner">
+                <button type="button" class="command" data-command="mylistSelect">マイリスト追加・編集</button>
               </div>
             </div>
           </div>

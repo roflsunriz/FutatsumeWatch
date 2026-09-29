@@ -28,6 +28,8 @@ UIだけを確認する場合は`bun run test:browser ui`を実行します。�
 
 `functionality`は実フォームからの投稿・再取得と再生の境界、`library`はタグ・一覧・マイリスト等、`guard`はページとWorkerの未登録通信の遮断を確認します。いずれもオフライン専用です。実サイトの検証は`bun run test:browser player --live`、別動画なら`bun run test:browser player --live --url https://www.nicovideo.jp/watch/sm2057168`のように指定します。`--live all`はオフライン専用の3スイートを含めません。
 
+マイリスト画面の変更は`bun run test:browser library --offline`で、専用画面から作成・編集・追加・削除ととりマイのメモを状態付きフィクスチャへ送って確認します。実アカウントへの書込みはこのコマンドでは行いません。公式APIの採取根拠と実サイトで未検証の範囲は[マイリストAPIの検証記録](docs/mylist-api-verification.md)を参照してください。
+
 通常検証はチェックイン済みの生成映像を使用します。映像の変更時だけ[フィクスチャの再生成手順](test/fixtures/functionality/README.md)に従い、実HLS再生と画質切替を再確認してください。Chromeの初回準備に必要なダウンロードと、オフラインケース実行中の外部通信禁止は区別します。CIは従来のUbuntu品質検査に加え、Windowsでオフラインブラウザ検証を行い、失敗時も結果を保存します。
 
 Firefoxの代表確認は、ビルド後に`bun scripts/dev-verify-firefox.ts`を実行します。WindowsのProgram Files配下のFirefoxと9340番ポートを使用し、実行ごとに`dev-assets/firefox-verification/<実行ID>/profile`を作ります。ポートの使用中は失敗し、実プロファイルを変更しません。起動PIDだけでなく、実ブラウザのPID・起動時刻・実行ファイル・プロファイルを照合して終了します。結果と画像は同じ実行ディレクトリへ保存します。今回の通常サンドボックスではFirefoxのタブ子プロセスが起動できず、同じ専用構成での昇格実行が必要でした。

@@ -1,7 +1,9 @@
 export const POCKET_TEMPLATE = `
   <div class="mylistPocketHoverMenu scalingUI futatsume-family">
-    <button class="mylistPocketButton command deflist-add wwwFutatsumeOnly is-need-login" data-command="deflist"
+    <button class="mylistPocketButton command deflist-add" data-command="deflist"
       tooltip="とりあえずマイリスト">&#x271A;</button>
+    <button class="mylistPocketButton command mylist-select" data-command="mylist-select"
+      tooltip="マイリスト追加・編集">＋M</button>
     <button class="mylistPocketButton command info" data-command="info"
       tooltip="動画情報を表示">？</button>
     <button class="mylistPocketButton command playlist-queue futatsumeMenu" data-command="playlist-queue"
@@ -938,8 +940,12 @@ export const POCKET_TEMPLATE = `
           </div>
         </div>
         <div class="footer-menu scalingUI">
-
-
+          <div class="regular-menu">
+            <button class="mylistPocketButton deflist-add pocket-button command command-watch-id"
+              data-command="deflist-add" tooltip="とりあえずマイリスト">とり</button>
+            <button class="pocket-button command command-watch-id" data-command="mylist-select"
+              tooltip="マイリスト追加・編集">マイ</button>
+          </div>
           <div class="futatsume-menu">
             <button
               class="pocket-button command command-watch-id"

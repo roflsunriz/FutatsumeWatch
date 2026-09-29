@@ -116,13 +116,52 @@ try {
     );
     site.documents.set(
       'https://anime.nicovideo.jp/',
-      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}main{position:relative}a{display:inline-block;padding:20px}.card-cover{position:absolute;inset:0;z-index:100}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a id="thumb-anime" href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a><div class="card-cover"></div></main></body></html>'
+      '<!doctype html><html lang="ja"><head><meta charset="utf-8"><link rel="icon" href="data:,"><style>[hidden]{display:none}body{margin:0;padding:32px}main{position:relative}a{display:inline-block;padding:20px}.card-cover{position:absolute;inset:0;z-index:100}</style></head><body><main><div hidden><a id="hidden-anime" href="https://www.nicovideo.jp/watch/sm9">隠れた主動画</a></div><a id="visible-anime" href="https://www.nicovideo.jp/watch/sm9">表示中の主動画</a><a id="thumb-anime" href="https://www.nicovideo.jp/watch/sm9"><img alt="主動画サムネイル"></a><div class="card-cover"></div></main><a id="menu-anime" href="https://www.nicovideo.jp/watch/sm100">別動画リンク</a></body></html>'
     );
     await page.send('Page.navigate', { url: 'https://anime.nicovideo.jp/' });
     await until(
       page,
       `window.FutatsumeWatch?.ready&&document.querySelectorAll('[data-futatsume-video="sm9"]').length===1&&document.querySelector('#thumb-anime')?.nextElementSibling?.dataset.futatsumeVideo==='sm9'&&document.querySelector('#visible-anime')?.nextElementSibling?.dataset.futatsumeVideo!=='sm9'`,
       'Nアニメ相当ページは表示中の同一IDリンクへ1個だけ起動ボタンを表示'
+    );
+    await until(
+      page,
+      `!!document.querySelector('.mylistPocketHoverMenu [data-command="mylist-select"]')`,
+      '外部ホストの動画リンクホバーメニューにマイリスト追加を表示'
+    );
+    const menuPoint = (await evaluate(
+      page,
+      `(()=>{const r=document.querySelector('#menu-anime').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`
+    )) as { x: number; y: number };
+    await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...menuPoint });
+    await until(
+      page,
+      `(()=>{const m=document.querySelector('.mylistPocketHoverMenu'),b=m?.querySelector('[data-command="mylist-select"]');return m?.classList.contains('is-show')&&b?.getBoundingClientRect().width>0})()`,
+      '外部ホストの動画リンクで追加メニューを実ホバー表示'
+    );
+    await clickVisible(page, '.mylistPocketHoverMenu [data-command="mylist-select"]');
+    await until(
+      page,
+      `!!document.querySelector('dialog[data-mylist-manager="sm100"][open]')`,
+      '外部ホストのホバーメニューから専用画面を開く'
+    );
+    await until(
+      page,
+      `!!document.querySelector('dialog[data-mylist-manager] [data-mylist-id="42"]')`,
+      '外部ホストの専用画面へ追加先一覧を取得'
+    );
+    await clickVisible(page, 'dialog[data-mylist-manager] [data-close]');
+    await page.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...menuPoint });
+    await until(
+      page,
+      `document.querySelector('.mylistPocketHoverMenu')?.classList.contains('is-show')`,
+      '外部ホストでとりマイ操作を再表示'
+    );
+    await clickVisible(page, '.mylistPocketHoverMenu [data-command="deflist"]');
+    await until(
+      page,
+      `document.querySelector('.mylistPocketHoverMenu')?.classList.contains('is-deflistSuccess')`,
+      '外部ホストのホバーメニューからとりマイへ追加'
     );
     await clickVisible(page, '[data-futatsume-video="sm9"]');
     await until(

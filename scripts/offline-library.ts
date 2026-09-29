@@ -13,6 +13,30 @@ export function createLibraryRoutes() {
   const writes: FixtureRequest[] = [];
   const watchLater = new Map<string, string>();
   const mylist = new Map<string, string>();
+  const mylists = new Map<
+    number,
+    {
+      id: number;
+      name: string;
+      description: string;
+      isPublic: boolean;
+      defaultSortKey: string;
+      defaultSortOrder: string;
+    }
+  >([
+    [
+      42,
+      {
+        id: 42,
+        name: '検証マイリスト',
+        description: '',
+        isPublic: false,
+        defaultSortKey: 'registeredAt',
+        defaultSortOrder: 'asc',
+      },
+    ],
+  ]);
+  let nextMylistId = 43;
   const item = (id: string) => ({
     id,
     watchId: id,
@@ -60,7 +84,9 @@ export function createLibraryRoutes() {
     if (url.origin !== 'https://nvapi.nicovideo.jp') return null;
     if (
       method === 'OPTIONS' &&
-      /^\/v1\/(recommend|playlist\/user-uploaded\/4|users\/me\/(watch-later|mylists(?:\/42(?:\/items)?)?))$/.test(path)
+      /^\/v1\/(recommend|playlist\/user-uploaded\/4|users\/me\/(watch-later(?:\/[\w-]+)?|mylists(?:\/\d+(?:\/items(?:\/[\w-]+)?)?)?))$/.test(
+        path
+      )
     )
       return { status: 204, mime: 'text/plain', body: '' };
     if (method === 'GET' && path === '/v1/recommend') {
@@ -102,19 +128,62 @@ export function createLibraryRoutes() {
           .map(item),
       });
     }
-    if (method === 'GET' && path === '/v1/users/me/mylists' && !url.search)
-      return json({
-        mylists: [
-          { id: 42, name: '検証マイリスト', isPublic: false, defaultSortKey: 'registeredAt', defaultSortOrder: 'asc' },
-        ],
-      });
+    if (path === '/v1/users/me/mylists' && !url.search) {
+      if (method === 'GET') return json({ mylists: [...mylists.values()] });
+      if (method === 'POST') {
+        const body = new URLSearchParams(request.postData);
+        const name = body.get('name');
+        if (
+          !name ||
+          !body.has('description') ||
+          !body.has('isPublic') ||
+          !body.has('defaultSortKey') ||
+          !body.has('defaultSortOrder')
+        )
+          return null;
+        const created = {
+          id: nextMylistId++,
+          name,
+          description: body.get('description')!,
+          isPublic: body.get('isPublic') === 'true',
+          defaultSortKey: body.get('defaultSortKey')!,
+          defaultSortOrder: body.get('defaultSortOrder')!,
+        };
+        mylists.set(created.id, created);
+        writes.push(request);
+        return json({ mylist: created, mylistId: created.id }, 201);
+      }
+    }
+    const mylistId = /^\/v1\/users\/me\/mylists\/(\d+)$/.exec(path)?.[1];
+    if (mylistId && method === 'PUT') {
+      const id = Number(mylistId),
+        current = mylists.get(id),
+        body = new URLSearchParams(request.postData);
+      if (!current || !body.has('name') || !body.has('description')) return null;
+      const updated = {
+        ...current,
+        name: body.get('name')!,
+        description: body.get('description')!,
+        isPublic: body.get('isPublic') === 'true',
+      };
+      mylists.set(id, updated);
+      writes.push(request);
+      return json({ mylist: updated });
+    }
+    if (mylistId && method === 'DELETE') {
+      if (!mylists.delete(Number(mylistId))) return json({}, 404);
+      writes.push(request);
+      return json({});
+    }
     const isLater = path === '/v1/users/me/watch-later';
     const isMylist = path === '/v1/users/me/mylists/42/items';
-    if ((isLater || path === '/v1/users/me/mylists/42') && method === 'GET') {
-      const store = isLater ? watchLater : mylist;
+    if ((isLater || (mylistId && mylists.has(Number(mylistId)))) && method === 'GET') {
+      const store = isLater ? watchLater : mylistId === '42' ? mylist : new Map<string, string>();
       if (
-        url.searchParams.size !== (isLater ? 4 : 2) ||
-        (isLater && (url.searchParams.get('sortKey') !== 'addedAt' || url.searchParams.get('sortOrder') !== 'desc'))
+        (url.searchParams.size !== 2 && url.searchParams.size !== 4) ||
+        (isLater &&
+          url.searchParams.size === 4 &&
+          (url.searchParams.get('sortKey') !== 'addedAt' || url.searchParams.get('sortOrder') !== 'desc'))
       )
         return null;
       if (url.searchParams.get('page') !== '1' || url.searchParams.get('pageSize') !== '100') return null;
@@ -122,15 +191,15 @@ export function createLibraryRoutes() {
         [isLater ? 'watchLater' : 'mylist']: {
           hasNext: false,
           hasInvisibleItems: false,
-          items: [...store.keys()].map(item),
+          items: [...store].map(([id, description]) => ({ ...item(id), description, memo: description })),
         },
       });
     }
     if ((isLater || isMylist) && method === 'POST') {
-      const body = new URLSearchParams(request.postData);
+      const body = isLater ? new URLSearchParams(request.postData) : url.searchParams;
       const id = body.get(isLater ? 'watchId' : 'itemId');
       if (!id || !ids.includes(id) || body.size !== 2 || !body.has(isLater ? 'memo' : 'description')) return null;
-      if ((isLater && url.search) || (isMylist && url.searchParams.toString() !== body.toString())) return null;
+      if (isLater && url.search) return null;
       const store = isLater ? watchLater : mylist;
       if (store.has(id)) return json({}, 409);
       store.set(id, body.get(isLater ? 'memo' : 'description')!);
@@ -144,6 +213,18 @@ export function createLibraryRoutes() {
       store.delete(id);
       writes.push(request);
       return json({});
+    }
+    const itemMemo = /^\/v1\/users\/me\/(watch-later\/([\w-]+)|mylists\/42\/items\/([\w-]+))$/.exec(path);
+    if (itemMemo && method === 'PUT') {
+      const isWatchLater = !!itemMemo[2],
+        id = itemMemo[2] ?? itemMemo[3]!;
+      const store = isWatchLater ? watchLater : mylist;
+      const body = new URLSearchParams(request.postData),
+        key = isWatchLater ? 'memo' : 'description';
+      if (!store.has(id) || !body.has(key)) return null;
+      store.set(id, body.get(key)!);
+      writes.push(request);
+      return json({ item: { ...item(id), description: body.get(key)! } });
     }
     return null;
   }

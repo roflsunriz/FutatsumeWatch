@@ -226,6 +226,11 @@ class NicoVideoPlayerDialog extends Emitter {
         return this._onDeflistAdd(param as string);
       case 'deflistRemove':
         return this._onDeflistRemove(param as string);
+      case 'mylistSelect':
+        void import('../mylist/mylist-manager').then(({ openMylistManager }) =>
+          openMylistManager((param as string) || this._videoInfo.watchId)
+        );
+        break;
       case 'playlistAdd':
       case 'playlistAppend':
         this._onPlaylistAppend(param as string);

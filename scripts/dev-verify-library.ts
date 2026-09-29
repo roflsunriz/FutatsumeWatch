@@ -286,9 +286,111 @@ async function main() {
     );
     await check(
       session,
-      `!${find('[data-command="deflistAdd"],[data-command="mylistSelect"]', relatedRoot)}`,
-      'P3-04 関連動画からマイリスト追加ボタンを削除'
+      `!!${find('[data-command="deflistAdd"]', relatedRoot)}&&!!${find('[data-command="mylistSelect"]', relatedRoot)}`,
+      'P3-04 関連動画にとりマイ・マイリスト追加ボタンを表示'
     );
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"]', relatedRoot, true);
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"] [data-command="mylistSelect"]', relatedRoot);
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager="sm2057168"][open] [data-create-mylist]')`,
+      'P3-04 関連動画から専用マイリスト編集画面を開く'
+    );
+    await replaceInput(session, 'dialog[data-mylist-manager] [data-mylist-field="name"]', '追加検証');
+    await replaceInput(session, 'dialog[data-mylist-manager] [data-mylist-field="description"]', '説明の検証');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-mylist-action="create"]');
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager] [data-mylist-id="43"]')`,
+      'P3-04 専用画面でマイリストを作成'
+    );
+    await replaceInput(session, 'dialog[data-mylist-manager] [data-mylist-field="name"]', '名前変更後');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-mylist-action="save"]');
+    await check(
+      session,
+      `document.querySelector('dialog[data-mylist-manager] [data-mylist-id="43"]')?.textContent==='名前変更後'`,
+      'P3-04 専用画面でマイリスト名と説明を保存'
+    );
+    await evaluate(session, 'window.confirm=()=>true');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-mylist-action="remove"]');
+    await check(
+      session,
+      `!document.querySelector('dialog[data-mylist-manager] [data-mylist-id="43"]')`,
+      'P3-04 専用画面でマイリストを削除'
+    );
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-mylist-id="42"]');
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager] [data-mylist-action="add"]')`,
+      'P3-04 既存マイリストの動画操作を表示'
+    );
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-mylist-action="add"]');
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
+      'P3-04 対象動画をマイリストへ追加'
+    );
+    await replaceInput(
+      session,
+      'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-field="memo"]',
+      '動画メモの検証'
+    );
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-action="save-memo"]');
+    await check(
+      session,
+      `document.querySelector('dialog[data-mylist-manager] [role="status"]')?.textContent==='保存しました'`,
+      'P3-04 登録動画のメモを変更'
+    );
+    await clickVisible(
+      session,
+      'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-action="remove-item"]'
+    );
+    await check(
+      session,
+      `!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
+      'P3-04 登録動画を削除'
+    );
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-add-watch-later]');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-watch-later]');
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
+      'P3-04 対象動画をとりマイへ追加'
+    );
+    await replaceInput(
+      session,
+      'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-field="memo"]',
+      'とりマイメモ'
+    );
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-action="save-memo"]');
+    await check(
+      session,
+      `document.querySelector('dialog[data-mylist-manager] [role="status"]')?.textContent==='保存しました'`,
+      'P3-04 とりマイのメモを変更'
+    );
+    await clickVisible(
+      session,
+      'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-action="remove-item"]'
+    );
+    await check(
+      session,
+      `!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
+      'P3-04 とりマイから動画を削除'
+    );
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 700,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(
+      session,
+      `(()=>{const d=document.querySelector('dialog[data-mylist-manager]'),r=d?.getBoundingClientRect();return !!r&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&d.scrollWidth<=d.clientWidth})()`,
+      'P3-04 390px幅でマイリスト画面を操作可能に表示'
+    );
+    await screenshot(session, 'mylist-manager-390');
+    await session.send('Emulation.clearDeviceMetricsOverride');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-close]');
     await clickVisible(session, '[data-shell-tab="playlist"]');
     const playlistTabRoot = `document.querySelector('#fw-tab-playlist')`;
     await check(
@@ -298,8 +400,8 @@ async function main() {
     );
     await check(
       session,
-      `!${find('[data-command="deflistAdd"],[data-command="mylistSelect"]', playlistTabRoot)}`,
-      'P3-04 プレイリストからマイリスト追加ボタンを削除'
+      `!!${find('[data-command="deflistAdd"]', playlistTabRoot)}&&!!${find('[data-command="mylistSelect"]', playlistTabRoot)}`,
+      'P3-04 プレイリストにとりマイ・マイリスト追加ボタンを表示'
     );
     await clickVisible(session, '[data-shell-tab="comment"]');
     const commentRoot = `document.querySelector('#fw-tab-comment')`;

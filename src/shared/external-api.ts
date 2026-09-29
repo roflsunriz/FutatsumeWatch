@@ -6,6 +6,8 @@ export { GateAPI } from '../../packages/lib/src/nico/gate-api';
 export { LikeApi } from '../../packages/lib/src/nico/like-api';
 export { getNicodicArticleExists } from '../../packages/lib/src/nico/nico-dic-api';
 export { TagEditApi } from '../../packages/lib/src/nico/tag-edit-api';
+export { MylistManagementApi } from '../../packages/lib/src/nico/mylist-management-api';
+export type { ManagedMylist, ManagedMylistItem, MylistFields } from '../../packages/lib/src/nico/mylist-management-api';
 export * as loaders from '../../packages/lib/src/nico/loader';
 export { CacheStorage } from '../../packages/lib/src/nico/loader';
 export { CrossDomainGate } from '../../packages/lib/src/infra/cross-domain-gate';

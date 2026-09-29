@@ -155,6 +155,8 @@ class VideoListItemView {
 
   .thumbnailContainer .playlistAppend,
   .playlistRemove,
+  .thumbnailContainer .deflistAdd,
+  .thumbnailContainer .mylistSelect,
   .thumbnailContainer .pocket-info {
     position: absolute;
     display: none;
@@ -174,6 +176,15 @@ class VideoListItemView {
   .thumbnailContainer .playlistAppend {
     left: 0;
     bottom: 0;
+  }
+  .thumbnailContainer .deflistAdd {
+    right: 0;
+    bottom: 0;
+  }
+  .thumbnailContainer .mylistSelect {
+    right: 0;
+    top: 22px;
+    width: 32px;
   }
   .playlistRemove {
     right: 8px;
@@ -201,6 +212,8 @@ class VideoListItemView {
 
   .playlist .videoItem:not(.is-active):hover .playlistRemove,
   .videoItem:hover .thumbnailContainer .playlistAppend,
+  .videoItem:hover .thumbnailContainer .deflistAdd,
+  .videoItem:hover .thumbnailContainer .mylistSelect,
   .videoItem:hover .thumbnailContainer .pocket-info {
     display: inline-block;
     border: 1px outset;
@@ -208,6 +221,8 @@ class VideoListItemView {
 
   .playlist .videoItem:not(.is-active):hover .playlistRemove:hover,
   .videoItem:hover .thumbnailContainer .playlistAppend:hover,
+  .videoItem:hover .thumbnailContainer .deflistAdd:hover,
+  .videoItem:hover .thumbnailContainer .mylistSelect:hover,
   .videoItem:hover .thumbnailContainer .pocket-info:hover {
     transform: scale(1.5);
     box-shadow: 2px 2px 2px #000;
@@ -215,6 +230,8 @@ class VideoListItemView {
 
   .playlist .videoItem:not(.is-active):hover .playlistRemove:active,
   .videoItem:hover .thumbnailContainer .playlistAppend:active,
+  .videoItem:hover .thumbnailContainer .deflistAdd:active,
+  .videoItem:hover .thumbnailContainer .mylistSelect:active,
   .videoItem:hover .thumbnailContainer .pocket-info:active {
     transform: scale(1.3);
     border: 1px inset;
@@ -389,6 +406,10 @@ class VideoListItemView {
                 <span class="command pocket-info" data-command="pocket-info" data-param=${watchId} title="動画情報"
                   >？</span
                 >
+                <button type="button" class="command deflistAdd" data-command="deflistAdd" data-param=${watchId}
+                  title="とりあえずマイリストに追加">＋</button>
+                <button type="button" class="command mylistSelect" data-command="mylistSelect" data-param=${watchId}
+                  title="マイリスト追加・編集">＋M</button>
               </div>
               <div class="videoInfo">
                 <div class="postedAt">${new Date(item.postedAt as string | number).toLocaleString()}</div>

@@ -72,7 +72,6 @@ function readMylistList(value: unknown): Array<Record<string, unknown>> {
   return lists;
 }
 async function readMylistResponse(response: Response): Promise<MylistApiEnvelope> {
-  if (!response.ok) throw new Error(`マイリストの通信に失敗しました (HTTP ${response.status})。再試行してください。`);
   const body: unknown = await response.json();
   if (
     !isRecord(body) ||
@@ -106,6 +105,8 @@ async function readMylistResponse(response: Response): Promise<MylistApiEnvelope
     };
   }
   const error = isRecord(body.error) ? body.error : {};
+  if (!response.ok && body.meta.status !== response.status)
+    throw new Error(`マイリストの通信に失敗しました (HTTP ${response.status})。再取得してください。`);
   return {
     meta: { status: body.meta.status },
     data,
@@ -373,11 +374,11 @@ const MylistApiLoader = (() => {
       groupId: string,
       { frontendId = 6, frontendVersion = 0 }: FrontendIdVersion = {}
     ) {
-      await this.findMylistItemByWatchId(watchId, groupId).catch((err: unknown) => {
+      const item = await this.findMylistItemByWatchId(watchId, groupId).catch((err: unknown) => {
         throw new Error('動画が見つかりません', { result: err, status: 'fail' } as unknown as ErrorOptions);
       });
 
-      const body = 'itemIds=' + watchId;
+      const body = 'itemIds=' + encodeURIComponent(String(item.itemId));
       const url = 'https://nvapi.nicovideo.jp/v1/users/me/mylists/' + groupId + '/items?' + body;
       const cacheKey = `mylistItems: ${groupId}`;
 
@@ -418,7 +419,6 @@ const MylistApiLoader = (() => {
     async addDeflistItem(
       watchId: string,
       description: string | undefined,
-      isRetry = false,
       { frontendId = 6, frontendVersion = 0 }: FrontendIdVersion = {}
     ): Promise<{ status: string; result: unknown; message: string }> {
       const url = 'https://nvapi.nicovideo.jp/v1/users/me/watch-later';
@@ -458,27 +458,8 @@ const MylistApiLoader = (() => {
         };
       }
 
-      if (result.meta.status && result.meta.status === 409 && !isRetry) {
-        /**
-           すでに登録されている場合は、いったん削除して再度追加(先頭に移動)
-           例えば、とりマイの300番目に登録済みだった場合に「登録済みです」と言われても探すのがダルいし、
-           他の動画を追加していけば、そのうち押し出されて消えてしまう。
-           なので、重複時にエラーを出すのではなく、「消してから追加」することによって先頭に持ってくる。
-           登録済みの場合、409が返ってくるようになったのでこちらで処理
-           */
-        await this.removeDeflistItem(watchId).catch((err: { result?: unknown; code?: string }) => {
-          throw new Error('とりあえずマイリスト登録失敗(101)', {
-            status: 'fail',
-            result: err.result,
-            code: err.code,
-          } as unknown as ErrorOptions);
-        });
-        const added = await this.addDeflistItem(watchId, description, true, { frontendId, frontendVersion });
-        return {
-          status: 'ok',
-          result: added,
-          message: 'とりあえずマイリストの先頭に移動',
-        };
+      if (result.meta.status === 409) {
+        return { status: 'ok', result, message: 'とりあえずマイリストに登録済みです' };
       }
 
       if (!result.meta.status || !result.error) {
@@ -505,19 +486,14 @@ const MylistApiLoader = (() => {
       { frontendId = 6, frontendVersion = 0 }: FrontendIdVersion = {}
     ) {
       //const url = 'https://www.nicovideo.jp/api/mylist/add';
-      let body = 'itemId=' + watchId + '&description='; //+ '&token=' + token + '&group_id=' + groupId;
-      if (description) {
-        body += encodeURIComponent(description);
-      }
+      const body = new URLSearchParams({ itemId: watchId, description: description ?? '' }).toString();
       const url = 'https://nvapi.nicovideo.jp/v1/users/me/mylists/' + groupId + '/items?' + body;
       const cacheKey = `mylistItems: ${groupId}`;
 
       const raw: unknown = await (netUtil as unknown as NetUtilLike)
         .fetch(url, {
           method: 'POST',
-          body,
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
             'X-Frontend-Id': frontendId,
             'X-Frontend-Version': frontendVersion,
             'X-Request-With': 'https://www.nicovideo.jp',
@@ -535,8 +511,7 @@ const MylistApiLoader = (() => {
 
       if (result.meta.status && (result.meta.status === 200 || result.meta.status === 201)) {
         cacheStorage.removeItem(cacheKey);
-        // マイリストに登録したらとりあえずマイリストから除去(=移動)
-        this.removeDeflistItem(watchId).catch(() => {});
+        void emitter.emitAsync('mylistAdd', watchId, groupId, description);
         return { status: 'ok', result, message: 'マイリスト登録' };
       }
 
@@ -547,8 +522,6 @@ const MylistApiLoader = (() => {
       // マイリストの場合は重複があっても「追加して削除」しない。
       // とりまいと違って押し出されることがないし、
       // シリーズ物が勝手に入れ替わっても困るため
-      void emitter.emitAsync('mylistAdd', watchId, groupId, description);
-
       throw new Error(result.error!.description, {
         status: 'fail',
         result,

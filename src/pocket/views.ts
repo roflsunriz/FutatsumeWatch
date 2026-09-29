@@ -145,6 +145,9 @@ export function createPocketViews({
       if (command === 'info') {
         this._videoInfo(watchId);
         this.hide();
+      } else if (command === 'mylist-select') {
+        this.emit('mylist-select', watchId, this);
+        this.hide();
       } else if (command === 'playlist-queue') {
         this.emit('playlist-queue', watchId, this);
       } else {
