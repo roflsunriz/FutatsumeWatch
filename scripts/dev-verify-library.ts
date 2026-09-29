@@ -147,8 +147,8 @@ async function main() {
     );
     await check(
       session,
-      `(()=>{const item=[...document.querySelectorAll('.seriesVideos futatsume-video-item')].find(e=>e.dataset.watchId==='sm2057168');const root=item?.shadowRoot;return !!root?.querySelector('.videoLink')?.textContent?.trim()&&!!root?.querySelector('.thumbnail')?.getAttribute('src')&&!!root?.querySelector('.duration')&&!root.querySelector('[data-command="playlistAppend"],[data-command="deflistAdd"],[data-command="pocket-info"]')})()`,
-      'P3-12 シリーズ前後動画に共通動画カードの詳細・サムネイルを表示'
+      `(()=>{const item=[...document.querySelectorAll('.seriesVideos futatsume-video-item')].find(e=>e.dataset.watchId==='sm2057168'),root=item?.shadowRoot,stats=[...document.querySelectorAll('.fw-stats span')],icons=[...(root?.querySelectorAll('.counter .iconCount svg')??[])];const path=e=>e?.querySelector('svg')?.innerHTML;return !!root?.querySelector('.videoLink')?.textContent?.trim()&&!!root?.querySelector('.thumbnail')?.getAttribute('src')&&!!root?.querySelector('.duration')&&path(root.querySelector('.postedAt'))===path(stats[0])&&icons.length===4&&icons.every((icon,index)=>icon.innerHTML===path(stats[index+1]))&&!root.querySelector('[data-command="playlistAppend"],[data-command="deflistAdd"],[data-command="pocket-info"]')})()`,
+      'P3-12 シリーズ前後動画にサムネイル・詳細情報と上部と同じメタデータアイコンを表示'
     );
     await deepClick(session, '.playButton');
     await check(
@@ -390,8 +390,8 @@ async function main() {
     );
     await check(
       session,
-      `(()=>{const rows=[...document.querySelectorAll('.seriesVideos futatsume-video-item')];const ids=rows.map(item=>item.dataset.watchId);return ids.includes('sm9')&&ids.includes('sm100')&&rows.filter(item=>item.shadowRoot?.querySelector('.duration')&&item.shadowRoot?.querySelector('.thumbnail')?.getAttribute('src')).length===2})()`,
-      'P3-12 前後両方のシリーズ動画にサムネイル・詳細情報を表示'
+      `(()=>{const rows=[...document.querySelectorAll('.seriesVideos futatsume-video-item')],ids=rows.map(item=>item.dataset.watchId),stats=[...document.querySelectorAll('.fw-stats span')],path=e=>e?.querySelector('svg')?.innerHTML;return ids.includes('sm9')&&ids.includes('sm100')&&rows.every(item=>{const root=item.shadowRoot,icons=[...(root?.querySelectorAll('.counter .iconCount svg')??[])];return !!root?.querySelector('.duration')&&!!root.querySelector('.thumbnail')?.getAttribute('src')&&path(root.querySelector('.postedAt'))===path(stats[0])&&icons.length===4&&icons.every((icon,index)=>icon.innerHTML===path(stats[index+1]))})})()`,
+      'P3-12 前後両方のシリーズ動画にサムネイル・詳細情報と同じ5種のアイコンを表示'
     );
     if (await evaluate(session, `document.querySelector('.fw-details-lock')?.getAttribute('aria-pressed')==='true'`))
       await clickVisible(session, '[data-shell-action="details-lock"]');

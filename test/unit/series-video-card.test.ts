@@ -10,7 +10,7 @@ test('シリーズAPIのcontentを共通動画カード用のサムネイル・�
           id: 'sm2057168',
           title: '次の動画',
           duration: 125,
-          count: { comment: 12, mylist: 34, view: 56 },
+          count: { comment: 12, like: 78, mylist: 34, view: 56 },
           thumbnail: { url: 'https://fixture.invalid/next.jpg' },
           registeredAt: '2026-09-20T12:00:00+09:00',
         },
@@ -25,6 +25,7 @@ test('シリーズAPIのcontentを共通動画カード用のサムネイル・�
     commentCount: 12,
     mylistCount: 34,
     viewCount: 56,
+    likeCount: 78,
     postedAt: '2026-09-20T12:00:00+09:00',
   });
 });
@@ -44,6 +45,7 @@ test('シリーズ詳細取得前もwatch応答のID・タイトル・サムネ�
     commentCount: 0,
     mylistCount: 0,
     viewCount: 0,
+    likeCount: null,
     postedAt: '',
   });
 });

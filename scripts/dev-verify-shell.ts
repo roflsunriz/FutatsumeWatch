@@ -270,6 +270,11 @@ async function main(): Promise<void> {
       `${container}.dataset.panel==='details' && document.querySelectorAll('[data-shell-tab]').length===4`,
       '右の4タブを開く'
     );
+    await check(
+      session,
+      `(()=>{const path=e=>e?.querySelector('svg')?.innerHTML,stats=[...document.querySelectorAll('.fw-stats span')],tabs=['relatedVideoTab','comment','playlist'].map(name=>document.querySelector('[data-shell-tab="'+name+'"]'));const same=path(tabs[0])===path(stats[1])&&path(tabs[1])===path(stats[2])&&path(tabs[2])===path(stats[3]);const icons=[...stats.map(e=>e.querySelector('svg')),...tabs.map(e=>e.querySelector('svg'))];return same&&!!stats[4]?.querySelector('svg path')&&icons.every(svg=>svg?.getAttribute('viewBox')==='0 0 24 24'&&svg.getAttribute('fill')==='none'&&svg.getAttribute('stroke-width')==='1.7')})()`,
+      '関連・コメント・プレイリストのアイコンを対応するメタデータと揃え、いいねを含む全アイコンの描画様式を統一'
+    );
     await screenshot(session, '1280-details');
     await check(
       session,

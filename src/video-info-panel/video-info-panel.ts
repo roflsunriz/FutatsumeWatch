@@ -308,9 +308,11 @@ class VideoInfoPanel extends Emitter {
         commentCount: String(cardData.commentCount),
         mylistCount: String(cardData.mylistCount),
         viewCount: String(cardData.viewCount),
+        likeCount: String(cardData.likeCount),
         thumbnail: cardData.thumbnail,
         postedAt: cardData.postedAt,
         showActions: 'false',
+        showMetadataIcons: 'true',
       });
       section.append(heading, item);
       this._seriesVideoList.append(section);

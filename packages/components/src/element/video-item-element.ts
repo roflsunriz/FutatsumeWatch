@@ -1,10 +1,13 @@
 import { BaseCommandElement } from './base-command-element.js';
 import { textUtil } from '../../../lib/src/text/text-util';
+import { uiIcon } from '../../../lib/src/dom/ui-icon';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 // import {util} from '../util/util.js';
 // console.info('BaseCommandElement', BaseCommandElement);
 
 import type { TemplateResult } from 'lit/html.js';
 import type { ElementEvents, LitModule, PropsMap, StateMap } from './base-command-element.js';
+import type { UiIcon } from '../../../lib/src/dom/ui-icon';
 
 const dll: { list?: LitModule } = {};
 
@@ -51,6 +54,7 @@ const { VideoItemElement, VideoItemProps } = (() => {
     commentCount: 0,
     mylistCount: 0,
     viewCount: 0,
+    likeCount: null as number | null,
     thumbnail: BLANK_THUMBNAIL,
     postedAt: '',
 
@@ -65,6 +69,7 @@ const { VideoItemElement, VideoItemProps } = (() => {
     hasInview: false,
     lazyload: false,
     showActions: true,
+    showMetadataIcons: false,
   };
   const VideoItemAttributes = Object.keys(VideoItemProps).map((prop) => BaseCommandElement.toAttributeName(prop));
 
@@ -101,17 +106,25 @@ const { VideoItemElement, VideoItemProps } = (() => {
       const watchUrl = `https://www.nicovideo.jp/watch/${props.watchId}`;
       const title = props.title ? html`<span title="${props.title}">${props.title}<span></span></span>` : props.watchId;
       const duration = props.duration ? html`<span class="duration">${textUtil.secToTime(props.duration)}</span>` : '';
-      const postedAt = props.postedAt ? `${textUtil.dateToString(new Date(props.postedAt))}` : '';
+      const postedAtText = props.postedAt ? textUtil.dateToString(new Date(props.postedAt)) : '';
+      const postedAt = props.showMetadataIcons
+        ? html`<span title="投稿日">${unsafeHTML(uiIcon('date'))}${postedAtText}</span>`
+        : postedAtText;
       const thumbnail = props.lazyload ? BLANK_THUMBNAIL : props.thumbnail;
+      const metric = (icon: UiIcon, label: string, value: number, className: string) =>
+        props.showMetadataIcons
+          ? html`<span class="count iconCount" title="${label}"
+              >${unsafeHTML(uiIcon(icon))}<span class="value ${className}">${value}</span></span
+            >`
+          : html`<span class="count">${label}: <span class="value ${className}">${value}</span></span>`;
       const counter =
-        props.viewCount || props.commentCount || props.mylistCount
-          ? html`
-              <div class="counter">
-                <span class="count">再生: <span class="value viewCount">${props.viewCount}</span></span>
-                <span class="count">コメ: <span class="value commentCount">${props.commentCount}</span></span>
-                <span class="count">マイ: <span class="value mylistCount">${props.mylistCount}</span></span>
-              </div>
-            `
+        props.viewCount || props.commentCount || props.mylistCount || props.likeCount !== null
+          ? html`<div class="counter ${props.showMetadataIcons ? 'iconMetadata' : ''}">
+              ${metric('play', '再生数', props.viewCount, 'viewCount')}
+              ${metric('comment', 'コメント数', props.commentCount, 'commentCount')}
+              ${metric('mylists', 'マイリスト数', props.mylistCount, 'mylistCount')}
+              ${props.likeCount !== null ? metric('likes', 'いいね数', props.likeCount, 'likeCount') : ''}
+            </div>`
           : '';
       const classes: string[] = [];
       if (props.isChannel) {
@@ -266,6 +279,16 @@ const { VideoItemElement, VideoItemProps } = (() => {
             font-size: 12px;
             color: var(--list-text-color, #ccc);
           }
+          .postedAt.iconMetadata span {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+          }
+          .postedAt svg {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+          }
           .is-played .postedAt::after {
             content: ' ●';
             font-size: 10px;
@@ -324,6 +347,25 @@ const { VideoItemElement, VideoItemProps } = (() => {
           .counter .count + .count {
             margin-left: 8px;
           }
+          .counter.iconMetadata {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+          }
+          .counter.iconMetadata .count + .count {
+            margin-left: 0;
+          }
+          .counter.iconMetadata .iconCount {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+          }
+          .counter.iconMetadata svg {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+          }
         </style>
         <div class="videoItem">
           ${props.showActions ? html`<span class="playlistRemove" data-command="playlistRemove" title="プレイリストから削除">×</span>` : ''}
@@ -355,7 +397,7 @@ const { VideoItemElement, VideoItemProps } = (() => {
             }
           </div>
           <div class="videoInfo">
-            <div class="postedAt">${postedAt}</div>
+            <div class="postedAt ${props.showMetadataIcons ? 'iconMetadata' : ''}">${postedAt}</div>
             <div class="title">
               <a class="videoLink" data-command="open" data-param="${watchId}" href="${watchUrl}">${title}</a>
             </div>

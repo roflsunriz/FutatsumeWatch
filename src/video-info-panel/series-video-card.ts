@@ -6,6 +6,7 @@ export interface SeriesVideoCardData {
   commentCount: number;
   mylistCount: number;
   viewCount: number;
+  likeCount: number | null;
   postedAt: string;
 }
 
@@ -38,6 +39,7 @@ export function toSeriesVideoCardData(
     commentCount: numberValue(count.comment),
     mylistCount: numberValue(count.mylist),
     viewCount: numberValue(count.view),
+    likeCount: typeof count.like === 'number' && Number.isFinite(count.like) ? count.like : null,
     postedAt: stringValue(content.registeredAt, ''),
   };
 }

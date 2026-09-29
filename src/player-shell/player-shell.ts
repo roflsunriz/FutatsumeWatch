@@ -238,9 +238,9 @@ export class PlayerShell {
     const t = this.text;
     const tabs = {
       videoInfoTab: ['info', 'details'],
-      relatedVideoTab: ['related', 'related'],
+      relatedVideoTab: ['related', 'play'],
       comment: ['comment', 'comment'],
-      playlist: ['playlist', 'playlist'],
+      playlist: ['playlist', 'mylists'],
     } as const;
     this.require('.tabSelectContainer').setAttribute('role', 'tablist');
     for (const tab of this.info.querySelectorAll<HTMLElement>('.tabSelect')) {

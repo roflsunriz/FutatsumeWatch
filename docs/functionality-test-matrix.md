@@ -51,6 +51,7 @@
 | P2-09 | NG全入力、対象別除外と解除、古い通知による上書き防止                     | settings、settings-filter等の単体                                                    |
 | P2-10 | 詳細設定2項目、ダブルクリック全画面と終端時の全画面解除                  | settings、settings-video-events単体                                                  |
 | P2-15 | 左レール常設5カテゴリ・画質・リンク・3操作、金属調トグル、Escape、各寸法 | ui、settings、settings-dialog単体                                                    |
+| P2-16 | 関連動画・プレイリストのタブアイコンを対応するメタデータアイコンと統一   | ui                                                                                   |
 
 ## 一覧・タグ・投稿
 
@@ -68,7 +69,7 @@
 | P3-10 | 連続再生・リストリピート                                   | library、playlist-navigation単体                              |
 | P3-11 | 全ソート・逆順・シャッフル、選択ID保持                     | library、playlist-model単体                                   |
 | P3-12 | 行再生・削除・未視聴・消去・保存／復元                     | library、playlist-model／playlist-session単体                 |
-| P3-13 | シリーズ前後動画のサムネイル・詳細情報・カードからの再生   | library、series-video-card単体                                |
+| P3-13 | シリーズ前後動画のサムネイル・詳細情報・共通アイコン・再生 | library、series-video-card単体                                |
 | P4-01 | タグを閲覧専用で表示し、書き込み操作・通信がない           | library                                                       |
 | P4-02 | 削除済み：タグ追加・削除                                   | 対象外                                                        |
 | P4-03 | 削除済み：タグ再取得ボタン                                 | 対象外                                                        |
