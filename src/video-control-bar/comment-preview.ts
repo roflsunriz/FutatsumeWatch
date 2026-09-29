@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { global } from '../app/futatsume-watch-index';
 import { util } from '../shared/util';
 import { Emitter } from '../shared/baselib';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
@@ -85,7 +84,6 @@ export class CommentPreviewView {
   declare static ITEM_HEIGHT: number;
   declare static MAX_HEIGHT: number;
   declare static WIDTH: number;
-  declare static HOVER_WIDTH: number;
   declare static __tpl__: string;
   declare _model: CommentPreviewModel;
   declare _$parent: VcbQuery;
@@ -101,7 +99,9 @@ export class CommentPreviewView {
   declare _currentTime: number;
   declare _newListElements: DocumentFragment | null;
   declare _isListUpdated: boolean;
-  declare _innerWidth: number | undefined;
+  declare _thumbnailContainer: HTMLElement;
+  declare _hoverStart: number;
+  declare _hoverEnd: number;
   constructor(params: { model: CommentPreviewModel; $container: VcbQuery }) {
     const model = (this._model = params.model);
     this._$parent = params.$container;
@@ -115,6 +115,7 @@ export class CommentPreviewView {
     model.on('vpos', this._onVpos.bind(this) as EmitterCallback);
 
     this._mode = 'hover';
+    this._hoverStart = this._hoverEnd = -1;
 
     this._left = 0;
     this.update = _.throttle(this.update.bind(this), 200);
@@ -129,26 +130,34 @@ export class CommentPreviewView {
     const $view = (util as unknown as VcbUtil).$.html(CommentPreviewView.__tpl__);
     const view = (this._view = $view[0] as HTMLElement);
     this._list = view.querySelector('.listContainer') as HTMLElement;
+    this._thumbnailContainer = $parent[0]!.querySelector('.seekBarThumbnailContainer') as HTMLElement;
     $view
       .on('click', this._onClick.bind(this))
       .on('wheel', (e: Event) => e.stopPropagation(), { passive: true })
       .on('scroll', _.throttle(this._onScroll.bind(this), 50, { trailing: false }), { passive: true });
 
-    $parent.append($view);
+    this._thumbnailContainer.append(view);
   }
   set mode(v: string) {
+    this._mode = v;
     if (v === 'list') {
+      this._$parent[0]!.append(this._view);
       (util as unknown as VcbUtil).StyleSwitcher.update({
         on: '.commentPreview.list',
         off: '.commentPreview.hover',
       });
     } else {
+      this._thumbnailContainer.append(this._view);
       (util as unknown as VcbUtil).StyleSwitcher.update({
         on: '.commentPreview.hover',
         off: '.commentPreview.list',
       });
     }
-    this._mode = v;
+    this._list.replaceChildren();
+    this._inviewTable.clear();
+    this._newListElements = null;
+    this._hoverStart = this._hoverEnd = -1;
+    this._refreshInviewElements();
   }
   _onClick(e: Event): void {
     e.stopPropagation();
@@ -206,9 +215,11 @@ export class CommentPreviewView {
     this._scrollTop = 0;
     this._newListElements = null;
     this._chatList = [];
+    this._hoverStart = this._hoverEnd = -1;
   }
   updateList(): void {
     const chatList = (this._chatList = this._model.chatList);
+    this._hoverStart = this._hoverEnd = -1;
     if (!chatList.length) {
       this._isListUpdated = false;
       return;
@@ -231,6 +242,19 @@ export class CommentPreviewView {
     const viewBottom = scrollTop + viewHeight;
     const chatList = this._chatList;
     if (!chatList || chatList.length < 1) {
+      return;
+    }
+    if (this._mode === 'hover') {
+      const start = Math.max(this._currentStartIndex, this._currentEndIndex - 3);
+      const end = Math.min(chatList.length, this._currentEndIndex);
+      if (start !== this._hoverStart || end !== this._hoverEnd) {
+        this._list.replaceChildren(
+          ...chatList.slice(start, end).map((chat, offset) => CommentPreviewChatItem.create(chat, start + offset))
+        );
+        this._hoverStart = start;
+        this._hoverEnd = end;
+      }
+      this.applyView();
       return;
     }
     const startIndex =
@@ -279,11 +303,11 @@ export class CommentPreviewView {
     if (this.isEmpty) {
       return;
     }
-    const width = this._mode === 'list' ? CommentPreviewView.WIDTH : CommentPreviewView.HOVER_WIDTH;
-    const containerWidth = (this._innerWidth = this._innerWidth || global.innerWidth);
-
-    left = Math.min(Math.max(0, left - CommentPreviewView.WIDTH / 2), containerWidth - width);
-    this._left = left;
+    if (this._mode === 'list') {
+      const containerWidth = this._$parent[0]!.getBoundingClientRect().width;
+      const width = Math.min(CommentPreviewView.WIDTH, containerWidth);
+      this._left = Math.max(0, Math.min(left - width / 2, containerWidth - width));
+    }
     this.applyView();
   }
   applyView(): void {
@@ -373,7 +397,6 @@ class CommentPreviewChatItem {
 
 CommentPreviewView.MAX_HEIGHT = 200;
 CommentPreviewView.WIDTH = 350;
-CommentPreviewView.HOVER_WIDTH = 180;
 CommentPreviewView.ITEM_HEIGHT = 20;
 CommentPreviewView.__tpl__ = `
   <div class="futatsumeCommentPreview">
@@ -389,7 +412,7 @@ CommentPreviewView.__tpl__ = `
     bottom: 16px;
     opacity: 0.8;
     max-height: ${CommentPreviewView.MAX_HEIGHT}px;
-    width: ${CommentPreviewView.WIDTH}px;
+    width: min(${CommentPreviewView.WIDTH}px, 100%);
     box-sizing: border-box;
     color: #ccc;
     overflow: hidden;
@@ -534,71 +557,69 @@ CommentPreviewView.__tpl__ = `
 
 (util as unknown as VcbUtil).addStyle(
   `
-  .futatsumeCommentPreview {
-    bottom: 24px;
-    box-sizing: border-box;
-    height: 140px;
+  .seekBarThumbnailContainer .futatsumeCommentPreview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
     z-index: 160;
     transition: none;
     color: #fff;
-    opacity: 0.6;
+    opacity: 1;
     overflow: hidden;
     pointer-events: none;
     user-select: none;
-    contain: layout style size paint;
-    filter: drop-shadow(0 0 1px #000);
+    contain: layout style paint;
+    transform: none;
+    background: linear-gradient(transparent 25%, #06101be0 100%);
   }
-  .listContainer {
-    bottom: auto;
+  .seekBarThumbnailContainer .futatsumeCommentPreview .listContainer {
+    position: absolute;
+    inset: auto 0 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 2px;
     width: 100%;
-    height: 100% !important;
-    margin: auto;
+    height: auto !important;
+    max-height: calc(100% - 8px);
+    margin: 0;
+    padding: 0 5px;
     border: none;
-    contain: layout style size paint;
+    contain: layout style paint;
   }
-  .listContainer .nicoChat {
+  .seekBarThumbnailContainer .listContainer .nicoChat {
+    position: relative;
     display: block;
     top: auto !important;
-    font-size: 16px;
+    left: auto;
+    flex: 0 0 20px;
+    width: 100%;
+    padding: 1px 4px;
+    font-size: clamp(13px, 1.2vw, 14px);
     line-height: 18px;
-    height: 18px;
+    height: 20px;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    background: #07101ab8;
+    border-radius: 3px;
+    text-shadow: 0 1px 2px #000;
   }
-  .listContainer .nicoChat:nth-child(n + 8) {
-    transform: translateY(-144px);
+  .seekBarThumbnailContainer .listContainer .nicoChat .text {
+    display: inline;
+    visibility: visible;
+    transform: none;
+    animation: none;
   }
-  .listContainer .nicoChat:nth-child(n + 16) {
-    transform: translateY(-288px);
-  }
-  .listContainer .nicoChat .text {
-    display: inline-block;
-    text-shadow: 1px 1px 1px #fff;
-
-    transform: translateX(260px);
-    visibility: hidden;
-    will-change: transform;
-    animation-duration: var(--duration);
-    animation-delay: calc(var(--vpos-time) - var(--current-time) - 1s);
-    animation-play-state: paused !important;
-    animation-name: preview-text-moving;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
-  }
-  .listContainer .nicoChat .vposTime,
-  .listContainer .nicoChat .addFilter {
+  .seekBarThumbnailContainer .listContainer .nicoChat .vposTime,
+  .seekBarThumbnailContainer .listContainer .nicoChat .addFilter {
     display: none !important;
   }
-
-  @keyframes preview-text-moving {
-    0% {
-      visibility: visible;
-    }
-    100% {
-      visibility: hidden;
-      transform: translateX(85px) translateX(-100%);
-    }
-  }
-
 `,
   { className: 'commentPreview hover', disabled: true }
 );

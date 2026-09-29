@@ -14,23 +14,23 @@
 
 ## 基本操作
 
-| ID    | 操作／期待結果                                      | 対応する自動検証                                 |
-| ----- | --------------------------------------------------- | ------------------------------------------------ |
-| P1-01 | 視聴・検索・タグ検索の入口→対象動画再生、SPAと戻る  | entry、functionality、watch-entry単体            |
-| P1-02 | close→停止・描画破棄→再起動、終了後の遅延応答を無視 | ui、functionality、comment-overlay単体           |
-| P1-03 | 実HLSの再生・停止・時計／フレーム進行               | player、ui、functionality                        |
-| P1-04 | 次・前、選択ID・順序・動画切替                      | ui、library、playlist-navigation単体             |
-| P1-05 | 実終端から同じ動画へリピート                        | functionality                                    |
-| P1-06 | AB指定・不正B・解除・動画切替時の解除               | ui、player-shell単体                             |
-| P1-07 | 全速度選択肢→実mediaとコメント時計                  | functionality、player、ui                        |
-| P1-08 | 音量・ミュートと実media値、端点                     | functionality、ui                                |
-| P1-09 | シークの実入力→実時刻・コメント                     | functionality、ui、player                        |
-| P1-10 | 時間表示と実mediaの秒数                             | functionality                                    |
-| P1-11 | 既知分布の密度と画面上のヒートマップ、範囲外除外    | functionality、heat-map単体                      |
-| P1-12 | 投稿プレビュー・取消・二重追加防止                  | player、ui、thread-post／comment-input-panel単体 |
-| P1-13 | コメントON/OFF・復帰・比率・重なり                  | player、ui、comment-overlay単体                  |
-| P1-14 | 全画面・Escape・寸法・設定パネル                    | player、ui、settings                             |
-| P1-15 | 3秒非表示・入力／パネル中保持                       | ui                                               |
+| ID    | 操作／期待結果                                                      | 対応する自動検証                                 |
+| ----- | ------------------------------------------------------------------- | ------------------------------------------------ |
+| P1-01 | 視聴・検索・タグ検索の入口→対象動画再生、SPAと戻る                  | entry、functionality、watch-entry単体            |
+| P1-02 | close→停止・描画破棄→再起動、終了後の遅延応答を無視                 | ui、functionality、comment-overlay単体           |
+| P1-03 | 実HLSの再生・停止・時計／フレーム進行                               | player、ui、functionality                        |
+| P1-04 | 次・前、選択ID・順序・動画切替                                      | ui、library、playlist-navigation単体             |
+| P1-05 | 実終端から同じ動画へリピート                                        | functionality                                    |
+| P1-06 | AB指定・不正B・解除・動画切替時の解除                               | ui、player-shell単体                             |
+| P1-07 | 全速度選択肢→実mediaとコメント時計                                  | functionality、player、ui                        |
+| P1-08 | 音量・ミュートと実media値、端点                                     | functionality、ui                                |
+| P1-09 | シークの実入力→実時刻・コメント、ホバープレビューの枠内表示と可読性 | functionality、ui、player                        |
+| P1-10 | 時間表示と実mediaの秒数                                             | functionality                                    |
+| P1-11 | 既知分布の密度と画面上のヒートマップ、範囲外除外                    | functionality、heat-map単体                      |
+| P1-12 | 投稿プレビュー・取消・二重追加防止                                  | player、ui、thread-post／comment-input-panel単体 |
+| P1-13 | コメントON/OFF・復帰・比率・重なり                                  | player、ui、comment-overlay単体                  |
+| P1-14 | 全画面・Escape・寸法・設定パネル                                    | player、ui、settings                             |
+| P1-15 | 3秒非表示・入力／パネル中保持                                       | ui                                               |
 
 ## 設定と左メニュー
 

@@ -112,6 +112,65 @@ async function main(): Promise<void> {
       `${video}.currentTime > ${video}.duration * .4 && ${video}.currentTime < ${video}.duration * .6`,
       'ヒートマップ付きシークバーを実クリックで操作'
     );
+    const seekHoverContained = `(()=>{const seek=document.querySelector('.seekBarContainer')?.getBoundingClientRect(),tip=document.querySelector('.seekBarToolTip')?.getBoundingClientRect(),image=document.querySelector('.futatsumeSeekThumbnail-image')?.getBoundingClientRect(),preview=document.querySelector('.futatsumeCommentPreview'),r=preview?.getBoundingClientRect(),rows=[...(preview?.querySelectorAll('.nicoChat')??[])];return !!seek&&!!tip&&!!image&&!!r&&preview?.parentElement?.classList.contains('seekBarThumbnailContainer')&&Math.abs(r.x-image.x)<1.5&&Math.abs(r.y-image.y)<1.5&&Math.abs(r.width-image.width)<1.5&&Math.abs(r.height-image.height)<1.5&&tip.left>=seek.left-1&&tip.right<=seek.right+1&&rows.length>0&&rows.length<=3&&rows.every(row=>{const b=row.getBoundingClientRect();return b.left>=r.left&&b.right<=r.right&&b.top>=r.top&&b.bottom<=r.bottom&&parseFloat(getComputedStyle(row).fontSize)>=13&&!!row.textContent?.trim()})})()`;
+    await check(session, seekHoverContained, 'シークホバーのコメントをサムネイル内へ読みやすい文字で表示');
+    await screenshot(session, 'seek-preview-contained-1280');
+    const seekRect = (await evaluate(
+      session,
+      `(()=>{const r=document.querySelector('.seekBar').getBoundingClientRect();return {left:r.left,right:r.right,y:r.top+r.height/2}})()`
+    )) as { left: number; right: number; y: number };
+    const sameSecondX = seekRect.left + (seekRect.right - seekRect.left) * 0.4;
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: sameSecondX, y: seekRect.y });
+    const firstHover = (await evaluate(
+      session,
+      `({x:document.querySelector('.seekBarToolTip').getBoundingClientRect().x,time:${root}.debug.videoControlBar._seekBarToolTip._timeText})`
+    )) as { x: number; time: string };
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: sameSecondX + 5, y: seekRect.y });
+    await check(
+      session,
+      `(()=>{const tip=document.querySelector('.seekBarToolTip').getBoundingClientRect(),time=${root}.debug.videoControlBar._seekBarToolTip._timeText;return time===${JSON.stringify(firstHover.time)}&&tip.x>=${firstHover.x + 2}})()`,
+      '同じ秒の中で動かしてもサムネイルがマウスに追従'
+    );
+    for (const [index, x] of [seekRect.left + 8, seekRect.right - 8].entries()) {
+      await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y: seekRect.y });
+      await check(
+        session,
+        seekHoverContained,
+        `シークバー${index === 0 ? '左' : '右'}端でもプレビューを表示領域内へ収める`
+      );
+    }
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    const narrowSeek = (await evaluate(
+      session,
+      `(()=>{const r=document.querySelector('.seekBar').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`
+    )) as { x: number; y: number };
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...narrowSeek });
+    await check(session, seekHoverContained, '390px幅でもコメントをサムネイル内に収め13px以上で表示');
+    await screenshot(session, 'seek-preview-contained-390');
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 800,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    const middleSeek = (await evaluate(
+      session,
+      `(()=>{const r=document.querySelector('.seekBar').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`
+    )) as { x: number; y: number };
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...middleSeek });
+    await clickVisible(session, '.seekBarToolTip [data-param="enableCommentPreview"]');
+    await check(
+      session,
+      `(()=>{const seek=document.querySelector('.seekBarContainer'),preview=document.querySelector('.futatsumeCommentPreview');return seek?.classList.contains('enableCommentPreview')&&preview?.parentElement===seek&&!seek.querySelector('.seekBarThumbnailContainer')?.contains(preview)})()`,
+      'コメント一覧モードはサムネイル外の独立した操作領域を保つ'
+    );
+    await clickVisible(session, '.seekBarToolTip [data-param="enableCommentPreview"]');
+    await check(session, seekHoverContained, 'コメント一覧からサムネイル内プレビューへ戻る');
     await evaluate(session, `document.querySelector('.seekRange').blur();${root}.external.execCommand('seek',1)`);
     await reveal(session);
     await screenshot(session, '1280-controls');
@@ -292,6 +351,13 @@ async function main(): Promise<void> {
       `(()=>{const c=${container},s=c.querySelector('.seekBar').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect(),v=c.getBoundingClientRect();return Math.abs(s.right-p.left)<=1&&Math.abs(s.left-v.left)<=1&&Math.abs(s.width-(p.left-v.left))<=2})()`,
       '固定サイドバー左端とシークバー終端を一致させて動画終端位置にする'
     );
+    const pinnedSeek = (await evaluate(
+      session,
+      `(()=>{const r=${container}.querySelector('.seekBar').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`
+    )) as { x: number; y: number };
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...pinnedSeek });
+    await check(session, seekHoverContained, 'サイドバー固定時もコメントをサムネイル内に収める');
+    await screenshot(session, 'seek-preview-contained-pinned');
     await check(
       session,
       `(()=>{const c=${container},o=c.querySelector('[data-futatsume-comment-canvas]'),r=o?.getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect();return r&&r.width>0&&r.right<=p.left+1})()`,

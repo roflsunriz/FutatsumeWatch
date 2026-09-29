@@ -169,14 +169,22 @@ SeekBarThumbnail.__css__ = `
   .futatsumeSeekThumbnail {
     display: none;
     pointer-events: none;
+    width: 100%;
+    height: 100%;
   }
 
   .futatsumeSeekThumbnail-image {
-    width: 160px;
-    height: 90px;
+    width: 100%;
+    height: 100%;
     opacity: 0.8;
     margin: auto;
     background: #999;
+  }
+
+  .futatsumeSeekThumbnail-thumbnail {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
 
   .enableCommentPreview .futatsumeSeekThumbnail {

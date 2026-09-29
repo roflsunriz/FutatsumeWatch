@@ -41,6 +41,7 @@
 - オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。
 - 動画情報パネルへ届くイベント名は`canPlay`。小文字の`canplay`では関連取得と説明欄の自動YouTube切替が接続されない。自動切替の遅延は、設定OFF・新動画・hideで古い応答を無効化する。`settings-video-events.test.ts`は実Emitterからの接続も確認する。提供者取得機能は0.0.15で削除した。
 - Storyboardは`media.domand.isStoryboardAvailable`の会員別値をtrueへ正規化し、設定ONなら`access-rights/storyboard`を実際に要求して資産可否を判定する。UIからプレミアム表記を外し、OFF・動画切替・遅延応答の世代判定を維持する。オフライン環境はStoryboard access-rights・JSON・画像を登録する。
+- シークバーのホバーコメントは`src/video-control-bar/comment-preview.ts`でサムネイル枠`.seekBarThumbnailContainer`内へ置き、同じ表示矩形でクリップする。旧実装は画像160×90pxに対し独立プレビュー350×140px・文字開始位置260pxで大幅にはみ出した。2026-09-29の修正では画像枠を表示幅に応じて最大238×134pxへ広げ、直近3件を13px以上の文字で表示する。一覧モードは独立した操作領域へ戻し、切替時にDOMを移す。`scripts/dev-verify-shell.ts`で実矩形・文字寸法・左右端・390px・固定サイドバー・モード往復を検査する。
 - 0.0.17以降のNG正規表現は、一般設定の「NG・フィルター」にある1行1つの`/パターン/フラグ`一覧を正本とし、詳細設定に重複配置しない。コメント行のNGwordは本文を`i`付きリテラル正規表現へ変換してこの一覧へ追加する。旧NGワードと旧単一正規表現／フラグは設定移行版3で一覧へ統合する。NGタグ／投稿者の入力欄と再生除外は削除済みのため、このタブへ復活させない。
 - 映像配信は現行のDomand HLSだけを使用する。終了したDMC/HTTP方式の選択設定、フォールバック、Worker、ストーリーボード分岐を復活させず、画質設定と検証はDomandの利用可能な画質を対象にする。
 - 新規タブとService Workerは専用BrowserContextに限定したbrowser-level監視で初回要求から捕捉する。初期化前popupではFetch・Runtime監視を先にキューへ送り、resumeと全応答を待つ。初回がchrome-errorになったリンクを再読み込みで成功へ変えない。guardはページ・専用Worker・iframe・popup・Service Workerの未登録5要求とWorker先頭例外2件を照合する。

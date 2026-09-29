@@ -23,8 +23,6 @@ export class SeekBarToolTip {
   declare _boundOnRepeat: () => void;
   declare _boundOnMouseUp: (e: Event) => void;
   declare _timeText: string | undefined;
-  declare offsetWidth: number | undefined;
-  declare _innerWidth: number | undefined;
   constructor(params: { $container: VcbQuery; storyboard: VcbStoryboard }) {
     this._$container = params.$container;
     this._storyboard = params.storyboard;
@@ -116,16 +114,13 @@ export class SeekBarToolTip {
   }
   update(sec: number, left: number): void {
     const timeText = (util as unknown as VcbUtil).secToTime(sec);
-    if (this._timeText === timeText) {
-      return;
-    }
-    this._timeText = timeText;
-    if (this.currentTimeLabel) {
+    if (this._timeText !== timeText && this.currentTimeLabel) {
+      this._timeText = timeText;
       this.currentTimeLabel.text = timeText;
     }
-    const w = (this.offsetWidth = this.offsetWidth || (this._$view[0] as HTMLElement).offsetWidth);
-    const vw = (this._innerWidth = this._innerWidth || window.innerWidth);
-    left = Math.max(0, Math.min(left - w / 2, vw - w));
+    const w = (this._$view[0] as HTMLElement).getBoundingClientRect().width;
+    const seekWidth = this._$container[0]!.getBoundingClientRect().width;
+    left = Math.max(0, Math.min(left - w / 2, seekWidth - w));
     void cssUtil.setProps([this._$view[0] as Element, '--trans-x-pp', cssUtil.px(left)]);
     this._seekBarThumbnail.currentTime = sec;
   }
@@ -141,7 +136,7 @@ SeekBarToolTip.__css__ = `
       box-sizing: border-box;
       bottom: 24px;
       left: 0;
-      width: 180px;
+      width: min(248px, 100%);
       white-space: nowrap;
       font-size: 10px;
       background: rgba(0, 0, 0, 0.3);
@@ -177,6 +172,19 @@ SeekBarToolTip.__css__ = `
 
     .seekBarToolTipInner>* {
       flex: 1;
+    }
+
+    .seekBarThumbnailContainer {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      margin: 0 auto;
+      overflow: hidden;
+      background: #101824;
+    }
+
+    .enableCommentPreview .seekBarThumbnailContainer {
+      display: none;
     }
 
     .seekBarToolTip .currentTime {
