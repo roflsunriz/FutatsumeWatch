@@ -135,6 +135,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - `src`のTypeScript・JavaScript・CSSは全て`src/<機能>/`直下へ配置し、`src`直下に実装ファイルを置かない。各ファイル1,000行以下、フォルダは一段だけとし、機能のimport参照も移動先へ更新する。`test/unit/source-organization.test.ts`で配置と行数を監視する。
 - クラス拡張や初期化副作用を別モジュールへ移す場合は、Viteの入口・評価順・公開API・Worker文字列化を確認し、分割前後の回帰テストを通す。
 - `src/app/main.ts`はMylistPocketを動的importするだけで初期化関数を直接呼ばないため、`src/pocket/index.ts`のimportが従来どおり初期化を起こすことを維持する。HLSのStorage Workerは関数の`toString()`からWorkerコードを作るため、関数本体から外側スコープの値やimportを参照させない。
+- `src`から利用する外部サービスAPIのimportは`src/shared/external-api.ts`を窓口にする。通信実装・要求契約は`packages/lib`の各クライアントに残し、APIごとの責務や初期化順を崩さない。`src/app/runtime.ts`は既存の公開API互換性のため、loader群を`FutatsumeWatch.api`へまとめて公開する。
 
 ## 導線の確認漏れからの修正（2026-09-20）
 

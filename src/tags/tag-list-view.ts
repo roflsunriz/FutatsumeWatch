@@ -1,7 +1,7 @@
 import { BaseViewComponent } from '../../packages/futatsume/src/parts/base-view-component';
 import { Config } from '../config/index';
 import { textUtil } from '../../packages/lib/src/text/text-util';
-import { getNicodicArticleExists } from '../../packages/lib/src/nico/nico-dic-api';
+import { getNicodicArticleExists } from '../shared/external-api';
 import { createDicIconHtml } from '../../packages/lib/src/nico/nico-dic-icon';
 
 export interface TagListTagData {

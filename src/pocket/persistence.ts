@@ -1,12 +1,11 @@
 import _ from 'lodash';
-import { CrossDomainGate } from '../../packages/lib/src/infra/cross-domain-gate';
+import { CrossDomainGate, fetchMylistTokenPage, parseThumbInfo } from '../shared/external-api';
 import { DataStorage } from '../../packages/lib/src/infra/data-storage';
-import { parseThumbInfo } from '../../packages/lib/src/nico/parse-thumb-info';
 import { Emitter } from '../../packages/lib/src/emitter';
 import { bounce } from '../../packages/lib/src/infra/bounce';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 import type { BounceCallback } from '../../packages/lib/src/infra/bounce';
-import type { ThumbInfoOk, ThumbInfoData } from '../../packages/lib/src/nico/parse-thumb-info';
+import type { ThumbInfoData, ThumbInfoOk } from '../shared/external-api';
 import type {
   CacheItemData,
   CrossDomainGateApi,
@@ -267,19 +266,16 @@ export function createPocketPersistence({
       }
 
       static _getToken(): Promise<string> {
-        const url = 'https://www.nicovideo.jp/mylist_add/video/sm9';
         const tokenReg = /NicoAPI\.token *= *["']([a-z0-9-]+)["'];/;
         let m: RegExpExecArray | null;
-        return fetch(url, { credentials: 'include', _format: 'text' } as RequestInit)
-          .then((res) => res.text())
-          .then((result) => {
-            if ((m = tokenReg.exec(result))) {
-              const token = m[1]!;
-              return Promise.resolve(token);
-            } else {
-              return Promise.reject(new Error('token parse error'));
-            }
-          });
+        return fetchMylistTokenPage().then((result) => {
+          if ((m = tokenReg.exec(result))) {
+            const token = m[1]!;
+            return Promise.resolve(token);
+          } else {
+            return Promise.reject(new Error('token parse error'));
+          }
+        });
       }
     }
 

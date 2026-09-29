@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 import { global } from '../app/futatsume-watch-index';
 
-import { PlaybackPosition } from '../../packages/lib/src/nico/loader';
+import { LikeApi, MylistApiLoader, PlaybackPosition, ThreadLoader, ThumbInfoLoader } from '../shared/external-api';
 import { Fullscreen, util } from '../shared/util';
 import { NicoVideoPlayer } from '../nico-video-player/index';
 
@@ -14,14 +14,9 @@ import { CommentPanel } from '../comment-panel/index';
 import { PlayList, PlayListSession } from '../../packages/futatsume/src/Playlist/playlist';
 import type { PlaylistDescriptor } from '../../packages/futatsume/src/Playlist/playlist';
 
-import { ThreadLoader } from '../../packages/lib/src/nico/thread-loader';
-
-import { MylistApiLoader } from '../../packages/lib/src/nico/mylist-api-loader';
-import { ThumbInfoLoader } from '../../packages/lib/src/nico/thumb-info-loader';
 import { WatchInfoCacheDb } from '../../packages/lib/src/nico/watch-info-cache-db';
 
 import { MediaSessionApi } from '../../packages/lib/src/infra/media-session-api';
-import { LikeApi } from '../../packages/lib/src/nico/like-api.js';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 
 import type { DialogUtilView, DialogVideoError, VideoWatchOptionBag, VideoSessionWorkerSession } from './types';

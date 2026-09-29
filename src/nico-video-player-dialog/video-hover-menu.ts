@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { MylistApiLoader } from '../../packages/lib/src/nico/mylist-api-loader';
+import { MylistApiLoader } from '../shared/external-api';
 import { util } from '../shared/util';
 import { global } from '../app/futatsume-watch-index';
 

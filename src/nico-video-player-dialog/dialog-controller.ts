@@ -15,12 +15,10 @@ import type { CommentPanel } from '../comment-panel/index';
 import type { PlayList } from '../../packages/futatsume/src/Playlist/playlist';
 
 import { Emitter } from '../shared/baselib';
-import type { ThreadLoader } from '../../packages/lib/src/nico/thread-loader';
+import type { MylistApiLoader, ThreadLoader } from '../shared/external-api';
 
-import { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-worker';
+import { VideoSessionWorker } from '../shared/external-api';
 import type { PlayerState } from '../player-shell/state';
-
-import type { MylistApiLoader } from '../../packages/lib/src/nico/mylist-api-loader';
 
 import { WatchInfoCacheDb } from '../../packages/lib/src/nico/watch-info-cache-db';
 

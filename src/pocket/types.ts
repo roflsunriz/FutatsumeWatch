@@ -1,6 +1,6 @@
 import type { Emitter } from '../../packages/lib/src/emitter';
 import type { workerUtil } from '../../packages/lib/src/infra/worker-util';
-import type { ThumbInfoData, ThumbOwnerInfo } from '../../packages/lib/src/nico/parse-thumb-info';
+import type { ThumbInfoData, ThumbOwnerInfo } from '../shared/external-api';
 
 export interface ThumbOwnerWithLocale extends ThumbOwnerInfo {
   localeName?: string;

@@ -1,4 +1,4 @@
-import type { ThumbInfoOk } from '../../packages/lib/src/nico/parse-thumb-info';
+import type { ThumbInfoOk } from '../shared/external-api';
 import type { PocketVideoInfo } from './types';
 import { textUtil } from '../../packages/lib/src/text/text-util';
 

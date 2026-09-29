@@ -1,6 +1,6 @@
 import { global } from '../app/futatsume-watch-index';
 
-import { VideoInfoLoader } from '../../packages/lib/src/nico/loader';
+import { VideoInfoLoader } from '../shared/external-api';
 import { util } from '../shared/util';
 
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';

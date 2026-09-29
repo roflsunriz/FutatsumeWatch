@@ -1,5 +1,5 @@
 import { Emitter } from '../../packages/lib/src/emitter';
-import { getNicodicArticleExists } from '../../packages/lib/src/nico/nico-dic-api';
+import { getNicodicArticleExists } from '../shared/external-api';
 import { createDicIconHtml } from '../../packages/lib/src/nico/nico-dic-icon';
 import { bounce } from '../../packages/lib/src/infra/bounce';
 import type { BounceCallback } from '../../packages/lib/src/infra/bounce';

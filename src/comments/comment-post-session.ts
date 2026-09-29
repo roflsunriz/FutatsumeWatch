@@ -1,5 +1,5 @@
 import type { NicoChatType } from '../../packages/futatsume/src/commentLayer/nico-chat';
-import type { CommentPostResult } from '../../packages/lib/src/nico/thread-loader';
+import type { CommentPostResult } from '../shared/external-api';
 
 interface CommentPostOperation {
   createPreview(): NicoChatType;
