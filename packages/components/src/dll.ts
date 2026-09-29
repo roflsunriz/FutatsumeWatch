@@ -3,14 +3,20 @@
 import * as lit from 'lit/html.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 import type * as litTypes from 'lit/html.js';
 import type { repeat as repeatDirective } from 'lit/directives/repeat.js';
 import type { classMap as classMapDirective } from 'lit/directives/class-map.js';
+import type { unsafeHTML as unsafeHTMLDirective } from 'lit/directives/unsafe-html.js';
 
 interface DllShape {
   lit: typeof litTypes;
-  directives: { repeat: typeof repeatDirective; classMap: typeof classMapDirective };
+  directives: {
+    repeat: typeof repeatDirective;
+    classMap: typeof classMapDirective;
+    unsafeHTML: typeof unsafeHTMLDirective;
+  };
 }
 
 const dll: DllShape = { directives: {} } as DllShape;
@@ -18,5 +24,6 @@ const dll: DllShape = { directives: {} } as DllShape;
 dll.lit = lit;
 dll.directives.repeat = repeat;
 dll.directives.classMap = classMap;
+dll.directives.unsafeHTML = unsafeHTML;
 //===END===
 export { dll };

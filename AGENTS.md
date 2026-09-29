@@ -222,6 +222,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - シリーズ一覧は`https://nvapi.nicovideo.jp/v2/series/{id}`を`pageSize`・`page`付きで取得する。応答の`data.items[].video`を既存プレイリストの`content`形式へ正規化し、サムネイルURLの候補も統一する。旧`/v1/playlist/series/{id}`と直下項目を前提に戻さない。
 - シリーズの再生アイコンを実クリックし、全動画の順序、再生中動画の選択位置、要求が1回だけであることを`dev-verify-library.ts`で確認する。途中失敗時に既存プレイリストを置換しない共通規則は維持する。
 - 詳細パネルの前後動画も同じ`PlaylistApiLoader`でシリーズ一覧を取得し、共通`futatsume-video-item`へ表示する。シリーズカードは`showActions=false`・`showMetadataIcons=true`で操作ボタンを隠し、投稿日と各件数は`packages/lib/src/dom/ui-icon.ts`の共有SVGを使う。ページ切替後の古い応答は世代番号で捨てる。`dev-verify-library.ts`で前後2件の実操作・サムネイル・詳細・アイコンを確認する。
+- 関連動画とプレイリスト行は`packages/futatsume/src/Playlist/video-list-item-view.ts`で描画する。件数アイコンにUnicode記号を直書きせず、`packages/lib/src/dom/ui-icon.ts`の同じSVGを使う。`dev-verify-library.ts`で両リストの実DOMを上部メタデータの再生・コメント・マイリスト・いいねと照合する。
 
 ## 実認証と単発採取（2026-09-21、未リリース）
 

@@ -190,11 +190,21 @@ async function main() {
     );
     await check(
       session,
+      `(()=>{const row=${find('.videoItem[data-watch-id="sm2057168"]', relatedRoot)},icons=[...(row?.querySelectorAll('.counter .count svg')??[])],stats=[...document.querySelectorAll('.fw-stats span')],path=e=>e?.querySelector('svg')?.innerHTML;return icons.length===4&&icons.every((icon,index)=>icon.innerHTML===path(stats[index+1]))})()`,
+      'P3-05 関連動画の4件数アイコンを上部メタデータへ一致'
+    );
+    await check(
+      session,
       `!${find('[data-command="deflistAdd"],[data-command="mylistSelect"]', relatedRoot)}`,
       'P3-04 関連動画からマイリスト追加ボタンを削除'
     );
     await clickVisible(session, '[data-shell-tab="playlist"]');
     const playlistTabRoot = `document.querySelector('#fw-tab-playlist')`;
+    await check(
+      session,
+      `(()=>{const row=${find('.videoItem[data-watch-id="sm2057168"]', playlistTabRoot)},icons=[...(row?.querySelectorAll('.counter .count svg')??[])],stats=[...document.querySelectorAll('.fw-stats span')],path=e=>e?.querySelector('svg')?.innerHTML;return icons.length===4&&icons.every((icon,index)=>icon.innerHTML===path(stats[index+1]))})()`,
+      'P3-12 プレイリストの4件数アイコンを上部メタデータへ一致'
+    );
     await check(
       session,
       `!${find('[data-command="deflistAdd"],[data-command="mylistSelect"]', playlistTabRoot)}`,

@@ -1,4 +1,5 @@
 import { textUtil } from '../../../lib/src/text/text-util';
+import { uiIcon } from '../../../lib/src/dom/ui-icon';
 import { dll } from '../../../components/src/dll';
 import type { VideoListItem } from './video-list-item';
 
@@ -8,7 +9,10 @@ interface TextUtilLike {
 
 interface DllLike {
   lit: { html(strings: TemplateStringsArray, ...values: unknown[]): unknown };
-  directives: { classMap(classes: Record<string, unknown>): unknown };
+  directives: {
+    classMap(classes: Record<string, unknown>): unknown;
+    unsafeHTML(value: string): unknown;
+  };
 }
 
 interface ItemViewCache {
@@ -284,6 +288,11 @@ class VideoListItemView {
   .counter .count {
     white-space: nowrap;
   }
+  .counter .count svg {
+    width: 12px;
+    height: 12px;
+    vertical-align: -2px;
+  }
   .counter .count + .count {
     margin-left: 8px;
   }
@@ -395,10 +404,10 @@ class VideoListItemView {
                 </div>
               </div>
               <div class="counter">
-                <span class="count" title="再生数">▷ <span class="value viewCount">${addComma(count.view)}</span></span>
-                <span class="count" title="コメント数">▤ <span class="value commentCount">${addComma(count.comment)}</span></span>
-                <span class="count" title="マイリスト数">♧ <span class="value mylistCount">${addComma(count.mylist)}</span></span>
-                <span class="count" title="いいね数">♡ <span class="value likeCount">${count.like === undefined ? '—' : addComma(count.like)}</span></span>
+                <span class="count" title="再生数">${dllLike.directives.unsafeHTML(uiIcon('play'))}<span class="value viewCount">${addComma(count.view)}</span></span>
+                <span class="count" title="コメント数">${dllLike.directives.unsafeHTML(uiIcon('comment'))}<span class="value commentCount">${addComma(count.comment)}</span></span>
+                <span class="count" title="マイリスト数">${dllLike.directives.unsafeHTML(uiIcon('mylists'))}<span class="value mylistCount">${addComma(count.mylist)}</span></span>
+                <span class="count" title="いいね数">${dllLike.directives.unsafeHTML(uiIcon('likes'))}<span class="value likeCount">${count.like === undefined ? '—' : addComma(count.like)}</span></span>
               </div>
             `
       }

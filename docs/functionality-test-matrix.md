@@ -55,31 +55,32 @@
 
 ## 一覧・タグ・投稿
 
-| ID    | 操作／期待結果                                             | 対応する自動検証                                              |
-| ----- | ---------------------------------------------------------- | ------------------------------------------------------------- |
-| P3-01 | 投稿者一覧→プレイリストのID・順序、複数ページ              | library、playlist-api単体                                     |
-| P3-02 | プロフィールの正しいリンク先                               | library                                                       |
-| P3-03 | 市場入口・空白枠・ローダー撤去、周辺UI維持                 | library、video-info-panel単体                                 |
-| P3-04 | 関連動画・プレイリスト行にマイリスト／後で見る追加がない   | library                                                       |
-| P3-05 | 詳細タブ・動画リンク・行と対象ID                           | library、ui                                                   |
-| P3-06 | コメント自動スクロール切替                                 | library                                                       |
-| P3-07 | 日時・過去ログ・再取得・通常表示への復帰                   | library、thread-post単体                                      |
-| P3-08 | コメント行メニュー・詳細・コピー／NG等                     | library、settings-filter単体                                  |
-| P3-09 | 全コメントソート・再取得要求・表示順                       | library                                                       |
-| P3-10 | 連続再生・リストリピート                                   | library、playlist-navigation単体                              |
-| P3-11 | 全ソート・逆順・シャッフル、選択ID保持                     | library、playlist-model単体                                   |
-| P3-12 | 行再生・削除・未視聴・消去・保存／復元                     | library、playlist-model／playlist-session単体                 |
-| P3-13 | シリーズ前後動画のサムネイル・詳細情報・共通アイコン・再生 | library、series-video-card単体                                |
-| P4-01 | タグを閲覧専用で表示し、書き込み操作・通信がない           | library                                                       |
-| P4-02 | 削除済み：タグ追加・削除                                   | 対象外                                                        |
-| P4-03 | 削除済み：タグ再取得ボタン                                 | 対象外                                                        |
-| P4-04 | 大百科あり／なし・表示とリンク                             | library、tag-edit単体                                         |
-| P4-05 | ゲスト／ログイン表示、投稿キー401・本文保持・回復後1回送信 | functionalityのverify-authentication、comment-input-panel単体 |
-| P4-06 | 入力・パレット・IME・75/76文字・投稿不可状態               | ui、comment-input-panel単体                                   |
-| P4-07 | フォーム→通信→受理→モデル／表示                            | functionality、thread-post単体                                |
-| P4-08 | 1操作1要求、送信中重複・拒否後再送・受理不明               | functionality、thread-post／comment-input-panel単体           |
-| P4-09 | 受理コメントをAPI境界から再取得して照合                    | functionality                                                 |
-| P4-10 | 拒否・切断・遅延・close／動画切替との競合                  | functionality、thread-post／comment-input-panel単体           |
+| ID    | 操作／期待結果                                               | 対応する自動検証                                              |
+| ----- | ------------------------------------------------------------ | ------------------------------------------------------------- |
+| P3-01 | 投稿者一覧→プレイリストのID・順序、複数ページ                | library、playlist-api単体                                     |
+| P3-02 | プロフィールの正しいリンク先                                 | library                                                       |
+| P3-03 | 市場入口・空白枠・ローダー撤去、周辺UI維持                   | library、video-info-panel単体                                 |
+| P3-04 | 関連動画・プレイリスト行にマイリスト／後で見る追加がない     | library                                                       |
+| P3-05 | 詳細タブ・動画リンク・行と対象ID                             | library、ui                                                   |
+| P3-06 | コメント自動スクロール切替                                   | library                                                       |
+| P3-07 | 日時・過去ログ・再取得・通常表示への復帰                     | library、thread-post単体                                      |
+| P3-08 | コメント行メニュー・詳細・コピー／NG等                       | library、settings-filter単体                                  |
+| P3-09 | 全コメントソート・再取得要求・表示順                         | library                                                       |
+| P3-10 | 連続再生・リストリピート                                     | library、playlist-navigation単体                              |
+| P3-11 | 全ソート・逆順・シャッフル、選択ID保持                       | library、playlist-model単体                                   |
+| P3-12 | 行再生・削除・未視聴・消去・保存／復元                       | library、playlist-model／playlist-session単体                 |
+| P3-13 | シリーズ前後動画のサムネイル・詳細情報・共通アイコン・再生   | library、series-video-card単体                                |
+| P3-14 | 関連動画・プレイリスト行の件数アイコンを上部メタデータと一致 | library                                                       |
+| P4-01 | タグを閲覧専用で表示し、書き込み操作・通信がない             | library                                                       |
+| P4-02 | 削除済み：タグ追加・削除                                     | 対象外                                                        |
+| P4-03 | 削除済み：タグ再取得ボタン                                   | 対象外                                                        |
+| P4-04 | 大百科あり／なし・表示とリンク                               | library、tag-edit単体                                         |
+| P4-05 | ゲスト／ログイン表示、投稿キー401・本文保持・回復後1回送信   | functionalityのverify-authentication、comment-input-panel単体 |
+| P4-06 | 入力・パレット・IME・75/76文字・投稿不可状態                 | ui、comment-input-panel単体                                   |
+| P4-07 | フォーム→通信→受理→モデル／表示                              | functionality、thread-post単体                                |
+| P4-08 | 1操作1要求、送信中重複・拒否後再送・受理不明                 | functionality、thread-post／comment-input-panel単体           |
+| P4-09 | 受理コメントをAPI境界から再取得して照合                      | functionality                                                 |
+| P4-10 | 拒否・切断・遅延・close／動画切替との競合                    | functionality、thread-post／comment-input-panel単体           |
 
 ## 実環境と代替検証の境界
 
