@@ -266,7 +266,7 @@ import type { VcbUtil } from './types';
     position: absolute;
     background: transparent;
     opacity: 0;
-    width: 100vw;
+    width: 100%;
     height: 8px;
     top: -8px;
   }
@@ -380,8 +380,11 @@ import type { VcbUtil } from './types';
   .seekBarContainer .seekBar .seekRange {
     -webkit-appearance: none;
     position: absolute;
-    width: 100vw;
+    left: 0;
+    width: 100%;
     height: 100%;
+    margin: 0;
+    box-sizing: border-box;
     cursor: pointer;
     opacity: 0;
     pointer-events: auto;

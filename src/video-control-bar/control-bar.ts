@@ -357,11 +357,13 @@ export class VideoControlBar extends Emitter {
     e.stopPropagation();
   }
   _posToTime(pos: number): number {
-    const width = global.innerWidth;
-    return this._duration * (pos / Math.max(width, 1));
+    const width = (this._seekBar as HTMLElement).getBoundingClientRect().width;
+    return this._duration * (Math.min(width, Math.max(0, pos)) / Math.max(width, 1));
   }
   _timeToPos(time: number): number {
-    return global.innerWidth * (time / Math.max(this._duration, 1));
+    const seekBar = (this._seekBar as HTMLElement).getBoundingClientRect();
+    const player = (this._$playerContainer[0] as Element).getBoundingClientRect();
+    return seekBar.left - player.left + seekBar.width * (time / Math.max(this._duration, 1));
   }
   _timeToPer(time: number): number {
     return (time / Math.max(this._duration, 1)) * 100;
@@ -426,7 +428,7 @@ export class VideoControlBar extends Emitter {
   _onSeekRangeInput(e: Event): void {
     const target = e.target as HTMLInputElement;
     const sec = (target.value as unknown as number) * 1;
-    const left = (sec / ((target.max as unknown as number) * 1)) * global.innerWidth;
+    const left = this._timeToPos(sec);
     (util as unknown as VcbUtil).dispatchCommand(target, 'seek', sec);
     this._seekBarToolTip.update(sec, left);
     this.storyboard.setCurrentTime(sec, true);
@@ -440,8 +442,9 @@ export class VideoControlBar extends Emitter {
     if (!this.state.isDragging) {
       e.stopPropagation();
     }
-    const left = e.offsetX;
-    const sec = this._posToTime(left);
+    const pos = e.offsetX;
+    const sec = this._posToTime(pos);
+    const left = this._timeToPos(sec);
     this._seekBarMouseX = left;
 
     this._commentPreview.currentTime = sec;
@@ -454,8 +457,7 @@ export class VideoControlBar extends Emitter {
       return;
     }
     sec = sec * 1;
-    const dur = this._duration;
-    const left = (sec / dur) * window.innerWidth;
+    const left = this._timeToPos(sec);
     this._seekBarMouseX = left;
 
     this._commentPreview.currentTime = sec;

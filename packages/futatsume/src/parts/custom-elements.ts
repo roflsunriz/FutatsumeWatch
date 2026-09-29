@@ -183,7 +183,8 @@ CustomElements.initialize = () => {
       const per = (this.props.time / Math.max(this.props.duration, 1)) * 100;
       this.hidden = per <= 0;
       this.setAttribute('data-param', String(this.props.time));
-      this._root.style.transform = `translate(${per}vw, 0) translateX(-50%) scale(var(--scale-pp, 1.2))`;
+      this._root.style.left = `${per}%`;
+      this._root.style.transform = 'translateX(-50%) scale(var(--scale-pp, 1.2))';
       this._label.style.transform = `translate(-${per}%, 0)`;
     }
 

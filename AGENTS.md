@@ -168,7 +168,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - Screen Wake Lockは再生中かつ文書が可視の間だけ保持し、一時停止・終了時に解放する。ブラウザーは非表示時やシステム判断でロックを解放するため、`visibilitychange`とsentinelの`release`から必要時に再取得する。取得できない環境でも再生を継続する。根拠は[MDN Screen Wake Lock API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API)。
 - 操作バーはウィンドウblurまたはプレイヤー領域からのpointerleaveで即時に隠す。フォーカス中は最後の操作から3秒で隠し、隠れている間は映像面とプレイヤー領域のカーソルを非表示にする。
 - 右の動画情報・関連動画・コメント・プレイリストは既存のパネルとモデルを使う。タグは既存ヘッダーから同じDOMを移動する。関連動画とコメント一覧は隔離iframeなので、外側CSSだけで配色や表示を変更できない。仮想スクロールの固定行高は変えない。
-- 詳細サイドバー固定時はシークバー自体の描画幅を`--fw-panel-width`分短縮する。旧コントロールバーには`width: 100% !important`があるため、親の`width: auto`指定だけでは覆えない。
+- 詳細サイドバー固定時はシークバー自体の描画幅を`--fw-panel-width`分短縮し、入力幅・時間変換・再生位置／再開位置マーカーも実際のシークバー幅を基準にする。旧コントロールバーの`width: 100% !important`は固定時の幅を明示して覆う。`input[type=range]`にはブラウザー既定の左右余白があるため、`margin: 0`と`box-sizing: border-box`も指定し、操作範囲をサイドバー境界に一致させる。
 - ABリピートは動画切替・closeで消す。Bが動画終端でもプレイリストの自動遷移に先行してAへ戻す。新規UIの実操作検証は`bun scripts/dev-verify-shell.ts`。配布物注入による検証で、マネージャへの登録確認とは区別する。
 - 一般設定の`DialogElement.getContentsTemplate`はPromiseを返す。litへPromiseをそのまま渡すと`[object Promise]`だけが表示されるため、`getTemplate`でawaitする。`isOpen`だけの確認ではこの不具合を検出できない。設定項目の表示・実入力・保存・閉じるまで検証する。
 - 0.0.5の詳細設定はbody直下のz-index 200000でプレイヤー（6000002）の背後になっていたためプレイヤー内へ移していた。0.0.6では標準dialogのtop layerへ統一し、この移動は廃止した。DOMのshow属性とJavaScriptのclickだけで検証せず、ヒットテストと実入力で確認する。

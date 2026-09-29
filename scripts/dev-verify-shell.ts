@@ -289,6 +289,11 @@ async function main(): Promise<void> {
     );
     await check(
       session,
+      `(()=>{const c=${container},s=c.querySelector('.seekBar').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect(),v=c.getBoundingClientRect();return Math.abs(s.right-p.left)<=1&&Math.abs(s.left-v.left)<=1&&Math.abs(s.width-(p.left-v.left))<=2})()`,
+      '固定サイドバー左端とシークバー終端を一致させて動画終端位置にする'
+    );
+    await check(
+      session,
       `(()=>{const c=${container},o=c.querySelector('[data-futatsume-comment-canvas]'),r=o?.getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect();return r&&r.width>0&&r.right<=p.left+1})()`,
       '詳細固定でコメントCanvasの表示矩形を右パネルと非重複にする'
     );
@@ -298,6 +303,41 @@ async function main(): Promise<void> {
       '詳細固定後にコメントCanvasの内部画素を表示寸法へ同期'
     );
     await screenshot(session, '1280-details-locked');
+    await evaluate(session, `${root}.external.execCommand('pause')`);
+    const endPoint = (await evaluate(
+      session,
+      `(()=>{const r=${container}.querySelector('.seekRange').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect();return {x:p.left-1,y:r.top+r.height/2}})()`
+    )) as { x: number; y: number };
+    await check(
+      session,
+      `(()=>{const s=${container}.querySelector('.seekBar').getBoundingClientRect(),r=${container}.querySelector('.seekRange').getBoundingClientRect(),p=document.querySelector('#fw-details').getBoundingClientRect();return Math.abs(r.left-s.left)<=1&&Math.abs(r.width-s.width)<=1&&Math.abs(r.right-p.left)<=1})()`,
+      'シーク入力の実寸とシークバー終端をサイドバー境界へ一致'
+    );
+    await check(
+      session,
+      `document.elementFromPoint(${endPoint.x},${endPoint.y})===${container}.querySelector('.seekRange')`,
+      'シークバー終端の直前が右パネルに覆われず操作可能'
+    );
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', ...endPoint });
+    await Bun.sleep(150);
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      button: 'left',
+      clickCount: 1,
+      ...endPoint,
+    });
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      button: 'left',
+      clickCount: 1,
+      ...endPoint,
+    });
+    await check(
+      session,
+      `${video}.currentTime >= ${video}.duration * .99`,
+      '固定サイドバー左端のシークバー終端クリックで動画終端へシーク'
+    );
+    await evaluate(session, `${root}.external.execCommand('seek', ${video}.duration * .5)`);
     for (const name of ['relatedVideoTab', 'comment', 'playlist', 'videoInfoTab']) {
       await clickVisible(session, `[data-shell-tab="${name}"]`);
       await check(

@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { global } from '../app/futatsume-watch-index';
 import { SeekBarThumbnail } from '../storyboard/storyboard';
 import { util, BaseViewComponent } from '../shared/util';
 import { throttle } from '../../packages/lib/src/infra/bounce';
@@ -276,7 +275,8 @@ export class SmoothSeekBarPointer {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises -- void 関数の throttle 化であり戻り値は使わない
     this.applyTransform = throttle.raf(() => {
       const per = Math.min(100, this._timeToPer(this._currentTime));
-      this._pointer.style.transform = `translateX(${(global.innerWidth * per) / 100 - 6}px)`;
+      this._pointer.style.left = `${per}%`;
+      this._pointer.style.transform = 'translateX(-6px)';
     });
     this._pointer.classList.toggle('is-notSmooth', !this._isSmoothMode);
     params.playerState.onkey('isPausing', (v: unknown) => (this.isPausing = v as boolean));
@@ -388,7 +388,10 @@ export class SmoothSeekBarPointer {
       this._animation.finish();
     }
     this._animation = this._pointer.animate(
-      [{ transform: 'translateX(-6px)' }, { transform: `translateX(${global.innerWidth - 6}px)` }],
+      [
+        { left: '0%', transform: 'translateX(-6px)' },
+        { left: '100%', transform: 'translateX(-6px)' },
+      ],
       { duration: this._duration * 1000, fill: 'backwards' }
     );
     this._animation.currentTime = this._currentTime * 1000;
