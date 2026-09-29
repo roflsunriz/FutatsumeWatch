@@ -125,6 +125,7 @@ async function main() {
     await check(session, `document.querySelector('futatsume-video')?.currentTime>0`, 'P1-01 入口から実再生', 30000);
     await clickVisible(session, '[data-shell-action="togglePlay"]');
     await clickVisible(session, '[data-shell-action="details"]');
+    await deepClick(session, '.futatsumeWatchVideoInfoPanel', 'document', true);
     await clickVisible(session, '[data-shell-tab="videoInfoTab"]');
     await check(
       session,
@@ -143,6 +144,11 @@ async function main() {
       session,
       `!!${find('futatsume-video-series-label')}?.shadowRoot?.querySelector('[data-command="playlistSetSeries"]')`,
       'P3-12 シリーズ全体追加の実操作入口を表示'
+    );
+    await check(
+      session,
+      `(()=>{const item=[...document.querySelectorAll('.seriesVideos futatsume-video-item')].find(e=>e.dataset.watchId==='sm2057168');const root=item?.shadowRoot;return !!root?.querySelector('.videoLink')?.textContent?.trim()&&!!root?.querySelector('.thumbnail')?.getAttribute('src')&&!!root?.querySelector('.duration')&&!root.querySelector('[data-command="playlistAppend"],[data-command="deflistAdd"],[data-command="pocket-info"]')})()`,
+      'P3-12 シリーズ前後動画に共通動画カードの詳細・サムネイルを表示'
     );
     await deepClick(session, '.playButton');
     await check(
@@ -363,6 +369,30 @@ async function main() {
       find,
       requests,
     });
+    await deepClick(session, '.futatsumeWatchVideoInfoPanel', 'document', true);
+    await clickVisible(session, '[data-shell-tab="videoInfoTab"]');
+    await check(
+      session,
+      `(()=>{const item=document.querySelector('.seriesVideos futatsume-video-item[data-watch-id="sm2057168"]');return !!item?.shadowRoot?.querySelector('.videoLink')?.textContent?.trim()&&!!item.shadowRoot.querySelector('.thumbnail')?.getAttribute('src')&&!!item.shadowRoot.querySelector('.duration')})()`,
+      'P3-12 前のシリーズ動画のサムネイル・詳細情報を表示'
+    );
+    await deepClick(session, '.futatsumeWatchVideoInfoPanel', 'document', true);
+    await deepClick(
+      session,
+      '.thumbnail',
+      `document.querySelector('.seriesVideos futatsume-video-item[data-watch-id="sm2057168"]')?.shadowRoot`
+    );
+    await check(
+      session,
+      `${state}.videoInfo.watchId==='sm2057168'`,
+      'P3-12 シリーズ動画カードから前の動画を開く',
+      30000
+    );
+    await check(
+      session,
+      `(()=>{const rows=[...document.querySelectorAll('.seriesVideos futatsume-video-item')];const ids=rows.map(item=>item.dataset.watchId);return ids.includes('sm9')&&ids.includes('sm100')&&rows.filter(item=>item.shadowRoot?.querySelector('.duration')&&item.shadowRoot?.querySelector('.thumbnail')?.getAttribute('src')).length===2})()`,
+      'P3-12 前後両方のシリーズ動画にサムネイル・詳細情報を表示'
+    );
     if (await evaluate(session, `document.querySelector('.fw-details-lock')?.getAttribute('aria-pressed')==='true'`))
       await clickVisible(session, '[data-shell-action="details-lock"]');
     if (await evaluate(session, `document.querySelector('.fw-player')?.dataset.panel==='details'`))

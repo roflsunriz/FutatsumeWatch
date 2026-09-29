@@ -80,7 +80,7 @@ interface RelatedVideoItem {
 }
 
 interface SeriesVideoSummary {
-  id?: string;
+  id: string;
   title?: string;
 }
 

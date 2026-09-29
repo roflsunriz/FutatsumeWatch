@@ -8,12 +8,14 @@ export interface VideoOwnerInfo {
 }
 export interface VideoSeriesItem {
   id: string;
+  title?: string;
 }
 export interface VideoSeriesVideo {
   prev: VideoSeriesItem | null;
   next: VideoSeriesItem | null;
 }
 export interface VideoSeriesInfo {
+  id: string;
   title: string;
   thumbnailUrl?: string;
   video: VideoSeriesVideo;

@@ -64,6 +64,7 @@ const { VideoItemElement, VideoItemProps } = (() => {
     thumbInfo: {},
     hasInview: false,
     lazyload: false,
+    showActions: true,
   };
   const VideoItemAttributes = Object.keys(VideoItemProps).map((prop) => BaseCommandElement.toAttributeName(prop));
 
@@ -325,23 +326,33 @@ const { VideoItemElement, VideoItemProps } = (() => {
           }
         </style>
         <div class="videoItem">
-          <span class="playlistRemove" data-command="playlistRemove" title="プレイリストから削除">×</span>
+          ${props.showActions ? html`<span class="playlistRemove" data-command="playlistRemove" title="プレイリストから削除">×</span>` : ''}
           <div class="thumbnailContainer">
             <a class="command" data-command="open" data-param="${watchId}" href="${watchUrl}">
               <img src="${thumbnail}" class="thumbnail" loading="lazy" />
               ${duration}
             </a>
-            <span
-              class="playlistAppend"
-              data-command="playlistAppend"
-              data-param="${watchId}"
-              title="プレイリストに追加"
-              >▶</span
-            >
-            <span class="deflistAdd" data-command="deflistAdd" data-param="${watchId}" title="とりあえずマイリスト"
-              >&#x271A;</span
-            >
-            <span class="pocket-info" data-command="pocket-info" data-param="${watchId}" title="動画情報">？</span>
+            ${
+              props.showActions
+                ? html`<span
+                      class="playlistAppend"
+                      data-command="playlistAppend"
+                      data-param="${watchId}"
+                      title="プレイリストに追加"
+                      >▶</span
+                    >
+                    <span
+                      class="deflistAdd"
+                      data-command="deflistAdd"
+                      data-param="${watchId}"
+                      title="とりあえずマイリスト"
+                      >&#x271A;</span
+                    >
+                    <span class="pocket-info" data-command="pocket-info" data-param="${watchId}" title="動画情報"
+                      >？</span
+                    >`
+                : ''
+            }
           </div>
           <div class="videoInfo">
             <div class="postedAt">${postedAt}</div>

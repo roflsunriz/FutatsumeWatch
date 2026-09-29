@@ -65,6 +65,8 @@ function query(url: URL, expected: Record<string, string> = {}): boolean {
   return actual.toString() === wanted.toString();
 }
 const images = new Set([
+  'https://tn.smilevideo.jp/smile?i=9.',
+  'https://tn.smilevideo.jp/smile?i=100.',
   'https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank.jpg',
   'https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank_s.jpg',
   'https://nicovideo.cdn.nimg.jp/uni/img/common/video_deleted.jpg',
@@ -106,6 +108,15 @@ export function createOfflineSite() {
     data.data.response.video.id = id;
     data.data.response.video.title = '機能テスト映像 ' + (ids.indexOf(id) + 1);
     data.data.response.video.duration = spec.duration;
+    const response = data.data.response as unknown as Record<string, unknown>;
+    const series = response.series;
+    if (record(series) && record(series.video)) {
+      const seriesVideo = series.video;
+      const index = ids.indexOf(id);
+      seriesVideo.first = { id: ids[0], title: '機能テスト映像 1' };
+      seriesVideo.prev = index > 0 ? { id: ids[index - 1]!, title: `機能テスト映像 ${index}` } : null;
+      seriesVideo.next = index < ids.length - 1 ? { id: ids[index + 1]!, title: `機能テスト映像 ${index + 2}` } : null;
+    }
     data.data.response.media.domand.videos = (['high', 'low'] as const).map((quality, index) => ({
       id: `video-h264-${spec[quality].height}p`,
       isAvailable: true,

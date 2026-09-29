@@ -68,6 +68,7 @@
 | P3-10 | 連続再生・リストリピート                                   | library、playlist-navigation単体                              |
 | P3-11 | 全ソート・逆順・シャッフル、選択ID保持                     | library、playlist-model単体                                   |
 | P3-12 | 行再生・削除・未視聴・消去・保存／復元                     | library、playlist-model／playlist-session単体                 |
+| P3-13 | シリーズ前後動画のサムネイル・詳細情報・カードからの再生   | library、series-video-card単体                                |
 | P4-01 | タグを閲覧専用で表示し、書き込み操作・通信がない           | library                                                       |
 | P4-02 | 削除済み：タグ追加・削除                                   | 対象外                                                        |
 | P4-03 | 削除済み：タグ再取得ボタン                                 | 対象外                                                        |

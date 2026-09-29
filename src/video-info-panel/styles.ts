@@ -419,6 +419,34 @@ css.addStyle(
     padding: 0 8px;
   }
 
+  .futatsumeWatchVideoInfoPanel .seriesVideos {
+    display: grid;
+    gap: 8px;
+    padding: 0 8px 8px;
+  }
+
+  .futatsumeWatchVideoInfoPanel .seriesVideoHeading {
+    margin: 4px 0;
+    color: #ccc;
+    font-size: 12px;
+  }
+
+  .futatsumeWatchVideoInfoPanel .seriesVideoStatus:empty {
+    display: none;
+  }
+
+  .futatsumeWatchVideoInfoPanel .seriesVideoStatus {
+    margin: 0;
+    padding: 4px;
+    color: #fbb;
+    font-size: 12px;
+  }
+
+  .futatsumeWatchVideoInfoPanel .seriesVideo futatsume-video-item {
+    display: block;
+    width: 100%;
+  }
+
   futatsume-video-item,
   futatsume-video-series-label,
   futatsume-vieo-description {

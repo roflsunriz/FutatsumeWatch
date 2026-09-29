@@ -5,13 +5,13 @@ import { TagListView } from '../tags/tag-list-view';
 import { Emitter } from '../../packages/lib/src/emitter';
 import { sleep } from '../../packages/lib/src/infra/sleep';
 import { Fullscreen } from '../../packages/lib/src/dom/fullscreen';
-import { textUtil } from '../../packages/lib/src/text/text-util';
 import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
 import { cssUtil } from '../../packages/lib/src/css/css';
 import { uq } from '../../packages/lib/src/u-query';
 import { domEvent } from '../../packages/lib/src/dom/dom-event';
 import { ClassList } from '../../packages/lib/src/dom/class-list-wrapper';
 import { MylistPocketDetector } from '../../packages/futatsume/src/init/mylist-pocket-detector';
+import { PlaylistApiLoader } from '../shared/external-api';
 import type { EmitterCallback } from '../../packages/lib/src/emitter';
 import type { ConfigProps } from '../config/index';
 import type {
@@ -28,6 +28,7 @@ import type {
 import { RelatedInfoMenu } from './related-info-menu';
 import { VideoMetaInfo } from './video-meta-info';
 import { VideoHeaderPanel } from './video-header-panel';
+import { toSeriesVideoCardData } from './series-video-card';
 import './styles';
 const VideoItemObserver: { observe(params: { container: Element | null }): void } = {
   observe: () => {},
@@ -45,6 +46,7 @@ class VideoInfoPanel extends Emitter {
   _$ownerPageLink!: UqResult;
   _description!: Element;
   _seriesList!: Element;
+  _seriesVideoList!: Element;
   _tagListView!: TagListView;
   _relatedInfoMenu!: RelatedInfoMenu;
   _videoMetaInfo!: VideoMetaInfo;
@@ -54,6 +56,7 @@ class VideoInfoPanel extends Emitter {
   _activeTabName?: string;
   _isInitialized?: boolean;
   private playbackGeneration = 0;
+  private seriesVideoGeneration = 0;
   constructor(params: VideoInfoPanelParams) {
     super();
     this._videoHeaderPanel = new VideoHeaderPanel();
@@ -83,6 +86,7 @@ class VideoInfoPanel extends Emitter {
 
     this._description = view.querySelector('.videoDescription')!;
     this._seriesList = view.querySelector('.seriesList')!;
+    this._seriesVideoList = view.querySelector('.seriesVideos')!;
 
     this._tagListView = new TagListView({
       parentNode: view.querySelector('.videoTagsContainer')!,
@@ -144,7 +148,8 @@ class VideoInfoPanel extends Emitter {
       Object.assign(label.dataset, videoInfo.series);
       this._seriesList.append(label);
     }
-    void this._updateVideoDescription(videoInfo.description, videoInfo.series);
+    void this._updateSeriesVideos(videoInfo.series);
+    void this._updateVideoDescription(videoInfo.description);
 
     const classList = this.classList;
     classList.remove('userVideo', 'channelVideo', 'initializing');
@@ -157,19 +162,8 @@ class VideoInfoPanel extends Emitter {
   /**
    * 説明文中のurlの自動リンク等の処理
    */
-  async _updateVideoDescription(html: string, series: VideoSeriesInfo | null = null) {
+  async _updateVideoDescription(html: string) {
     this._description.textContent = '';
-    if (series) {
-      if (series.video.prev || series.video.next) {
-        html += `<br><br>「${textUtil.escapeHtml(series.title)}」 シリーズ前後の動画`;
-      }
-      if (series.video.prev) {
-        html += `<br>前の動画 <a class="watch" href="https://www.nicovideo.jp/watch/${series.video.prev.id}">${series.video.prev.id}</a>`;
-      }
-      if (series.video.next) {
-        html += `<br>次の動画 <a class="watch" href="https://www.nicovideo.jp/watch/${series.video.next.id}">${series.video.next.id}</a>`;
-      }
-    }
     const decorateWatchLink = (watchLink: HTMLAnchorElement) => {
       const videoId = watchLink.textContent.replace('watch/', '').replace('shorts/', '');
 
@@ -280,6 +274,76 @@ class VideoInfoPanel extends Emitter {
 
     this._description.append($description[0]!);
   }
+  async _updateSeriesVideos(series: VideoSeriesInfo | null): Promise<void> {
+    const generation = ++this.seriesVideoGeneration;
+    const summaries = [
+      series?.video.prev ? { ...series.video.prev, relation: '前の動画' } : null,
+      series?.video.next ? { ...series.video.next, relation: '次の動画' } : null,
+    ].filter((video): video is { id: string; title?: string; relation: string } => video !== null);
+    this._seriesVideoList.textContent = '';
+    if (!series || summaries.length === 0) return;
+    const status = document.createElement('p');
+    status.className = 'seriesVideoStatus';
+    status.setAttribute('aria-live', 'polite');
+    this._seriesVideoList.append(status);
+
+    const cards = summaries.map((summary) => {
+      const thumbnail = nicoUtil.getThumbnailUrlByVideoId(summary.id) || '';
+      const cardData = toSeriesVideoCardData(null, {
+        id: summary.id,
+        title: summary.title || summary.id,
+        thumbnail,
+      });
+      const section = document.createElement('section');
+      section.className = 'seriesVideo';
+      const heading = document.createElement('div');
+      heading.className = 'seriesVideoHeading';
+      heading.textContent = summary.relation;
+      const item = document.createElement('futatsume-video-item');
+      Object.assign(item.dataset, {
+        watchId: cardData.id,
+        videoId: cardData.id,
+        title: cardData.title,
+        duration: String(cardData.duration),
+        commentCount: String(cardData.commentCount),
+        mylistCount: String(cardData.mylistCount),
+        viewCount: String(cardData.viewCount),
+        thumbnail: cardData.thumbnail,
+        postedAt: cardData.postedAt,
+        showActions: 'false',
+      });
+      section.append(heading, item);
+      this._seriesVideoList.append(section);
+      return { id: summary.id, fallback: { id: summary.id, title: cardData.title, thumbnail }, item };
+    });
+
+    try {
+      const items = (await PlaylistApiLoader.load({ type: 'series', id: series.id })) as unknown[];
+      if (generation !== this.seriesVideoGeneration) return;
+      let matched = 0;
+      for (const card of cards) {
+        const entry = items.find((candidate) => {
+          if (typeof candidate !== 'object' || candidate === null) return false;
+          const record = candidate as Record<string, unknown>;
+          const content =
+            typeof record.content === 'object' && record.content !== null
+              ? (record.content as Record<string, unknown>)
+              : {};
+          return record.watchId === card.id || content.id === card.id;
+        });
+        if (!entry) continue;
+        Object.assign(card.item.dataset, toSeriesVideoCardData(entry, card.fallback));
+        matched++;
+      }
+      if (matched !== cards.length) {
+        status.textContent = 'シリーズ内の動画情報が一部見つかりません。IDとタイトルを表示しています。';
+      }
+    } catch (error) {
+      if (generation !== this.seriesVideoGeneration) return;
+      status.textContent = 'シリーズの動画情報を取得できませんでした。IDとタイトルを表示しています。';
+      window.console.warn('シリーズ前後動画の詳細取得に失敗しました。', error);
+    }
+  }
   async _onVideoCanPlay(watchId: string, videoInfo: VideoInfoModel) {
     const generation = ++this.playbackGeneration;
     // 動画の再生を優先するため、比較的どうでもいい要素はこのタイミングで初期化するのがよい
@@ -362,6 +426,7 @@ class VideoInfoPanel extends Emitter {
     this._tagListView?.update({});
   }
   clear(): undefined {
+    this.seriesVideoGeneration++;
     this._tagListView?.update({});
     this._videoHeaderPanel.clear();
     this.classList.add('initializing');
@@ -436,6 +501,7 @@ VideoInfoPanel.__tpl__ = `
             </div>
             <div class="seriesList"></div>
             <div class="videoDescription"></div>
+            <div class="seriesVideos"></div>
           </div>
           <div class="futatsumeWatchVideoInfoPanelFoot">
             <div class="videoTagsContainer sideTab"></div>
