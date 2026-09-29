@@ -224,6 +224,9 @@
 #futatsumeVideoPlayerDialog .fw-player[data-controls='hidden'] .videoPlayer > * {
   cursor: none;
 }
+#futatsumeVideoPlayerDialog .fw-player[data-controls='hidden'] {
+  cursor: none;
+}
 #futatsumeVideoPlayerDialog .fw-backdrop {
   display: none;
   position: absolute;

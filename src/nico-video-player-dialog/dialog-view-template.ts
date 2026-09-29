@@ -119,37 +119,46 @@ export const NICO_VIDEO_PLAYER_DIALOG_VIEW_CSS = `
     pointer-events: none;
   }
   .futatsumePlayerContainer.is-loading .loadingMessageContainer {
-    display: inline-block;
+    display: flex;
     position: absolute;
     z-index: 10000;
-    right: 8px;
-    bottom: 8px;
-    font-size: 24px;
+    top: 50%;
+    left: 50%;
+    width: min(320px, 70%);
+    flex-direction: column;
+    gap: 12px;
+    transform: translate(-50%, -50%);
     color: var(--base-fore-color);
     text-shadow: 0 0 8px #003;
-    font-family: serif;
-    letter-spacing: 2px;
-  }
-
-  @keyframes spin {
-    0%   { transform: rotate(0deg); }
-    100% { transform: rotate(-1800deg); }
-  }
-
-  .futatsumePlayerContainer.is-loading .loadingMessageContainer::before,
-  .futatsumePlayerContainer.is-loading .loadingMessageContainer::after {
-    display: inline-block;
+    font: 14px/1.5 sans-serif;
     text-align: center;
-    content: '${'\\00272A'}';
-    font-size: 18px;
-    line-height: 24px;
-    animation-name: spin;
-    animation-iteration-count: infinite;
-    animation-duration: 5s;
-    animation-timing-function: linear;
   }
-  .futatsumePlayerContainer.is-loading .loadingMessageContainer::after {
-    animation-direction: reverse;
+
+  .loadingProgressTrack {
+    display: block;
+    width: 100%;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #ffffff40;
+  }
+  .loadingProgressTrack > span {
+    display: block;
+    width: 35%;
+    height: 100%;
+    border-radius: inherit;
+    background: #ffffff;
+    animation: loadingProgress 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes loadingProgress {
+    from { transform: translateX(0); }
+    to { transform: translateX(185%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .loadingProgressTrack > span {
+      width: 100%;
+      animation: none;
+    }
   }
 
   .errorMessageContainer {
@@ -282,7 +291,10 @@ export const NICO_VIDEO_PLAYER_DIALOG_VIEW_TEMPLATE = `
 
           <div class="popupMessageContainer"></div>
           <div class="errorMessageContainer"></div>
-          <div class="loadingMessageContainer">動画読込中</div>
+          <div class="loadingMessageContainer" role="progressbar" aria-label="動画を読み込み中" aria-valuetext="読み込み中">
+            <span>動画読込中</span>
+            <span class="loadingProgressTrack" aria-hidden="true"><span></span></span>
+          </div>
         </div>
       </div>
     </div>

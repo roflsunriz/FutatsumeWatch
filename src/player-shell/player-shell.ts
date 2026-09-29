@@ -16,6 +16,13 @@ interface ShellVideo {
   tagList?: { name?: string }[];
   domandInfo?: { availableVideos: ReadonlyArray<{ label?: string; height: number }> } | null;
 }
+interface ScreenWakeLockSentinelLike extends EventTarget {
+  readonly released: boolean;
+  release(): Promise<void>;
+}
+interface ScreenWakeLockLike {
+  request(type: 'screen'): Promise<ScreenWakeLockSentinelLike>;
+}
 export class ABRepeat {
   start: number | null = null;
   end: number | null = null;
@@ -54,8 +61,9 @@ export class PlayerShell {
   private activeQuality: HTMLSelectElement | null = null;
   private hideTimer: ReturnType<typeof setTimeout> | undefined;
   private clockTimer: ReturnType<typeof setInterval> | undefined;
+  private wakeLock: ScreenWakeLockSentinelLike | undefined;
+  private wakeLockRequest = 0;
   private focusReturn: HTMLElement | null = null;
-  private keyboardFocus = false;
   private pointerDown = false;
 
   constructor(
@@ -143,7 +151,6 @@ export class PlayerShell {
     container.addEventListener(
       'pointerdown',
       () => {
-        this.keyboardFocus = false;
         this.pointerDown = true;
         this.reveal();
       },
@@ -159,11 +166,14 @@ export class PlayerShell {
     });
     window.addEventListener('blur', () => {
       this.pointerDown = false;
+      this.hideImmediately();
+    });
+    container.addEventListener('pointerleave', () => {
+      if (!this.pointerDown) this.hideImmediately();
     });
     container.addEventListener(
       'keydown',
       (e) => {
-        this.keyboardFocus = true;
         if (e.key === 'Escape' && this.panel) {
           e.preventDefault();
           e.stopPropagation();
@@ -174,15 +184,18 @@ export class PlayerShell {
       true
     );
     container.addEventListener('focusin', () => this.reveal());
-    container.addEventListener('focusout', () => {
-      this.keyboardFocus = false;
-      this.reveal();
-    });
+    container.addEventListener('focusout', () => this.reveal());
+    container.ownerDocument.addEventListener('visibilitychange', () => this.syncWakeLock());
     const sync = (): void => this.sync();
     for (const key of ['isPlaying', 'isMute', 'isLoop', 'isShowComment', 'playbackRate', 'currentTab'])
       state.onkey(key, sync);
+    state.onkey('isPlaying', () => this.syncWakeLock());
     for (const key of ['volume', 'domandVideoQuality']) config.onkey(key, sync);
-    state.onkey('isOpen', () => (state.isOpen ? this.open() : this.close()));
+    state.onkey('isOpen', () => {
+      if (state.isOpen) this.open();
+      else this.close();
+      this.syncWakeLock();
+    });
     this.decorateTabs();
     new MutationObserver(() => this.decorateTabs()).observe(this.require('.tabSelectContainer'), { childList: true });
     this.sync();
@@ -361,6 +374,10 @@ export class PlayerShell {
     this.reveal();
   }
   reveal(): void {
+    if (!this.container.ownerDocument.hasFocus()) {
+      this.hideImmediately();
+      return;
+    }
     this.container.dataset.controls = 'visible';
     clearTimeout(this.hideTimer);
     this.hideTimer = setTimeout(() => {
@@ -368,8 +385,9 @@ export class PlayerShell {
       const editing =
         active instanceof HTMLElement &&
         this.container.contains(active) &&
-        (active.matches('input,select,textarea,[contenteditable="true"]') || this.keyboardFocus);
+        active.matches('input,select,textarea,[contenteditable="true"]');
       if (
+        !this.container.ownerDocument.hasFocus() ||
         (this.panel && !(this.panel === 'details' && this.detailsLocked)) ||
         this.pointerDown ||
         editing ||
@@ -381,6 +399,53 @@ export class PlayerShell {
       this.container.dataset.controls = 'hidden';
     }, 3000);
   }
+  private hideImmediately(): void {
+    clearTimeout(this.hideTimer);
+    this.container.dataset.controls = 'hidden';
+  }
+  private syncWakeLock(): void {
+    const document = this.container.ownerDocument;
+    if (!this.state.isOpen || !this.state.isPlaying || document.visibilityState !== 'visible') {
+      this.releaseWakeLock();
+      return;
+    }
+    if (this.wakeLock && !this.wakeLock.released) return;
+    const wakeLock = (document.defaultView?.navigator as { wakeLock?: ScreenWakeLockLike } | undefined)?.wakeLock;
+    if (!wakeLock) return;
+    const request = ++this.wakeLockRequest;
+    void wakeLock
+      .request('screen')
+      .then((lock) => {
+        if (
+          request !== this.wakeLockRequest ||
+          !this.state.isOpen ||
+          !this.state.isPlaying ||
+          document.visibilityState !== 'visible'
+        ) {
+          if (!lock.released)
+            void lock.release().catch((error: unknown) => console.warn('Screen Wake Lockの解除に失敗しました', error));
+          return;
+        }
+        this.wakeLock = lock;
+        lock.addEventListener(
+          'release',
+          () => {
+            if (this.wakeLock !== lock) return;
+            this.wakeLock = undefined;
+            this.syncWakeLock();
+          },
+          { once: true }
+        );
+      })
+      .catch((error: unknown) => console.warn('Screen Wake Lockを取得できませんでした', error));
+  }
+  private releaseWakeLock(): void {
+    this.wakeLockRequest++;
+    const lock = this.wakeLock;
+    this.wakeLock = undefined;
+    if (lock && !lock.released)
+      void lock.release().catch((error: unknown) => console.warn('Screen Wake Lockの解除に失敗しました', error));
+  }
   open(): void {
     // 同一インスタンスを使い回すため、開くたびに保存値からロックを復元する。
     this.detailsLocked = this.config.props.detailsLocked === true;
@@ -390,10 +455,12 @@ export class PlayerShell {
       this.layoutChanged();
     }
     this.reveal();
+    this.syncWakeLock();
     clearInterval(this.clockTimer);
     this.clockTimer = setInterval(() => this.tick(), 80);
   }
   close(): void {
+    this.releaseWakeLock();
     this.detailsLocked = false;
     this.updateDetailsLockButton();
     this.setPanel(null, true);
