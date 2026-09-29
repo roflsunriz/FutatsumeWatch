@@ -102,7 +102,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 - 製品・テスト・スクリプトはTypeScript。tsconfigはstrict、allowJs:false、allowUmdGlobalAccess:false。any禁止を維持する。ただし既存の構造型キャストは残るため、型検査だけで実動作を保証しない。
 - BunでVite 8＋vite-plugin-monkeyを実行する。Vite内部はRolldownでありBun.buildではない。設定はvite.config.mts、入口はsrc/app/main.ts、配線はsrc/app/runtime.ts。build.js・webpack・Babel・mochaは退役した。
-- TypeScript 7系は`typescript-eslint` 8.70.1のpeer dependency範囲`<6.1.0`から外れるため、parser側の対応版が出るまでTypeScript 6系を維持し、更新時は両方を確認する（2026-09-28）。
+- TypeScript 7系は`typescript-eslint` 8.71.0のpeer dependency範囲`<6.1.0`から外れるため、parser側の対応版が出るまでTypeScript 6系を維持し、更新時は両方を確認する（2026-09-29）。0.0.26ではTypeScript 6.0.3とtypescript-eslint 8.71.0を組み合わせ、ViteのCSS import型宣言と`HTMLElement.hidden`の型変更へ対応した。
 - 配布物はdist/FutatsumeWatch.user.jsの1件のみ。開発用も同じファイルを使う。Domand HLS再生・詳細設定・MylistPocket・CapTube・ブログパーツ・マイリスト絞り込み・uQueryを同梱する。SystemJS・lodash・jQuery・lit・hls.jsも同梱し、外部@requireに依存しない。
 - scripts/build.tsはvm.Scriptでclassic scriptとして解析し、配布件数・版・外部@requireの不在を確認する。node --checkはESM自動検出のため、この判定の代わりにならない。
 - 初期化はAntiPrototypeJs→設定復元→runtimeのモジュール評価→API/Worker/描画依存の配線→HLS→initialize→追加機能。モジュール評価時にConfig.propsを読む既存箇所があるため、Configのrestore前にruntimeを静的importしない。

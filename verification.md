@@ -1,5 +1,11 @@
 # 検証記録
 
+## 2026-09-29：0.0.26公開前検証
+
+- `src/app/version.ts`・`package.json`・READMEを0.0.26へ揃え、ユーザースクリプトの説明へタグ編集、マイリスト管理、シークバー内コメントプレビューを反映した。`bun run build`で配布物1件の`@version 0.0.26`と説明を確認した。CHANGELOGの0.0.26節はリリースワークフローの抽出形式で存在を確認した。
+- 公開前の依存監査は242パッケージ・脆弱性なし。更新候補のうちtypescript-eslintは8.71.0へ、TypeScriptは同版のpeer範囲`>=4.8.4 <6.1.0`に収まる6.0.3へ更新した。TypeScript 7.0.2はこの範囲外なので採用していない。TypeScript 6のCSS副作用importと`HTMLElement.hidden`の型変更へ対応し、`bun install --frozen-lockfile`、lint、format、type-check、build、単体410件を通した。
+- 0.0.26の配布物を使う`bun run test:browser all --offline`は全9スイート・907チェック成功。結果は`dev-assets/verification/2026-09-29T06-40-03-600Z-offline-7fc22448/run.json`、配布物SHA-256は`d9e0cd7c796b0f8cafa7609e4f661c4c57fe3fe9bd45fd5054a5a63e6c34337a`。実アカウントへのタグ・マイリスト書込みは再試行していない。
+
 ## 2026-09-29：シークバーホバーのコメントプレビュー
 
 - オフライン配布物を実Chromeでホバーし、修正前はサムネイル160×90px（x=560–720）に対してコメント領域350×140px（x=465–815）であったことを確認した。`src/video-control-bar/comment-preview.ts`のコメント要素がシークバー直下に独立配置され、旧ホバーCSSの文字開始位置260pxもサムネイル幅と一致していなかった。

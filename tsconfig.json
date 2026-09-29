@@ -19,7 +19,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowUmdGlobalAccess": false,
-    "types": ["bun"],
+    "types": ["bun", "vite/client"],
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts", "packages/**/*.ts", "vite.config.mts"]

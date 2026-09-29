@@ -88,7 +88,7 @@ export class CommentInputPanel extends Emitter {
         this.endFocus();
       }, 0);
     });
-    this.toggle.addEventListener('click', () => this.setPalette(this.palette.hidden));
+    this.toggle.addEventListener('click', () => this.setPalette(this.palette.hidden !== false));
     this.commands.addEventListener('input', () => this.updateSelection());
     this.palette.addEventListener('click', (event) => {
       const button =
