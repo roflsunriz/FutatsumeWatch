@@ -25,7 +25,13 @@ async function check(session: CdpSession, expression: string, label: string, tim
   throw new Error(`検証失敗: ${label}`);
 }
 const find = (selector: string, within = 'document') => `window.__libraryFind(${JSON.stringify(selector)},${within})`;
-async function deepClick(session: CdpSession, selector: string, within = 'document', hoverOnly = false): Promise<void> {
+async function deepClick(
+  session: CdpSession,
+  selector: string,
+  within = 'document',
+  hoverOnly = false,
+  clickCount = 1
+): Promise<void> {
   const locate = async () =>
     (await evaluate(
       session,
@@ -46,8 +52,8 @@ async function deepClick(session: CdpSession, selector: string, within = 'docume
   await Bun.sleep(150);
   if (hoverOnly) return;
   const current = await locate();
-  await session.send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...current });
-  await session.send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount: 1, ...current });
+  await session.send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount, ...current });
+  await session.send('Input.dispatchMouseEvent', { type: 'mouseReleased', button: 'left', clickCount, ...current });
 }
 async function replaceInput(session: CdpSession, selector: string, text: string, within = 'document') {
   await deepClick(session, selector, within);
@@ -181,6 +187,91 @@ async function main() {
     if (requests.some((request) => new URL(request.url).pathname === '/v2/videos/sm9/tags'))
       throw Error('閲覧専用タグUIがタグAPIを要求しました');
     checks.push('タグ閲覧専用UIはタグAPIを要求しない');
+    await clickVisible(session, '.fw-backdrop');
+    const heading = `document.querySelector('.fw-tags')`;
+    await check(session, `!!${find('.tagLock svg', heading)}`, '固定タグをカギアイコンで表示');
+    await deepClick(session, '.videoTagsInner', heading);
+    await deepClick(session, '.videoTagsInner', heading, false, 2);
+    await check(
+      session,
+      `${find('.TagListView.is-Editing .tagInputText', heading)}?.getBoundingClientRect().width>0`,
+      'メタデータ下のタグを実ダブルクリックして編集開始'
+    );
+    await screenshot(session, 'tag-edit-1280');
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 844,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(
+      session,
+      `(()=>{const input=${find('.tagInputText', heading)},button=${find('.tagAdd', heading)};const a=input?.getBoundingClientRect(),b=button?.getBoundingClientRect();return !!a&&!!b&&a.width>0&&b.width>0&&a.left>=0&&b.right<=innerWidth&&b.bottom<=innerHeight})()`,
+      '390px幅でもタグ編集入力と追加ボタンを操作可能に表示'
+    );
+    await screenshot(session, 'tag-edit-390');
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 800,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(session, `!${find('.is-Locked .tagRemove', heading)}`, '固定タグには削除操作を表示しない');
+    if (requests.some((request) => new URL(request.url).pathname === '/v2/videos/sm9/tags'))
+      throw Error('編集モード開始だけでタグAPIを要求しました');
+    await replaceInput(session, '.tagInputText', 'FutatsumeWatch検証不存在20260920', heading);
+    await deepClick(session, '.tagAdd', heading);
+    await check(
+      session,
+      `!!${find('.tagItem[data-tag-id="FutatsumeWatch検証不存在20260920"]', heading)}`,
+      'タグ追加後に一覧を更新'
+    );
+    await check(
+      session,
+      `!!${find('.tagItem[data-tag-id="FutatsumeWatch検証不存在20260920"]', tagRoot)}`,
+      'タグ追加を詳細パネルにも同期'
+    );
+    await deepClick(session, '.tagItem[data-tag-id="FutatsumeWatch検証不存在20260920"] .tagRemove', heading);
+    await check(
+      session,
+      `!${find('.tagItem[data-tag-id="FutatsumeWatch検証不存在20260920"]', heading)}`,
+      'タグ削除後に一覧を更新'
+    );
+    if (
+      !(await evaluate(
+        session,
+        `(()=>{const e=document.elementFromPoint(20,200);return !!e&&!e.closest('.fw-tags')})()`
+      ))
+    )
+      throw Error('タグ外クリック位置が不正です');
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      button: 'left',
+      clickCount: 1,
+      x: 20,
+      y: 200,
+    });
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      button: 'left',
+      clickCount: 1,
+      x: 20,
+      y: 200,
+    });
+    await check(session, `!${find('.TagListView.is-Editing', heading)}`, 'タグ領域外の実クリックで編集終了');
+    const tagWrites = requests.filter(
+      (request) =>
+        new URL(request.url).pathname === '/v2/videos/sm9/tags' && ['POST', 'DELETE'].includes(request.method)
+    );
+    if (
+      tagWrites.length !== 2 ||
+      tagWrites[0]?.method !== 'POST' ||
+      tagWrites[1]?.method !== 'DELETE' ||
+      tagWrites.some((request) => new URL(request.url).searchParams.get('tag') !== 'FutatsumeWatch検証不存在20260920')
+    )
+      throw Error('タグの公式API要求が一致しません');
+    checks.push('タグ追加・削除を公式APIへ各1件送信');
+    await clickVisible(session, '[data-shell-action="details"]');
     await clickVisible(session, '[data-shell-tab="relatedVideoTab"]');
     const relatedRoot = `document.querySelector('#fw-tab-relatedVideoTab')`;
     await check(

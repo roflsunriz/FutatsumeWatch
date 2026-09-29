@@ -32,6 +32,7 @@ export interface VideoInfoModel {
   description: string;
   series: VideoSeriesInfo | null;
   tagList: TagListTagData[];
+  tagEdit?: { editKey: string; isEditable: boolean } | null;
   watchId: string;
   videoId: string;
   csrfToken: string;

@@ -98,6 +98,7 @@ export function createOfflineSite() {
     ])
   );
   const comments = commentsByVideo.get('sm9')!;
+  const tagsByVideo = new Map(ids.map((id) => [id, structuredClone(base.data.response.tag.items)]));
   const nextCommentNo = new Map(ids.map((id) => [id, commentsByVideo.get(id)!.length + 1]));
   const writes: FixtureRequest[] = [];
   const deliveries: Array<{ videoId: string; outputs: string[]; variant: string }> = [];
@@ -108,6 +109,7 @@ export function createOfflineSite() {
     data.data.response.video.id = id;
     data.data.response.video.title = '機能テスト映像 ' + (ids.indexOf(id) + 1);
     data.data.response.video.duration = spec.duration;
+    data.data.response.tag.items = structuredClone(tagsByVideo.get(id)!);
     const response = data.data.response as unknown as Record<string, unknown>;
     const series = response.series;
     if (record(series) && record(series.video)) {
@@ -206,12 +208,14 @@ export function createOfflineSite() {
       const storyboardPath = /^\/v1\/watch\/(sm9|sm2057168|sm100)\/access-rights\/storyboard$/.exec(path);
       const postPath = /^\/v1\/threads\/(117310878[012])\/comments$/.exec(path);
       const actionPath = /^\/v1\/threads\/(117310878[012])\/(nicorus|comment-comment-owner-deletions)$/.exec(path);
+      const tagPath = /^\/v2\/videos\/(sm9|sm2057168|sm100)\/tags$/.exec(path);
       const requestedThread = url.searchParams.get('threadId') ?? '';
       const requestedVideo = url.searchParams.get('videoId') ?? '';
       if (method === 'OPTIONS') {
         const registered =
           (url.origin === 'https://nvapi.nicovideo.jp' &&
-            (((hlsPath || storyboardPath) && query(url, { actionTrackId: 'fixture-track' })) ||
+            ((tagPath && (query(url) || (url.searchParams.size === 1 && !!url.searchParams.get('tag')))) ||
+              ((hlsPath || storyboardPath) && query(url, { actionTrackId: 'fixture-track' })) ||
               (path === '/v1/comment/keys/post' &&
                 videoForThread(requestedThread) &&
                 query(url, { threadId: requestedThread, pc: '1' })) ||
@@ -230,6 +234,38 @@ export function createOfflineSite() {
               (postPath && query(url, { pc: '1' })) ||
               (actionPath && query(url))));
         return registered ? { status: 204, mime: 'text/plain', body: '' } : null;
+      }
+      if (tagPath && url.origin === 'https://nvapi.nicovideo.jp') {
+        const id = tagPath[1] as WatchId;
+        const tags = tagsByVideo.get(id)!;
+        if (header(request, 'X-Tag-Edit-Key') !== 'fixture-tag-key')
+          return json({ meta: { status: 401, errorCode: 'KEY_EXPIRED' } }, 401);
+        if (method === 'GET' && query(url)) return json({ meta: { status: 200 }, data: { tags } });
+        const tag = url.searchParams.get('tag');
+        if (
+          !tag ||
+          url.searchParams.size !== 1 ||
+          !['POST', 'DELETE'].includes(method) ||
+          header(request, 'X-Request-With') !== 'https://www.nicovideo.jp'
+        )
+          return null;
+        if (method === 'POST') {
+          if (tags.some((item) => item.name === tag))
+            return json({ meta: { status: 409, errorCode: 'TAG_ALREADY_REGISTERED' } }, 409);
+          tags.push({
+            name: tag,
+            isLocked: false,
+            isNicodicArticleExists: false,
+            isCategory: false,
+            isCategoryCandidate: false,
+          });
+        } else {
+          const index = tags.findIndex((item) => item.name === tag && !item.isLocked);
+          if (index < 0) return json({ meta: { status: 403, errorCode: 'TAG_LOCKED' } }, 403);
+          tags.splice(index, 1);
+        }
+        writes.push(request);
+        return json({ meta: { status: 200 }, data: { tags } });
       }
       if (method === 'GET' && url.origin === 'https://ext.nicovideo.jp' && path === '/' && query(url))
         return {

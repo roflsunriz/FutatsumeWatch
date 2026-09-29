@@ -12,7 +12,8 @@
 - `watch-entry.ts`は同一文書内で動画IDごとに起動ボタンを1個だけ持つ。タイトル行の後ろへ足して行を崩さず、サムネ側リンクを優先して公式のサムネ内相対ボックス（新UIの`div.pos_relative`／旧トップの`StageRecommendVideoCard-thumbnailContainer`・`NC-Thumbnail`／大百科の`nicoad_article_slide_item_thumb`）先頭へ常時表示で重ねる。箱を持たないカード全体リンク（Nアニメ等）はリンク自体の先頭へ重ね、行内テキストリンクにだけ直後へ置く。右上配置で再生時間（右下）・ランク王冠（左上）を避ける。説明文は同一IDのタイトル行から取り、duration表記だけのラベルにしない。先頭のduration＋画質トークン・末尾の再生数・本文アイコン画像のaltで上書きしない。非表示・覆われた候補より表示中の候補を選ぶ。Nアニメ等の本体を初期化する外部ホストにも適用し、外部ホストからの映像・コメントはentryスイートの固定ページで確認する。
 - 9222の実利用Chromeはnicocache_nl／filter-matome由来の付加（`nl-cached`／`ncnl-`／`filter-matome`／`cacheIcon`、画質付加文言）が分離コンテキストにも残るため、実測は公式構造だけを正本にし、付加クラス・付加要素・付加文言へ結合しない。公式箱へのmarker付与では除外せず、汚染バッジ内だけを避ける。回帰は`watch-entry.test.ts`・entryスイート。
 - 0.0.21ではNG・フィルターと詳細設定のトグル重なりを修正した。原因は金属調トグル（50×28）へ移行した後に旧来の`transform: scale(2)`が残り、実矩形が100×56となって隣行へ食い込んでいたことである。`setting-panel-element.ts`と`setting.ts`の旧指定を除去し共通テーマへ一本化した。算出寸法だけでなく実矩形の重なりをCDPで確認する。回帰はsettingsスイートの重なり検査。
-- 再生中にホバーで表示されるタイトルと動画メタデータは現行シェルの`.fw-header`が正本であり、旧`VideoHeaderPanel`はシェル表示で`display:none`のため手を入れない。タグ一覧は`.fw-heading`内（タイトル・メタデータの下）へ詳細タブと同じ閲覧専用`TagListView`で表示し、編集機能は追加しない。タグ実体はshadow内のため、検証はshadow貫通で数える。
+- 再生中にホバーで表示されるタイトルと動画メタデータは現行シェルの`.fw-header`が正本であり、旧`VideoHeaderPanel`はシェル表示で`display:none`のため手を入れない。タグ一覧は`.fw-heading`内（タイトル・メタデータの下）の`TagListView`で、2026-09-29以降はダブルクリックで編集に入り、領域外クリックで解除する。詳細タブの`TagListView`は閲覧専用のまま。タグ実体はshadow内のため、検証はshadow貫通で数える。
+- 2026-09-29に9222のChromeで取得した公式`nvpc_next`資産`enum-CL_Gp8xK.js`／`PlayerCurrentTime-C03JZa28.js`では、タグAPIは`/v2/videos/<videoId>/tags`のGET・POST・DELETE、書込みは`tag`クエリと`X-Tag-Edit-Key`・`X-Request-With`を使う。キーはwatch応答の`tag.edit.editKey`から取り、`KEY_EXPIRED`時だけwatch応答で更新し同じ操作を1回再送する。製品経路は`tag-edit-api.ts`、オフライン回帰は`tag-edit-api.test.ts`とlibraryスイート。公式資産の読取りに限り実施し、実タグ書込みは行っていない。
 - カスタム要素のクラス定義（`extends HTMLElement`）はモジュール直下に置かず、`typeof HTMLElement`で守る。`player-shell.ts`がタグ表示で`tag-list-view.ts`を読むようになり、DOMグローバルなしで読み込む単体テスト経路（`player-shell.test.ts`・`video-recovery.test.ts`の静的import）がCIで壊れた。読み込み自体は常に成功させ、定義だけ条件付きにする。
 - 関連サービスの実測では、生放送・ニュース・チャンネルトップの動画枠は生放送ID（`live.nicovideo.jp/watch/lv...`）のため起動対象外とし、静画・コモンズ・インフォ・利用者ページには`/watch/`リンクがなく、埋め込み（`ext.nicovideo.jp/thumb`）は`blog.ts`の担当とする。
 - nv-commentの取得・投稿・削除・ニコるは`https://*.nvcomment.nicovideo.jp`の資格情報なしXMLHttpRequestを直接使い、外部ページでもiframeブリッジへ通さない。他ホストは既存ブリッジを維持する。通常取得はfilter-matomeの`{params,threadKey}`・`application/json`・frontend/client OSヘッダーに合わせ、過去ログ時だけ`additionals.when`を追加する。取得失敗を別threadKeyで自動再送しない。回帰は`net-util.test.ts`・`thread-post.test.ts`・entryスイート。
@@ -31,7 +32,7 @@
 - 本体のNGタグ・NG投稿者（`videoTagFilter`／`videoOwnerFilter`設定・設定画面の入力欄・`VideoFilter`と再生除外・次動画送り・検証台帳・関連テスト）は削除済みで復活させない。保存済みの旧キーは読み込み対象外として保持する。MylistPocket側のNG・お気に入り判定は維持する。
 - 設定UIは2026-09-22の手描き案と利用者の訂正を正本とする。設定ボタンから、製品名・版、5カテゴリ、画質、GitHub、再読み込み・コメント付き画像保存・公式視聴ページを平置きした左レールと、選択中カテゴリの内容を入れる右パネルを直接開く。中間の選択案内画面や「その他操作」のdetailsは作らない。左レールは390px幅でも左に維持し、チェック設定はOFFが灰色、ONが緑色の金属調トグルにする。回帰はui/settingsスイートと複数画面寸法の画像。
 - コメントのフォント設定は手入力を使わず、汎用ファミリーと`font-options.ts`の候補をCanvasの実測幅で利用可能と判定してプルダウンへ表示する。権限が必要でFirefoxにないローカルフォント列挙APIへ依存しない。旧保存値は消さず、候補外でも利用可能なら現在値として、利用不能なら選択中の無効項目として表示する。settingsスイートは全候補の保存・再表示・コメント描画反映を確認する。
-- 動画詳細UIは2026-09-22の手描きUI案2を正本とする。4タブ共通の固定ボタンをタブ列へ置き、固定中はモーダルの背景ぼかし・操作抑止を外し、映像・コメント外枠・コメントCanvas内部画素・操作バーを右パネル幅ぶん縮めて全体を見せる。CSS上の外枠だけで合格にせず、Canvasの表示矩形・内部寸法と右パネルの非重複をuiスイートで確認する。タグは詳細内の閲覧専用表示とし、編集・追加・削除・再取得ボタンやタグ書き込みAPIを復活させない。
+- 動画詳細UIは2026-09-22の手描きUI案2を正本とする。4タブ共通の固定ボタンをタブ列へ置き、固定中はモーダルの背景ぼかし・操作抑止を外し、映像・コメント外枠・コメントCanvas内部画素・操作バーを右パネル幅ぶん縮めて全体を見せる。CSS上の外枠だけで合格にせず、Canvasの表示矩形・内部寸法と右パネルの非重複をuiスイートで確認する。詳細タブは閲覧専用で再取得ボタンも置かない。タグ書き込みはメタデータ下からのみ行い、成功結果を詳細タブにも同期する。
 
 ## オフライン検証の終了と設定効果（2026-09-20）
 

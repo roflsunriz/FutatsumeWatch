@@ -13,7 +13,9 @@ interface ShellVideo {
   title: string;
   postedAt: string | number;
   count: { view: number; comment: number; mylist: number; like?: number };
-  tagList?: { name?: string }[];
+  videoId: string;
+  tagList?: { name?: string; isLocked?: boolean }[];
+  tagEdit?: { editKey: string; isEditable?: boolean } | null;
   domandInfo?: { availableVideos: ReadonlyArray<{ label?: string; height: number }> } | null;
 }
 interface ScreenWakeLockSentinelLike extends EventTarget {
@@ -73,7 +75,8 @@ export class PlayerShell {
     private readonly player: ShellPlayer,
     private readonly command: (name: string, param?: string | number) => void,
     private readonly generalSettings: () => void,
-    private readonly layoutChanged: () => void
+    private readonly layoutChanged: () => void,
+    private readonly onTagsChanged: (tags: { name: string; isLocked?: boolean }[]) => void
   ) {
     configureSettingsNavigation(
       (panel) => {
@@ -139,7 +142,11 @@ export class PlayerShell {
     this.volume = this.require('[data-shell-volume]');
     this.speed = this.require('[data-shell-speed]');
     this.timeLabel = this.require('.fw-time');
-    this.tagListView = new TagListView({ parentNode: this.require('.fw-tags') });
+    this.tagListView = new TagListView({
+      parentNode: this.require('.fw-tags'),
+      editable: true,
+      onTagsChanged: this.onTagsChanged,
+    });
     this.volume.after(this.require('.commentInputPanel'));
     for (const root of [this.controls, this.info]) {
       root.addEventListener('click', (e) => this.onClick(e));
@@ -507,7 +514,9 @@ export class PlayerShell {
       stats.append(item);
     }
     this.tagListView.update({
-      tagList: (video.tagList ?? []).flatMap((tag) => (tag.name ? [{ name: tag.name }] : [])),
+      tagList: (video.tagList ?? []).flatMap((tag) => (tag.name ? [{ name: tag.name, isLocked: tag.isLocked }] : [])),
+      videoId: video.videoId,
+      tagEdit: video.tagEdit,
     });
   }
   private sync(): void {

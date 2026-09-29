@@ -159,6 +159,11 @@ class VideoInfoPanel extends Emitter {
 
     this._relatedInfoMenu.update(videoInfo);
   }
+  updateTags(tags: VideoInfoModel['tagList']): void {
+    if (!this._videoInfo) return;
+    this._videoInfo.tagList.splice(0, this._videoInfo.tagList.length, ...tags);
+    this._tagListView.update({ tagList: tags });
+  }
   /**
    * 説明文中のurlの自動リンク等の処理
    */

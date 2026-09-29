@@ -55,6 +55,7 @@
 #futatsumeVideoPlayerDialog .fw-controls button,
 #futatsumeVideoPlayerDialog .fw-controls input,
 #futatsumeVideoPlayerDialog .fw-controls select,
+#futatsumeVideoPlayerDialog .fw-controls .fw-tags,
 #futatsumeVideoPlayerDialog .fw-controls .fw-tags a {
   pointer-events: auto;
 }

@@ -104,7 +104,8 @@ describe('詳細ロックと設定', () => {
       },
       () => {
         layoutChanged++;
-      }
+      },
+      () => undefined
     );
     const click = (action: string): void => {
       const button = container.querySelector(`[data-shell-action="${action}"]`);

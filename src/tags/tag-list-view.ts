@@ -1,8 +1,10 @@
 import { BaseViewComponent } from '../../packages/futatsume/src/parts/base-view-component';
 import { Config } from '../config/index';
 import { textUtil } from '../../packages/lib/src/text/text-util';
-import { getNicodicArticleExists } from '../shared/external-api';
+import { getNicodicArticleExists, TagEditApi } from '../shared/external-api';
 import { createDicIconHtml } from '../../packages/lib/src/nico/nico-dic-icon';
+import { nicoUtil } from '../../packages/lib/src/nico/nico-util';
+import { uiIcon } from '../../packages/lib/src/dom/ui-icon';
 
 export interface TagListTagData {
   name: string;
@@ -12,14 +14,22 @@ export interface TagListTagData {
 
 export interface TagListUpdateParams {
   tagList?: TagListTagData[];
+  videoId?: string;
+  tagEdit?: { editKey: string; isEditable?: boolean } | null;
 }
 
 interface TagListViewState {
   isEmpty?: boolean;
+  isEditing?: boolean;
+  isUpdating?: boolean;
 }
 
 interface TagListElmTable {
   videoTagsInner: HTMLElement;
+  tagInput: HTMLInputElement;
+  status: HTMLElement;
+  form: HTMLFormElement;
+  addButton: HTMLButtonElement;
 }
 
 interface TagListBaseView {
@@ -51,7 +61,22 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
   protected _view!: Element;
   private _generation = 0;
   private _tags: TagListTagData[] = [];
-  constructor({ parentNode }: { parentNode: Element }) {
+  private readonly editApi = new TagEditApi();
+  private readonly editable: boolean;
+  private readonly onTagsChanged?: (tags: TagListTagData[]) => void;
+  private videoId = '';
+  private editKey = '';
+  private canEdit = false;
+  private pendingNavigation: ReturnType<typeof setTimeout> | undefined;
+  constructor({
+    parentNode,
+    editable = false,
+    onTagsChanged,
+  }: {
+    parentNode: Element;
+    editable?: boolean;
+    onTagsChanged?: (tags: TagListTagData[]) => void;
+  }) {
     super({
       parentNode,
       name: 'TagListView',
@@ -61,6 +86,8 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     });
 
     this._state = {};
+    this.editable = editable;
+    this.onTagsChanged = onTagsChanged;
   }
 
   _initDom(...args: unknown[]): void {
@@ -69,14 +96,68 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     const v = this._shadow || this._view;
     Object.assign(this._elm, {
       videoTagsInner: v.querySelector('.videoTagsInner') as HTMLElement,
+      tagInput: v.querySelector('.tagInputText') as HTMLInputElement,
+      form: v.querySelector('form') as HTMLFormElement,
+      addButton: v.querySelector('.tagAdd') as HTMLButtonElement,
+      status: v.querySelector('[data-tag-status]') as HTMLElement,
     });
+    this._elm.form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      void this.changeTag('POST', this._elm.tagInput.value.trim());
+    });
+    this._elm.tagInput.addEventListener('keydown', (event) => {
+      event.stopPropagation();
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.endEdit();
+      }
+    });
+    v.addEventListener('dblclick', (event) => {
+      event.preventDefault();
+      if (!this.editable) return;
+      if (this._state.isEditing) return;
+      if (!this.canEdit) {
+        this._elm.status.textContent = 'タグを編集できません。ログイン状態と動画の編集権限を確認してください。';
+        return;
+      }
+      this.setState({ isEditing: true });
+      document.addEventListener('click', this.onOutsideClick, true);
+      this._elm.tagInput.focus();
+    });
+    v.addEventListener('click', (event) => this.onTagClickCapture(event as MouseEvent), true);
     v.addEventListener('click', (e: Event) => e.stopPropagation());
   }
+
+  private readonly onOutsideClick = (event: MouseEvent): void => {
+    if (!event.composedPath().includes(this._view)) this.endEdit();
+  };
+
+  private readonly onTagClickCapture = (event: MouseEvent): void => {
+    if (!this.editable || this._state.isEditing) return;
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const target = event.target instanceof Element ? event.target : null;
+    const link = target?.closest<HTMLAnchorElement>('.tagLink');
+    const search = target?.closest<HTMLElement>('.playlistAppend');
+    if (!link && !search) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (this.pendingNavigation) clearTimeout(this.pendingNavigation);
+    if (event.detail > 1) return;
+    this.pendingNavigation = setTimeout(() => {
+      this.pendingNavigation = undefined;
+      if (link) window.location.assign(link.href);
+      else if (search?.dataset.param) this._onTagSearch(search.dataset.param);
+    }, 280);
+  };
 
   _onCommand(command: string, param: unknown): void {
     switch (command) {
       case 'tag-search':
         this._onTagSearch(param as string);
+        break;
+      case 'removeTag':
+        void this.changeTag('DELETE', param as string);
         break;
       case 'none':
         break;
@@ -110,9 +191,59 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     super._onCommand('playlistSetSearchVideo', { word, option });
   }
 
-  update({ tagList = [] }: TagListUpdateParams): void {
+  update({ tagList = [], videoId = '', tagEdit = null }: TagListUpdateParams): void {
     this._generation++;
+    if (this.pendingNavigation) clearTimeout(this.pendingNavigation);
+    this.pendingNavigation = undefined;
+    this.endEdit();
+    this.videoId = videoId;
+    this.editKey = tagEdit?.editKey ?? '';
+    this.canEdit = this.editable && nicoUtil.isLogin() && !!videoId && !!this.editKey && tagEdit?.isEditable !== false;
+    this._elm.tagInput.value = '';
+    this._elm.tagInput.disabled = false;
+    this._elm.addButton.disabled = false;
+    this._elm.status.textContent = '';
+    this.setState({ isUpdating: false });
     this._update(tagList);
+  }
+
+  private endEdit(): void {
+    if (this.pendingNavigation) clearTimeout(this.pendingNavigation);
+    this.pendingNavigation = undefined;
+    document.removeEventListener('click', this.onOutsideClick, true);
+    this.setState({ isEditing: false });
+  }
+
+  private async changeTag(method: 'POST' | 'DELETE', tag: string): Promise<void> {
+    if (!this.canEdit || !this._state.isEditing || this._state.isUpdating || !tag) return;
+    if (method === 'POST' && this._tags.some((item) => item.name === tag)) {
+      this._elm.status.textContent = '同じタグは追加できません。';
+      return;
+    }
+    if (method === 'DELETE' && !this._tags.some((item) => item.name === tag && !item.isLocked)) return;
+    const generation = this._generation;
+    this._elm.status.textContent = '';
+    this.setState({ isUpdating: true });
+    this._elm.tagInput.disabled = true;
+    this._elm.addButton.disabled = true;
+    try {
+      const result = await this.editApi.change(method, this.videoId, tag, this.editKey);
+      if (generation !== this._generation) return;
+      this.editKey = result.editKey;
+      this._update(result.tags);
+      if (method === 'POST') this._elm.tagInput.value = '';
+      this.onTagsChanged?.(result.tags);
+    } catch (error) {
+      if (generation === this._generation)
+        this._elm.status.textContent = error instanceof Error ? error.message : 'タグの処理に失敗しました。';
+    } finally {
+      if (generation === this._generation) {
+        this._elm.tagInput.disabled = false;
+        this._elm.addButton.disabled = false;
+        this.setState({ isUpdating: false });
+        if (this._state.isEditing) this._elm.tagInput.focus();
+      }
+    }
   }
 
   _update(tagList: TagListTagData[] = []): void {
@@ -169,7 +300,14 @@ class TagListView extends (BaseViewComponent as unknown as TagListBaseViewCtor) 
     const data = (textUtil as unknown as TagTextUtil).escapeHtml(JSON.stringify(tag));
     const className = tag.isLocked ? 'tagItem is-Locked' : 'tagItem';
 
-    return `<li class="${className}" data-tag="${data}" data-tag-id="${escapedName}">${dic}${link}${search}</li>`;
+    const lock = tag.isLocked
+      ? `<span class="tagLock" title="編集できないタグ" aria-label="編集できないタグ">${uiIcon('lock')}</span>`
+      : '';
+    const remove =
+      this.canEdit && !tag.isLocked
+        ? `<button type="button" class="tagRemove" title="${escapedName}を削除" aria-label="${escapedName}を削除" data-command="removeTag" data-param="${escapedName}">×</button>`
+        : '';
+    return `<li class="${className}" data-tag="${data}" data-tag-id="${escapedName}">${dic}${lock}${remove}${link}${search}</li>`;
   }
 }
 
@@ -195,6 +333,19 @@ TagListView.__shadow__ = `
         flex-wrap: wrap;
         padding: 0 8px;
       }
+
+      .tagEditForm { display: none; width: min(100%, 340px); box-sizing: border-box; gap: 6px; padding: 4px 8px; align-items: center; }
+      .is-Editing .tagEditForm { display: flex; background: rgba(0, 0, 0, .78); border-radius: 6px; }
+      .tagInputText { flex: 1 1 0; min-width: 70px; max-width: 240px; width: 0; font: inherit; padding: 4px 7px; }
+      .tagAdd { min-width: 54px; min-height: 30px; padding: 4px 8px; font: inherit; cursor: pointer; white-space: nowrap; }
+      .tagStatus:not(:empty) { display: block; padding: 2px 8px; color: #ffbaba; }
+      .tagLock { display: inline-flex; width: 16px; height: 16px; margin-right: 3px; opacity: .85; }
+      .tagLock svg { width: 16px; height: 16px; }
+      .tagRemove { display: none; margin-right: 4px; border: 0; border-radius: 50%; background: #a33;
+        color: white; cursor: pointer; width: 22px; height: 22px; font: inherit; }
+      .is-Editing .tagRemove { display: inline-block; }
+      .is-Editing.is-Updating .tagRemove, .is-Editing.is-Updating .tagAdd { pointer-events: none; opacity: .5; }
+      .is-Editing .tagLink, .is-Editing .playlistAppend { pointer-events: none; }
 
       .TagListView .tagItem {
         position: relative;
@@ -264,6 +415,8 @@ TagListView.__shadow__ = `
       <div class="videoTags">
         <span class="videoTagsInner"></span>
       </div>
+      <form class="tagEditForm"><input class="tagInputText" type="text" aria-label="追加するタグ" maxlength="100"><button type="submit" class="tagAdd">追加</button></form>
+      <span class="tagStatus" data-tag-status role="status" aria-live="polite"></span>
     </div>
   `.trim();
 

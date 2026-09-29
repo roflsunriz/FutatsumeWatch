@@ -202,7 +202,8 @@ class NicoVideoPlayerDialogView extends Emitter {
       this._dialog,
       (name, param) => this._onCommand(name, param),
       () => this.toggleSettingPanel(),
-      () => this._dialog.resizeCommentLayer()
+      () => this._dialog.resizeCommentLayer(),
+      (tags) => this.videoInfoPanel.updateTags(tags)
     );
     this._initializeResponsive();
 

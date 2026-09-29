@@ -31,6 +31,7 @@ interface VideoDetail {
   thumbnail: string;
   largeThumbnnail?: string;
   tagList: { name?: string }[];
+  tagEdit?: { editKey: string; isEditable: boolean } | null;
   width: string | number;
   height: string | number;
   length: number;
@@ -308,6 +309,10 @@ class VideoInfoModel extends JSONable {
 
   get tagList(): { name?: string }[] {
     return this._videoDetail.tagList;
+  }
+
+  get tagEdit(): { editKey: string; isEditable: boolean } | null {
+    return this._videoDetail.tagEdit ?? null;
   }
 
   getVideoId(): string {
