@@ -257,9 +257,14 @@
   width: auto;
   margin: 0 !important;
 }
-#futatsumeVideoPlayerDialog .fw-player[data-details-locked='true'] :is(.fw-controls, .videoControlBar) {
+#futatsumeVideoPlayerDialog .fw-player[data-details-locked='true'] .fw-controls {
   right: var(--fw-panel-width);
   width: auto;
+}
+#futatsumeVideoPlayerDialog .fw-player[data-details-locked='true'] .videoControlBar {
+  left: 0;
+  right: var(--fw-panel-width);
+  width: calc(100% - var(--fw-panel-width)) !important;
 }
 #futatsumeVideoPlayerDialog .fw-player .futatsumeWatchVideoInfoPanel {
   display: none;
