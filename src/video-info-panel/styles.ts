@@ -338,37 +338,50 @@ css.addStyle(
     top: 0; left: 0;
     width: 100%; height: 100%;
   }
-  .futatsumeWatchVideoInfoPanel .kurukuru {
+  .futatsumeWatchVideoInfoPanel .loadingIndicator {
     position: absolute;
-    display: inline-block;
-    font-size: 96px;
+    display: flex;
+    width: min(280px, 72%);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
   }
 
-  @keyframes loadingRolling {
-    0%   { transform: rotate(0deg); }
-    100% { transform: rotate(1800deg); }
+  .futatsumeWatchVideoInfoPanel .loadingProgress {
+    width: 100%;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #ffffff40;
   }
-  .futatsumeWatchVideoInfoPanel.initializing .kurukuruInner {
-    display: inline-block;
+  .futatsumeWatchVideoInfoPanel .loadingProgress > span {
+    display: block;
+    width: 35%;
+    height: 100%;
+    border-radius: inherit;
+    background: #ccc;
+    animation: loadingProgress 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes loadingProgress {
+    from { transform: translateX(0); }
+    to { transform: translateX(185%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .futatsumeWatchVideoInfoPanel .loadingProgress > span {
+      width: 100%;
+      animation: none;
+    }
+  }
+  .futatsumeWatchVideoInfoPanel .nowLoading .loadingMessage {
+    display: block;
     pointer-events: none;
     text-align: center;
     text-shadow: 0 0 4px #888;
-    animation-name: loadingRolling;
-    animation-iteration-count: infinite;
-    animation-duration: 4s;
-  }
-  .futatsumeWatchVideoInfoPanel .nowLoading .loadingMessage {
-    position: absolute;
-    display: inline-block;
     font-family: Impact;
-    font-size: 32px;
-    text-align: center;
-    top: calc(50% + 48px);
-    left: 0;
-    width: 100%;
+    font-size: 20px;
   }
 
   ${CONSTANT.SCROLLBAR_CSS}

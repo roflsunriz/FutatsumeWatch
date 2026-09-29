@@ -477,8 +477,12 @@ class VideoInfoPanel extends Emitter {
 VideoInfoPanel.__tpl__ = `
     <div class="futatsumeWatchVideoInfoPanel show initializing">
       <div class="nowLoading">
-        <div class="kurukuru"><span class="kurukuruInner">&#x262F;</span></div>
-        <div class="loadingMessage">Loading...</div>
+        <div class="loadingIndicator" role="status" aria-live="polite">
+          <div class="loadingMessage">Loading...</div>
+          <div class="loadingProgress" role="progressbar" aria-label="サイドバーを読み込み中" aria-valuetext="読み込み中">
+            <span></span>
+          </div>
+        </div>
       </div>
 
       <div class="tabSelectContainer"><div class="tabSelect videoInfoTab activeTab" data-command="selectTab" data-param="videoInfoTab">動画情報</div><div class="tabSelect relatedVideoTab" data-command="selectTab" data-param="relatedVideoTab">関連動画</div></div>
