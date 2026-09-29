@@ -145,6 +145,12 @@ async function main(): Promise<void> {
       deviceScaleFactor: 1,
       mobile: false,
     });
+    await reveal(session);
+    await check(
+      session,
+      `${container}.dataset.controls==='visible'`,
+      '390px幅で操作部を再表示してからプレビューを測る'
+    );
     const narrowSeek = (await evaluate(
       session,
       `(()=>{const r=document.querySelector('.seekBar').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`
@@ -158,6 +164,7 @@ async function main(): Promise<void> {
       deviceScaleFactor: 1,
       mobile: false,
     });
+    await reveal(session);
     const middleSeek = (await evaluate(
       session,
       `(()=>{const r=document.querySelector('.seekBar').getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2}})()`
