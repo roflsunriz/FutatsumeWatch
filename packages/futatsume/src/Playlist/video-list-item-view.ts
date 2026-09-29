@@ -153,89 +153,75 @@ class VideoListItemView {
     transition: none;
   }
 
-  .thumbnailContainer .playlistAppend,
-  .playlistRemove,
-  .thumbnailContainer .deflistAdd,
-  .thumbnailContainer .mylistSelect,
-  .thumbnailContainer .pocket-info {
+  .thumbnailContainer :is(.playlistAppend, .deflistAdd, .mylistSelect, .pocket-info) {
     position: absolute;
+    z-index: 2;
     display: none;
-    color: #fff;
-    background: #666;
-    width: 24px;
-    height: 20px;
-    line-height: 18px;
-    font-size: 14px;
     box-sizing: border-box;
-    text-align: center;
-    font-weight: bolder;
-
-    color: #fff;
+    height: 27px;
+    padding: 0;
+    border: 1px solid #ffffff66;
+    border-radius: 5px;
+    background: #152334ed;
+    color: #f2f7fb;
+    font: 600 12px/1 system-ui, sans-serif;
+    box-shadow: 0 1px 4px #000a;
     cursor: pointer;
   }
   .thumbnailContainer .playlistAppend {
-    left: 0;
-    bottom: 0;
-  }
-  .thumbnailContainer .deflistAdd {
-    right: 0;
-    bottom: 0;
-  }
-  .thumbnailContainer .mylistSelect {
-    right: 0;
-    top: 22px;
-    width: 32px;
-  }
-  .playlistRemove {
-    right: 8px;
-    top: 0;
+    right: 3px;
+    top: 3px;
+    width: 27px;
   }
   .thumbnailContainer .pocket-info {
-    display: none !important;
-    right: 24px;
-    bottom: 0;
+    left: 3px;
+    top: 3px;
+    width: 27px;
   }
-  .is-pocketReady .videoItem:hover .pocket-info {
-    display: inline-block !important;
+  .thumbnailContainer .deflistAdd {
+    left: 2px;
+    bottom: 2px;
+    width: calc(50% - 4px);
   }
-
-  .playlist .playlistAppend {
-    display: none !important;
+  .thumbnailContainer .mylistSelect {
+    right: 2px;
+    bottom: 2px;
+    width: calc(50% - 4px);
   }
   .playlistRemove {
+    position: absolute;
     display: none;
+    right: 8px;
+    top: 0;
+    color: #fff;
+    cursor: pointer;
   }
   .playlist .videoItem:not(.is-active):hover .playlistRemove {
     display: inline-block;
   }
-
-
-  .playlist .videoItem:not(.is-active):hover .playlistRemove,
-  .videoItem:hover .thumbnailContainer .playlistAppend,
-  .videoItem:hover .thumbnailContainer .deflistAdd,
-  .videoItem:hover .thumbnailContainer .mylistSelect,
-  .videoItem:hover .thumbnailContainer .pocket-info {
-    display: inline-block;
-    border: 1px outset;
+  .videoItem:is(:hover, :focus-within) .thumbnailContainer :is(.playlistAppend, .deflistAdd, .mylistSelect),
+  .is-pocketReady .videoItem:is(:hover, :focus-within) .thumbnailContainer .pocket-info {
+    display: grid;
+    place-items: center;
   }
-
-  .playlist .videoItem:not(.is-active):hover .playlistRemove:hover,
-  .videoItem:hover .thumbnailContainer .playlistAppend:hover,
-  .videoItem:hover .thumbnailContainer .deflistAdd:hover,
-  .videoItem:hover .thumbnailContainer .mylistSelect:hover,
-  .videoItem:hover .thumbnailContainer .pocket-info:hover {
-    transform: scale(1.5);
-    box-shadow: 2px 2px 2px #000;
+  .playlist .videoItem:is(:hover, :focus-within) .thumbnailContainer .playlistAppend {
+    display: none;
   }
-
-  .playlist .videoItem:not(.is-active):hover .playlistRemove:active,
-  .videoItem:hover .thumbnailContainer .playlistAppend:active,
-  .videoItem:hover .thumbnailContainer .deflistAdd:active,
-  .videoItem:hover .thumbnailContainer .mylistSelect:active,
-  .videoItem:hover .thumbnailContainer .pocket-info:active {
-    transform: scale(1.3);
-    border: 1px inset;
-    transition: none;
+  .thumbnailContainer :is(.playlistAppend, .deflistAdd, .mylistSelect, .pocket-info):hover {
+    background: #2b4f59;
+  }
+  .thumbnailContainer :is(.playlistAppend, .deflistAdd, .mylistSelect, .pocket-info):focus-visible {
+    outline: 2px solid #8ce3c9;
+    outline-offset: 1px;
+  }
+  @media (hover: none) {
+    .videoItem .thumbnailContainer :is(.deflistAdd, .mylistSelect) {
+      display: grid;
+      place-items: center;
+    }
+    .videoItem .thumbnailContainer .duration {
+      bottom: 31px;
+    }
   }
 
   .thumbnailContainer .duration {
@@ -407,9 +393,9 @@ class VideoListItemView {
                   >？</span
                 >
                 <button type="button" class="command deflistAdd" data-command="deflistAdd" data-param=${watchId}
-                  title="とりあえずマイリストに追加">＋</button>
+                  title="とりあえずマイリストに追加">とり</button>
                 <button type="button" class="command mylistSelect" data-command="mylistSelect" data-param=${watchId}
-                  title="マイリスト追加・編集">＋M</button>
+                  title="マイリスト追加・編集">マイ</button>
               </div>
               <div class="videoInfo">
                 <div class="postedAt">${new Date(item.postedAt as string | number).toLocaleString()}</div>

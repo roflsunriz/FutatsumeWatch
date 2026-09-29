@@ -290,12 +290,39 @@ async function main() {
       'P3-04 関連動画にとりマイ・マイリスト追加ボタンを表示'
     );
     await deepClick(session, '.videoItem[data-watch-id="sm2057168"]', relatedRoot, true);
+    await check(
+      session,
+      `(()=>{const row=${find('.videoItem[data-watch-id="sm2057168"]', relatedRoot)},a=row?.querySelector('.deflistAdd')?.getBoundingClientRect(),b=row?.querySelector('.mylistSelect')?.getBoundingClientRect(),p=row?.querySelector('.playlistAppend')?.getBoundingClientRect();return !!a&&!!b&&!!p&&a.width>35&&b.width>35&&a.right+2<=b.left&&p.bottom+8<=b.top})()`,
+      'P3-04 関連動画のとり・マイを下段へ揃え他操作と重ねない'
+    );
+    await screenshot(session, 'mylist-row-hover');
     await deepClick(session, '.videoItem[data-watch-id="sm2057168"] [data-command="mylistSelect"]', relatedRoot);
     await check(
       session,
       `!!document.querySelector('dialog[data-mylist-manager="sm2057168"][open] [data-create-mylist]')`,
       'P3-04 関連動画から専用マイリスト編集画面を開く'
     );
+    await check(
+      session,
+      `(()=>{const d=document.querySelector('dialog[data-mylist-manager]'),c=d?.querySelector('.fw-mylist-card'),r=c?.getBoundingClientRect(),blur=d&&getComputedStyle(d,'::backdrop').backdropFilter;return !!r&&Math.abs((r.left+r.right)/2-innerWidth/2)<2&&Math.abs((r.top+r.bottom)/2-innerHeight/2)<2&&blur?.includes('blur(')})()`,
+      'P3-04 ダイアログを画面中央へ配置し背景をぼかす'
+    );
+    await screenshot(session, 'mylist-manager-1280');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-create-mylist]');
+    await screenshot(session, 'mylist-manager-create-1280');
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 700,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(
+      session,
+      `(()=>{const c=document.querySelector('dialog[data-mylist-manager] .fw-mylist-card'),r=c?.getBoundingClientRect();return !!r&&r.left>=0&&r.right<=innerWidth&&c.scrollWidth<=c.clientWidth&&!!c.querySelector('[data-mylist-action="create"]')})()`,
+      'P3-04 390px幅でも新規作成フォームを画面内に表示'
+    );
+    await screenshot(session, 'mylist-manager-create-390');
+    await session.send('Emulation.clearDeviceMetricsOverride');
     await replaceInput(session, 'dialog[data-mylist-manager] [data-mylist-field="name"]', '追加検証');
     await replaceInput(session, 'dialog[data-mylist-manager] [data-mylist-field="description"]', '説明の検証');
     await clickVisible(session, 'dialog[data-mylist-manager] [data-mylist-action="create"]');
@@ -330,6 +357,7 @@ async function main() {
       `!!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
       'P3-04 対象動画をマイリストへ追加'
     );
+    await screenshot(session, 'mylist-manager-items-1280');
     await replaceInput(
       session,
       'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-field="memo"]',
@@ -350,8 +378,8 @@ async function main() {
       `!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
       'P3-04 登録動画を削除'
     );
-    await clickVisible(session, 'dialog[data-mylist-manager] [data-add-watch-later]');
     await clickVisible(session, 'dialog[data-mylist-manager] [data-watch-later]');
+    await clickVisible(session, 'dialog[data-mylist-manager] [data-add-watch-later]');
     await check(
       session,
       `!!document.querySelector('dialog[data-mylist-manager] [data-item="sm2057168"]')`,
@@ -385,12 +413,96 @@ async function main() {
     });
     await check(
       session,
-      `(()=>{const d=document.querySelector('dialog[data-mylist-manager]'),r=d?.getBoundingClientRect();return !!r&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&d.scrollWidth<=d.clientWidth})()`,
+      `(()=>{const c=document.querySelector('dialog[data-mylist-manager] .fw-mylist-card'),r=c?.getBoundingClientRect();return !!r&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&Math.abs((r.left+r.right)/2-innerWidth/2)<2&&Math.abs((r.top+r.bottom)/2-innerHeight/2)<2&&c.scrollWidth<=c.clientWidth})()`,
       'P3-04 390px幅でマイリスト画面を操作可能に表示'
     );
     await screenshot(session, 'mylist-manager-390');
+    await session.send('Emulation.setDeviceMetricsOverride', {
+      width: 844,
+      height: 390,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(
+      session,
+      `(()=>{const c=document.querySelector('dialog[data-mylist-manager] .fw-mylist-card'),r=c?.getBoundingClientRect();return !!r&&r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight&&Math.abs((r.left+r.right)/2-innerWidth/2)<2&&Math.abs((r.top+r.bottom)/2-innerHeight/2)<2})()`,
+      'P3-04 低い画面でもマイリスト画面を中央に収める'
+    );
+    await screenshot(session, 'mylist-manager-844x390');
     await session.send('Emulation.clearDeviceMetricsOverride');
     await clickVisible(session, 'dialog[data-mylist-manager] [data-close]');
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"]', relatedRoot, true);
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"] [data-command="mylistSelect"]', relatedRoot);
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager][open]')`,
+      'P3-04 閉じるボタンの後に専用画面を再度開く'
+    );
+    await clickVisible(session, 'dialog[data-mylist-manager] .fw-mylist-header h2');
+    await check(
+      session,
+      `!!document.querySelector('dialog[data-mylist-manager][open]')`,
+      'P3-04 ダイアログ内クリックでは閉じない'
+    );
+    const outside = (await evaluate(
+      session,
+      `(()=>{const r=document.querySelector('dialog[data-mylist-manager] .fw-mylist-card').getBoundingClientRect();return {x:r.left/2,y:r.top/2}})()`
+    )) as { x: number; y: number };
+    await session.send('Input.dispatchMouseEvent', { type: 'mousePressed', button: 'left', clickCount: 1, ...outside });
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      button: 'left',
+      clickCount: 1,
+      ...outside,
+    });
+    await check(
+      session,
+      `!document.querySelector('dialog[data-mylist-manager]')&&document.body.classList.contains('showNicoVideoPlayerDialog')`,
+      'P3-04 背景クリックで専用画面だけを閉じる'
+    );
+    await clickVisible(session, '.fw-backdrop');
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 100, y: 160 });
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 110, y: 160 });
+    await Bun.sleep(200);
+    await clickVisible(session, '[data-shell-action="fullscreen"]');
+    await check(session, `!!document.fullscreenElement`, 'P3-04 全画面からマイリスト画面を開く準備');
+    await clickVisible(session, '[data-shell-action="details"]');
+    await clickVisible(session, '[data-shell-tab="relatedVideoTab"]');
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"]', relatedRoot, true);
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"] [data-command="mylistSelect"]', relatedRoot);
+    await check(
+      session,
+      `(()=>{const c=document.querySelector('dialog[data-mylist-manager] .fw-mylist-card'),r=c?.getBoundingClientRect();return !!document.fullscreenElement&&!!r&&Math.abs((r.left+r.right)/2-innerWidth/2)<2&&Math.abs((r.top+r.bottom)/2-innerHeight/2)<2})()`,
+      'P3-04 全画面でも専用画面を中央へ配置'
+    );
+    await screenshot(session, 'mylist-manager-fullscreen');
+    const fullOutside = (await evaluate(
+      session,
+      `(()=>{const r=document.querySelector('dialog[data-mylist-manager] .fw-mylist-card').getBoundingClientRect();return {x:r.left/2,y:r.top/2}})()`
+    )) as { x: number; y: number };
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mousePressed',
+      button: 'left',
+      clickCount: 1,
+      ...fullOutside,
+    });
+    await session.send('Input.dispatchMouseEvent', {
+      type: 'mouseReleased',
+      button: 'left',
+      clickCount: 1,
+      ...fullOutside,
+    });
+    await check(
+      session,
+      `!!document.fullscreenElement&&!document.querySelector('dialog[data-mylist-manager]')`,
+      'P3-04 全画面のまま背景クリックで専用画面だけを閉じる'
+    );
+    await clickVisible(session, '.fw-backdrop');
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 100, y: 160 });
+    await session.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 110, y: 160 });
+    await Bun.sleep(200);
+    await clickVisible(session, '[data-shell-action="fullscreen"]');
+    await clickVisible(session, '[data-shell-action="details"]');
     await clickVisible(session, '[data-shell-tab="playlist"]');
     const playlistTabRoot = `document.querySelector('#fw-tab-playlist')`;
     await check(
@@ -402,6 +514,12 @@ async function main() {
       session,
       `!!${find('[data-command="deflistAdd"]', playlistTabRoot)}&&!!${find('[data-command="mylistSelect"]', playlistTabRoot)}`,
       'P3-04 プレイリストにとりマイ・マイリスト追加ボタンを表示'
+    );
+    await deepClick(session, '.videoItem[data-watch-id="sm2057168"]', playlistTabRoot, true);
+    await check(
+      session,
+      `(()=>{const row=${find('.videoItem[data-watch-id="sm2057168"]', playlistTabRoot)},a=row?.querySelector('.deflistAdd')?.getBoundingClientRect(),b=row?.querySelector('.mylistSelect')?.getBoundingClientRect();return !!a&&!!b&&a.width>35&&b.width>35&&a.right+2<=b.left&&Math.abs(a.bottom-b.bottom)<2})()`,
+      'P3-04 プレイリストのとり・マイを重ねず揃える'
     );
     await clickVisible(session, '[data-shell-tab="comment"]');
     const commentRoot = `document.querySelector('#fw-tab-comment')`;

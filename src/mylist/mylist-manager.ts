@@ -1,16 +1,23 @@
 import { MylistManagementApi } from '../shared/external-api';
 import type { ManagedMylist, ManagedMylistItem, MylistFields } from '../shared/external-api';
+import { MYLIST_MANAGER_STYLE } from './mylist-manager-style';
 
 const ja = {
-  title: 'マイリスト追加・編集',
+  title: 'マイリスト',
+  target: '追加する動画',
+  destinations: '保存先',
+  listSettings: 'マイリスト設定',
   close: '閉じる',
   refresh: '再取得',
   watchLater: 'とりあえずマイリスト',
   addWatchLater: 'とりマイに追加',
-  create: '新しいマイリストを作成',
+  create: '新しいマイリスト',
+  new: '新規作成',
+  createAction: '作成する',
   name: '名前',
   description: '説明',
   public: '公開',
+  private: '非公開',
   save: '変更を保存',
   remove: 'マイリストを削除',
   add: 'この動画を追加',
@@ -31,15 +38,21 @@ const ja = {
   login: 'ログインしてから再試行してください。',
 };
 const en: typeof ja = {
-  title: 'Add to and edit mylists',
+  title: 'Mylists',
+  target: 'Video to add',
+  destinations: 'Destinations',
+  listSettings: 'Mylist settings',
   close: 'Close',
   refresh: 'Reload',
   watchLater: 'Watch later',
   addWatchLater: 'Add to watch later',
-  create: 'Create a mylist',
+  create: 'New mylist',
+  new: 'Create new',
+  createAction: 'Create',
   name: 'Name',
   description: 'Description',
   public: 'Public',
+  private: 'Private',
   save: 'Save changes',
   remove: 'Delete mylist',
   add: 'Add this video',
@@ -81,39 +94,35 @@ export async function openMylistManager(watchId: string): Promise<void> {
   dialog.className = 'futatsume-family fw-mylist-manager';
   dialog.dataset.mylistManager = watchId;
   dialog.setAttribute('aria-label', text.title);
-  dialog.innerHTML = `<style>
-    .fw-mylist-manager{box-sizing:border-box;width:min(820px,calc(100vw - 20px));max-height:calc(100dvh - 20px);overflow:auto;background:#192230;color:#edf2f9;border:1px solid #596b83;border-radius:12px;padding:18px;font:15px sans-serif;}
-    .fw-mylist-manager::backdrop{background:#000a;}
-    .fw-mylist-manager h2{font-size:20px;margin:0 0 8px;}
-    .fw-mylist-manager h3{font-size:17px;margin:16px 0 8px;}
-    .fw-mylist-manager button,.fw-mylist-manager input,.fw-mylist-manager textarea{font:inherit;}
-    .fw-mylist-manager button{padding:7px 10px;margin:3px;border:1px solid #718098;border-radius:5px;background:#293b55;color:inherit;cursor:pointer;}
-    .fw-mylist-manager button:hover{background:#385777;}
-    .fw-mylist-manager button:disabled{opacity:.55;cursor:wait;}
-    .fw-mylist-manager label{display:grid;gap:4px;margin:8px 0;}
-    .fw-mylist-manager label:has([type=checkbox]){display:flex;align-items:center;}
-    .fw-mylist-manager input[type=text],.fw-mylist-manager textarea{box-sizing:border-box;width:100%;padding:7px;border:1px solid #718098;border-radius:5px;background:#101925;color:inherit;}
-    .fw-mylist-manager textarea{min-height:64px;resize:vertical;}
-    .fw-mylist-manager [data-layout]{display:grid;grid-template-columns:minmax(160px,210px) minmax(0,1fr);gap:16px;}
-    .fw-mylist-manager [data-lists]{display:grid;align-content:start;gap:4px;max-height:65dvh;overflow:auto;}
-    .fw-mylist-manager [data-lists] button{text-align:left;overflow-wrap:anywhere;}
-    .fw-mylist-manager [data-lists] button[aria-current=true]{background:#42677d;}
-    .fw-mylist-manager [data-items]{display:grid;gap:8px;max-height:32dvh;overflow:auto;}
-    .fw-mylist-manager [data-item]{border:1px solid #596b83;border-radius:7px;padding:8px;overflow-wrap:anywhere;}
-    .fw-mylist-manager [role=status]{min-height:1.5em;white-space:pre-wrap;overflow-wrap:anywhere;}
-    @media(max-width:560px){.fw-mylist-manager [data-layout]{grid-template-columns:1fr;}.fw-mylist-manager [data-lists]{max-height:18dvh;}}
-  </style>
-  <h2></h2><div data-watch-id></div><p role="status" aria-live="polite"></p>
-  <button type="button" data-refresh></button><button type="button" data-add-watch-later></button><button type="button" data-close></button>
-  <div data-layout><nav data-lists aria-label="Mylists"></nav><main data-detail></main></div>`;
+  dialog.innerHTML = `<style>${MYLIST_MANAGER_STYLE}</style>
+    <article class="fw-mylist-card">
+      <header class="fw-mylist-header">
+        <div><h2></h2><p class="fw-mylist-target" data-watch-id></p></div>
+        <button type="button" class="fw-mylist-icon-button" data-close>×</button>
+      </header>
+      <p role="status" aria-live="polite"></p>
+      <div data-layout>
+        <aside class="fw-mylist-sidebar">
+          <div class="fw-mylist-sidebar-header"><span data-destinations></span>
+            <button type="button" class="fw-mylist-icon-button" data-refresh>↻</button></div>
+          <nav data-lists></nav>
+          <button type="button" data-create-mylist></button>
+        </aside>
+        <main data-detail></main>
+      </div>
+    </article>`;
   const find = <T extends Element>(selector: string): T => dialog.querySelector<T>(selector)!;
   find('h2').textContent = text.title;
-  find('[data-watch-id]').textContent = watchId;
-  find('[data-refresh]').textContent = text.refresh;
-  find('[data-add-watch-later]').textContent = text.addWatchLater;
-  find('[data-close]').textContent = text.close;
+  find('[data-watch-id]').textContent = `${text.target}: ${watchId}`;
+  find('[data-destinations]').textContent = text.destinations;
+  find('[data-refresh]').setAttribute('aria-label', text.refresh);
+  find('[data-refresh]').setAttribute('title', text.refresh);
+  find('[data-close]').setAttribute('aria-label', text.close);
+  find('[data-close]').setAttribute('title', text.close);
+  find('[data-create-mylist]').textContent = `＋ ${text.new}`;
   const status = find<HTMLElement>('[role=status]');
   const listsView = find<HTMLElement>('[data-lists]');
+  listsView.setAttribute('aria-label', text.destinations);
   const detail = find<HTMLElement>('[data-detail]');
   let lists: ManagedMylist[] = [];
   let selected = '';
@@ -163,10 +172,11 @@ export async function openMylistManager(watchId: string): Promise<void> {
     message(text.loading);
     lists = await MylistManagementApi.list();
     if (!alive()) return;
-    selected = next && lists.some((item) => item.id === next) ? next : '';
+    selected =
+      next === 'watch-later' || lists.some((item) => item.id === next) ? next : (lists[0]?.id ?? 'watch-later');
     renderLists();
-    await renderDetail();
     message(lists.length ? '' : text.noLists);
+    await renderDetail();
   };
   const renderLists = (): void => {
     listsView.replaceChildren();
@@ -188,16 +198,11 @@ export async function openMylistManager(watchId: string): Promise<void> {
       entry.setAttribute('aria-current', String(selected === list.id));
       listsView.append(entry);
     }
-    const createButton = button(text.create, () => {
-      selected = '';
-      renderLists();
-      void renderDetail();
-    });
-    createButton.dataset.createMylist = '';
-    listsView.append(createButton);
+    find('[data-create-mylist]').setAttribute('aria-current', String(selected === ''));
   };
   const renderItems = (items: ManagedMylistItem[], listId: string): void => {
-    const heading = document.createElement('h3');
+    const heading = document.createElement('h4');
+    heading.className = 'fw-mylist-section-heading';
     heading.textContent = text.items;
     detail.append(heading);
     const view = document.createElement('div');
@@ -254,10 +259,30 @@ export async function openMylistManager(watchId: string): Promise<void> {
   const renderDetail = async (): Promise<void> => {
     detail.replaceChildren();
     const list = lists.find((entry) => entry.id === selected);
+    const headingRow = document.createElement('div');
+    headingRow.className = 'fw-mylist-detail-head';
+    const headingLabel = document.createElement('div');
+    const eyebrow = document.createElement('small');
+    eyebrow.textContent = list ? (list.isPublic ? text.public : text.private) : text.destinations;
+    const heading = document.createElement('h3');
+    heading.textContent = selected === 'watch-later' ? text.watchLater : (list?.name ?? text.create);
+    headingLabel.append(eyebrow, heading);
+    headingRow.append(headingLabel);
+    detail.append(headingRow);
     if (selected === 'watch-later') {
-      const heading = document.createElement('h3');
-      heading.textContent = text.watchLater;
-      detail.append(heading);
+      const addWatchLater = button(
+        text.addWatchLater,
+        () =>
+          void perform(async () => {
+            const result = await MylistManagementApi.addWatchLater(watchId, '');
+            if (alive()) {
+              message(result === 200 ? text.existing : text.added);
+              await renderDetail();
+            }
+          })
+      );
+      addWatchLater.dataset.addWatchLater = '';
+      headingRow.append(addWatchLater);
       try {
         const items = await MylistManagementApi.watchLaterItems();
         if (alive() && selected === 'watch-later') renderItems(items, 'watch-later');
@@ -266,9 +291,25 @@ export async function openMylistManager(watchId: string): Promise<void> {
       }
       return;
     }
-    const heading = document.createElement('h3');
-    heading.textContent = list?.name ?? text.create;
-    detail.append(heading);
+    if (list) {
+      const addButton = button(
+        text.add,
+        () =>
+          void perform(async () => {
+            const result = await MylistManagementApi.addItem(list.id, watchId, '');
+            if (alive()) {
+              message(result === 200 ? text.existing : text.added);
+              await renderDetail();
+            }
+          })
+      );
+      addButton.dataset.mylistAction = 'add';
+      headingRow.append(addButton);
+    }
+    const sectionHeading = document.createElement('h4');
+    sectionHeading.className = 'fw-mylist-section-heading';
+    sectionHeading.textContent = text.listSettings;
+    detail.append(sectionHeading);
     const name = field(text.name, list?.name ?? '', 'name');
     const description = field(text.description, list?.description ?? '', 'description', true);
     const publicLabel = document.createElement('label');
@@ -286,9 +327,11 @@ export async function openMylistManager(watchId: string): Promise<void> {
       defaultSortKey: list?.defaultSortKey ?? 'addedAt',
       defaultSortOrder: list?.defaultSortOrder ?? 'desc',
     });
-    detail.append(
+    const formActions = document.createElement('div');
+    formActions.className = 'fw-mylist-form-actions';
+    formActions.append(
       button(
-        list ? text.save : text.create,
+        list ? text.save : text.createAction,
         () =>
           void perform(async () => {
             const updated = list
@@ -301,9 +344,18 @@ export async function openMylistManager(watchId: string): Promise<void> {
           })
       )
     );
-    detail.lastElementChild?.setAttribute('data-mylist-action', list ? 'save' : 'create');
+    formActions.lastElementChild?.setAttribute('data-mylist-action', list ? 'save' : 'create');
+    detail.append(formActions);
     if (!list) return;
-    detail.append(
+    try {
+      const items = await MylistManagementApi.items(list.id);
+      if (alive() && selected === list.id) renderItems(items, list.id);
+    } catch (error) {
+      if (alive()) message(error instanceof Error ? error.message : text.login, true);
+    }
+    const danger = document.createElement('div');
+    danger.className = 'fw-mylist-danger';
+    danger.append(
       button(
         text.remove,
         () =>
@@ -317,41 +369,48 @@ export async function openMylistManager(watchId: string): Promise<void> {
           })
       )
     );
-    detail.lastElementChild?.setAttribute('data-mylist-action', 'remove');
-    detail.append(
-      button(
-        text.add,
-        () =>
-          void perform(async () => {
-            const result = await MylistManagementApi.addItem(list.id, watchId, '');
-            if (alive()) {
-              message(result === 200 ? text.existing : text.added);
-              await renderDetail();
-            }
-          })
-      )
-    );
-    detail.lastElementChild?.setAttribute('data-mylist-action', 'add');
-    try {
-      const items = await MylistManagementApi.items(list.id);
-      if (alive() && selected === list.id) renderItems(items, list.id);
-    } catch (error) {
-      if (alive()) message(error instanceof Error ? error.message : text.login, true);
-    }
+    danger.lastElementChild?.setAttribute('data-mylist-action', 'remove');
+    detail.append(danger);
   };
   find('[data-refresh]').addEventListener('click', () => void perform(() => loadLists()));
-  find('[data-add-watch-later]').addEventListener(
-    'click',
-    () =>
-      void perform(async () => {
-        const result = await MylistManagementApi.addWatchLater(watchId, '');
-        if (alive()) {
-          message(result === 200 ? text.existing : text.added);
-          if (selected === 'watch-later') await renderDetail();
-        }
-      })
-  );
+  find('[data-create-mylist]').addEventListener('click', () => {
+    selected = '';
+    renderLists();
+    void renderDetail();
+  });
   find('[data-close]').addEventListener('click', closeMylistManager);
+  let outsidePress = false;
+  let outsideRelease = false;
+  dialog.addEventListener(
+    'pointerdown',
+    (event) => {
+      outsidePress = event.target === dialog;
+      outsideRelease = false;
+    },
+    true
+  );
+  dialog.addEventListener(
+    'pointerup',
+    (event) => {
+      outsideRelease = event.target === dialog;
+    },
+    true
+  );
+  dialog.addEventListener('pointercancel', () => {
+    outsidePress = false;
+    outsideRelease = false;
+  });
+  dialog.addEventListener('click', (event) => {
+    event.stopPropagation();
+    if (event.target === dialog && outsidePress && outsideRelease) closeMylistManager();
+    outsidePress = false;
+    outsideRelease = false;
+  });
+  dialog.addEventListener('keydown', (event) => event.stopPropagation());
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeMylistManager();
+  });
   dialog.addEventListener('close', () => {
     if (active === dialog) closeMylistManager();
   });
