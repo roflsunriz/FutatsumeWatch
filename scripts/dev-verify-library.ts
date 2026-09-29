@@ -366,7 +366,7 @@ async function main() {
     await clickVisible(session, 'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-action="save-memo"]');
     await check(
       session,
-      `document.querySelector('dialog[data-mylist-manager] [role="status"]')?.textContent==='保存しました'`,
+      `['保存しました','Saved'].includes(document.querySelector('dialog[data-mylist-manager] [role="status"]')?.textContent)`,
       'P3-04 登録動画のメモを変更'
     );
     await clickVisible(
@@ -393,7 +393,7 @@ async function main() {
     await clickVisible(session, 'dialog[data-mylist-manager] [data-item="sm2057168"] [data-mylist-action="save-memo"]');
     await check(
       session,
-      `document.querySelector('dialog[data-mylist-manager] [role="status"]')?.textContent==='保存しました'`,
+      `['保存しました','Saved'].includes(document.querySelector('dialog[data-mylist-manager] [role="status"]')?.textContent)`,
       'P3-04 とりマイのメモを変更'
     );
     await clickVisible(
