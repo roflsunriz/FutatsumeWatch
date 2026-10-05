@@ -1,17 +1,17 @@
 # FutatsumeWatch
 
-ZenzaWatch 後継ユーザースクリプト。どこからでも動画をその場で再生。
+ZenzaWatch 後継ユーザースクリプト。動画リンクがある場所から、その場で動画を再生。
 
 ## インストール
 
-**Version 0.0.26**
+Version 0.0.26
 
-**[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)**
+[FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)
 
 ## 使い方
 
 1. Tampermonkey ([Chrome](https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=ja)) ([Firefox](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/)) / Violentmonkey ([Chrome](https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag)) ([Firefox](https://addons.mozilla.org/ja/firefox/addon/violentmonkey/)) / Greasemonkey ([Firefox](https://addons.mozilla.org/ja/firefox/addon/greasemonkey/)) をブラウザにインストールする
-2. 上記リンクを開くとユーザースクリプトマネージャが自動でユーザースクリプトをインストールする
+2. 上記リンクを開き、ユーザースクリプトマネージャの案内に従ってインストールする
 3. ニコニコ動画・Nアニメ等の動画リンクや、ニコ百の埋め込みサムネイルに現れる起動ボタンをクリックし、再生
 4. スクリプトマネージャでFutatsumeWatchを選択し、随時更新を手動チェック (自動チェックも可能)
 
@@ -27,9 +27,9 @@ ZenzaWatch 後継ユーザースクリプト。どこからでも動画をその
 
 ## 特徴
 
-- TypeScript製なので、論理エラー以外の実行時エラーは基本的にない。
+- TypeScriptの型検査で、型の不整合を確認。実行時の動作は単体・結合・ブラウザテストで検証。
 - 豊富な結合テスト・単体テストで検証済み。
-- 主要機能を手動テスト済み。（全部とは言っていない）
+- 主要機能は手動テスト済み。全機能の確認を保証するものではなく、確認範囲は [検証記録](verification.md) を参照。
 - 現代的なユーザーインターフェース。モバイル環境でも利用可能。
 - comment-overlayエンジンによる高いコメントアート互換性。
 
@@ -77,7 +77,7 @@ bun run test:browser player --live # 実サイトの読み取り・再生検証�
 
 ## ライセンス
 
-MIT LICENSE
+[MIT License](LICENSE)
 
 ## 依存更新の自動処理
 
