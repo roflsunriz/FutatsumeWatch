@@ -1,9 +1,13 @@
-title: 質問と回答
+title: '[質問] '
 body:
   - type: markdown
     attributes:
-      value: |
-        使い方の質問はこちらへ。Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+      value: |-
+        FutatsumeWatchに関する内容を、目的と確認できた事実に分けて記載してください。
+        Cookie、認証トークン、パスワード、個人情報を本文や添付に含めないでください。署名付き配信URLと証明書秘密鍵も伏せてください。
+  - type: markdown
+    attributes:
+      value: 使い方の質問はこちらへ。Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
   - type: input
     id: version
     attributes:
@@ -14,7 +18,35 @@ body:
   - type: textarea
     id: question
     attributes:
-      label: 質問内容
+      label: 質問
       description: 試した手順と困っている点を書く
     validations:
       required: true
+  - type: textarea
+    id: environment-common
+    attributes:
+      label: 対象と環境
+      description: 使用中の版、OS、関連ツール、機器や接続方法を秘密情報を除いて記載してください。
+    validations:
+      required: false
+  - type: textarea
+    id: attempted-common
+    attributes:
+      label: 試したことと結果
+      description: 試した手順、期待した結果、実際の結果を記載してください。
+    validations:
+      required: false
+  - type: textarea
+    id: additional-common
+    attributes:
+      label: 補足
+      description: 関連資料と、確認できなかった条件を記載してください。
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 公開情報の確認
+      options:
+        - label: 本文と添付に秘密情報や個人情報が含まれていないことを確認しました。
+          required: true

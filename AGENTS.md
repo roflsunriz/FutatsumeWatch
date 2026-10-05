@@ -127,7 +127,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 - CDPヘルパーはプロトコルエラーと評価中例外を失敗にし、15秒でタイムアウトする。Worker例外も収集する。結果・画像はdev-assets/verificationに保存し、認証情報や署名URLをGitへ含めない。
 - 実ページはNicoCache系プロキシ経由で他の拡張コードが混在する場合がある。広告等の既知の第三者通信失敗と製品例外を分ける。動画・コメントは製品の状態とDOMから判定する。
 - 認証操作（公開API実測で401）、Firefox/Violentmonkey/Greasemonkey、現行マイリストページの構造への追従は未検証としてverification.mdで追跡する。
-- LICENSEファイルは未整備で、引き継いだソースのライセンス表記の確認が必要。利用者の判断なしに一律のLICENSEを作成しない。
+- ルートの `LICENSE` はMITライセンスで整備済み。引き継いだソースと同梱依存関係のライセンス・クレジット表記も保持し、利用者の判断なしに既存の `LICENSE` を一律に作り直さない。
 
 ## 記録再生フィクスチャ
 
@@ -262,6 +262,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## GitHub Actionsのラベル設定
 
+- `.github/ISSUE_TEMPLATE/config.yml` は受付選択画面の設定専用であり、Issueフォーム本文を置くと設定相談の受付として使えない。設定相談フォームは `configuration.yml` に置く。フォームの見出しを変更するときは `.github/workflows/` の本文解析を確認し、`OS`・`対象領域` など解析キーとして使う見出しを保全する。
 - `actions/labeler`の設定は現行の`.github/labeler.yml`と`.github/workflows/labeler.yml`を一緒に確認する。v5以降は各ラベルの条件を`changed-files`などの設定オブジェクトで記述するため、ラベル直下にファイルglob文字列だけを並べる旧形式は実行時エラーになる。バージョン更新後はLabelワークフローの実行結果まで確認する。
 - migration検証では、`MylistPocket.isReady`後に始まる保存済みプレイリストの動画情報要求について`Network.loadingFinished`まで待ってからCDPセッションを閉じる。低速runnerでは初期化完了と非同期取得完了の間に遅延があるため、修正時は通信捕捉レポートも確認する（2026-09-28、`scripts/dev-verify-migration.ts`・`verification.md`）。
 - library検証の最後は、動画ID `sm100` を再生した状態で終了せず、詳細パネルのロックを解除し、開いたままの詳細パネルは背景操作で閉じ、プレイヤーを閉じてHLS要求を停止してからCDPセッションを監査・閉じる。遅れて始まるplaylist再取得は通信レポートで確認する（2026-09-28、`scripts/dev-verify-library.ts`・`verification.md`）。
