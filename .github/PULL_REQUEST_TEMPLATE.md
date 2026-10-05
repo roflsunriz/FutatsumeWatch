@@ -32,7 +32,6 @@
 - [ ] verification.md
 - [ ] CHANGELOG.md（`## [Unreleased]` へ意図ベースで追記）
 
-
 ## 関連Issue
 
 <!-- 該当するIssueへのリンクを記載してください。 -->

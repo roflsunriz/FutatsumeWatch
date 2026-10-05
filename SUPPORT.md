@@ -4,7 +4,6 @@
 
 Cookie、認証トークン、署名付き配信URL、個人情報を貼らないでください。他のユーザースクリプトやNicoCache等との併用条件も、秘密情報を除いて知らせてください。
 
-
 ## 受付窓口
 
 - 不具合、機能提案、文書や設定の相談: [Issueの受付](https://github.com/roflsunriz/FutatsumeWatch/issues/new/choose)
