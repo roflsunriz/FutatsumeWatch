@@ -1,5 +1,12 @@
 # 検証記録
 
+## 2026-10-11：Dependabot PRの統合と0.0.27検証
+
+- OpenだったDependabot PR #5〜#9のheadコミットをmainへ取り込み、重なった`package.json`と`bun.lock`の競合を解消した。Vite、globals、typescript-eslint、jsdom、ESLintの更新を保持し、さらに利用可能な`@types/lodash`、Prettier、Viteの更新を適用した。TypeScript 7.0.2はtypescript-eslint 8.71.1のpeer範囲`<6.1.0`から外れるため、6.0.3を維持した。
+- PRで共通して失敗していた`check`は、間接依存`source-map-js@1.2.1`に対する`GHSA-68fv-2mgg-jv7q`の検出が原因だった。`bun audit fix`で1.2.2へ更新し、`bun audit`は242パッケージ・脆弱性0件となった。Windowsの`browser`初回失敗は登録済みサムネイル画像の`ERR_ABORTED`を未捕捉通信と誤認したもので、登録済み画像だけを許容し、未知URLは失敗する単体テストを追加した。
+- ローカルの初回全ブラウザー検証では、プレイリストメニューを連続操作した際に非同期の閉鎖処理と次の実クリックが競合した。前メニューの終了を確認する検証へ修正後、library単独と`bun run test:browser all --offline`の全9スイート・925チェックが成功した。証跡は`dev-assets/verification/2026-10-11T08-05-50-940Z-offline-7a1f59bf/run.json`。配布物SHA-256は`17866d3690adfdcd88d9edd8092937cb1650d6278b4c680dd14b7c7f878371d2`。実サイトへの通信・公開書込みは実施していない。
+- `bun install --frozen-lockfile`、lint、format、type-check、build、単体411件が成功した。0.0.27の配布物と`package.json`・`src/app/version.ts`・README・CHANGELOGの版を一致させた。
+
 ## 2026-09-29：0.0.26公開前検証
 
 - `src/app/version.ts`・`package.json`・READMEを0.0.26へ揃え、ユーザースクリプトの説明へタグ編集、マイリスト管理、シークバー内コメントプレビューを反映した。`bun run build`で配布物1件の`@version 0.0.26`と説明を確認した。CHANGELOGの0.0.26節はリリースワークフローの抽出形式で存在を確認した。

@@ -38,6 +38,8 @@
 
 ## オフライン検証の終了と設定効果（2026-09-20）
 
+- 2026-10-11のWindows CIでは、登録済みの`tn.smilevideo.jp`サムネイル画像が画面終了で`net::ERR_ABORTED`となり、Fetchより前に中断されて未捕捉通信へ誤分類された。`dev-offline.ts`は`offline-site.ts`の登録済み画像との完全一致に限ってこの中断を許容し、未知URLの中断は失敗のままにする。回帰は`offline-site.test.ts`。
+- 2026-10-11のlibrary検証では、プレイリストの並び替え後に非同期`hideHover`と次のメニュー操作が競合し、開いた直後のメニューが閉じる場合があった。`dev-verify-library.ts`と`dev-verify-library-files.ts`では前操作のメニュー終了を確認してから次を実クリックする。製品側の`playlist-view.ts`は`emitAsync('hideHover')`で閉じる。
 - オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。
 - 動画情報パネルへ届くイベント名は`canPlay`。小文字の`canplay`では関連取得と説明欄の自動YouTube切替が接続されない。自動切替の遅延は、設定OFF・新動画・hideで古い応答を無効化する。`settings-video-events.test.ts`は実Emitterからの接続も確認する。提供者取得機能は0.0.15で削除した。
 - Storyboardは`media.domand.isStoryboardAvailable`の会員別値をtrueへ正規化し、設定ONなら`access-rights/storyboard`を実際に要求して資産可否を判定する。UIからプレミアム表記を外し、OFF・動画切替・遅延応答の世代判定を維持する。オフライン環境はStoryboard access-rights・JSON・画像を登録する。

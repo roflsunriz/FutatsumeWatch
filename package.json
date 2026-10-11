@@ -1,7 +1,7 @@
 {
   "name": "FutatsumeWatch",
   "description": "niconico HTML5 Player",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "private": true,
   "author": "roflsunriz",
   "bugs": {
@@ -19,15 +19,15 @@
     "@types/bun": "^1.4.2",
     "@types/jquery": "4.0.1",
     "@types/jsdom": "^30.0.0",
-    "@types/lodash": "^4.17.25",
+    "@types/lodash": "^4.17.26",
     "eslint": "10.12.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "jsdom": "30.1.2",
-    "prettier": "3.9.9",
+    "prettier": "3.9.10",
     "typescript": "6.0.3",
     "typescript-eslint": "8.71.1",
-    "vite": "8.3.3",
+    "vite": "8.3.4",
     "vite-plugin-monkey": "8.1.1"
   },
   "homepage": "https://github.com/roflsunriz/FutatsumeWatch",
