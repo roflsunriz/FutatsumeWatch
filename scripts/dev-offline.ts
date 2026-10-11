@@ -1,6 +1,6 @@
 import { attachBrowser } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
-import { createOfflineSite } from './offline-site';
+import { createOfflineSite, isOfflineFixtureImage } from './offline-site';
 import type { FixtureRequest } from './offline-site';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -257,7 +257,11 @@ export async function installOffline(session: CdpSession, targetId?: string): Pr
         }
       }
       for (const request of observed.values()) {
-        if (!request.intercepted)
+        // 描画終了で取り消された登録済み画像はFetchへ到達しないことがある。
+        if (
+          !request.intercepted &&
+          !(request.failure === 'net::ERR_ABORTED' && isOfflineFixtureImage(request.method, request.url))
+        )
           errors.push(`未捕捉通信: ${request.method} ${request.url}${request.failure ? ` (${request.failure})` : ''}`);
       }
       const result = {

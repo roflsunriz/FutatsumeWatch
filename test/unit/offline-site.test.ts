@@ -453,6 +453,24 @@ describe('Phase0 非同期通信監査と終了処理', () => {
     expect(report.errors).toHaveLength(1);
   });
 
+  test('終了時に中断された登録済み画像だけを許容し、未知の中断通信は失敗にする', async () => {
+    const session = new FakeSession();
+    await installOffline(session);
+    const image = 'https://tn.smilevideo.jp/smile?i=9.';
+    session.emit('Network.requestWillBeSent', { requestId: 'image', request: request(image) });
+    session.emit('Network.loadingFailed', { requestId: 'image', errorText: 'net::ERR_ABORTED' });
+    expect(await closeError(session)).toBe('');
+
+    const unknown = new FakeSession();
+    await installOffline(unknown);
+    unknown.emit('Network.requestWillBeSent', {
+      requestId: 'unknown',
+      request: request('https://fixture.invalid/unknown-image'),
+    });
+    unknown.emit('Network.loadingFailed', { requestId: 'unknown', errorText: 'net::ERR_ABORTED' });
+    expect(await closeError(unknown)).toContain('未捕捉通信');
+  });
+
   test('購読開始中に終了したWorkerのセッション消滅だけは監査失敗にしない', async () => {
     const session = new FakeSession();
     await installOffline(session);

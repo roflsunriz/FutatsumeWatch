@@ -73,6 +73,7 @@ const images = new Set([
   'https://nicovideo.cdn.nimg.jp/web/img/series/no_thumbnail.png',
   'https://nicovideo.cdn.nimg.jp/web/images/bundle/nicovideo/components/Thumbnail/Thumbnail-placeholder.jpg',
 ]);
+export const isOfflineFixtureImage = (method: string, url: string): boolean => method === 'GET' && images.has(url);
 export function createOfflineSite() {
   const library = createLibraryRoutes();
   // 追加機能の固定文書も同じ通信監査を通す。URL単位で明示登録する。
@@ -644,7 +645,7 @@ export function createOfflineSite() {
         stored.push({ ...value, isMyPost: true });
         return json({ meta: { status: 200 }, data: { id: value.id, no: value.no } });
       }
-      if (method === 'GET' && images.has(url.href)) return { status: 200, mime: 'image/svg+xml', body: poster };
+      if (isOfflineFixtureImage(method, url.href)) return { status: 200, mime: 'image/svg+xml', body: poster };
       return null;
     },
   };
