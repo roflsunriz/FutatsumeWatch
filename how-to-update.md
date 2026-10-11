@@ -34,6 +34,8 @@ UIだけを確認する場合は`bun run test:browser ui`を実行します。�
 
 説明文の動画リンクを変更した場合も同じlibraryスイートを実行します。動画ID・タイトル付きリンクから取得した詳細表示、元リンクとカードからの再生、時刻指定、プレイリスト追加、およびシリーズ前後動画を確認します。`library-description-1280.png`と`library-description-390.png`で表示を確認してください。配布物の更新は`bun run build`で生成します。
 
+視聴ページの応答形式・HLS接続を変更した場合は`bun run test:browser functionality --offline`でwatchV4の各応答形式・外部ページ・画質切替・不正URLからの復帰を確認し、全体検証も実行します。確認した契約と実サイトで未検証の範囲は[watchV4互換対応](docs/watch-v4-compatibility.md)を参照してください。
+
 通常検証はチェックイン済みの生成映像を使用します。映像の変更時だけ[フィクスチャの再生成手順](test/fixtures/functionality/README.md)に従い、実HLS再生と画質切替を再確認してください。Chromeの初回準備に必要なダウンロードと、オフラインケース実行中の外部通信禁止は区別します。CIは従来のUbuntu品質検査に加え、Windowsでオフラインブラウザ検証を行い、失敗時も結果を保存します。
 
 Firefoxの代表確認は、ビルド後に`bun scripts/dev-verify-firefox.ts`を実行します。WindowsのProgram Files配下のFirefoxと9340番ポートを使用し、実行ごとに`dev-assets/firefox-verification/<実行ID>/profile`を作ります。ポートの使用中は失敗し、実プロファイルを変更しません。起動PIDだけでなく、実ブラウザのPID・起動時刻・実行ファイル・プロファイルを照合して終了します。結果と画像は同じ実行ディレクトリへ保存します。今回の通常サンドボックスではFirefoxのタブ子プロセスが起動できず、同じ専用構成での昇格実行が必要でした。

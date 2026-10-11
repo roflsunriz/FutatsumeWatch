@@ -645,6 +645,7 @@ class NicoVideoPlayerDialog extends Emitter {
         videoSession.close();
         return;
       }
+      this._nicoVideoPlayer?.setHlsQuality(sessionInfo.video?.height ?? 0, sessionInfo.video?.maxHeight ?? 0);
       this.setVideo(sessionInfo.url);
       videoInfo.setCurrentVideo(sessionInfo.url);
       this.emit('videoQuality', sessionInfo, videoInfo);

@@ -1,24 +1,8 @@
 /* eslint-disable @typescript-eslint/only-throw-error, @typescript-eslint/prefer-promise-reject-errors --
   動画情報ローダーの既存契約としてプレーンオブジェクトでthrow/rejectする（呼び出し側がreason/watchId/infoで分岐する）。
   Error化すると呼び出し側の分岐が壊れるため、ランタイム同一を優先して維持する。 */
-import { netUtil } from '../infra/net-util';
 import { CacheStorage } from '../infra/cache-storage';
-
-interface NetFetchInit {
-  method?: string;
-  headers?: Record<string, string | number>;
-  credentials?: string;
-  body?: string;
-  mode?: string;
-  timeout?: number;
-  signal?: AbortSignal | null;
-  [key: string]: unknown;
-}
-
-interface NetUtilLike {
-  fetch: (url: string | URL, init?: NetFetchInit) => Promise<Response>;
-  jsonp: (url: string) => Promise<unknown>;
-}
+import { isWatchRecord, loadWatchPageData, normalizeWatchV4Media, WatchPageNetworkError } from './watch-response';
 
 interface CacheStorageLike {
   getItem: (key: string) => unknown;
@@ -87,10 +71,6 @@ interface WatchApiData {
   viewer?: { id?: number; isPremium?: boolean } | null;
 }
 
-interface WatchApiResponse {
-  data: { response: WatchApiData };
-}
-
 interface WatchLoadOptions {
   economy?: boolean;
 }
@@ -108,8 +88,9 @@ const { emitter, debug } = global;
 const VideoInfoLoader = (function () {
   const cacheStorage: CacheStorageLike = new CacheStorage(sessionStorage);
 
-  const parseWatchApiData = function (json: WatchApiResponse) {
-    const _data = json.data.response;
+  const parseWatchApiData = function (record: Record<string, unknown>) {
+    if (!isWatchRecord(record.video) || !isWatchRecord(record.media)) throw new Error('動画情報の応答が不完全です');
+    const _data = record as unknown as WatchApiData;
     const {
       // ads,
       // category,
@@ -211,7 +192,12 @@ const VideoInfoLoader = (function () {
 
     // 公式レスポンスの会員別フラグだけを上書きし、実際の資産可否は
     // access-rights/storyboard の応答で判定する。
-    const domandInfo = rawDomandInfo ? { ...rawDomandInfo, isStoryboardAvailable: true } : rawDomandInfo;
+    const watchV4Media = normalizeWatchV4Media(record.media);
+    const domandInfo = watchV4Media
+      ? { ...rawDomandInfo, ...watchV4Media, isStoryboardAvailable: Boolean(rawDomandInfo?.accessRightKey) }
+      : rawDomandInfo
+        ? { ...rawDomandInfo, isStoryboardAvailable: true }
+        : rawDomandInfo;
 
     const csrfToken = null;
     const watchAuthKey = null;
@@ -253,7 +239,11 @@ const VideoInfoLoader = (function () {
     };
 
     const isDomand = domandInfo != null;
-    const isPlayable = isDomand;
+    const isPlayable =
+      isDomand &&
+      (!watchV4Media ||
+        (watchV4Media.videos.some((video) => video.isAvailable) &&
+          watchV4Media.audios.some((audio) => audio.isAvailable)));
 
     cacheStorage.setItem('csrfToken', csrfToken, 30 * 60 * 1000);
 
@@ -387,7 +377,12 @@ const VideoInfoLoader = (function () {
     return result;
   };
 
-  const onLoadPromise = (watchId: string, options: WatchLoadOptions, isRetry: boolean, resp: WatchApiResponse) => {
+  const onLoadPromise = (
+    watchId: string,
+    options: WatchLoadOptions,
+    isRetry: boolean,
+    resp: Record<string, unknown>
+  ) => {
     const data = parseWatchApiData(resp);
     debug.watchApiData = data;
     if (!data) {
@@ -457,11 +452,12 @@ const VideoInfoLoader = (function () {
       url += '?' + query.join('&');
     }
 
-    return (netUtil as unknown as NetUtilLike)
-      .fetch(url, { credentials: 'include' })
-      .then((res: Response) => res.json())
-      .catch(() => Promise.reject({ reason: 'network', message: '通信エラー(network)' }))
-      .then((resp: WatchApiResponse) => onLoadPromise(watchId, options, isRetry, resp))
+    return loadWatchPageData(watchId, options.economy)
+      .catch((error: unknown) => {
+        if (error instanceof WatchPageNetworkError) throw { reason: 'network', message: '通信エラー(network)' };
+        throw error;
+      })
+      .then((resp) => onLoadPromise(watchId, options, isRetry, resp))
       .catch((err: LoadError) => {
         window.console.error('err', { err, isRetry, url, query });
         if (isRetry) {

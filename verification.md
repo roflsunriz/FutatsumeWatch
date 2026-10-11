@@ -1,5 +1,14 @@
 # 検証記録
 
+## 2026-10-11：watchV4互換対応と0.0.29
+
+- NicoCache_nlの`8f1954f`にあるwatchV4対応と、その単体テスト・検証記録を参照した。包み付きJSON・直接data・HTMLを共通化し、mediaだけの応答では同じ動画の初期HTMLを1回だけ取得する。全品質グループの可用性を統合し、初期HLSをWorker・画質選択へ接続した。視聴ページ判定とタグ編集キー更新も共通読取りへ変更した。仕様・制約は[watchV4互換対応](docs/watch-v4-compatibility.md)。
+- 公開sm9の匿名HTML GETを1回だけ実施した結果は従来の`media.domand`形式だった。記録はフィールド名と型だけに限定し、本文・Cookie・署名URLを保存していない。watchV4の今回の実サイト再生・書込みは実施せず、上流の確認済み構造と生成映像による検証と区別する。
+- 修正前の新規単体ケースは、v4の包み・直接dataの未展開とHTMLのJSON読取りで失敗した。修正後は品質グループ・外側のメタデータ保持・HTTP拒否・不透明なHLS値・タグ編集キー更新・画質選択を確認した。利用可能な画質のない有料動画の案内も維持する。単体425件、lint・format・type-check・buildが成功した。
+- 最初の全体検証では、新規の外部ページ用ケースが既存ブリッジの`https://www.nicovideo.jp/robots.txt`を登録しておらず通信監査で失敗した（`2026-10-11T10-05-35-254Z-offline-923eeb5c/run.json`）。登録はこのURLだけに限定した。次の実行では外部ページの入口を視聴ページ用の属性で探して失敗した（`2026-10-11T10-14-07-645Z-offline-f174ee3b/run.json`）。既存entryスイートと同じ`data-futatsume-video`を実クリックするよう検証を直した。通信遮断やヒットテストは弱めていない。
+- 通常実行の専用ChromeがDevTools起動前に停止した実行もあったため、同じ9334ポート・専用headlessプロファイル・オフライン遮断の昇格実行で確認した。functionality単独は137チェック成功し、証跡は`dev-assets/verification/2026-10-11T10-20-59-342Z-offline-bacb4358/run.json`。包み付きJSON・直接JSON・HTML・mediaのみ・外部ページの5ケースで、実映像・コメントCanvas画素、画質変更時の停止／位置保持、旧アクセス権APIの不在、不正HLS値の拒否と再取得後の復帰を確認した。
+- 最終0.0.29の`bun run test:browser all --offline`は全9スイート・982チェック成功した。証跡は`dev-assets/verification/2026-10-11T10-23-33-505Z-offline-53981070/run.json`、配布物SHA-256は`fc6f55cd26999d8d8a115fc24dff226750690f1f743edd9b413fe7269b75d693`。watchV4の5コンテキストの通信監査でも旧アクセス権API要求0件・例外0件を確認した。公開前の依存監査は脆弱性0件、更新候補は解析器のpeer範囲外のTypeScript 7のみなので、6.0.3を維持する。
+
 ## 2026-10-11：0.0.28公開前検証
 
 - `package.json`・`src/app/version.ts`・READMEを0.0.28へ揃え、CHANGELOGのIssue #4修正を同版へ整理した。ユーザースクリプトの説明にも説明文リンクのメタデータ表示を反映し、`bun run build`で配布物1件を再生成した。

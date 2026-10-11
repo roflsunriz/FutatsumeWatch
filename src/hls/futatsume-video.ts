@@ -1,4 +1,5 @@
 import type { HlsDebounced, HlsFragmentLoaderStatic } from './types';
+import { applyWatchHlsQuality } from './watch-hls-quality';
 
 interface HlsRuntimeConfig {
   get(key: string): unknown;
@@ -303,7 +304,7 @@ export function registerFutatsumeVideo(options: HlsElementOptions): void {
       }
 
       if (/\.m3u8(|\?.*?)$/.test(v)) {
-        if (this._useNativeHLS) {
+        if (this._useNativeHLS && !(Number(this.dataset.hlsMaxHeight) > 0 && Hls.isSupported())) {
           this._src = v;
           this.playerMode = PLAYER_MODE.HLS_NATIVE;
           this._video.src = v;
@@ -536,6 +537,17 @@ export function registerFutatsumeVideo(options: HlsElementOptions): void {
       //console.log('%cHls.Events.MANIFEST_PARSED', 'background: cyan;', this._src);
       this._manifest = data;
       this._levelData = [];
+      const maxHeight = Number(this.dataset.hlsMaxHeight);
+      if (maxHeight > 0 && this._hls) {
+        if (!applyWatchHlsQuality(this._hls, data.levels, Number(this.dataset.hlsQualityHeight), maxHeight)) {
+          this._onHLSJSFatalError(null, {
+            type: 'otherError',
+            details: 'watchV4の利用可能画質がHLS内にありません',
+            fatal: true,
+          });
+          return;
+        }
+      }
       if (this._fragmentLoader) {
         this._fragmentLoader.levels = data.levels;
       }

@@ -1,4 +1,5 @@
 import { netUtil } from '../infra/net-util';
+import { isWatchRecord, loadWatchPageData } from './watch-response';
 
 export interface EditableTag {
   name: string;
@@ -83,19 +84,9 @@ export class TagEditApi {
   }
 
   private async refreshKey(videoId: string): Promise<string> {
-    const response = (await netUtil.fetch(
-      `https://www.nicovideo.jp/watch/${encodeURIComponent(videoId)}?responseType=json`,
-      {
-        credentials: 'include',
-      }
-    )) as Response;
-    if (!response.ok)
-      throw new Error(`タグ編集キーを更新できませんでした (HTTP ${response.status})。画面を再読み込みしてください。`);
-    const body = (await response.json()) as {
-      data?: { response?: { tag?: { edit?: { editKey?: string; isEditable?: boolean } } } };
-    };
-    const edit = body.data?.response?.tag?.edit;
-    if (!edit?.editKey || edit.isEditable === false)
+    const data = await loadWatchPageData(videoId);
+    const edit = isWatchRecord(data.tag) && isWatchRecord(data.tag.edit) ? data.tag.edit : {};
+    if (typeof edit.editKey !== 'string' || !edit.editKey || edit.isEditable === false)
       throw new Error('タグ編集キーを更新できませんでした。ログイン状態を確認してください。');
     return edit.editKey;
   }

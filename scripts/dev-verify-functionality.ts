@@ -7,6 +7,7 @@ import { verifySeekDrag, verifyPlaybackDenial } from './verify-playback-interact
 import { verifyAuthentication } from './verify-authentication';
 import { verifyMediaIdentity } from './verify-media-identity';
 import { verifyDelayedMediaSwitch } from './verify-media-switch';
+import { verifyWatchV4 } from './dev-verify-watch-v4';
 
 if (process.env.FUTATSUME_TEST_OFFLINE !== '1') throw new Error('投稿を含む機能検証はオフライン専用です');
 const browser = await attachBrowser();
@@ -335,6 +336,7 @@ try {
     check('P1-04', label, expression, timeout)
   );
   for (const label of await verifyAuthentication(source)) cases.push({ id: 'P4-05', label });
+  for (const label of await verifyWatchV4(source)) cases.push({ id: 'P1-04', label });
   report.completed = true;
 } catch (error) {
   report.error = String(error);

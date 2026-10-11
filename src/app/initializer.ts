@@ -9,7 +9,7 @@ import { BroadcastEmitter } from '../../packages/lib/src/message/message-util';
 import { HoverMenu } from '../../packages/futatsume/src/menu/hover-menu';
 import { replaceRedirectLinks } from '../../packages/futatsume/src/init/replace-redirect-links';
 import { cssUtil } from '../../packages/lib/src/css/css';
-import { ThumbInfoLoader } from '../shared/external-api';
+import { ThumbInfoLoader, isWatchPageResponse } from '../shared/external-api';
 import { StoryboardWorker } from '../../packages/futatsume/src/storyboard/storyboard-worker';
 import { VideoSessionWorker } from '../shared/external-api';
 import { StoryboardCacheDb } from '../../packages/lib/src/nico/storyboard-cache-db';
@@ -125,16 +125,7 @@ const { initialize, initializeExternal, initializeMessage, initializeLastSession
       return !!document.querySelector('.grid-area_\\[player\\]');
     }
 
-    const json = JSON.parse(res) as {
-      meta: { status: number };
-      data: { response: { okReason: unknown } };
-    };
-
-    if (json.meta.status > 299) {
-      return false;
-    }
-
-    return typeof json.data.response.okReason === 'string';
+    return isWatchPageResponse(res);
   };
 
   const initWorker = (): Promise<unknown> | undefined => {

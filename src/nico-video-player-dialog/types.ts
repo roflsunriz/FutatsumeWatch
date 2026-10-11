@@ -75,6 +75,7 @@ export interface NicoVideoPlayerDialogParams {
 export interface VideoSessionInfo {
   url: string;
   type: string;
+  video?: { height?: number; maxHeight?: number };
   [key: string]: unknown;
 }
 

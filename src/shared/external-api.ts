@@ -31,6 +31,7 @@ export { VideoSessionWorker } from '../../packages/lib/src/nico/video-session-wo
 export type { SearchQueryParams } from '../../packages/lib/src/nico/video-search';
 export { parseThumbInfo } from '../../packages/lib/src/nico/parse-thumb-info';
 export type { ThumbInfoData, ThumbInfoOk, ThumbOwnerInfo } from '../../packages/lib/src/nico/parse-thumb-info';
+export { isWatchPageResponse } from '../../packages/lib/src/nico/watch-response';
 
 export function fetchMylistTokenPage(): Promise<string> {
   return fetch('https://www.nicovideo.jp/mylist_add/video/sm9', {

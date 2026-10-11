@@ -38,6 +38,7 @@
 
 ## オフライン検証の終了と設定効果（2026-09-20）
 
+- watchV4はNicoCache_nlの`8f1954f`を基準とし、`watch-response.ts`で`data.response.$watchV4.data`・直接`data`・HTMLを共通化する。`media.contents`は全グループを保持し、同じ品質IDの可用性はORにする。`media`だけの応答はメタデータとして使わず、同じ動画の初期HTMLを1回取得する。不透明な`hls.url`をURLにしない。初期HLSは`VideoSessionWorker`から直接接続し、画質指定をHLS要素へsrc設定前に渡す。従来のアクセス権API経路を維持し、v4で旧キーがない場合は旧Storyboard APIを推測で要求しない。根拠・制約は`docs/watch-v4-compatibility.md`、回帰は`watch-v4.test.ts`・`watch-hls-quality.test.ts`とfunctionalityスイート（2026-10-11）。
 - 2026-10-11のWindows CIでは、登録済みの`tn.smilevideo.jp`サムネイル画像が画面終了で`net::ERR_ABORTED`となり、Fetchより前に中断されて未捕捉通信へ誤分類された。`dev-offline.ts`は`offline-site.ts`の登録済み画像との完全一致に限ってこの中断を許容し、未知URLの中断は失敗のままにする。回帰は`offline-site.test.ts`。
 - 2026-10-11のlibrary検証では、プレイリストの並び替え後に非同期`hideHover`と次のメニュー操作が競合し、開いた直後のメニューが閉じる場合があった。`dev-verify-library.ts`と`dev-verify-library-files.ts`では前操作のメニュー終了を確認してから次を実クリックする。製品側の`playlist-view.ts`は`emitAsync('hideHover')`で閉じる。
 - オフラインのWorker監視は`dev-offline.ts`へ一元化する。`dev-verify.ts`からRuntime監視とautoAttachを重ねると、再読み込み直後の未完了Workerが残りコンテキスト破棄がタイムアウトした。再読み込みはloadイベントと新しいtimeOriginも確認する。startup pauseと15秒のプロトコルタイムアウトを維持し、起動直後のthrow・未処理Promise拒否をguardの負例で検査する。

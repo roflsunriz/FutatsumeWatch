@@ -18,6 +18,7 @@ interface DomandRawData {
   audios: DomandQualityItem[];
   videos: DomandVideoItem[];
   isStoryboardAvailable: boolean;
+  hlsUrl?: string | null;
 }
 
 interface VideoDetail {
@@ -151,6 +152,10 @@ class DomandInfo extends JSONable {
 
   get accessRightKey(): string {
     return this._rawData.accessRightKey || '';
+  }
+
+  get hlsUrl(): string | null | undefined {
+    return this._rawData.hlsUrl;
   }
 
   get audios(): DomandQualityItem[] {

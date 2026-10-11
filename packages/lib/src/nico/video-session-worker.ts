@@ -35,7 +35,8 @@ interface WorkerUtilLike {
 interface WorkerDomandInfo {
   videoId?: string;
   accessRightKey?: string;
-  availableVideos: Array<{ id: string; label: string }>;
+  availableVideos: Array<{ id: string; label: string; height?: number }>;
+  hlsUrl?: string | null;
   availableVideoIds?: Array<string>;
   availableAudioIds?: Array<string>;
   [key: string]: unknown;
@@ -64,7 +65,7 @@ interface VideoSessionCreateParams {
 
 interface SessionInfo {
   url?: string;
-  video?: { format?: string; label?: string };
+  video?: { format?: string; label?: string; height?: number; maxHeight?: number };
   audioFormat?: string;
 }
 
@@ -199,6 +200,7 @@ const VideoSessionWorker = (() => {
         }
         const { availableVideos } = this._domandInfo;
         const audioFormat = this._domandInfo.availableAudioIds![0];
+        if (!availableVideos.length || !audioFormat) throw new Error('利用可能な動画・音声の画質がありません');
         let videos: Array<string>;
         let videoFormat: string;
         let videoLabel: string;
@@ -212,6 +214,31 @@ const VideoSessionWorker = (() => {
           videoFormat = video.id;
           videoLabel = video.label;
           videos = [videoFormat];
+        }
+
+        if (this._domandInfo.hlsUrl !== undefined) {
+          const directUrl = this._domandInfo.hlsUrl ? new URL(this._domandInfo.hlsUrl) : null;
+          if (
+            !directUrl ||
+            !['https:', 'http:'].includes(directUrl.protocol) ||
+            directUrl.username ||
+            directUrl.password ||
+            !/\.m3u8$/.test(directUrl.pathname)
+          ) {
+            throw new Error('watchV4のHLS URLが不正です。動画を再読み込みしてください。');
+          }
+          const selected = availableVideos.find((video) => video.id === videoFormat)!;
+          this.info = {
+            url: directUrl.href,
+            video: {
+              format: videoFormat,
+              label: videoLabel,
+              height: this._videoQuality === 'auto' ? 0 : (selected.height ?? 0),
+              maxHeight: Math.max(0, ...availableVideos.map((video) => video.height ?? 0)),
+            },
+            audioFormat,
+          };
+          return this.info;
         }
 
         const query = new URLSearchParams({ actionTrackId: this._videoInfo.actionTrackId as string });
@@ -279,7 +306,7 @@ const VideoSessionWorker = (() => {
         if (this._isDeleted) {
           return true;
         }
-        if (Date.now() > this._expireTime.getTime()) {
+        if (this._domandInfo.hlsUrl === undefined && Date.now() > this._expireTime.getTime()) {
           this._isDeleted = true;
         }
         return this._isDeleted;

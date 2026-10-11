@@ -382,6 +382,9 @@ class VideoPlayer extends Emitter {
   get src(): string {
     return this._src;
   }
+  setHlsQuality(height: number, maxHeight: number): void {
+    Object.assign(this._videoElement.dataset, { hlsQualityHeight: String(height), hlsMaxHeight: String(maxHeight) });
+  }
 
   get _isYouTube(): boolean {
     return !!this._videoYouTube && this._currentVideo === this._videoYouTube;

@@ -2,6 +2,8 @@ import base from '../test/fixtures/functionality/watch-response.json';
 import { resolve } from 'node:path';
 import { createLibraryRoutes } from './offline-library';
 import { mediaSpec } from '../test/fixtures/functionality/media-spec';
+import { watchV4Response } from '../test/fixtures/functionality/watch-v4';
+import type { WatchFixtureFormat } from '../test/fixtures/functionality/watch-v4';
 
 export interface FixtureRequest {
   url: string;
@@ -82,6 +84,8 @@ export function createOfflineSite() {
   const resources = new Map<string, FixtureReply>();
   const auth = { isLogin: true, isPremium: false, postKeyStatus: 200, pageMetadata: true };
   const faults = {
+    watchFormat: 'legacy' as WatchFixtureFormat,
+    watchHlsUrl: undefined as string | undefined,
     postStatus: 200,
     postDelayMs: 0,
     watchDelayMs: 0,
@@ -154,10 +158,21 @@ export function createOfflineSite() {
     const markup = path.startsWith('/watch/') ? row : search;
     // 採取元のserver-responseではokReason="PURELY"。視聴ページとして
     // 初期化される契約も保持し、検索ページ扱いで検証をすり抜けない。
+    const currentWatchId = path.split('/').at(-1);
+    const watchMetadata =
+      faults.watchFormat !== 'legacy' && currentWatchId && isWatch(currentWatchId)
+        ? JSON.stringify(
+            watchV4Response(
+              watch(currentWatchId).data.response as typeof base.data.response,
+              'v4-envelope',
+              faults.watchHlsUrl
+            )
+          )
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+        : '{&quot;meta&quot;:{&quot;status&quot;:200},&quot;data&quot;:{&quot;response&quot;:{&quot;okReason&quot;:&quot;PURELY&quot;}}}';
     const watchMeta =
-      auth.pageMetadata && path.startsWith('/watch/')
-        ? '<meta name="server-response" content="{&quot;meta&quot;:{&quot;status&quot;:200},&quot;data&quot;:{&quot;response&quot;:{&quot;okReason&quot;:&quot;PURELY&quot;}}}">'
-        : '';
+      auth.pageMetadata && path.startsWith('/watch/') ? `<meta name="server-response" content="${watchMetadata}">` : '';
     // ページ側の最小SPA契約。製品のopen/seek等には触れない。
     const commonHeader = JSON.stringify({
       initConfig: { user: { isLogin: auth.isLogin, isPremium: auth.isLogin && auth.isPremium } },
@@ -341,7 +356,15 @@ export function createOfflineSite() {
         if (id && isWatch(id)) {
           if (query(url, { responseType: 'json' }) || query(url, { responseType: 'json', eco: '1' })) {
             if (faults.watchDelayMs) await Bun.sleep(faults.watchDelayMs);
-            return json(watch(id));
+            if (faults.watchFormat === 'v4-html')
+              return { status: 200, mime: 'text/html; charset=utf-8', body: await html(path) };
+            return json(
+              watchV4Response(
+                watch(id).data.response as typeof base.data.response,
+                faults.watchFormat,
+                faults.watchHlsUrl
+              )
+            );
           }
           return query(url) ? { status: 200, mime: 'text/html; charset=utf-8', body: await html(path) } : null;
         }

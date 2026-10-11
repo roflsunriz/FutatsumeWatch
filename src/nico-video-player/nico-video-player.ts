@@ -313,6 +313,9 @@ class NicoVideoPlayer extends Emitter {
   setNextAutoPlay(value: boolean | undefined): void {
     this.nextAutoPlay = value;
   }
+  setHlsQuality(height: number, maxHeight: number): void {
+    this._videoPlayer.setHlsQuality(height, maxHeight);
+  }
   get isAutoPlay(): boolean {
     return this._videoPlayer.isAutoPlay;
   }
