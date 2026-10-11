@@ -1,5 +1,13 @@
 # 検証記録
 
+## 2026-10-11：0.0.28公開前検証
+
+- `package.json`・`src/app/version.ts`・READMEを0.0.28へ揃え、CHANGELOGのIssue #4修正を同版へ整理した。ユーザースクリプトの説明にも説明文リンクのメタデータ表示を反映し、`bun run build`で配布物1件を再生成した。
+- `bun outdated`で更新候補を確認し、TypeScript 7.0.2だけが候補だった。導入済み`@typescript-eslint/parser` 8.71.1のpeer範囲は`>=4.8.4 <6.1.0`なので、互換性を保てる6.0.3を維持した。`bun install --frozen-lockfile`は依存変更なしで成功し、`bun audit`は242パッケージ・脆弱性0件だった。
+- lint・format・type-check・buildと単体413件が成功した。実サイトとFirefoxでの今回の修正表示は未検証のまま明記し、オフライン検証と区別する。
+- 最初の全体検証はmigrationの初期`Runtime.enable`が15秒でタイムアウトし、製品読込み前・通信記録0件で停止した（`2026-10-11T09-19-21-960Z-offline-17a9dea6/run.json`）。新しい専用ブラウザーのmigration単独は同じ配布物・監査条件で12チェック成功した（`2026-10-11T09-22-44-518Z-offline-48a899ad/run.json`）。タイムアウト延長や監査の無効化は行っていない。
+- その後の`bun run test:browser all --offline`は全9スイート・935チェック成功した。証跡は`dev-assets/verification/2026-10-11T09-23-02-623Z-offline-b576f9dd/run.json`。0.0.28配布物のSHA-256は`70ae5d50ab4de243e85fa3701696c69fa8aab9788b2c4afdd7d373ac90deba39`で、Issue #4の説明文表示・再生・時刻指定・プレイリスト追加と既存シリーズ前後動画も同じ配布物で再確認した。
+
 ## 2026-10-11：Issue #4の説明文動画メタデータ
 
 - [Issue #4](https://github.com/roflsunriz/FutatsumeWatch/issues/4)の本文にある「説明文の動画IDは展開されるが詳細が表示されず、シリーズ前後動画は表示される」をコード経路で確認した。`VideoInfoPanel`の`VideoItemObserver`が無処理の仮実装で、共有監視にも無処理のthrottleが残っていた。カードから`ThumbInfoLoader`・getthumbinfo・`data-thumb-info`・`VideoItemElement`へ至る経路が停止していた。シリーズ前後動画はシリーズAPIから直接カードへ設定する別経路だった。

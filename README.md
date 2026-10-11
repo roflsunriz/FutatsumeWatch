@@ -4,7 +4,7 @@ ZenzaWatch 後継ユーザースクリプト。動画リンクがある場所か
 
 ## インストール
 
-Version 0.0.27
+Version 0.0.28
 
 [FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)
 
