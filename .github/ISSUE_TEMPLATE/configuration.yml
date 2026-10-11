@@ -1,0 +1,77 @@
+name: 設定・動作環境の相談
+description: 設定項目や動作環境に関する相談・確認をする
+title: '[Config] '
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |-
+        FutatsumeWatchに関する内容を、目的と確認できた事実に分けて記載してください。
+        Cookie、認証トークン、パスワード、個人情報を本文や添付に含めないでください。署名付き配信URLと証明書秘密鍵も伏せてください。
+        投稿前に[README](https://github.com/roflsunriz/FutatsumeWatch/blob/main/README.md)と[既存Issue](https://github.com/roflsunriz/FutatsumeWatch/issues)を確認してください。
+        脆弱性の報告は[SECURITY.md](https://github.com/roflsunriz/FutatsumeWatch/blob/main/SECURITY.md)の案内に従ってください。
+  - type: markdown
+    attributes:
+      value: Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: input
+    id: version
+    attributes:
+      label: スクリプトの版
+      description: '設定画面や配布物に表示される版（例: 0.0.21）'
+      placeholder: 0.0.21
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: ブラウザとスクリプトマネージャ
+      description: ブラウザの種類と版、マネージャの種類と版
+      placeholder: Firefox 156 / Tampermonkey 5.5
+    validations:
+      required: true
+  - type: textarea
+    id: setting
+    attributes:
+      label: 対象の設定項目
+      description: カテゴリ名と項目名、現在の設定値
+      placeholder: '...'
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: 達成したい目的
+      description: 最終的にどう使いたいか
+      placeholder: '...'
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: 試したことと結果
+      description: 変更した設定や確認した手順
+      placeholder: '...'
+    validations:
+      required: false
+  - type: textarea
+    id: environment-common
+    attributes:
+      label: 対象と環境
+      description: 使用中の版、OS、関連ツール、機器や接続方法を秘密情報を除いて記載してください。
+    validations:
+      required: false
+  - type: textarea
+    id: additional-common
+    attributes:
+      label: 補足
+      description: 関連資料と、確認できなかった条件を記載してください。
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 公開情報の確認
+      options:
+        - label: 本文と添付に秘密情報や個人情報が含まれていないことを確認しました。
+          required: true

@@ -1,12 +1,28 @@
 name: バグ報告
 description: 再現する不具合を報告する
-title: '[不具合]: '
-labels: ['bug']
+title: '[Bug] '
+labels:
+  - bug
 body:
   - type: markdown
     attributes:
-      value: |
-        Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+      value: |-
+        FutatsumeWatchに関する内容を、目的と確認できた事実に分けて記載してください。
+        Cookie、認証トークン、パスワード、個人情報を本文や添付に含めないでください。署名付き配信URLと証明書秘密鍵も伏せてください。
+        投稿前に[README](https://github.com/roflsunriz/FutatsumeWatch/blob/main/README.md)と[既存Issue](https://github.com/roflsunriz/FutatsumeWatch/issues)を確認してください。
+        脆弱性の報告は[SECURITY.md](https://github.com/roflsunriz/FutatsumeWatch/blob/main/SECURITY.md)の案内に従ってください。
+  - type: markdown
+    attributes:
+      value: Cookie・認証トークン・署名付き配信URL・個人情報を貼らないでください。
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: 事前確認
+      options:
+        - label: 既存Issueを検索しました。
+          required: false
+        - label: 可能な範囲で最新の公開版でも確認しました。
+          required: false
   - type: input
     id: version
     attributes:
@@ -28,7 +44,7 @@ body:
     attributes:
       label: 再現手順
       description: 操作の順序と対象ページを書く
-      placeholder: |
+      placeholder: |-
         1. ...
         2. ...
     validations:
@@ -36,24 +52,38 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: 期待した挙動
+      label: 期待した結果
       description: 利用者が最終的に観測したかった状態
-      placeholder: ...
+      placeholder: '...'
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
-      label: 実際の挙動
+      label: 実際の結果
       description: 観測できた症状、表示、エラーメッセージ
-      placeholder: ...
+      placeholder: '...'
     validations:
       required: true
   - type: textarea
-    id: extra
+    id: diagnostics-common
     attributes:
-      label: 補足情報
-      description: 併用中の拡張やスクリプト、試した代替手段（秘密情報を除く）
-      placeholder: ...
+      label: 診断情報
+      description: 秘密情報を除いたログや画面を添付してください。
     validations:
       required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: 補足
+      description: 併用中の拡張やスクリプト、試した代替手段（秘密情報を除く）
+      placeholder: '...'
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 公開情報の確認
+      options:
+        - label: 本文と添付に秘密情報や個人情報が含まれていないことを確認しました。
+          required: true
