@@ -597,6 +597,11 @@ async function main() {
     );
     const playlistRoot = `document.querySelector('#fw-tab-playlist')`;
     const menu = async (command: string, param?: string) => {
+      await check(
+        session,
+        `!document.querySelector('.playlist-menu')?.classList.contains('show')`,
+        'P3-11 前のメニュー操作を終了'
+      );
       await clickVisible(session, '.playlist-count');
       await clickVisible(
         session,

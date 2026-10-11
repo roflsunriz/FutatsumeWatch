@@ -48,6 +48,11 @@ export async function verifyLibraryFiles(
     }
   });
   const menu = async (command: string) => {
+    await check(
+      session,
+      `!document.querySelector('.playlist-menu')?.classList.contains('show')`,
+      'P3-12 前のメニュー操作を終了'
+    );
     await clickVisible(session, '.playlist-count');
     await clickVisible(session, `.playlist-menu [data-command="${command}"]`);
   };
