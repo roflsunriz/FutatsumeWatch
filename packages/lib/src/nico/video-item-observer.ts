@@ -1,9 +1,5 @@
 import { ThumbInfoLoader } from './thumb-info-loader';
 
-interface ThrottleStub {
-  throttle: (...args: Array<unknown>) => unknown;
-}
-
 type InviewHandler = (item: Element, watchId: string) => Promise<void>;
 
 interface ObserveParams {
@@ -11,14 +7,12 @@ interface ObserveParams {
   container?: Element | Document;
 }
 
-const _: ThrottleStub = {
-  throttle: () => {},
-};
 //===BEGIN===
 
 const VideoItemObserver = (() => {
   let intersectionObserver: IntersectionObserver | undefined;
   const mutationMap = new WeakMap<object, MutationObserver>();
+  const observedItems = new WeakSet<Element>();
 
   const onItemInview = async (item: Element, watchId: string): Promise<void> => {
     const result = await ThumbInfoLoader.load(watchId).catch(() => null);
@@ -65,33 +59,29 @@ const VideoItemObserver = (() => {
     }
     const update = () => {
       const items = (container || document).querySelectorAll(query);
-      if (!items || items.length < 1) {
-        return;
-      }
-      if (!items || items.length < 1) {
-        return;
-      }
       for (const item of items) {
-        if (item.classList.contains('is-fetch-ignore')) {
+        if (
+          observedItems.has(item) ||
+          item.classList.contains('is-fetch-ignore') ||
+          !/^(?:sm|nm|so|ss)[0-9]+$/.test((item as HTMLElement).dataset.videoId || '')
+        ) {
           continue;
         }
+        observedItems.add(item);
         item.classList.add('is-fetch-wait');
         intersectionObserver!.observe(item);
       }
     };
-    // update();
-
-    const onUpdate = _.throttle(update, 1000) as () => void;
-
-    const observer = new MutationObserver((mutations) => {
+    const observer = new window.MutationObserver((mutations) => {
       const isAdded = mutations.find((mutation) => mutation.addedNodes && mutation.addedNodes.length > 0);
       if (isAdded) {
-        onUpdate();
+        update();
       }
     });
 
     observer.observe(container, { childList: true, characterData: false, attributes: false, subtree: true });
     mutationMap.set(container, observer);
+    update();
     return observer;
   };
 

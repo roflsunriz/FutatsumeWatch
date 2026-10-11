@@ -66,6 +66,7 @@ function query(url: URL, expected: Record<string, string> = {}): boolean {
 }
 const images = new Set([
   'https://tn.smilevideo.jp/smile?i=9.',
+  'https://tn.smilevideo.jp/smile?i=2057168.',
   'https://tn.smilevideo.jp/smile?i=100.',
   'https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank.jpg',
   'https://secure-dcdn.cdn.nimg.jp/nicoaccount/usericon/defaults/blank_s.jpg',

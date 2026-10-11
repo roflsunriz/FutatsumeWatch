@@ -355,7 +355,7 @@
         "id": "sm9",
         "contentType": "long",
         "title": "機能テスト映像 A",
-        "description": "生成した検証映像。0:10 <a href=\"/watch/sm2057168\">次の動画</a>",
+        "description": "生成した検証映像。<a class=\"seekTime\" data-seektime=\"0:10\">0:10</a> <a class=\"watch\" href=\"/watch/sm2057168\">sm2057168</a><br><a href=\"/watch/sm100\">次の動画</a><br><a class=\"watch\" href=\"/watch/sm9\">sm9</a>",
         "count": {
           "view": 23078002,
           "comment": 5692641,

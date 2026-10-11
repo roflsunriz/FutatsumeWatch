@@ -229,6 +229,7 @@ Get-Content -Raw -LiteralPath .\COMMON-AGENTS.md
 
 ## シリーズ全体のプレイリスト追加（2026-09-21、0.0.14）
 
+- 説明文の動画カードは`VideoItemObserver`が可視時に`ThumbInfoLoader`から取得した`data-thumb-info`を`VideoItemElement`へ渡して更新する。パネル内の監視と共有監視内の変更検出を仮実装へ戻さない。シリーズ前後動画は別のシリーズAPI経路なので、その成功だけでは説明文カードを検証できない。動画IDはリンク本文でなく検証済みURLのpathnameから取り、取得前にも`watchId`を持たせる。回帰は`video-info-panel.test.ts`・`video-item-observer.test.ts`とlibraryスイートの`dev-verify-description.ts`（2026-10-11）。
 - シリーズ一覧は`https://nvapi.nicovideo.jp/v2/series/{id}`を`pageSize`・`page`付きで取得する。応答の`data.items[].video`を既存プレイリストの`content`形式へ正規化し、サムネイルURLの候補も統一する。旧`/v1/playlist/series/{id}`と直下項目を前提に戻さない。
 - シリーズの再生アイコンを実クリックし、全動画の順序、再生中動画の選択位置、要求が1回だけであることを`dev-verify-library.ts`で確認する。途中失敗時に既存プレイリストを置換しない共通規則は維持する。
 - 詳細パネルの前後動画も同じ`PlaylistApiLoader`でシリーズ一覧を取得し、共通`futatsume-video-item`へ表示する。シリーズカードは`showActions=false`・`showMetadataIcons=true`で操作ボタンを隠し、投稿日と各件数は`packages/lib/src/dom/ui-icon.ts`の共有SVGを使う。ページ切替後の古い応答は世代番号で捨てる。`dev-verify-library.ts`で前後2件の実操作・サムネイル・詳細・アイコンを確認する。

@@ -89,16 +89,16 @@ test('新suiteは重要子チェックが全部あっても親ID欠落を拒否�
   report.checks = report.checks.filter((label) => label !== '拒否時は本文と理由を保持');
   expect(() => assertBrowserCoverage('functionality', report)).toThrow('拒否時');
 });
-test('複合P3-02/03ラベルは両IDを示すが無関係な数字を親IDにしない', () => {
-  const report = complete('library');
-  report.cases = report.cases.filter((value) => value.id !== 'P3-02' && value.id !== 'P3-03');
-  report.checks.push('P3-02/03 投稿者リンクと市場撤去');
-  expect(assertBrowserCoverage('library', report).parents).toContain('P3-03');
+test('複合ラベルは両IDを示すが無関係な数字を親IDにしない', () => {
+  // 説明文のP3-03は独立した必須操作も持つため、独立ラベルのない親IDで検査する。
+  const report = complete('functionality');
+  report.cases = report.cases.filter((value) => value.id !== 'P1-02' && value.id !== 'P1-03');
+  report.checks.push('P1-02/03 複合ケース');
+  expect(assertBrowserCoverage('functionality', report).parents).toContain('P1-02');
+  expect(assertBrowserCoverage('functionality', report).parents).toContain('P1-03');
   report.checks.pop();
   report.checks.push('項目02/03');
-  // P3-02は独立したプロフィール実クリックの必須ラベルでも証明される。
-  // 市場撤去のP3-03は複合ラベルを外すと欠落し、無関係な数字では補えない。
-  expect(() => assertBrowserCoverage('library', report)).toThrow('P3-03');
+  expect(() => assertBrowserCoverage('functionality', report)).toThrow('P1-02');
 });
 test('設定が33件・重複・キー違いなら成功宣言でも拒否する', () => {
   const missing = complete('settings');

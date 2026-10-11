@@ -7,6 +7,7 @@ import { verifyLibraryComments } from './dev-verify-library-comments';
 import { verifyLibraryFiles } from './dev-verify-library-files';
 import { openLink } from './verify-menu-actions';
 import { verifyMediaIdentity } from './verify-media-identity';
+import { verifyDescription } from './dev-verify-description';
 
 const out = verificationDirectory;
 const checks: string[] = [];
@@ -146,6 +147,7 @@ async function main() {
       )
     );
     checks.push('P3-02-profile-click プロフィール画像の実クリックで正しいURLの新規タブを開く');
+    await verifyDescription(session, { check, click: deepClick, screenshot });
     await check(
       session,
       `!!${find('futatsume-video-series-label')}?.shadowRoot?.querySelector('[data-command="playlistSetSeries"]')`,
@@ -736,7 +738,12 @@ async function main() {
           checks,
           errors,
           links,
-          requests: requests.filter((request) => request.url.includes('/tags') || request.url.includes('/playlist/')),
+          requests: requests.filter(
+            (request) =>
+              request.url.includes('/tags') ||
+              request.url.includes('/playlist/') ||
+              request.url.includes('/getthumbinfo/')
+          ),
         },
         null,
         2

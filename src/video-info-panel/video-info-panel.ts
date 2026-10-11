@@ -29,10 +29,8 @@ import { RelatedInfoMenu } from './related-info-menu';
 import { VideoMetaInfo } from './video-meta-info';
 import { VideoHeaderPanel } from './video-header-panel';
 import { toSeriesVideoCardData } from './series-video-card';
+import { VideoItemObserver } from '../../packages/lib/src/nico/video-item-observer';
 import './styles';
-const VideoItemObserver: { observe(params: { container: Element | null }): void } = {
-  observe: () => {},
-};
 class VideoInfoPanel extends Emitter {
   declare static __tpl__: string;
   _videoHeaderPanel: VideoHeaderPanel;
@@ -170,14 +168,17 @@ class VideoInfoPanel extends Emitter {
   async _updateVideoDescription(html: string) {
     this._description.textContent = '';
     const decorateWatchLink = (watchLink: HTMLAnchorElement) => {
-      const videoId = watchLink.textContent.replace('watch/', '').replace('shorts/', '');
+      const videoId = /^\/(?:watch|shorts)\/((?:sm|nm|so|ss)[0-9]+)$/.exec(watchLink.pathname)?.[1];
 
       if (
-        !/^(sm|nm|so|ss)[0-9]+$/.test(videoId) ||
+        !videoId ||
+        !['http:', 'https:'].includes(watchLink.protocol) ||
         !['www.nicovideo.jp'].includes(watchLink.hostname) ||
-        !(watchLink.pathname.startsWith('/watch/') || watchLink.pathname.startsWith('/shorts/'))
+        watchLink.port ||
+        watchLink.username ||
+        watchLink.password
       ) {
-        return;
+        return false;
       }
       watchLink.classList.add('noHoverMenu');
       Object.assign(watchLink.dataset, { command: 'open', param: videoId });
@@ -202,10 +203,11 @@ class VideoInfoPanel extends Emitter {
         $watchLink.append(buttons);
       } else {
         const vitem = document.createElement('futatsume-video-item');
-        vitem.dataset.videoId = videoId;
+        Object.assign(vitem.dataset, { videoId, watchId: videoId, title: videoId });
         watchLink.after(vitem);
         watchLink.classList.remove('watch');
       }
+      return true;
     };
     const seekTime = (seek: HTMLElement) => {
       const [min, sec] = (seek.dataset.seektime || '0:0').split(':');
@@ -257,10 +259,10 @@ class VideoInfoPanel extends Emitter {
     for (const a of $description.query<HTMLAnchorElement>('a')) {
       a.classList.add('noHoverMenu');
       const href = a.href;
-      if (a.classList.contains('watch')) {
-        decorateWatchLink(a);
-      } else if (a.classList.contains('seekTime')) {
+      if (a.classList.contains('seekTime')) {
         seekTime(a);
+      } else if (decorateWatchLink(a)) {
+        // カードを追加しても元リンクの本文・hrefと修飾キー操作は保持する。
       } else if (/^mylist\//.test(a.textContent)) {
         mylistLink(a);
       } else if (/^series\//.test(a.textContent)) {

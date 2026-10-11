@@ -1,5 +1,13 @@
 # 検証記録
 
+## 2026-10-11：Issue #4の説明文動画メタデータ
+
+- [Issue #4](https://github.com/roflsunriz/FutatsumeWatch/issues/4)の本文にある「説明文の動画IDは展開されるが詳細が表示されず、シリーズ前後動画は表示される」をコード経路で確認した。`VideoInfoPanel`の`VideoItemObserver`が無処理の仮実装で、共有監視にも無処理のthrottleが残っていた。カードから`ThumbInfoLoader`・getthumbinfo・`data-thumb-info`・`VideoItemElement`へ至る経路が停止していた。シリーズ前後動画はシリーズAPIから直接カードへ設定する別経路だった。
+- 共有監視を接続し、既存カードと後から追加されたカードを可視時に一度だけ取得する。取得済み・失敗済みの同じ要素を本文の変更で再送しない。説明文リンクは本文でなく検証済みURLのpathnameからIDを取得し、カードに取得前の再生IDを設定する。元リンクの本文・href・修飾キー操作、時刻指定、マイリスト／シリーズ追加、YouTube・外部リンクの処理は維持する。
+- 単体回帰では監視開始前／後のカード、取得成功・通信失敗・重複要求防止、動画ID／タイトル付き／shortsリンク、既存の各リンクと修飾キー操作を確認する。libraryスイートに実メタデータ表示、元リンク／タイトル／サムネイルの実クリックと異なる3映像の識別、時刻指定・プレイリスト追加、1280px／390px幅を追加した。その後に既存シリーズ前後動画の詳細・アイコン・再生も確認する。追加操作を必須検証台帳へ登録し、未実行を成功扱いしない。
+- オフライン初回の通信監査では、シリーズ切替中の一時サムネイル`https://tn.smilevideo.jp/smile?i=2057168.`が未登録として失敗した。登録済み動画に対応するこのURLだけを`offline-site.ts`へ追加し、未知URLは失敗のまま維持した。実サイトへの再生・投稿・書込みは実施していない。
+- `bun run lint`・`format`・`type-check`・`build`、単体413件、`bun audit`（242パッケージ・脆弱性0件）が成功した。`bun run test:browser all --offline`は全9スイート・935チェック成功。証跡は`dev-assets/verification/2026-10-11T09-10-06-345Z-offline-6b7cf1f6/run.json`、配布物SHA-256は`536b940a1087d090336f403739e121f9b412cae5801cf87d1713ada02fd43c91`。同ディレクトリのlibrary画像2枚で通常幅・狭幅の表示を目視確認した。Firefoxとユーザースクリプトマネージャ導入後の実サイト表示は今回未検証。
+
 ## 2026-10-11：Dependabot PRの統合と0.0.27検証
 
 - OpenだったDependabot PR #5〜#9のheadコミットをmainへ取り込み、重なった`package.json`と`bun.lock`の競合を解消した。Vite、globals、typescript-eslint、jsdom、ESLintの更新を保持し、さらに利用可能な`@types/lodash`、Prettier、Viteの更新を適用した。TypeScript 7.0.2はtypescript-eslint 8.71.1のpeer範囲`<6.1.0`から外れるため、6.0.3を維持した。
