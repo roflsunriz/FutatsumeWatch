@@ -44,5 +44,5 @@ bun run docs:screenshots --live --attempt <承認した試行ID>
 - 全画像を目視し、文字切れ・読み込み中・エラー・認証情報・NicoCacheの追加要素がないことを確認します。匿名の関連動画・コメントには第三者の公開コンテンツが含まれます。
 - `manifest.json`には撮影した版、画面寸法、配布物と画像のSHA-256、実行した確認を記録します。ネットワーク記録・応答本文・失敗画像は`dev-assets/readme-capture/<試行ID>/`に置き、Gitへ追加しません。
 - `bun run lint`、`bun run format`、`bun run type-check`、`bun run test`とオフライン予行を通します。CIも外部通信をしない予行を行います。
-- 強制中断で専用Chromeが残った場合は`bun scripts/dev-browser.ts stop --screenshots`で停止します。停止対象は撮影用stateに記録したPIDだけです。
+- 強制中断で専用Chromeが残った場合は`bun scripts/dev-browser.ts stop --screenshots`で停止します。撮影用stateに記録した親PIDとその子孫だけを対象とし、通常終了を先に試して、全対象PIDの停止を確認します。子プロセスが残った場合は失敗としてstateを保持します。
 - 画像が不適切な場合は、公開前の差分を確認して画像とmanifestを直前のコミットへ戻します。実サイトの再撮影は承認後に行います。試行記録は消して再利用しません。

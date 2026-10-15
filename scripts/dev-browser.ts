@@ -10,6 +10,8 @@
 
 import { resolve } from 'node:path';
 import { unlink } from 'node:fs/promises';
+import { attachBrowser } from './dev-cdp';
+import { browserProcessSnapshot, shutdownBrowser } from './browser-shutdown';
 
 export function browserEnvironment(testing: boolean, screenshots = false) {
   const captureId = process.env.FUTATSUME_SCREENSHOTS_ID ?? 'default';
@@ -162,8 +164,25 @@ async function stop(): Promise<void> {
     return;
   }
   if (isPidAlive(state.pid)) {
-    const killed = Bun.spawnSync(['taskkill', '/PID', String(state.pid), '/T', '/F']);
-    if (killed.exitCode !== 0) throw new Error(`専用ブラウザを停止できませんでした: ${killed.stderr.toString()}`);
+    const snapshot = browserProcessSnapshot(state.pid, PORT);
+    await shutdownBrowser({
+      pids: snapshot.pids,
+      isAlive: isPidAlive,
+      async close() {
+        if (!snapshot.ownsPort) throw new Error('専用ポートを持つ対象プロセスがありません');
+        const browser = await attachBrowser({ port: PORT });
+        try {
+          await browser.send('Browser.close');
+        } finally {
+          await browser.close();
+        }
+      },
+      kill() {
+        const result = Bun.spawnSync(['taskkill', '/PID', String(state.pid), '/T', '/F']);
+        return result.exitCode === 0 ? undefined : result.stderr.toString();
+      },
+      sleep: () => Bun.sleep(100),
+    });
   }
   await unlink(STATE_PATH);
   console.log('停止しました');

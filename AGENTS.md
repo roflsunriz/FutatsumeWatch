@@ -2,6 +2,7 @@
 
 ## README画像の自動生成（2026-10-15）
 
+- 0.0.30のWindows CIでは全画像の撮影後に`taskkill /T /F`が子プロセスの終了で`operation attempted is not supported`を返し、未公開となった。停止は対象PIDの子孫をCIMで採取し、そのPID群が持つポートの場合だけ通常終了を要求してから、必要ならstateの親PIDを強制終了する。終了コードだけで成功／失敗を決めず、採取済みの全PIDが消えた場合だけ成功にする。子が残る場合は失敗としstateを保持する。`browser-shutdown.ts`・`browser-shutdown.test.ts`を参照。
 - `bun run docs:screenshots`は既定でオフライン予行。実画像の更新は`--live --attempt <承認した試行ID>`で、`sm9`の遷移・起動を各1回に限定する。撮影前に試行IDを排他的に消費し、失敗・中断後に別IDで再試行する場合も追加承認を得る。実行手順は`docs/readme-screenshots.md`。
 - 撮影専用Chromeは9335と`dev-assets/readme-browser`を使い、毎回別プロファイルで起動する。`--no-proxy-server`と再生コンテキストの`proxyServer: direct://`でNicoCache_nlを外す。9333の手動環境、9334のブラウザテスト、9222の実利用環境を再利用しない。
 - `dev-cdp.ts`の接続先はモジュール評価時に決まる。撮影用の環境変数を設定する前に`readme-capture.ts`等を静的importすると9333へ接続してしまうため、`readme-screenshots.ts`は環境設定後に動的importする。オフライン予行では拡張を読み込まずブラウザ全体に禁止プロキシを指定し、実導線・映像・コメント・5設定カテゴリ・4タブを確認する。全画像と終了処理が成功した実撮影だけ`docs/images`へ出力する。

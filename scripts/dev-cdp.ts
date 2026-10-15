@@ -156,7 +156,9 @@ export async function cleanupCdp(...steps: Array<() => Promise<unknown> | undefi
   if (failures.length) throw new AggregateError(failures, 'ブラウザ検証の後始末に失敗しました');
 }
 
-export async function attachBrowser(options: { offlineLoopbackOrigin?: string } = {}): Promise<CdpSession> {
+export async function attachBrowser(
+  options: { offlineLoopbackOrigin?: string; port?: number } = {}
+): Promise<CdpSession> {
   let proxyBypassList = '<-loopback>';
   if (options.offlineLoopbackOrigin) {
     const origin = new URL(options.offlineLoopbackOrigin);
@@ -164,7 +166,9 @@ export async function attachBrowser(options: { offlineLoopbackOrigin?: string } 
       throw new Error('通信遮断検証の例外は専用127.0.0.1ポートに限定します');
     proxyBypassList += `;${origin.host}`;
   }
-  const res = await fetch(`http://127.0.0.1:${DEV_PORT}/json/version`, { signal: AbortSignal.timeout(15000) });
+  const res = await fetch(`http://127.0.0.1:${options.port ?? DEV_PORT}/json/version`, {
+    signal: AbortSignal.timeout(15000),
+  });
   if (!res.ok) throw new Error(`ブラウザ情報の取得失敗: HTTP ${res.status}`);
   const data = (await res.json()) as { webSocketDebuggerUrl?: string };
   if (typeof data.webSocketDebuggerUrl !== 'string') {

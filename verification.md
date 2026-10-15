@@ -1,7 +1,15 @@
 # 検証記録
 
+## 2026-10-15：Chrome停止処理の修正と0.0.31
+
+- 0.0.30のタグCIで、全画像生成後の`taskkill`が子プロセス終了エラーとなったため、通常終了を先行し、終了前に採取した親・子の全PIDが消えた場合だけ成功にする。接続するポートも対象PID群が所有することをCIMで照合する。停止未完了ならstateを残し、終了コードの握りつぶしだけで成功にしない。
+- 回帰では通常終了・強制終了不要、通常終了の接続失敗後に親子が順次消える場合、子が残る場合のtaskkill成功／失敗の両方を確認した。実測でも撮影用Chromeの親子10プロセスとポート所有を確認し、9335を停止した後も別の9334が動き続けることを確認した。
+- lint・整形・型検査・ビルド、単体432件（3,182アサーション）、ブラウザ全9スイート・982チェック、オフライン撮影予行が成功した。全体結果は`dev-assets/verification/2026-10-15T04-34-11-163Z-offline-8ef87523/run.json`、撮影予行は`dev-assets/readme-capture/offline-bedccac5-e130-4baa-a5fa-39b7db45d88e/report.json`。両方で新しい停止処理まで成功した。
+- `bun audit`は242パッケージ・脆弱性0件。更新候補は解析器の対応外のTypeScript 7だけなので6.0.3を維持する。0.0.31配布物のSHA-256は`5aa38b52d0f7654cbde53e71b17009b723a3b43bc7e6925a5a27e61a3d380188`。実サイト再生は追加していない。
+
 ## 2026-10-15：0.0.30公開前検証
 
+- タグCI（`https://github.com/roflsunriz/FutatsumeWatch/actions/runs/38681251705`）でも品質検査と全ブラウザスイートは成功したが、撮影予行の全画像を撮った後の`taskkill`が子PIDの終了エラーとなり、リリースは公開されなかった。失敗タグの付け替え・削除は行わず、通常終了と親・子PIDの停止確認を加えた0.0.31へ引き継いだ。
 - README画像と自動撮影を0.0.30へ整理し、`package.json`・`src/app/version.ts`・READMEの版とユーザースクリプトの説明を揃えた。`bun run build`で配布物1件を再生成した。撮影済みの15画像とmanifestは実際の撮影時の0.0.29を維持し、実サイトへ再接続・再生していない。
 - 公開前の`bun outdated`で確認した`@types/bun` 1.4.3と`typescript-eslint` 8.71.2を取り込んだ。更新後の解析器のpeer範囲も`>=4.8.4 <6.1.0`なので、唯一残る候補のTypeScript 7.0.2は適用せず6.0.3を維持した。package.jsonとbun.lockの差分を確認し、`bun install --frozen-lockfile`は変更なし、`bun audit`は242パッケージ・脆弱性0件だった。
 - lint・整形・型検査・ビルド、単体428件（3,175アサーション）に成功した。全ブラウザ検証は9スイート・982チェック成功し、`dev-assets/verification/2026-10-15T04-18-35-214Z-offline-73cc3deb/run.json`に記録した。画像生成予行も`dev-assets/readme-capture/offline-b2a36f78-ea3f-4268-bd98-d53599f11745/report.json`で成功した。
