@@ -1,5 +1,12 @@
 # 検証記録
 
+## 2026-10-15：0.0.30公開前検証
+
+- README画像と自動撮影を0.0.30へ整理し、`package.json`・`src/app/version.ts`・READMEの版とユーザースクリプトの説明を揃えた。`bun run build`で配布物1件を再生成した。撮影済みの15画像とmanifestは実際の撮影時の0.0.29を維持し、実サイトへ再接続・再生していない。
+- 公開前の`bun outdated`で確認した`@types/bun` 1.4.3と`typescript-eslint` 8.71.2を取り込んだ。更新後の解析器のpeer範囲も`>=4.8.4 <6.1.0`なので、唯一残る候補のTypeScript 7.0.2は適用せず6.0.3を維持した。package.jsonとbun.lockの差分を確認し、`bun install --frozen-lockfile`は変更なし、`bun audit`は242パッケージ・脆弱性0件だった。
+- lint・整形・型検査・ビルド、単体428件（3,175アサーション）に成功した。全ブラウザ検証は9スイート・982チェック成功し、`dev-assets/verification/2026-10-15T04-18-35-214Z-offline-73cc3deb/run.json`に記録した。画像生成予行も`dev-assets/readme-capture/offline-b2a36f78-ea3f-4268-bd98-d53599f11745/report.json`で成功した。
+- 配布物SHA-256は`ddc625b6d0ba0167cda0db117588621ef87b575385484ebad9eac906d8a83e01`。前版との差は版情報・説明・それに伴う内部モジュール名のハッシュであることを照合した。実アカウント操作や別ブラウザの導入検証は追加していない。
+
 ## 2026-10-15：README画像の自動撮影
 
 - 承認済み試行`readme-sm9-20261015`で、専用Chrome（9335）を`--no-proxy-server`、匿名の再生コンテキストを`direct://`として撮影した。NicoCache系の追加要素がないことを確認し、視聴ページ遷移1回・FWボタンの実クリック1回でHLSデコード、時間進行、コメントCanvasの実画素を確認した。実サイトの再試行は行っていない。
