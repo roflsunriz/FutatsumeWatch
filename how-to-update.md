@@ -44,6 +44,8 @@ TMで登録したスクリプトのページへの適用だけを確認したい
 
 ## 公開前
 
+READMEの画面を更新する場合は、[画像の更新手順](docs/readme-screenshots.md)に従います。`bun run docs:screenshots --offline`で操作と撮影を予行し、承認後にプロキシなしの専用ブラウザで実サイトを1回だけ再生して生成します。画像を手修正せず、`docs/images/manifest.json`と一緒に差分・目視を確認してください。
+
 ソースファイルを改名するときはケバブケースにそろえ、静的/動的import・テストデータ・文書の参照も更新します。Windowsの大文字小文字だけの改名は、一時名を経由した`git mv`で記録してください。型検査に加えてGit上のファイル名も確認し、`bun run build`で配布物を再生成します。lintはファイル名の規則も検査します。
 
 名称移行後の連携先は`window.FutatsumeWatch`、初期化イベントは`BeforeFutatsumeWatchInitialize` / `FutatsumeWatchInitialize`です。DOMの`zenza` / `zen`接頭辞は`futatsume`へ変更済みです。旧名を使う外部連携も同時に更新してください。lintは警告を含めて0件を必須にします。

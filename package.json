@@ -45,6 +45,7 @@
     "build:dev": "bun scripts/build.ts",
     "test": "bun test --preload ./test/setup.ts",
     "test:browser": "bun scripts/test-browser.ts",
+    "docs:screenshots": "bun scripts/readme-screenshots.ts",
     "test:browser:stop": "bun scripts/dev-browser.ts stop --test",
     "dev:server": "bun --bun vite",
     "dev:setup": "bun scripts/dev-setup.ts",

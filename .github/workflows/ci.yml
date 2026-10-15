@@ -34,12 +34,15 @@ jobs:
           bun-version: 1.4.0
       - run: bun install --frozen-lockfile
       - run: bun run test:browser all --offline
+      - run: bun run docs:screenshots --offline
       - name: 実行結果と失敗時の証跡
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: browser-verification
-          path: dev-assets/verification/
+          path: |
+            dev-assets/verification/
+            dev-assets/readme-capture/
           if-no-files-found: error
           retention-days: 14
   release:

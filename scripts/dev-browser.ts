@@ -2,6 +2,7 @@
 // chrome-debug.ps1（9222）とは競合しないよう、独自プロファイルとポート9333を使う。
 // Tampermonkey（dev-extensions/tampermonkey）を --load-extension で事前導入する。
 // 手動用はheaded、自動テスト用(--test)は別ポート・別プロファイルのheadless。
+// README撮影(--screenshots)は9335。実撮影はプロキシ無効、予行は拡張なし・通信遮断。
 //
 //   bun scripts/dev-browser.ts start [--test]
 //   bun scripts/dev-browser.ts status
@@ -10,21 +11,27 @@
 import { resolve } from 'node:path';
 import { unlink } from 'node:fs/promises';
 
-export function browserEnvironment(testing: boolean) {
-  const dataRoot = testing
-    ? resolve(import.meta.dir, '../dev-assets/browser-tests')
-    : resolve(process.env.USERPROFILE ?? '', 'Documents/.browser-debug');
+export function browserEnvironment(testing: boolean, screenshots = false) {
+  const captureId = process.env.FUTATSUME_SCREENSHOTS_ID ?? 'default';
+  if (screenshots && !/^[a-z0-9-]{1,80}$/.test(captureId)) throw new Error('撮影用プロファイルIDが不正です');
+  const dataRoot = screenshots
+    ? resolve(import.meta.dir, '../dev-assets/readme-browser')
+    : testing
+      ? resolve(import.meta.dir, '../dev-assets/browser-tests')
+      : resolve(process.env.USERPROFILE ?? '', 'Documents/.browser-debug');
   return {
-    port: testing ? 9334 : 9333,
-    profile: resolve(dataRoot, testing ? 'profile' : 'ChromeDev'),
-    statePath: resolve(dataRoot, testing ? 'state.json' : 'chrome-dev-browser-state.json'),
+    port: screenshots ? 9335 : testing ? 9334 : 9333,
+    profile: resolve(dataRoot, screenshots ? `profiles/${captureId}` : testing ? 'profile' : 'ChromeDev'),
+    statePath: resolve(dataRoot, testing || screenshots ? 'state.json' : 'chrome-dev-browser-state.json'),
     chromePath: resolve(import.meta.dir, '../dev-assets/chrome-win64/chrome.exe'),
     extensionDir: resolve(import.meta.dir, '../dev-extensions/tampermonkey'),
-    headed: !testing,
+    headed: !testing && !screenshots,
   };
 }
 
 const TESTING = Bun.argv.includes('--test');
+const SCREENSHOTS = Bun.argv.includes('--screenshots');
+const OFFLINE_CAPTURE = SCREENSHOTS && process.env.FUTATSUME_TEST_OFFLINE === '1';
 const {
   chromePath: CHROME_PATH,
   port: PORT,
@@ -32,7 +39,7 @@ const {
   statePath: STATE_PATH,
   extensionDir: EXT_DIR,
   headed,
-} = browserEnvironment(TESTING);
+} = browserEnvironment(TESTING, SCREENSHOTS);
 
 interface State {
   pid: number;
@@ -88,7 +95,8 @@ function isPidAlive(pid: number): boolean {
 
 async function start(headed: boolean): Promise<void> {
   if (await isReady()) {
-    if (TESTING) throw new Error('自動テスト用ブラウザは使用中です。実行中のテストが終了してから再実行してください。');
+    if (TESTING || SCREENSHOTS)
+      throw new Error('自動用ブラウザは使用中です。実行中の処理が終了してから再実行してください。');
     const info = (await fetch(`http://127.0.0.1:${PORT}/json/version`).then((res) => res.json())) as {
       'User-Agent'?: string;
     };
@@ -100,7 +108,8 @@ async function start(headed: boolean): Promise<void> {
     console.log(`起動済みです: http://127.0.0.1:${PORT}`);
     return;
   }
-  if (!TESTING && !(await Bun.file(`${EXT_DIR}/manifest.json`).exists())) {
+  const loadExtension = (!TESTING || SCREENSHOTS) && !OFFLINE_CAPTURE;
+  if (loadExtension && !(await Bun.file(`${EXT_DIR}/manifest.json`).exists())) {
     throw new Error('拡張機能が展開されていません。先に bun run dev:setup を実行してください');
   }
   const args = [
@@ -110,9 +119,11 @@ async function start(headed: boolean): Promise<void> {
     '--no-default-browser-check',
     '--disable-default-apps',
     '--remote-allow-origins=*',
+    ...(SCREENSHOTS ? ['--lang=ja', '--enable-automation'] : []),
   ];
-  if (!TESTING) args.push(`--load-extension=${EXT_DIR}`);
-  if (TESTING && process.env.FUTATSUME_TEST_OFFLINE === '1') {
+  if (SCREENSHOTS && !OFFLINE_CAPTURE) args.push('--no-proxy-server');
+  if (loadExtension) args.push(`--load-extension=${EXT_DIR}`);
+  if (OFFLINE_CAPTURE || (TESTING && !SCREENSHOTS && process.env.FUTATSUME_TEST_OFFLINE === '1')) {
     // 未捕捉のWorker/タブも外部へ送信させない。応答はCDP側で明示的に供給する。
     args.push('--proxy-server=http://127.0.0.1:9', '--proxy-bypass-list=<-loopback>', '--disable-quic');
   }

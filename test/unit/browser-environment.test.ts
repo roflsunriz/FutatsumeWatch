@@ -23,4 +23,15 @@ describe('手動検証と自動テストのブラウザ分離', () => {
     expect(automated.profile).toBe(resolve(import.meta.dir, '../../dev-assets/browser-tests/profile'));
     expect(automated.chromePath).toBe(manual.chromePath);
   });
+
+  it('README撮影は手動・自動テストとポート・プロファイル・停止対象を共有しない', () => {
+    const capture = browserEnvironment(false, true);
+    for (const existing of [browserEnvironment(false), browserEnvironment(true)]) {
+      expect(capture.port).not.toBe(existing.port);
+      expect(capture.profile).not.toBe(existing.profile);
+      expect(capture.statePath).not.toBe(existing.statePath);
+    }
+    expect(capture.headed).toBe(false);
+    expect(capture.port).toBe(9335);
+  });
 });

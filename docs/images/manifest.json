@@ -1,0 +1,101 @@
+{
+  "version": "0.0.29",
+  "source": "live-sm9",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "proxy": "direct",
+  "bundleSha256": "fc6f55cd26999d8d8a115fc24dff226750690f1f743edd9b413fe7269b75d693",
+  "checks": [
+    "専用Chromeをプロキシ無効で起動",
+    "起動ボタンの実クリック1回・映像デコード・時間進行・コメント画素",
+    "設定5カテゴリと右4タブの実クリック切替"
+  ],
+  "images": [
+    {
+      "name": "tampermonkey",
+      "sha256": "89e0a62245394294f8f03ca10012ae099f62166a4957ea328c7fecd639a79216",
+      "bytes": 274927
+    },
+    {
+      "name": "install",
+      "sha256": "a6545e92691f77f76eafbfe1ab0c5018de1c53f8ece2624a931acfe6a18d9fc5",
+      "bytes": 189635
+    },
+    {
+      "name": "update",
+      "sha256": "f388329566c95789595e7dca456e8ab76d2ff36f6a56d744b61869de0949e8a0",
+      "bytes": 77810
+    },
+    {
+      "name": "entry",
+      "sha256": "babf4c13d39ba5a4a99c3a6b0421c3cded20e03486af99a6c58edec9dcda17ea",
+      "bytes": 31329
+    },
+    {
+      "name": "playback",
+      "sha256": "d9a56bb9e441e5cb38e37120461232f63295e9ccfcc1193c3fefee4c590e31d5",
+      "bytes": 790686
+    },
+    {
+      "name": "guide",
+      "sha256": "965f6897f544e6b2fb689a182e004d23593b8aaaa971037f468496b9432c237f",
+      "bytes": 835994
+    },
+    {
+      "name": "settings-player",
+      "sha256": "f9c85ecd6dd9d2e14922b8c970e6281c8d1609bcb6fd5dabf9c34f87232eec6a",
+      "bytes": 85435
+    },
+    {
+      "name": "settings-comments",
+      "sha256": "e6a059c546568c7c142d1617c4e8d26ff96978e14734de6aa4dfe0731ab04f79",
+      "bytes": 87798
+    },
+    {
+      "name": "settings-filters",
+      "sha256": "33ebcf5d21f147e599979facb26698c56874fdd0f1a7f11bea8568d7701f05c4",
+      "bytes": 112104
+    },
+    {
+      "name": "settings-data",
+      "sha256": "4dbd4b5082f50df2b9ec9446a9aa89f66b3cd39a615882bf38c9ca8769a533ec",
+      "bytes": 54078
+    },
+    {
+      "name": "settings-advanced",
+      "sha256": "daf32f65a46a1fa2d9d0cad3121890d0715476b0b2e7f891aaae4037cf7dfaa9",
+      "bytes": 66164
+    },
+    {
+      "name": "tab-info",
+      "sha256": "cfa276c6c3ecf567bcd2cbe2826956ab2b957d7f1b81ca39996a865739c6067a",
+      "bytes": 686488
+    },
+    {
+      "name": "tab-related",
+      "sha256": "e03807a5efd1b53c31d5744ba7e7a89f35d0217b51ee24898772ca94752242c9",
+      "bytes": 751014
+    },
+    {
+      "name": "tab-comments",
+      "sha256": "1f95fb3dc14b8d607291f8ba01a71410528aabe22ccf7d679153de1ca2fbf490",
+      "bytes": 774766
+    },
+    {
+      "name": "tab-playlist",
+      "sha256": "cbe0816c0eb2f6e1018d2806ba66196b076f53de694c897a748715ced18e4a9e",
+      "bytes": 751177
+    }
+  ],
+  "completed": true,
+  "entryCrop": {
+    "x": 0,
+    "y": 411,
+    "width": 1440,
+    "height": 240,
+    "scale": 1,
+    "sourceSha256": "42b51da0ee3701093e2d756791ea8217d594a2616537299ead1b8d619fb36cf2"
+  }
+}
