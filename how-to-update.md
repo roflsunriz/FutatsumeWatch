@@ -63,11 +63,11 @@ READMEの画面を更新する場合は、[画像の更新手順](docs/readme-sc
 
 更新前にユーザースクリプトマネージャから旧スクリプトをエクスポートします。設定を削除せず、問題のある版を無効化して保存した版を再導入します。Gitで旧版をビルドする場合は別ディレクトリのチェックアウトを使い、現在の未コミット変更を巻き戻さないでください。旧ZenzaWatchの設定キーは移行時に削除しません。
 
-開発・配布にはREADMEにあるBunコマンドを使用します。旧バッチ・ローダー・デモ・未使用モックは0.0.9で整理しました。旧ブラウザテストのイベント検証は`test/unit/uquery.test.ts`へ移しています。`sample/`は旧コメントアートの比較資料として保持し、現行テストとしては扱いません。
+開発・配布には[findings.mdの開発節](findings.md#readme-1)にあるBunコマンドを使用します。旧バッチ・ローダー・デモ・未使用モックは0.0.9で整理しました。旧ブラウザテストのイベント検証は`test/unit/uquery.test.ts`へ移しています。`sample/`は旧コメントアートの比較資料として保持し、現行テストとしては扱いません。
 
 ## コメントエンジン更新時
 
-`comment-overlay`はnpmの公開版を固定して導入し、`bun add --exact comment-overlay@<確認した版>`でpackage.jsonとbun.lockを同時に更新します。GitHubの既定ブランチとnpm版の挙動は同一と仮定せず、インストールした配布物・型定義・LICENSEを確認します。現行の公開型に必要なpaths設定はAGENTS.mdを参照してください。
+`comment-overlay`はnpmの公開版を固定して導入し、`bun add --exact comment-overlay@<確認した版>`でpackage.jsonとbun.lockを同時に更新します。GitHubの既定ブランチとnpm版の挙動は同一と仮定せず、インストールした配布物・型定義・LICENSEを確認します。現行の公開型に必要なpaths設定は[findings.mdのコメントエンジン節](findings.md#agents-17)を参照してください。
 
 `bun run test:browser player`で配布物と同梱ライセンスを再生成し、コメントの画素、重なり、比率、NG、シーク、保存HTML、投稿プレビュー取り消しを確認します。公開サーバーへの投稿は行わず、プレビューをプレイヤー内だけで追加・削除します。
 
@@ -77,10 +77,4 @@ READMEの画面を更新する場合は、[画像の更新手順](docs/readme-sc
 
 ## Dependabot PR の更新
 
-前提は `.github/dependabot.yml` と PR 用 CI（Quality）です。更新 PR の head SHA と `gh pr checks <PR番号>` の結果を確認してください。patch／minor は全チェック成功後に自動取り込みされます。初回 CI 失敗は failed jobs のみを 1 回再実行し、再失敗した PR は残して手動で修正します。
-
-複数PRが同じ`bun audit`の間接依存脆弱性で失敗した場合は、影響するlockfileを修正し、各PRの更新を統合してから`bun install --frozen-lockfile`、`bun audit`、品質チェックとオフラインブラウザー検証を通します。PRのheadコミットがmainへ到達し、GitHub上でmergedになったことも確認します。
-
-設定を変えたときは `actionlint .github/workflows/dependabot-automation.yml` と実際の PR の Actions 結果を確認します。問題があれば呼び出し先の共通 workflow SHA を直前の検証済み値へ戻すコミットを push します。取り込まれた依存更新に問題があれば通常の revert コミットで復旧します。
-
-CI 完了より Dependabot の分類が遅れる場合は、`callback_workflow_file` が指す呼び出し側 workflow を `workflow_dispatch` し、同じ PR 番号・head SHA・全チェックを再確認する。呼び出し側のファイル名を変える際はこの入力も一緒に更新する。
+詳細は [findings.md](findings.md#update-1) に移しました。
