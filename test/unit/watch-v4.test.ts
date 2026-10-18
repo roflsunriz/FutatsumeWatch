@@ -10,12 +10,35 @@ import {
   normalizeWatchV4Media,
   parseWatchResponseText,
   unwrapWatchResponse,
+  watchLoginRequiredMessage,
 } from '../../packages/lib/src/nico/watch-response';
 import { TagEditApi } from '../../packages/lib/src/nico/tag-edit-api';
+import { watchLoginRequired as loginRequired } from '../fixtures/functionality/watch-login-required';
 
 const originalFetch = netUtil.fetch;
 afterEach(() => {
   netUtil.fetch = originalFetch;
+});
+
+test('未ログインの制限動画は理由とログイン後の再生手順を案内し、自動再送しない', async () => {
+  let requests = 0;
+  netUtil.fetch = (_url, options) => {
+    requests++;
+    expect(options?.credentials).toBe('include');
+    return Promise.resolve(Response.json(loginRequired, { status: 400 }));
+  };
+  const error: unknown = await VideoInfoLoader.load('sm20516122', {}).catch((value: unknown) => value);
+  expect(error).toMatchObject({ watchId: 'sm20516122', message: watchLoginRequiredMessage(loginRequired) });
+  expect(requests).toBe(1);
+  expect(watchLoginRequiredMessage(loginRequired, 'ja')).toContain('公式視聴ページ');
+  expect(watchLoginRequiredMessage(loginRequired, 'en')).toContain('Sign in');
+  expect(() => unwrapWatchResponse(loginRequired)).toThrow(watchLoginRequiredMessage(loginRequired)!);
+  const signedIn = structuredClone(loginRequired);
+  signedIn.data.googleTagManager.user.login_status = 'login';
+  expect(watchLoginRequiredMessage(signedIn)).toBeNull();
+  const other = structuredClone(loginRequired);
+  other.data.response.reasonCode = 'OTHER';
+  expect(watchLoginRequiredMessage(other)).toBeNull();
 });
 
 for (const format of ['v4-envelope', 'v4-flat', 'v4-html'] as const) {

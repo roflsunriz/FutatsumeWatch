@@ -3,8 +3,27 @@ import { netUtil } from '../infra/net-util';
 export const isWatchRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+export function watchLoginRequiredMessage(value: unknown, locale = navigator.language): string | null {
+  if (!isWatchRecord(value) || !isWatchRecord(value.data)) return null;
+  const { response, googleTagManager } = value.data;
+  if (
+    !isWatchRecord(response) ||
+    response.errorCode !== 'FORBIDDEN' ||
+    response.reasonCode !== 'HARMFUL_VIDEO' ||
+    !isWatchRecord(googleTagManager) ||
+    !isWatchRecord(googleTagManager.user) ||
+    googleTagManager.user.login_status !== 'not_login'
+  )
+    return null;
+  return locale.startsWith('ja')
+    ? 'この動画の再生にはニコニコへのログインが必要です。公式視聴ページでログインしてから、もう一度再生してください。'
+    : 'Sign in to Niconico on the official watch page, then try playing this video again.';
+}
+
 export function unwrapWatchResponse(value: unknown): Record<string, unknown> {
   if (!isWatchRecord(value) || !isWatchRecord(value.data)) throw new Error('動画情報の応答形式が不正です');
+  const loginMessage = watchLoginRequiredMessage(value);
+  if (loginMessage) throw new Error(loginMessage);
   if (
     isWatchRecord(value.meta) &&
     typeof value.meta.status === 'number' &&
@@ -56,7 +75,15 @@ export async function loadWatchPageData(watchId: string, economy = false): Promi
     const response = (await netUtil.fetch(endpoint, { credentials: 'include' }).catch(() => {
       throw new WatchPageNetworkError('通信エラー(network)');
     })) as Response;
-    if (!response.ok) throw new Error(`動画情報の取得に失敗しました (HTTP ${response.status})`);
+    if (!response.ok) {
+      let denied: unknown;
+      try {
+        denied = await response.json();
+      } catch {
+        /* エラー本文がJSONでなくてもHTTP拒否を保持する。 */
+      }
+      throw new Error(watchLoginRequiredMessage(denied) ?? `動画情報の取得に失敗しました (HTTP ${response.status})`);
+    }
     const text = await response.text().catch(() => {
       throw new WatchPageNetworkError('通信エラー(network)');
     });

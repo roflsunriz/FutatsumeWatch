@@ -2,6 +2,7 @@ import _ from 'lodash';
 import { MylistApiLoader } from '../shared/external-api';
 import { util } from '../shared/util';
 import { global } from '../app/futatsume-watch-index';
+import { shellText } from '../player-shell/player-shell-view';
 
 import type { PlayerState } from '../player-shell/state';
 import type { DialogUtilView, VideoHoverMenuParams } from './types';
@@ -291,10 +292,15 @@ class VideoHoverMenu {
       top: 60%;
       transform: translate(-50%, 0);
       display: none;
-      white-space: nowrap;
+      width: max-content;
+      max-width: calc(100% - 24px);
+      white-space: normal;
     }
       .is-error .onErrorMenu {
-        display: block !important;
+        display: flex !important;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
         opacity: 1 !important;
       }
 
@@ -309,7 +315,7 @@ class VideoHoverMenu {
       .onErrorMenu .menuButton {
         position: relative;
         display: inline-block !important;
-        margin: 0 16px;
+        margin: 0;
         padding: 8px;
         background: #888;
         color: #000;
@@ -318,7 +324,11 @@ class VideoHoverMenu {
         border-radius: 0;
         box-shadow: 4px 4px 0 #333;
         border: 2px outset;
-        width: 100px;
+        width: auto;
+        min-width: 100px;
+        min-height: 44px;
+        height: auto;
+        white-space: normal;
         font-size: 14px;
         line-height: 16px;
       }
@@ -810,7 +820,7 @@ VideoHoverMenu.__tpl__ = `
 
       <div class="menuItemContainer onErrorMenu">
         <div class="menuButton openGinzaMenu" data-command="openGinza">
-          <div class="menuButtonInner">(Re)で視聴</div>
+          <div class="menuButtonInner">${shellText(navigator.language).original}</div>
         </div>
 
         <div class="menuButton reloadMenu for-nicovideo" data-command="reload">

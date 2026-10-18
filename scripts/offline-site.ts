@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { createLibraryRoutes } from './offline-library';
 import { mediaSpec } from '../test/fixtures/functionality/media-spec';
 import { watchV4Response } from '../test/fixtures/functionality/watch-v4';
+import { watchLoginRequired } from '../test/fixtures/functionality/watch-login-required';
 import type { WatchFixtureFormat } from '../test/fixtures/functionality/watch-v4';
 
 export interface FixtureRequest {
@@ -85,6 +86,7 @@ export function createOfflineSite() {
   const auth = { isLogin: true, isPremium: false, postKeyStatus: 200, pageMetadata: true };
   const faults = {
     watchFormat: 'legacy' as WatchFixtureFormat,
+    watchLoginRequired: false,
     watchHlsUrl: undefined as string | undefined,
     postStatus: 200,
     postDelayMs: 0,
@@ -178,7 +180,7 @@ export function createOfflineSite() {
       initConfig: { user: { isLogin: auth.isLogin, isPremium: auth.isLogin && auth.isPremium } },
     });
     const header = auth.pageMetadata ? `<header id="CommonHeader" data-common-header='${commonHeader}'></header>` : '';
-    return `<!doctype html><html lang="ja"><head><meta charset="utf-8">${watchMeta}<link rel="icon" href="data:,"><style>body{margin:0;background:#eee}main{padding:24px}main>div{display:flex;align-items:center;gap:16px}h1{font-size:20px}img{width:48px}article{padding:20px}</style></head><body>${header}<div id="root"><main id="fixture-host" aria-label="nicovideo-content">${markup}</main></div><script>const row=${JSON.stringify(row)},search=${JSON.stringify(search)};function render(){document.querySelector('#fixture-host').innerHTML=location.pathname.startsWith('/watch/')?row:search;}document.addEventListener('click',e=>{const a=e.target.closest('main a[href^="/watch/"]');if(a&&!e.defaultPrevented){e.preventDefault();history.pushState({fixture:true},'',a.getAttribute('href'));render();}});addEventListener('popstate',render);</script></body></html>`;
+    return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${watchMeta}<link rel="icon" href="data:,"><style>body{margin:0;background:#eee}main{padding:24px}main>div{display:flex;align-items:center;gap:16px}h1{font-size:20px}img{width:48px}article{padding:20px}</style></head><body>${header}<div id="root"><main id="fixture-host" aria-label="nicovideo-content">${markup}</main></div><script>const row=${JSON.stringify(row)},search=${JSON.stringify(search)};function render(){document.querySelector('#fixture-host').innerHTML=location.pathname.startsWith('/watch/')?row:search;}document.addEventListener('click',e=>{const a=e.target.closest('main a[href^="/watch/"]');if(a&&!e.defaultPrevented){e.preventDefault();history.pushState({fixture:true},'',a.getAttribute('href'));render();}});addEventListener('popstate',render);</script></body></html>`;
   }
   return {
     writes,
@@ -355,6 +357,7 @@ export function createOfflineSite() {
           id = match?.[1];
         if (id && isWatch(id)) {
           if (query(url, { responseType: 'json' }) || query(url, { responseType: 'json', eco: '1' })) {
+            if (faults.watchLoginRequired && !auth.isLogin) return json(watchLoginRequired, 400);
             if (faults.watchDelayMs) await Bun.sleep(faults.watchDelayMs);
             if (faults.watchFormat === 'v4-html')
               return { status: 200, mime: 'text/html; charset=utf-8', body: await html(path) };

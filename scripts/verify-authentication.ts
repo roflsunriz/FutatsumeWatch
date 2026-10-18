@@ -1,6 +1,7 @@
 import { attach, attachBrowser, cleanupCdp, evaluate, listTargets } from './dev-cdp';
 import { offlineSites } from './dev-offline';
 import { clickVisible } from './dev-ui';
+import { verificationDirectory } from './dev-verification-output';
 
 /** Each authentication state starts in a new document, as the real bootstrap does. */
 export async function verifyAuthentication(source: string): Promise<string[]> {
@@ -80,6 +81,84 @@ export async function verifyAuthentication(source: string): Promise<string[]> {
     if (site.writes.length !== 1 || site.comments.filter((c) => c.body === '認証拒否からの復帰').length !== 1)
       throw Error('認証回復後の投稿が1要求1受理になりませんでした');
     checks.push('認証拒否は0投稿、回復後は1要求1受理');
+    site.auth.isLogin = false;
+    site.faults.watchLoginRequired = true;
+    const externalUrl = 'https://dic.nicovideo.jp/a/watch-login-fixture';
+    site.documents.set(
+      'https://www.nicovideo.jp/robots.txt',
+      '<!doctype html><html><head><link rel="icon" href="data:,"></head><body></body></html>'
+    );
+    site.documents.set(
+      externalUrl,
+      '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body><a href="https://nico.ms/sm9">制限動画</a></body></html>'
+    );
+    let deniedRequests = 0;
+    page.onEvent((method, params) => {
+      if (
+        method === 'Network.requestWillBeSent' &&
+        String((params.request as { url: string }).url).includes('/watch/sm9?responseType=json')
+      )
+        deniedRequests++;
+    });
+    await page.send('Page.navigate', { url: externalUrl });
+    await page.send('Page.bringToFront');
+    await check(
+      `window.FutatsumeWatch?.ready&&!!document.querySelector('[data-futatsume-video="sm9"]:not(:disabled)')`,
+      '大百科相当ページに制限動画の起動ボタンを表示'
+    );
+    await clickVisible(page, '[data-futatsume-video="sm9"]');
+    await check(
+      `window.FutatsumeWatch.debug.dialog._state.isError&&/ログイン|Sign in/.test(document.querySelector('.errorMessageContainer').textContent)&&document.querySelector('futatsume-video').paused`,
+      '未ログインの制限動画をHTTP400だけでなくログイン案内で停止'
+    );
+    await Bun.sleep(700);
+    if (deniedRequests !== 1) throw Error('ログイン拒否を自動再送しました');
+    checks.push('ログイン拒否の動画情報要求は1回だけ');
+    await page.send('Emulation.setDeviceMetricsOverride', {
+      width: 390,
+      height: 700,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(
+      `(()=>{const r=document.querySelector('.onErrorMenu').getBoundingClientRect();return r.x>=0&&r.right<=innerWidth&&r.height>=44})()`,
+      '狭幅でもログイン案内の公式ページボタンを画面内に配置'
+    );
+    const deniedImage = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
+    await Bun.write(
+      new URL('watch-login-required-390.png', verificationDirectory),
+      Buffer.from(deniedImage.data, 'base64')
+    );
+    await page.send('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 800,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    const before = (await browser.send('Target.getTargets')) as { targetInfos: Array<{ targetId: string }> };
+    await clickVisible(page, '.onErrorMenu [data-command="openGinza"]');
+    let opened: { targetId: string; url: string } | undefined;
+    const until = Date.now() + 10000;
+    while (!opened && Date.now() < until) {
+      const targets = (await browser.send('Target.getTargets')) as {
+        targetInfos: Array<{ targetId: string; url: string }>;
+      };
+      opened = targets.targetInfos.find(
+        (t) =>
+          !before.targetInfos.some((previous) => previous.targetId === t.targetId) &&
+          t.url === 'https://www.nicovideo.jp/watch/sm9'
+      );
+      if (!opened) await Bun.sleep(100);
+    }
+    if (!opened) throw Error('ログイン用の公式視聴ページが開きません');
+    checks.push('ログイン案内から対象動画の公式視聴ページを開く');
+    await browser.send('Target.closeTarget', { targetId: opened.targetId });
+    site.auth.isLogin = true;
+    await clickVisible(page, '.onErrorMenu [data-command="reload"]');
+    await check(
+      `!window.FutatsumeWatch.debug.dialog._state.isError&&document.querySelector('futatsume-video').readyState>=3`,
+      'ログイン後の明示的な再読込で映像へ復帰'
+    );
     return checks;
   } finally {
     await cleanupCdp(
