@@ -11,6 +11,18 @@ FutatsumeWatch の実現手段、共通指針の適用条件と調査知見の�
 
 新たな免除や操作許可を追加するものではない。AGENTS.mdの禁止・承認条件と共通指針は引き続き有効。
 
+## モバイル操作と既存コンテキストメニュー（2026-10-18）
+
+- タッチの`pointerup`後にも`pointerleave`が発生するため、操作部の即時非表示をマウス離脱だけに限定する。タッチ／ペン操作後は5秒、マウスは従来の3秒で隠す。メニュー・入力・ドラッグ中は表示を維持する。
+- 長押しの既存メニューは`src/nico-video-player/context-menu.ts`。下位VideoPlayerの発行名は`contextmenu`だが、NicoVideoPlayerが`contextMenu`を購読して接続が切れていた。新旧のhoverメニューとは別物なので、シェルが非表示にした`.menuItemContainer`を復活させず、このイベント接続を修正する。反復操作はpointerup／pointercancel／blurでも停止し、狭幅・低高さではメニュー全体を画面内でスクロールする。
+- Issue #12の対象は、大百科「ガバ穴ダディー」の関連動画とコメント欄からのsm20516122。コメント欄には`https://nico.ms/sm20516122`の短縮リンクがあり、`watch-entry.ts`の短縮URL判定・リンク探索にも対応する。生放送短縮IDや偽装ホストへ動画起動を付けない。
+- 同動画の匿名応答はHTTP400・`meta.code=FORBIDDEN`・`data.response.reasonCode=HARMFUL_VIDEO`・`googleTagManager.user.login_status=not_login`だった。ログイン済みでは旧Domand形式でChromeの実再生と、専用Firefoxの同記事からの動画情報・再生権・コメント取得、明示再生後のデコードと時間進行を確認した。年代だけを原因とせず、`watch-response.ts`は確認済みの未ログイン拒否だけをログイン案内へ変える。他の拒否・ログイン済みの制限・有料条件を一般化して上書きしない。
+- 調査初期の匿名主HTML400による採取停止、`Accept: application/json`での直接取得406、FirefoxへCookieを設定する際のcontext依存保存領域は、製品不具合の証拠に使わない。Firefoxの対照試験では`storageKey`のdefault保存領域を使い、公式視聴ページのHTTP200を先に確認する。認証値を出力・保存しない。
+- Chrome 153ではFetchの停止通知がNetworkのinitiator通知より先に届き、FWのpreflightを公式再生と誤判定した。`live-capture.ts`は所有元を最大250ms待ち、不明なら拒否する。配信権と同URLへ送る公式の`heartbeat`付き視聴ログは再生権とは別物で、比較採取では送信を除外する。保存HTMLの認証値マスクは`&quot;`を保つ。試行・未達の内訳はverification.md。
+- メニュー項目の選択後は100ms遅延で閉じる既存処理があるため、次の長押しは`isOpen=false`を待ってから送る。終了前の同じ固定座標へ次の押下を送ると、まだ開いたメニューに当たり長押しにならない。横向きでは固定座標が操作バーに入るため、`.touchWrapper`へのヒットテストで映像上の点を選ぶ。`verify-mobile-controls.ts`を参照。
+- `PlayerState.videoInfo`は最初のモデルを保持して`update`するが、`debug.videoInfo`は後から届いた別モデルを指すことがある。動画を切り替えた後の再開位置検証では、メニューが参照するstate側と再生コマンドが参照するdialog側の両方へ同じフィクスチャを入れ、両方を復元する。デバッグ値だけの変更を製品状態の変更と同一視しない。
+- 動画情報の取得拒否は`_onVideoInfoLoaderFail`で`PlayerState.setVideoErrorOccurred()`へ渡す。`isError`だけの変更では`isLoading`が残り、ログイン案内と「動画読込中」が同時表示される。`video-recovery.test.ts`で旧要求の失敗を無視することと読み込み・再生・シークの終了を確認する。
+
 <a id="agents-1"></a>
 
 ## README画像の自動生成（2026-10-15）
