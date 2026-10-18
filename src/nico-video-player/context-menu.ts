@@ -26,7 +26,9 @@ class ContextMenu extends BaseViewComponent {
       isOpen: false,
     };
 
-    this._bound.onBodyClick = this.hide.bind(this);
+    this._bound.onBodyClick = (event) => {
+      if (!this._view.contains(event.target as Node)) this.hide();
+    };
   }
 
   _initDom(...args: [NvpBaseViewParams]) {
@@ -36,12 +38,27 @@ class ContextMenu extends BaseViewComponent {
     this._bound.onBodyMouseUp = this._onBodyMouseUp.bind(this);
     this._bound.onRepeat = this._onRepeat.bind(this);
     this._view.classList.toggle('is-pictureInPictureEnabled', document.pictureInPictureEnabled);
-    this._view.addEventListener('mousedown', onMouseDown);
+    this._view.addEventListener('pointerdown', onMouseDown);
+    this._view.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        this.hide();
+        return;
+      }
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      event.stopPropagation();
+      super._onClick(event);
+    });
+    for (const control of this._view.querySelectorAll<HTMLElement>('[data-command]')) {
+      control.tabIndex = 0;
+      control.setAttribute('role', 'button');
+    }
+    window.addEventListener('blur', () => this.hide());
     this._isFirstShow = true;
     this._view.addEventListener('contextmenu', (e: MouseEvent) => {
-      setTimeout(() => {
-        this.hide();
-      }, 100);
+      // タッチ長押しの既定イベントが、開いた直後のメニューへ届いても閉じない。
       e.preventDefault();
       e.stopPropagation();
     });
@@ -52,7 +69,7 @@ class ContextMenu extends BaseViewComponent {
       return;
     }
 
-    if (e.type !== 'mousedown') {
+    if (e.type !== 'pointerdown') {
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -62,10 +79,14 @@ class ContextMenu extends BaseViewComponent {
   }
 
   _onMouseDown(e: MouseEvent): void {
-    if (e.target && (e.target as Element).getAttribute('data-is-no-close') === 'true') {
+    if (e.button !== 0) return;
+    const control = (e.target as Element).closest<HTMLElement>('[data-command]');
+    if (!control || !this._view.contains(control)) return;
+    e.preventDefault();
+    if (control.dataset.isNoClose === 'true') {
       e.stopPropagation();
       this._onClick(e);
-    } else if (e.target && (e.target as Element).getAttribute('data-repeat') === 'on') {
+    } else if (control.dataset.repeat === 'on') {
       e.stopPropagation();
       this._onClick(e);
       this._beginRepeat(e);
@@ -84,7 +105,8 @@ class ContextMenu extends BaseViewComponent {
 
   _beginRepeat(e: MouseEvent): void {
     this._repeatEvent = e;
-    document.body.addEventListener('mouseup', this._bound.onBodyMouseUp as EventListener);
+    document.addEventListener('pointerup', this._bound.onBodyMouseUp as EventListener);
+    document.addEventListener('pointercancel', this._bound.onBodyMouseUp as EventListener);
 
     this._repeatTimer = window.setInterval(this._bound.onRepeat as () => void, 200);
     this._isRepeating = true;
@@ -92,12 +114,13 @@ class ContextMenu extends BaseViewComponent {
 
   _endRepeat(): void {
     this._repeatEvent = null;
-    // this._isRepeating = false;
+    this._isRepeating = false;
     if (this._repeatTimer) {
       window.clearInterval(this._repeatTimer);
       this._repeatTimer = null;
     }
-    document.body.removeEventListener('mouseup', this._bound.onBodyMouseUp as EventListener);
+    document.removeEventListener('pointerup', this._bound.onBodyMouseUp as EventListener);
+    document.removeEventListener('pointercancel', this._bound.onBodyMouseUp as EventListener);
   }
 
   _onRepeat(): void {
@@ -111,19 +134,21 @@ class ContextMenu extends BaseViewComponent {
   }
 
   show(x: number, y: number): void {
-    document.body.addEventListener('click', this._bound.onBodyClick);
+    document.addEventListener('pointerdown', this._bound.onBodyClick, true);
     const view = this._view;
 
     this._onBeforeShow();
-
-    view.style.left = cssUtil.px(Math.max(0, Math.min(x, global.innerWidth - view.offsetWidth))) as string;
-    view.style.top = cssUtil.px(Math.max(0, Math.min(y + 20, global.innerHeight - view.offsetHeight))) as string;
     this.setState({ isOpen: true });
+    view.style.left = cssUtil.px(Math.max(8, Math.min(x, window.innerWidth - view.offsetWidth - 8))) as string;
+    view.style.top = cssUtil.px(Math.max(8, Math.min(y + 20, window.innerHeight - view.offsetHeight - 8))) as string;
+    view.scrollTop = 0;
+    view.tabIndex = -1;
+    view.focus({ preventScroll: true });
     void global.emitter.emitAsync('showMenu');
   }
 
   hide(): void {
-    document.body.removeEventListener('click', this._bound.onBodyClick);
+    document.removeEventListener('pointerdown', this._bound.onBodyClick, true);
     (util as unknown as NvpUtil).$(this._view).css({ left: '', top: '' });
     this._endRepeat();
     this.setState({ isOpen: false });
@@ -172,20 +197,22 @@ class ContextMenu extends BaseViewComponent {
 ContextMenu.__css__ = `
   .futatsumePlayerContextMenu {
     position: fixed;
-    background: rgba(255, 255, 255, 0.8);
-    overflow: visible;
+    background: #f5f5f5;
+    box-sizing: border-box;
+    width: min(330px, calc(100vw - 16px));
+    max-height: calc(100dvh - 16px);
+    overflow: auto;
     padding: 8px;
     border: 1px outset #333;
     box-shadow: 2px 2px 4px #000;
     transition: opacity 0.3s ease;
-    min-width: 200px;
     z-index: 150000;
     user-select: none;
     color: #000;
   }
   .futatsumePlayerContextMenu.is-Open {
     display: block;
-    opacity: 0.5;
+    opacity: 1;
   }
   .futatsumePlayerContextMenu.is-Open:hover {
     opacity: 1;
@@ -242,11 +269,8 @@ ContextMenu.__css__ = `
   }
 
   .futatsumePlayerContextMenu .controlButtonContainer {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    width: 110%;
-    transform: translate(-50%, 0);
+    position: relative;
+    width: 100%;
     white-space: nowrap;
   }
   .futatsumePlayerContextMenu .controlButtonContainerFlex {
@@ -306,6 +330,15 @@ ContextMenu.__css__ = `
   .is-pictureInPictureEnabled [data-command="picture-in-picture"] {
     display: block;
   }
+  .futatsumePlayerContextMenu [data-command]:focus-visible {
+    outline: 2px solid #267dbe;
+    outline-offset: -2px;
+  }
+  @media (hover: none), (pointer: coarse) {
+    .futatsumePlayerContextMenu ul li { min-height: 44px; box-sizing: border-box; display: flex; align-items: center; }
+    .futatsumePlayerContextMenu .controlButtonContainerFlex { flex-wrap: wrap; }
+    .futatsumePlayerContextMenu .controlButtonContainerFlex > .controlButton { min-width: 44px; }
+  }
 
   `.trim();
 
@@ -322,33 +355,33 @@ ContextMenu.__tpl__ = `
       <div class="controlButtonContainerFlex">
         <div class="controlButton command rate010 playbackRate" data-command="playbackRate"
           data-param="0.1" data-type="number" data-repeat="on">
-          &#128034;<div class="tooltip">コマ送り(0.1倍)</div>
+          0.1×<div class="tooltip">0.1倍速</div>
         </div>
         <div class="controlButton command rate050 playbackRate" data-command="playbackRate"
           data-param="0.5" data-type="number" data-repeat="on">
-          <div class="tooltip">0.5倍速</div>
+          0.5×<div class="tooltip">0.5倍速</div>
         </div>
         <div class="controlButton command rate075 playbackRate" data-command="playbackRate"
           data-param="0.75" data-type="number" data-repeat="on">
-          <div class="tooltip">0.75倍速</div>
+          0.75×<div class="tooltip">0.75倍速</div>
         </div>
 
         <div class="controlButton command rate100 playbackRate" data-command="playbackRate"
           data-param="1.0" data-type="number" data-repeat="on">
-          &#9655;<div class="tooltip">標準速</div>
+          1×<div class="tooltip">標準速</div>
         </div>
 
         <div class="controlButton command rate125 playbackRate" data-command="playbackRate"
           data-param="1.25" data-type="number" data-repeat="on">
-          <div class="tooltip">1.25倍速</div>
+          1.25×<div class="tooltip">1.25倍速</div>
         </div>
         <div class="controlButton command rate150 playbackRate" data-command="playbackRate"
           data-param="1.5" data-type="number" data-repeat="on">
-          <div class="tooltip">1.5倍速</div>
+          1.5×<div class="tooltip">1.5倍速</div>
         </div>
         <div class="controlButton command rate200 playbackRate" data-command="playbackRate"
           data-param="2.0" data-type="number" data-repeat="on">
-          &#128007;<div class="tooltip">2倍速</div>
+          2×<div class="tooltip">2倍速</div>
         </div>
       </div>
       <div class="controlButtonContainerFlex seekToResumePoint">
@@ -361,22 +394,22 @@ ContextMenu.__tpl__ = `
       <div class="controlButtonContainerFlex">
         <div class="controlButton command seek5s"
           data-command="seekBy" data-param="-5" data-type="number" data-repeat="on"
-          >⇦
+          >−5s
             <div class="tooltip">5秒戻る</div>
         </div>
         <div class="controlButton command seek15s"
           data-command="seekBy" data-param="-15" data-type="number" data-repeat="on"
-          >⇦
+          >−15s
             <div class="tooltip">15秒戻る</div>
         </div>
         <div class="controlButton command seek15s"
           data-command="seekBy" data-param="15" data-type="number" data-repeat="on"
-          >⇨
+          >+15s
             <div class="tooltip">15秒進む</div>
         </div>
         <div class="controlButton command seek5s"
           data-command="seekBy" data-param="5" data-type="number" data-repeat="on"
-          >⇨
+          >+5s
             <div class="tooltip">5秒進む</div>
         </div>
       </div>

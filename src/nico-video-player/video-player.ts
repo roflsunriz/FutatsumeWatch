@@ -5,6 +5,7 @@ import { CONSTANT } from '../shared/constant';
 import { Emitter } from '../shared/baselib';
 import { MediaTimeline } from '../../packages/lib/src/dom/media-timeline';
 import { ClassList } from '../../packages/lib/src/dom/class-list-wrapper';
+import { installLongPressMenu } from './long-press-menu';
 import type { NvpUtil, NvpVideoPlayerParams, NvpYouTubePlayer } from './types';
 
 class VideoPlayer extends Emitter {
@@ -112,6 +113,7 @@ class VideoPlayer extends Emitter {
     this._touchWrapper = document.createElement('div');
     this._touchWrapper.className = 'touchWrapper';
     body.append(this._touchWrapper);
+    installLongPressMenu(this._touchWrapper);
 
     this._initializeEvents();
 

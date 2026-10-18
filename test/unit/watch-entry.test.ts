@@ -47,6 +47,20 @@ const watchHeader =
   '<section><div id="info-row"><div><h1>動画タイトル</h1></div><div id="owner"><a data-anchor-area="video_information" href="/user/4">投稿者</a></div></div><div>タグ</div></section>';
 
 describe('初めて使う人の起動導線', () => {
+  it('大百科コメントの短縮リンクにもホバーなしのFWボタンを付け、外部や生放送を除く', () => {
+    expect(watchIdFromUrl('https://nico.ms/sm20516122?from=10#comment')).toBe('sm20516122');
+    expect(watchIdFromUrl('https://nico.ms/nm123')).toBe('nm123');
+    expect(watchIdFromUrl('https://nico.ms/lv123')).toBeNull();
+    expect(watchIdFromUrl('https://nico.ms.evil.invalid/sm20516122')).toBeNull();
+    document.body.innerHTML = '<p><a href="https://nico.ms/sm20516122">https://nico.ms/sm20516122</a></p>';
+    const open = mock((id: string) => id);
+    ui = installWatchEntry();
+    ui.ready(open);
+    const button = document.querySelector<HTMLButtonElement>('[data-futatsume-video="sm20516122"]');
+    expect(button).not.toBeNull();
+    button!.click();
+    expect(open).toHaveBeenCalledWith('sm20516122');
+  });
   it('ポップアップを作らず、アイコンの操作状態と説明を保持する', () => {
     history.replaceState(null, '', '/watch/sm9');
     document.body.innerHTML = watchHeader;

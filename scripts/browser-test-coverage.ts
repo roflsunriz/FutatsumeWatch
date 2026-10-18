@@ -46,7 +46,9 @@ export const requiredBrowserParents: Readonly<Partial<Record<BrowserSuite, reado
 export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly string[]>> = {
   entry: [
     'キーワード検索で版・準備完了・結果ボタンを表示',
-    '検索結果の見えるボタンをマウスで押して再生',
+    '検索結果の見えるボタンをタップして再生',
+    'モバイルではホバーなしで44px以上のFWボタンを表示',
+    'モバイルの検索結果から1回の実タップで再生',
     'タグ検索でも結果ボタンを表示',
     '通常の動画リンクから視聴ページへ移っても起動ボタンを表示',
     '再読み込みしないページ内遷移を確認',
@@ -86,6 +88,13 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     ].map(([width, height]) => `${width}×${height}でプレイヤーが画面内に収まる`),
   ],
   ui: [
+    'タップ終了後も3秒を超えて操作部を表示',
+    'タップ後5秒で操作部を隠す',
+    '映像の実長押しで既存メニューを開く',
+    '長押しメニューを390pxの画面内に収める',
+    '長押しメニューを横向きの低い画面内に収める',
+    '長押しメニューのコメント保存でHTMLを生成',
+    '長押しメニューの画像保存を捕捉しメニューを維持',
     'P1-04/media-sm2057168: ID・長さ・比率・実映像の識別画素・コメント・選択行が一致',
     'ページの起動アイコンから動画再生',
     '中央ボタンで一時停止',

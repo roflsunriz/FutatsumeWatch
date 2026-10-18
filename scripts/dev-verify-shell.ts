@@ -4,6 +4,7 @@ import { attach, attachBrowser, cleanupCdp, evaluate, listTargets } from './dev-
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
 import { verifyMediaIdentity } from './verify-media-identity';
+import { verifyMobileControls } from './verify-mobile-controls';
 
 const out = verificationDirectory;
 const checks: string[] = [];
@@ -536,6 +537,7 @@ async function main(): Promise<void> {
       '中央の前動画ボタンで復帰',
       30000
     );
+    await verifyMobileControls(session, check);
     await click(session, 'close');
     await check(
       session,

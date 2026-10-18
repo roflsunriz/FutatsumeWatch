@@ -164,7 +164,7 @@ class NicoVideoPlayer extends Emitter {
     this._videoPlayer.on('error', eventBridge.bind(this, 'error'));
 
     this._videoPlayer.on('click', this._onClick.bind(this));
-    this._videoPlayer.on('contextMenu', this._onContextMenu.bind(this) as EmitterCallback);
+    this._videoPlayer.on('contextmenu', this._onContextMenu.bind(this) as EmitterCallback);
     this._commentPlayer.on('parsed', eventBridge.bind(this, 'commentParsed'));
     this._commentPlayer.on('change', eventBridge.bind(this, 'commentChange'));
     this._commentPlayer.on('filterChange', eventBridge.bind(this, 'commentFilterChange'));
@@ -278,9 +278,9 @@ class NicoVideoPlayer extends Emitter {
     }
   }
   _onContextMenu(e: Event): void {
+    e.stopPropagation();
+    e.preventDefault();
     if (!this._contextMenu.isOpen) {
-      e.stopPropagation();
-      e.preventDefault();
       this._contextMenu.show((e as MouseEvent).clientX, (e as MouseEvent).clientY);
     }
   }

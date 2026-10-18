@@ -10,6 +10,7 @@ export interface WatchEntry {
 export function watchIdFromUrl(value: string, base = location.href): string | null {
   try {
     const url = new URL(value, base);
+    if (url.hostname === 'nico.ms') return /^\/((?:sm|nm|so)?\d+)\/?$/.exec(url.pathname)?.[1] ?? null;
     return url.hostname === 'www.nicovideo.jp'
       ? (/^\/watch\/((?:[a-z]{2})?\d+)\/?$/.exec(url.pathname)?.[1] ?? null)
       : null;
@@ -221,6 +222,7 @@ export function installWatchEntry(): WatchEntry {
     a:has(>[data-futatsume-video]){position:relative}
     a>[data-futatsume-video]{position:absolute;top:6px;right:6px;left:auto;bottom:auto;margin:0;box-shadow:0 1px 6px rgba(0,0,0,.65)}
     @media(max-width:700px){[data-futatsume-open]{width:32px;height:32px;padding:4px;margin-inline:6px}}
+    @media(hover:none),(pointer:coarse){[data-futatsume-launch]{visibility:visible;opacity:1;min-width:44px;min-height:44px}}
   `;
   document.head.append(marker, style);
   const update = (): void => {
@@ -241,7 +243,7 @@ export function installWatchEntry(): WatchEntry {
     }
     const candidates = new Map<string, { link: HTMLAnchorElement; label: string; priority: number }>();
     const titleById = new Map<string, string>();
-    const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href*="/watch/"]')];
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href*="/watch/"],a[href*="nico.ms/"]')];
     for (const link of links) {
       const id = watchIdFromUrl(link.href);
       if (!id || link.closest('#futatsumeVideoPlayerDialog,#mylistPocket-popup')) continue;

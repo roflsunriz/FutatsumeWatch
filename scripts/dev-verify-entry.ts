@@ -4,6 +4,7 @@ import { attach, attachBrowser, evaluate, listTargets } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 import { clickVisible } from './dev-ui';
 import { VERSION } from '../src/app/version';
+import { tapControl } from './verify-mobile-controls';
 
 const checks: string[] = [];
 const report: { checks: string[]; completed: boolean; error?: string } = { checks, completed: false };
@@ -56,12 +57,32 @@ try {
     `!document.body.querySelector('[data-futatsume-entry]') && [...document.querySelectorAll('[data-futatsume-video]')].every(b=>!b.textContent.trim() && !!b.querySelector('svg') && !!b.getAttribute('aria-label'))`,
     '検索結果はアイコンのみで右下ポップアップがない'
   );
-  await clickVisible(page, '[data-futatsume-video="sm9"]');
+  await page.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+  await page.send('Emulation.setDeviceMetricsOverride', {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: true,
+  });
+  await until(
+    page,
+    `(()=>{const b=document.querySelector('[data-futatsume-video="sm9"]'),r=b.getBoundingClientRect(),s=getComputedStyle(b);return r.width>=44&&r.height>=44&&s.visibility==='visible'&&Number(s.opacity)>0})()`,
+    'モバイルではホバーなしで44px以上のFWボタンを表示'
+  );
+  await tapControl(page, '[data-futatsume-video="sm9"]');
   await until(
     page,
     `(()=>{const v=document.querySelector('#futatsumeVideoPlayerDialog futatsume-video');return document.body.classList.contains('showNicoVideoPlayerDialog')&&v?.readyState>=3&&v.currentTime>0.5&&!v.paused;})()`,
-    '検索結果の見えるボタンをマウスで押して再生'
+    '検索結果の見えるボタンをタップして再生'
   );
+  checks.push('モバイルの検索結果から1回の実タップで再生');
+  await page.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+  await page.send('Emulation.setDeviceMetricsOverride', {
+    width: 1280,
+    height: 800,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
   await page.send('Page.navigate', { url: tagUrl });
   await until(
     page,

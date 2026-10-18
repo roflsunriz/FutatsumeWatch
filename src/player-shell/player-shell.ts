@@ -67,6 +67,7 @@ export class PlayerShell {
   private wakeLockRequest = 0;
   private focusReturn: HTMLElement | null = null;
   private pointerDown = false;
+  private touchControls = false;
 
   constructor(
     private readonly container: HTMLElement,
@@ -154,10 +155,18 @@ export class PlayerShell {
     }
     this.speed.addEventListener('change', () => this.command('playbackRate', Number(this.speed.value)));
     this.volume.addEventListener('input', () => this.command('volume', Number(this.volume.value)));
-    container.addEventListener('pointermove', () => this.reveal(), { passive: true });
+    container.addEventListener(
+      'pointermove',
+      (event) => {
+        if (event.pointerType === 'mouse') this.touchControls = false;
+        this.reveal();
+      },
+      { passive: true }
+    );
     container.addEventListener(
       'pointerdown',
-      () => {
+      (event) => {
+        this.touchControls = event.pointerType === 'touch' || event.pointerType === 'pen';
         this.pointerDown = true;
         this.reveal();
       },
@@ -175,8 +184,8 @@ export class PlayerShell {
       this.pointerDown = false;
       this.hideImmediately();
     });
-    container.addEventListener('pointerleave', () => {
-      if (!this.pointerDown) this.hideImmediately();
+    container.addEventListener('pointerleave', (event) => {
+      if (event.pointerType === 'mouse' && !this.pointerDown) this.hideImmediately();
     });
     container.addEventListener(
       'keydown',
@@ -387,24 +396,28 @@ export class PlayerShell {
     }
     this.container.dataset.controls = 'visible';
     clearTimeout(this.hideTimer);
-    this.hideTimer = setTimeout(() => {
-      const active = document.activeElement;
-      const editing =
-        active instanceof HTMLElement &&
-        this.container.contains(active) &&
-        active.matches('input,select,textarea,[contenteditable="true"]');
-      if (
-        !this.container.ownerDocument.hasFocus() ||
-        (this.panel && !(this.panel === 'details' && this.detailsLocked)) ||
-        this.pointerDown ||
-        editing ||
-        this.container.querySelector(
-          '.commentInputPanel[data-posting="true"], [data-comment-palette][aria-expanded="true"]'
+    this.hideTimer = setTimeout(
+      () => {
+        const active = document.activeElement;
+        const editing =
+          active instanceof HTMLElement &&
+          this.container.contains(active) &&
+          active.matches('input,select,textarea,[contenteditable="true"]');
+        if (
+          !this.container.ownerDocument.hasFocus() ||
+          (this.panel && !(this.panel === 'details' && this.detailsLocked)) ||
+          this.pointerDown ||
+          this.container.querySelector('.futatsumePlayerContextMenu.is-Open') ||
+          editing ||
+          this.container.querySelector(
+            '.commentInputPanel[data-posting="true"], [data-comment-palette][aria-expanded="true"]'
+          )
         )
-      )
-        return;
-      this.container.dataset.controls = 'hidden';
-    }, 3000);
+          return;
+        this.container.dataset.controls = 'hidden';
+      },
+      this.touchControls ? 5000 : 3000
+    );
   }
   private hideImmediately(): void {
     clearTimeout(this.hideTimer);

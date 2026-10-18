@@ -203,4 +203,35 @@ describe('詳細ロックと設定', () => {
       shell.dispose();
     }
   });
+
+  test('タッチ終了の離脱では隠さず、マウス離脱とblurでは即時に隠す', () => {
+    const shell = createShell();
+    shell.container.tabIndex = 0;
+    shell.container.focus();
+    const pointer = (type: string, pointerType: string): void => {
+      const event = new window.Event(type, { bubbles: true });
+      Object.defineProperty(event, 'pointerType', { value: pointerType });
+      shell.container.dispatchEvent(event);
+    };
+    try {
+      expect(shell.container.ownerDocument.hasFocus()).toBe(true);
+      pointer('pointerdown', 'touch');
+      expect(shell.container.dataset['controls']).toBe('visible');
+      pointer('pointerup', 'touch');
+      pointer('pointerleave', 'touch');
+      expect(shell.container.dataset['controls']).toBe('visible');
+      pointer('pointercancel', 'touch');
+      expect(shell.container.dataset['controls']).toBe('visible');
+      pointer('pointerleave', 'mouse');
+      expect(shell.container.dataset['controls']).toBe('hidden');
+      pointer('pointerdown', 'pen');
+      pointer('pointerup', 'pen');
+      pointer('pointerleave', 'pen');
+      expect(shell.container.dataset['controls']).toBe('visible');
+      window.dispatchEvent(new window.Event('blur'));
+      expect(shell.container.dataset['controls']).toBe('hidden');
+    } finally {
+      shell.dispose();
+    }
+  });
 });
