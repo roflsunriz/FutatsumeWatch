@@ -1,5 +1,34 @@
 import { expect, test } from 'bun:test';
-import { LiveReadGate, scrub, scrubText, safeUrl, isProductSession } from '../../scripts/live-capture-policy';
+import {
+  LiveReadGate,
+  scrub,
+  scrubText,
+  safeUrl,
+  isProductSession,
+  waitForSessionOwner,
+} from '../../scripts/live-capture-policy';
+
+test('先行するFetch停止は遅れて届く所有元を待ち、不明な要求は許可しない', async () => {
+  const owners = new Map<string, boolean>();
+  const pending = waitForSessionOwner('preflight', owners);
+  setTimeout(() => owners.set('preflight', true), 10);
+  expect(await pending).toBe(true);
+  owners.set('official', false);
+  expect(await waitForSessionOwner('official', owners)).toBe(false);
+  expect(await waitForSessionOwner('unknown', owners, 15)).toBe(false);
+});
+
+test('HTML属性の認証値をマスクしても埋め込みJSONを読める', () => {
+  const html =
+    '<meta name="server-response" content="{&quot;threadKey&quot;:&quot;private&quot;,&quot;value&quot;:1}">';
+  const result = scrubText(html);
+  expect(result).not.toContain('private');
+  const doc = new DOMParser().parseFromString(result, 'text/html');
+  expect(JSON.parse(doc.querySelector('meta')!.getAttribute('content')!)).toEqual({
+    threadKey: '[REDACTED]',
+    value: 1,
+  });
+});
 test('読み取りの重複・キー変更再試行・未承認書込みを送信前に拒否する', () => {
   const gate = new LiveReadGate();
   expect(gate.decide('GET', 'https://www.nicovideo.jp/watch/sm9')).toBeNull();

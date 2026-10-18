@@ -1,7 +1,7 @@
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { CdpSession } from './dev-cdp';
-import { LiveReadGate, safeUrl, scrub, scrubText, isProductSession } from './live-capture-policy';
+import { LiveReadGate, safeUrl, scrub, scrubText, isProductSession, waitForSessionOwner } from './live-capture-policy';
 import type { NetworkInitiator } from './live-capture-policy';
 import type { LiveWritePermitGuard } from './live-write-permit';
 
@@ -27,6 +27,7 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
   const requests = new Map<string, { request: Request; response?: Response; body?: string; failure?: string }>();
   const grants = new Map<string, string>();
   const owners = new Map<string, boolean>();
+  const pendingPreflights = new Map<string, string>();
   let closing = false;
   let targetWatchId = 'sm9';
   const capturePart = crypto.randomUUID().slice(0, 8);
@@ -108,54 +109,72 @@ export async function monitorLiveRead(browser: CdpSession, contextId: string, di
       record('dialog', { event: method, targetId: sessions.get(sid)?.targetId, ...params });
     const key = `${sid}:${String(params.requestId)}`;
     if (method === 'Fetch.requestPaused') {
-      const request = params.request as Request;
-      const networkId = typeof params.networkId === 'string' ? params.networkId : key;
-      const range = Object.entries(request.headers).find(([name]) => name.toLowerCase() === 'range')?.[1] ?? '';
-      const header = (key: string) =>
-        Object.entries(request.headers).find(([name]) => name.toLowerCase() === key)?.[1] ?? '';
-      const variant =
-        request.method === 'OPTIONS'
-          ? [
-              header('access-control-request-method'),
-              header('access-control-request-headers')
-                .toLowerCase()
-                .split(',')
-                .map((s) => s.trim())
-                .sort()
-                .join(','),
-            ].join(':')
-          : range;
-      const already = grants.get(networkId) === request.url;
-      let reason = already
-        ? null
-        : gate.decide(request.method, request.url, request.postData, variant, owners.get(networkId) === true);
-      if (reason === 'write-not-authorized' && writeGuard) {
-        const decision = writeGuard.decide({
-          method: request.method,
-          url: request.url,
-          postData: request.postData,
-          contentType: header('content-type'),
-        });
-        record('write-decision', decision);
-        if (decision.action === 'allow-write') reason = null;
-        else if (decision.action === 'deny') reason = 'write-' + decision.reason;
-      }
-      if (reason) {
-        blocked++;
-        record('blocked', { reason, networkId, request });
-        track(browser.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'BlockedByClient' }, sid));
-      } else {
-        if (!already) {
-          allowed++;
-          grants.set(networkId, request.url);
-          record('allowed', { networkId, request });
-        }
-        track(browser.send('Fetch.continueRequest', { requestId: params.requestId }, sid));
-      }
+      track(
+        (async () => {
+          const request = params.request as Request;
+          const networkId = typeof params.networkId === 'string' ? params.networkId : key;
+          const range = Object.entries(request.headers).find(([name]) => name.toLowerCase() === 'range')?.[1] ?? '';
+          const header = (key: string) =>
+            Object.entries(request.headers).find(([name]) => name.toLowerCase() === key)?.[1] ?? '';
+          const variant =
+            request.method === 'OPTIONS'
+              ? [
+                  header('access-control-request-method'),
+                  header('access-control-request-headers')
+                    .toLowerCase()
+                    .split(',')
+                    .map((s) => s.trim())
+                    .sort()
+                    .join(','),
+                ].join(':')
+              : range;
+          const already = grants.get(networkId) === request.url;
+          const productSession = /\/access-rights\/hls(?:\?|$)/.test(request.url)
+            ? await waitForSessionOwner(networkId, owners)
+            : false;
+          let reason = already
+            ? null
+            : gate.decide(request.method, request.url, request.postData, variant, productSession);
+          if (reason === 'write-not-authorized' && writeGuard) {
+            const decision = writeGuard.decide({
+              method: request.method,
+              url: request.url,
+              postData: request.postData,
+              contentType: header('content-type'),
+            });
+            record('write-decision', decision);
+            if (decision.action === 'allow-write') reason = null;
+            else if (decision.action === 'deny') reason = 'write-' + decision.reason;
+          }
+          if (reason) {
+            blocked++;
+            record('blocked', { reason, networkId, request });
+            track(
+              browser.send('Fetch.failRequest', { requestId: params.requestId, errorReason: 'BlockedByClient' }, sid)
+            );
+          } else {
+            if (!already) {
+              allowed++;
+              grants.set(networkId, request.url);
+              record('allowed', { networkId, request });
+            }
+            track(browser.send('Fetch.continueRequest', { requestId: params.requestId }, sid));
+          }
+        })()
+      );
     }
     if (method === 'Network.requestWillBeSent') {
       const request = params.request as Request;
-      owners.set(String(params.requestId), isProductSession(params.initiator as NetworkInitiator, owners));
+      const initiator = params.initiator as NetworkInitiator;
+      const id = String(params.requestId);
+      if (initiator.type === 'preflight' && initiator.requestId && !owners.has(initiator.requestId))
+        pendingPreflights.set(id, initiator.requestId);
+      else owners.set(id, isProductSession(initiator, owners));
+      for (const [preflight, parent] of pendingPreflights) {
+        if (!owners.has(parent)) continue;
+        owners.set(preflight, owners.get(parent) === true);
+        pendingPreflights.delete(preflight);
+      }
       requests.set(key, { request });
       record('request', { captureId: key, request, initiator: params.initiator, redirect: params.redirectResponse });
     }

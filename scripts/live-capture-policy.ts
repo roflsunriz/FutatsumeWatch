@@ -45,7 +45,8 @@ export function scrubText(text: string): string {
     text
       .replace(
         /((?:"|&quot;)(?:[\w-]*(?:token|secret|password|csrf|authKey|accessRightKey|threadKey|postKey|trackingId))[\w-]*(?:"|&quot;)\s*:\s*)("[^"\r\n]*"|&quot;.*?&quot;)/gi,
-        '$1"[REDACTED]"'
+        (_match: string, prefix: string) =>
+          prefix + (prefix.includes('&quot;') ? '&quot;[REDACTED]&quot;' : '"[REDACTED]"')
       )
       .replace(/https?:\/\/[^\s"'<>]+/g, safeUrl)
   );
@@ -65,6 +66,17 @@ export function isProductSession(initiator: NetworkInitiator, owners: ReadonlyMa
     stack = stack.parent;
   }
   return false;
+}
+
+// ChromeではFetchの停止通知がNetworkのinitiator通知より先に届くことがある。
+export async function waitForSessionOwner(
+  requestId: string,
+  owners: ReadonlyMap<string, boolean>,
+  timeout = 250
+): Promise<boolean> {
+  const deadline = Date.now() + timeout;
+  while (!owners.has(requestId) && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 5));
+  return owners.get(requestId) === true;
 }
 
 export class LiveReadGate {
