@@ -108,7 +108,7 @@ export async function verifyAuthentication(source: string): Promise<string[]> {
     );
     await clickVisible(page, '[data-futatsume-video="sm9"]');
     await check(
-      `window.FutatsumeWatch.debug.dialog._state.isError&&/ログイン|Sign in/.test(document.querySelector('.errorMessageContainer').textContent)&&document.querySelector('futatsume-video').paused`,
+      `window.FutatsumeWatch.debug.dialog._state.isError&&!window.FutatsumeWatch.state.player.isLoading&&getComputedStyle(document.querySelector('.loadingMessageContainer')).display==='none'&&/ログイン|Sign in/.test(document.querySelector('.errorMessageContainer').textContent)&&document.querySelector('futatsume-video').paused`,
       '未ログインの制限動画をHTTP400だけでなくログイン案内で停止'
     );
     await Bun.sleep(700);
@@ -121,13 +121,23 @@ export async function verifyAuthentication(source: string): Promise<string[]> {
       mobile: false,
     });
     await check(
-      `(()=>{const r=document.querySelector('.onErrorMenu').getBoundingClientRect();return r.x>=0&&r.right<=innerWidth&&r.height>=44})()`,
+      `(()=>{const r=document.querySelector('.onErrorMenu').getBoundingClientRect(),message=document.querySelector('.errorMessageContainer').getBoundingClientRect();return r.x>=0&&r.right<=innerWidth&&r.height>=44&&message.x>=0&&message.right<=innerWidth&&message.bottom<r.top})()`,
       '狭幅でもログイン案内の公式ページボタンを画面内に配置'
     );
     const deniedImage = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
     await Bun.write(
       new URL('watch-login-required-390.png', verificationDirectory),
       Buffer.from(deniedImage.data, 'base64')
+    );
+    await page.send('Emulation.setDeviceMetricsOverride', {
+      width: 844,
+      height: 390,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+    await check(
+      `(()=>{const message=document.querySelector('.errorMessageContainer').getBoundingClientRect(),buttons=document.querySelector('.onErrorMenu').getBoundingClientRect();return message.x>=0&&message.right<=innerWidth&&message.y>=0&&message.bottom<buttons.top&&buttons.bottom<=innerHeight})()`,
+      '横向きでもログイン案内とボタンを重ねない'
     );
     await page.send('Emulation.setDeviceMetricsOverride', {
       width: 1280,

@@ -3,6 +3,7 @@ import { VideoRecoveryTasks } from '../../src/player-shell/video-recovery-tasks'
 import { MediaSessionApi } from '../../packages/lib/src/infra/media-session-api';
 import { Config } from '../../src/config/index';
 import { ABRepeat, PlayerShell } from '../../src/player-shell/player-shell';
+import { PlayerState } from '../../src/player-shell/state';
 await Config.promise('restore');
 Object.assign(globalThis, {
   HTMLElement: window.HTMLElement,
@@ -17,6 +18,38 @@ Object.assign(globalThis, {
   MutationObserver: window.MutationObserver,
 });
 const { NicoVideoPlayerDialog, VideoWatchOptions } = await import('../../src/nico-video-player-dialog/index');
+
+test('動画情報の拒否で読み込みを終え、古い要求の失敗では現在の状態を変えない', () => {
+  const state = new PlayerState(Config);
+  state.isLoading = true;
+  state.isPlaying = true;
+  state.isSeeking = true;
+  const messages: string[] = [];
+  const context = {
+    _requestId: 'current',
+    _state: state,
+    isPlaylistEnable: false,
+    _setErrorMessage: (message: string) => messages.push(message),
+    emit: () => undefined,
+  };
+  const log = spyOn(window.console, 'error').mockImplementation(() => undefined);
+  try {
+    NicoVideoPlayerDialog.prototype._onVideoInfoLoaderFail.call(context, 'old', { watchId: 'sm9', message: 'denied' });
+    expect(state.isLoading).toBe(true);
+    expect(messages).toEqual([]);
+    NicoVideoPlayerDialog.prototype._onVideoInfoLoaderFail.call(context, 'current', {
+      watchId: 'sm9',
+      message: 'denied',
+    });
+    expect(state.isLoading).toBe(false);
+    expect(state.isPlaying).toBe(false);
+    expect(state.isSeeking).toBe(false);
+    expect(state.isError).toBe(true);
+    expect(messages).toEqual(['denied']);
+  } finally {
+    log.mockRestore();
+  }
+});
 
 test('Bが実終端のABリピートは通常終端・プレイリスト遷移より先にAへ戻す', () => {
   const ab = new ABRepeat();
@@ -238,7 +271,7 @@ test('読込・session・NG・YouTube失敗の実経路はcloseで予約を破�
     _view: { updateViewer() {} },
     videoRecovery: { schedule: (action: () => void) => tasks.schedule(action, 5), reset: () => tasks.reset() },
     commentPosts: { reset() {} },
-    _state: { isError: false, setState() {} },
+    _state: new PlayerState(Config),
     _watchId: 'sm9',
     isOpen: true,
     isPlaylistEnable: true,

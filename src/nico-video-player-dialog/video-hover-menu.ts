@@ -325,7 +325,8 @@ class VideoHoverMenu {
         box-shadow: 4px 4px 0 #333;
         border: 2px outset;
         width: auto;
-        min-width: 100px;
+        min-width: 128px;
+        contain: style layout;
         min-height: 44px;
         height: auto;
         white-space: normal;

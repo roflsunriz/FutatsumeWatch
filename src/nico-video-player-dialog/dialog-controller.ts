@@ -707,7 +707,7 @@ class NicoVideoPlayerDialog extends Emitter {
       return;
     }
     this._setErrorMessage(e.message || '通信エラー');
-    this._state.isError = true;
+    this._state.setVideoErrorOccurred();
     if (e.info) {
       this._videoInfo = new VideoInfoModel(e.info as unknown as RawVideoInfoData) as unknown as DialogVideoInfo;
       (this._state as unknown as { videoInfo: unknown }).videoInfo = this._videoInfo;

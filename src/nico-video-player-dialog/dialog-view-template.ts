@@ -162,14 +162,21 @@ export const NICO_VIDEO_PLAYER_DIALOG_VIEW_CSS = `
     display: inline-block;
     position: absolute;
     z-index: 10000;
-    top: 50%;
+    top: clamp(48px, 50%, calc(100% - 160px));
     left: 50%;
     padding: 8px 16px;
     transform: translate(-50%, -50%);
-    background: rgba(255, 0, 0, 0.9);
-    font-size: 24px;
+    background: #b02020;
+    color: #fff;
+    width: max-content;
+    max-width: min(960px, calc(100% - 32px));
+    max-height: calc(60% - 32px);
+    overflow: auto;
+    pointer-events: auto;
+    user-select: text;
+    font-size: clamp(16px, 2.2vw, 24px);
     box-shadow: 8px 8px 4px rgba(128, 0, 0, 0.8);
-    white-space: nowrap;
+    white-space: normal;
   }
   .errorMessageContainer:empty {
     display: none !important;
