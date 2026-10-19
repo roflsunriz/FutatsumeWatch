@@ -13,7 +13,7 @@ FutatsumeWatch の実現手段、共通指針の適用条件と調査知見の�
 
 ## CIのブラウザー検証
 
-- `bun run test:browser` の9 suiteは、GitHub-hosted Windows runnerごとに専用ポート・専用プロファイル・専用出力先を持つため、suite別matrixで並列実行できる。`fail-fast: true`を維持し、1 suiteの失敗時は残りを中止する。README画像のオフライン撮影は別ジョブで並行し、リリースは静的検査・全browser shard・画像検証の完了後に行う。
+- `bun run test:browser` の9 suiteは、GitHub-hosted Windows runnerごとに専用ポート・専用プロファイル・専用出力先を持つため、suite別matrixで並列実行できる。`fail-fast: true`を維持し、1 suiteの失敗時は残りを中止する。README画像のオフライン撮影は専用ジョブでChromeを準備してから実行する。機能検証は終了前に映像を停止し、保留中のHLS要求を監査へ誤分類しない。リリースは静的検査・全browser shard・画像検証の完了後に行う。
 
 ## モバイル操作と既存コンテキストメニュー（2026-10-18）
 

@@ -171,6 +171,11 @@ export async function verifyAuthentication(source: string): Promise<string[]> {
     );
     return checks;
   } finally {
+    await evaluate(
+      page,
+      `(()=>{const video=document.querySelector('futatsume-video');if(video&&!video.paused)video.pause();return !video||video.paused})()`
+    ).catch(() => undefined);
+    await Bun.sleep(500);
     await cleanupCdp(
       () => page.close(),
       () => browser.send('Target.disposeBrowserContext', { browserContextId: targetInfo.browserContextId }),

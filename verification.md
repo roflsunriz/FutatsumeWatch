@@ -5,6 +5,7 @@
 - 変更したGitHub Actionsをactionlint 1.7.12で検査し、エラー0件を確認した。
 - GitHub上の未解決Dependabot更新PRと依存脆弱性アラートがともに0件であることを確認した。
 - 分割後と同じ `bun run test:browser entry --offline` を実行し、導線の実操作20項目が成功した。
+- 初回GitHub Actionsでは、独立した画像ジョブのChrome未準備と、機能検証終了時のHLS要求競合を検出した。画像ジョブへChrome準備を追加し、認証検証は映像停止後に通信監査を閉じるよう修正した。ローカルで`bun run test:browser functionality --offline`が成功することを確認した。
 
 ## 2026-10-18：Issue #11・#12と0.0.33
 

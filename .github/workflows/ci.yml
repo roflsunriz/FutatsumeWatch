@@ -83,6 +83,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
+      - run: bun scripts/dev-setup.ts --if-missing --chrome-only
       - run: bun run docs:screenshots --offline
       - name: 実行結果と失敗時の証跡
         if: always()
