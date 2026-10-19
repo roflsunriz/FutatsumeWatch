@@ -4,6 +4,10 @@ on:
   pull_request:
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -14,6 +18,13 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
+      - name: Bun依存キャッシュ
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
       - run: bun run lint
       - run: bun run format
@@ -23,8 +34,13 @@ jobs:
       - run: bun audit
       - run: git diff --exit-code -- dist
   browser:
+    name: Browser (${{ matrix.suite }})
     runs-on: windows-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        suite: [entry, player, ui, settings, migration, addons, functionality, library, guard]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -32,22 +48,53 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
+      - name: Bun依存キャッシュ
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
       - run: bun install --frozen-lockfile
-      - run: bun run test:browser all --offline
+      - run: bun run test:browser ${{ matrix.suite }} --offline
+      - name: 実行結果と失敗時の証跡
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-verification-${{ matrix.suite }}
+          path: dev-assets/verification/
+          if-no-files-found: error
+          retention-days: 14
+  docs-screenshots:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - name: Bun依存キャッシュ
+        uses: actions/cache@v6
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+      - run: bun install --frozen-lockfile
       - run: bun run docs:screenshots --offline
       - name: 実行結果と失敗時の証跡
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: browser-verification
-          path: |
-            dev-assets/verification/
-            dev-assets/readme-capture/
+          name: readme-capture
+          path: dev-assets/readme-capture/
           if-no-files-found: error
           retention-days: 14
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [check, browser]
+    needs: [check, browser, docs-screenshots]
     runs-on: ubuntu-latest
     permissions:
       contents: write

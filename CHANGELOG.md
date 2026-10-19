@@ -4,6 +4,10 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+### Changed
+
+- オフラインブラウザー検証9系統とREADME画像検証を独立ジョブへ分割し、fail-fastで並列実行することで長時間CIの待ち時間を短縮した。ブランチの古いCIは取り消し、タグの公開処理は保護する。
+
 ## [0.0.33] - 2026-10-18
 
 ### Fixed
