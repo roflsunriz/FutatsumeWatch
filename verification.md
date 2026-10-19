@@ -622,3 +622,8 @@ test/fixtures/cdp/scenes/watch-sm9-cdp.jsonは以前採取した実ページのc
 - GitHubの既存Dependabot警告を読み取り、Open PRも確認した（作業開始時Open PR 0件、Open警告 0件）。GitHubの警告なしを全依存の安全保証や実機動作の検証とは扱わない。
 - ローカルの依存監査は既知の脆弱性0件で通過した。outdatedによる更新候補も読み取り確認し、TypeScript解析器の非互換制約と無関係な版更新を区別した。
 - 既存の「プッシュごとに版更新・配布物を再生成」の義務に従い0.0.32へ更新した。機能ロジックは変えず、src/app/version.ts、package.json、READMEと生成時descriptionを同期し、bun run buildからdistを再生成した。frozen-lockfile導入、lint、format、type-check、build、単体テスト、bun auditが通過。単体テスト432件が通過し、bun run test:browser all --offlineの全スイートとbun run docs:screenshots --offlineも成功した。生成配布物は版・descriptionと、その変更で派生するSystem.registerの内部モジュールIDを正規化した比較で前版と一致した（モジュール数も同一）。実サイトの撮影・投稿・認証操作は追加実施していない。
+
+## 2026-10-20: Dependabot 月末一括処理
+
+- `.github/dependabot.yml` は毎月28日00:00、`.github/workflows/dependabot-automation.yml` は同日18:00（いずれも `Asia/Tokyo`）に設定した。呼び出し先は検証済み共通 workflow の固定 SHA とし、現在の head SHA、Dependabot の資格状態、全 PR チェック成功を merge 前に再確認する。
+- YAML 構文、変更差分、空白エラーをローカルで検査した。実際の月末 schedule と Dependabot PR の merge 経路は、次回の毎月28日実行で確認する。

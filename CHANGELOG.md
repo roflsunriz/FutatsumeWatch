@@ -6,6 +6,8 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ### Changed
 
+- GitHub Actions の月間利用時間を抑えるため、Dependabot version update と自動マージを毎週・即時処理から毎月28日（Asia/Tokyo）の月末一括処理へ変更した。
+
 - オフラインブラウザー検証9系統とREADME画像検証を独立ジョブへ分割し、fail-fastで並列実行することで長時間CIの待ち時間を短縮した。画像ジョブは専用Chromeを準備し、認証検証は再生を停止して通信を収束させてから終了する。ブランチの古いCIは取り消し、タグの公開処理は保護する。
 
 ## [0.0.33] - 2026-10-18
