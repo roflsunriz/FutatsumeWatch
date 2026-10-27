@@ -19,7 +19,7 @@
     "@types/bun": "^1.4.3",
     "@types/jquery": "4.0.1",
     "@types/jsdom": "^30.0.0",
-    "@types/lodash": "^4.17.26",
+    "@types/lodash": "^4.17.27",
     "eslint": "10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
