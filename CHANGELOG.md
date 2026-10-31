@@ -4,6 +4,10 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+### Security
+
+- 開発用の `minimatch` を修正版 11.0.1 に固定し、glob パターンの処理で CPU・メモリーを大量消費する脆弱性を解消した。
+
 ### Changed
 
 - GitHub Actions の月間利用時間を抑えるため、Dependabot version update と自動マージを毎週・即時処理から毎月28日（Asia/Tokyo）の月末一括処理へ変更した。
