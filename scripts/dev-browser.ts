@@ -51,6 +51,7 @@ const {
 interface State {
   pid: number;
   port: number;
+  started?: string;
 }
 
 async function isReady(): Promise<boolean> {
@@ -85,7 +86,13 @@ async function readState(): Promise<State | null> {
     if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0 || (parsed as { port?: unknown }).port !== PORT) {
       return null;
     }
-    return { pid, port: PORT };
+    const started = (parsed as { started?: unknown }).started;
+    if (
+      started !== undefined &&
+      (typeof started !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{7}Z$/.test(started))
+    )
+      return null;
+    return { pid, port: PORT, started };
   } catch {
     return null;
   }
@@ -154,7 +161,10 @@ async function start(headed: boolean): Promise<void> {
   if (!Number.isInteger(pid)) {
     throw new Error('Chrome のプロセスIDを取得できませんでした');
   }
-  await Bun.write(STATE_PATH, `${JSON.stringify({ pid, port: PORT })}\n`);
+  const initial = browserProcessSnapshot(pid, PORT, CHROME_PATH);
+  const started = initial.processes.find((row) => row.pid === pid)?.started;
+  if (!started) throw new Error('起動した専用ブラウザのプロセスを確認できません');
+  await Bun.write(STATE_PATH, `${JSON.stringify({ pid, port: PORT, started })}\n`);
   if (!(await waitReady(15000))) {
     await stop();
     throw new Error(`DevTools エンドポイントが準備できませんでした (port ${PORT})`);
@@ -170,11 +180,15 @@ async function stop(): Promise<void> {
   }
   if (isPidAlive(state.pid)) {
     const snapshot = browserProcessSnapshot(state.pid, PORT, CHROME_PATH);
-    if (!snapshot.ownsPort) throw new Error('専用ポートを持つ対象プロセスがありません');
+    const root = snapshot.processes.find((row) => row.pid === state.pid);
+    if (!root || (state.started && root.started !== state.started))
+      throw new Error('専用ブラウザのプロセスが起動時から変わっています');
+    if (!snapshot.ownsPort && !state.started) throw new Error('専用ポートを持つ対象プロセスがありません');
     await shutdownBrowser({
       pids: snapshot.processes.map((row) => row.pid),
       isAlive: browserProcessMonitor(snapshot.processes, CHROME_PATH),
       async close() {
+        if (!snapshot.ownsPort) throw new Error('専用ポートを持つ対象プロセスがありません');
         const browser = await attachBrowser({ port: PORT });
         try {
           await browser.send('Browser.close');
