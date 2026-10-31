@@ -1,6 +1,7 @@
 # 調査知見
 
 - 開発依存の `minimatch` は GHSA-g3hv-75wg-m249 の修正版 11.0.1 を override で指定する。ESLint と typescript-eslint の検査に加え、postcss-url の filter が一致・不一致を判定できることを確認する。上流依存が修正版を許容したら固定を見直す。
+- ライブラリーのブラウザー検証では再生開始を待つ間に操作バーが自動で隠れる場合がある。プレイヤーへ実ポインターを移動し、表示を確認してから操作する。
 - Workerを `toString()` で埋め込む経路は関数名・構造が実行契約。通常minifyへ置換せず、classic scriptとして解析し、専用browserのoffline suiteで確認する。
 - 自動browser testはsuiteごとに専用port/profile/outputを使う。終了前に動画を停止して保留HLSを未捕捉通信と誤認しない。作成したTarget/BrowserContextと非同期監査を必ず回収する。
 - 実site検証の許可単位は「対象操作1回+関連通信」。試行IDは送信前に使い切り、失敗後の再試行・書込み・後片付けへ許可を拡張しない。
