@@ -130,6 +130,17 @@ async function main() {
     await check(session, `window.FutatsumeWatch?.ready`, 'P1-01 ライブラリ検証の初期化', 30000);
     await clickVisible(session, '[data-futatsume-open]');
     await check(session, `document.querySelector('futatsume-video')?.currentTime>0`, 'P1-01 入口から実再生', 30000);
+    await check(
+      session,
+      `document.querySelector('.fw-player')?.dataset.controls==='hidden'`,
+      'P1-01 操作バーが自動で隠れる'
+    );
+    await deepClick(session, '.fw-player', 'document', true);
+    await check(
+      session,
+      `document.querySelector('.fw-player')?.dataset.controls==='visible'`,
+      'P1-01 ポインター移動で操作バーを再表示'
+    );
     await clickVisible(session, '[data-shell-action="togglePlay"]');
     await clickVisible(session, '[data-shell-action="details"]');
     await deepClick(session, '.futatsumeWatchVideoInfoPanel', 'document', true);
