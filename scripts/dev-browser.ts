@@ -11,7 +11,12 @@
 import { resolve } from 'node:path';
 import { unlink } from 'node:fs/promises';
 import { attachBrowser } from './dev-cdp';
-import { browserProcessSnapshot, shutdownBrowser } from './browser-shutdown';
+import {
+  browserProcessMonitor,
+  browserProcessSnapshot,
+  shutdownBrowser,
+  stopBrowserProcesses,
+} from './browser-shutdown';
 
 export function browserEnvironment(testing: boolean, screenshots = false) {
   const captureId = process.env.FUTATSUME_SCREENSHOTS_ID ?? 'default';
@@ -164,12 +169,12 @@ async function stop(): Promise<void> {
     return;
   }
   if (isPidAlive(state.pid)) {
-    const snapshot = browserProcessSnapshot(state.pid, PORT);
+    const snapshot = browserProcessSnapshot(state.pid, PORT, CHROME_PATH);
+    if (!snapshot.ownsPort) throw new Error('専用ポートを持つ対象プロセスがありません');
     await shutdownBrowser({
-      pids: snapshot.pids,
-      isAlive: isPidAlive,
+      pids: snapshot.processes.map((row) => row.pid),
+      isAlive: browserProcessMonitor(snapshot.processes, CHROME_PATH),
       async close() {
-        if (!snapshot.ownsPort) throw new Error('専用ポートを持つ対象プロセスがありません');
         const browser = await attachBrowser({ port: PORT });
         try {
           await browser.send('Browser.close');
@@ -178,8 +183,7 @@ async function stop(): Promise<void> {
         }
       },
       kill() {
-        const result = Bun.spawnSync(['taskkill', '/PID', String(state.pid), '/T', '/F']);
-        return result.exitCode === 0 ? undefined : result.stderr.toString();
+        return stopBrowserProcesses(snapshot.processes, CHROME_PATH);
       },
       sleep: () => Bun.sleep(100),
     });
