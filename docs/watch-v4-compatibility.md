@@ -1,5 +1,13 @@
 # watchV4互換対応
 
+## NicoCache_nlのローカル配信
+
+2026-11-10にFirefox＋Tampermonkey 5.5.0＋実利用のPACで、0.0.34のGoogle相当ページから`fragLoadError`を再現した。HTTPの拒否ではなく、HLS内の`nicocachenl.test`の映像URLをFWが不正と判断していた。実際の経路は`/media/v1/playback-sessions/{session}/files/video/01.cmfv`、`files/audio/init01.cmfa`等で、`nicocachenl_media_version=2`が付いていた。
+
+0.0.35ではHLSローダーとiframeの読取り窓口が同じURL検証を使う。HTTPS・正確なホスト・標準ポート・セッション配下のaudio/videoファイルに限定し、管理API・セッション作成・別ホスト・資格情報付きURL・パス逸脱を拒否する。iframeからローカル配信へ許可するメソッドはGET／HEADだけとする。実測では同じPAC・Tampermonkeyで1280px映像の15秒以上の再生と、ローカル配信63応答のHTTP200を確認した。
+
+オフライン検証でもGoogleページのOriginから直接取得する応答は拒否し、ニコニコiframe経由でローカル映像を取得したことを必須ケースにする。実Google検索画面のアクセス制限とは区別して記録する。
+
 ## 根拠
 
 2026-11-10にsm46861324の匿名要求を採取した。`?responseType=json`はHTTP400で`nvpcClientVersion is missing or does not match.`を返し、追加承認後に取得した通常HTMLはHTTP200だった。公式の[視聴ページ](https://www.nicovideo.jp/watch/sm46861324)が参照する`_web.watch._id._-client-loader-rA87sBvL.js`は、config資産のwatch版と`withAccessRight=1`をJSON要求へ渡す。FWは版の固定・抽出に依存しない通常HTMLへ取得元を変更する。

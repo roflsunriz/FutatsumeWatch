@@ -84,11 +84,13 @@ export function createOfflineSite() {
   // 追加機能の固定文書も同じ通信監査を通す。URL単位で明示登録する。
   const documents = new Map<string, string>();
   const resources = new Map<string, FixtureReply>();
+  const cachedMediaRequests: string[] = [];
   const auth = { isLogin: true, isPremium: false, postKeyStatus: 200, pageMetadata: true };
   const faults = {
     watchFormat: 'legacy' as WatchFixtureFormat,
     watchLoginRequired: false,
     watchHlsUrl: undefined as string | undefined,
+    cacheMedia: false,
     postStatus: 200,
     postDelayMs: 0,
     watchDelayMs: 0,
@@ -193,6 +195,7 @@ export function createOfflineSite() {
     commentsByVideo,
     library,
     faults,
+    cachedMediaRequests,
     async reply(request: FixtureRequest): Promise<FixtureReply | null> {
       let url: URL;
       try {
@@ -201,6 +204,21 @@ export function createOfflineSite() {
         return null;
       }
       if (url.username || url.password) return null;
+      if (url.origin === 'https://nicocachenl.test') {
+        const cached =
+          /^\/media\/v1\/playback-sessions\/(sm9|sm2057168|sm100)video-h264-\d+p\/files\/video\/((?:low|high)-\d{2}\.mpegts)$/.exec(
+            url.pathname
+          );
+        if (
+          request.method !== 'GET' ||
+          !cached ||
+          !query(url, { nicocachenl_media_version: '2' }) ||
+          header(request, 'Origin') !== 'https://www.nicovideo.jp'
+        )
+          return null;
+        cachedMediaRequests.push(url.href);
+        url = new URL(`https://fixture.invalid/${cached[1]}/${cached[2]}`);
+      }
       if (
         ['https://delivery.domand.nicovideo.jp', 'https://asset.domand.nicovideo.jp'].includes(url.origin) &&
         /^\/fixtures\/(sm9|sm2057168|sm100)\//.test(url.pathname)
@@ -448,9 +466,10 @@ export function createOfflineSite() {
               new URL(request.url).hostname === 'delivery.domand.nicovideo.jp' &&
               name !== 'master.m3u8' &&
               name.endsWith('.m3u8')
-                ? (await file.text()).replace(
-                    /^(?:low|high)-\d{2}\.mpegts$/gm,
-                    (path) => `https://asset.domand.nicovideo.jp/fixtures/${media[1]}/${path}`
+                ? (await file.text()).replace(/^(?:low|high)-\d{2}\.mpegts$/gm, (path) =>
+                    faults.cacheMedia
+                      ? `https://nicocachenl.test/media/v1/playback-sessions/${media[1]}video-h264-${name === 'high.m3u8' ? mediaSpec[media[1] as WatchId].high.height : mediaSpec[media[1] as WatchId].low.height}p/files/video/${path}?nicocachenl_media_version=2`
+                      : `https://asset.domand.nicovideo.jp/fixtures/${media[1]}/${path}`
                   )
                 : new Uint8Array(await file.arrayBuffer()),
           };

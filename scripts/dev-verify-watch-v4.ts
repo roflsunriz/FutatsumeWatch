@@ -15,25 +15,27 @@ export async function verifyWatchV4(source: string): Promise<string[]> {
     'v4-external',
     'v4-current',
     'v4-google',
+    'v4-nicocache',
   ] as const) {
-    const external = name === 'v4-external' || name === 'v4-google';
-    const format = name === 'v4-external' ? 'v4-envelope' : name === 'v4-google' ? 'v4-current-direct' : name;
+    const google = name === 'v4-google' || name === 'v4-nicocache';
+    const external = name === 'v4-external' || google;
+    const format = name === 'v4-external' ? 'v4-envelope' : google ? 'v4-current-direct' : name;
     const browser = await attachBrowser();
     const { targetId } = (await browser.send('Target.createTarget', { url: 'about:blank' })) as { targetId: string };
     const page = await attach((await listTargets()).find((target) => target.id === targetId)!);
     const site = offlineSites.get(page)!;
     site.faults.watchFormat = format;
+    site.faults.cacheMedia = name === 'v4-nicocache';
     if (external)
       site.documents.set(
         'https://www.nicovideo.jp/robots.txt',
         '<!doctype html><html><head><link rel="icon" href="data:,"></head><body></body></html>'
       );
-    const pageUrl =
-      name === 'v4-google'
-        ? 'https://www.google.com/search?q=fixture'
-        : external
-          ? 'https://anime.nicovideo.jp/watch-v4-fixture'
-          : 'https://www.nicovideo.jp/watch/sm9';
+    const pageUrl = google
+      ? 'https://www.google.com/search?q=fixture'
+      : external
+        ? 'https://anime.nicovideo.jp/watch-v4-fixture'
+        : 'https://www.nicovideo.jp/watch/sm9';
     if (external)
       site.documents.set(
         pageUrl,
@@ -162,6 +164,10 @@ export async function verifyWatchV4(source: string): Promise<string[]> {
       if (requests.some((url) => new URL(url).searchParams.has('responseType')))
         throw new Error('版番号必須のJSON URLを要求しました');
       labels.push(`watchV4/${name}: responseType=jsonを要求しない`);
+      if (name === 'v4-nicocache') {
+        if (!site.cachedMediaRequests.length) throw new Error('NicoCache_nlの映像中継へ接続していません');
+        labels.push(`watchV4/${name}: ローカル映像をニコニコiframe経由で取得`);
+      }
       const shot = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
       await Bun.write(new URL(`watch-${name}.png`, verificationDirectory), Buffer.from(shot.data, 'base64'));
       await click('[data-shell-action="close"]');

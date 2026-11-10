@@ -1,5 +1,16 @@
 # 検証記録
 
+## 2026-11-10：0.0.35のGoogle検索・NicoCache_nl対応
+
+- 利用者から0.0.34・Firefox・Tampermonkeyで、Google検索だけが`1002 / fragLoadError`となり、視聴ページ・ニコニコ内検索・大百科は再生できると報告された。本調査に必要な再生・採取・再試行について一括承認を受け、以降は必要な比較を継続した。
+- 公開版0.0.34は直接接続の専用Firefoxで15秒以上再生でき、専用プロファイルに導入したTampermonkey 5.5.0経由でも15.104812秒まで再生した。Windowsの自動プロキシ設定を同じ専用環境に適用すると、`nicocachenl.test/media/v1/playback-sessions/.../files/...`へ書き換えられた映像・音声・初期化片をFWが不正と判断し、同じ`fragLoadError`を再現した。HLS依存の版だけを原因とは扱わない。
+- HLSローダーだけでなくiframe内の通信窓口も、限定したNicoCache_nlのメディアURLを共通判定で扱うよう修正した。HTTPS・正確なホスト・標準ポート・audio/videoファイルの経路へ限定し、GET／HEADだけを許可する。管理URL・別origin・資格情報・POST・パス逸脱の拒否を単体テストへ追加した。
+- `dev-assets/frag-case-tm-synthetic-pac-fixed.json`で、0.0.35をTampermonkey 5.5.0へ実登録・有効化し、実PACと実動画sm46861324を使って1280px幅・15.19252秒までの再生、HLSエラー0件を確認した。`dev-assets/live-capture/fw-frag-tm-firefox-20261110-6/`の採取ではローカル配信63応答がすべてHTTP200で、TLSの検証も有効だった。専用ブラウザの所有PIDを照合して停止し、実利用Firefox・既存タブ・保存設定は変更していない。
+- 提示された実Google検索URLは専用環境ではアクセス制限画面になり、検索結果の表示からの操作は検証できなかった。制限を回避せず、同じGoogle originの固定ページから実Tampermonkey・実PAC・実動画を使う比較で問題と解消を確認した。
+- 単体455件（3,327アサーション）、lint・整形・型検査・ビルドが成功した。依存監査は235パッケージ・脆弱性0件、更新候補は解析器のpeer範囲外のTypeScript 7.0.2だけだったため6.0.3を維持した。
+- オフラインのfunctionalityは`dev-assets/verification/2026-11-10T12-32-41-912Z-offline-c750b310/run.json`で180チェック成功した。新ケースではGoogle originからのローカル映像の直接要求を拒否し、ニコニコiframeから実際に取得したことを必須にする。専用Firefoxも`dev-assets/firefox-verification/2026-11-10T12-37-37-825Z-0f8c5879/report.json`で、ローカル映像を使う視聴ページ・検索・大百科・Google相当ページを確認した。
+- 実測・ブラウザ検証で使用した0.0.35配布物のSHA-256は`2a74f56d5de633b57a8a19a8f6e22a319944e70dc5bf9ffaf3b15248d535f676`。公開する配布物と同じ内容であり、最終実測の後にHLS依存を変更していない。
+
 ## 2026-11-10：0.0.34の再生修正・アイコン・設定整理
 
 - 利用者のFirefoxではGoogle検索結果と視聴ページの両方からsm46861324を再生できず、動画情報がHTTP400だった。匿名のJSON要求1回で`nvpcClientVersion is missing or does not match.`を採取し、追加承認後に通常HTMLのHTTP200と現行watchV4構造を確認した。通常HTML・公式資産を読んでから修正し、版番号の固定やHTTPエラーの握りつぶしは加えていない。

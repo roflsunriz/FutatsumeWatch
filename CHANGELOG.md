@@ -4,6 +4,12 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+## [0.0.35] - 2026-11-10
+
+### Fixed
+
+- NicoCache_nl併用時にGoogle検索などの外部ページから再生すると`1002 / fragLoadError`になる問題を修正した。NicoCache_nlがローカル配信へ書き換えた映像・音声・初期化片も、既存のニコニコiframe経由で取得するようにした。
+
 ## [0.0.34] - 2026-11-10
 
 ### Added

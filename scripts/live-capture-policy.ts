@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isNicoCacheMediaUrl } from '../packages/lib/src/nico/nicocache-media';
 const scrubQuery = (value: string): string =>
   value.replace(
     /([?&](?:amp;)?(?:session|Policy|Signature|Key-Pair-Id|accessRightKey|token)=)[^&\s"'<>]+/gi,
@@ -103,7 +104,8 @@ export class LiveReadGate {
       (url.hostname === 'www.nicovideo.jp' && url.pathname === `/watch/${this.watchId}`) ||
       (url.hostname === 'nvapi.nicovideo.jp' && url.pathname === `/v1/watch/${this.watchId}/access-rights/hls`) ||
       (url.hostname === 'public.nvcomment.nicovideo.jp' && url.pathname === '/v1/threads') ||
-      url.hostname === 'delivery.domand.nicovideo.jp';
+      url.hostname === 'delivery.domand.nicovideo.jp' ||
+      isNicoCacheMediaUrl(raw);
     if (critical) this.closed = true;
     return critical;
   }
@@ -116,6 +118,7 @@ export class LiveReadGate {
       if (url.origin !== this.localOrigin) return 'outside-preflight';
     } else {
       if (
+        !isNicoCacheMediaUrl(raw) &&
         !['nicovideo.jp', 'nimg.jp', 'smilevideo.jp'].some(
           (host) => url.hostname === host || url.hostname.endsWith('.' + host)
         )

@@ -426,7 +426,7 @@ try {
   await send('browsingContext.setViewport', { context, viewport: { width: 1280, height: 800 }, devicePixelRatio: 1 });
   await send('script.addPreloadScript', {
     contexts: [context],
-    functionDeclaration: `()=>{window.__firefoxPreloadUrl=location.href;if(!['https://www.nicovideo.jp','https://www.google.com'].includes(location.origin))return;window.__firefoxFind=function find(selector,root=document){const own=root.querySelector(selector);if(own)return own;for(const host of root.querySelectorAll('*'))if(host.shadowRoot){const found=find(selector,host.shadowRoot);if(found)return found;}return null;};document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true});}`,
+    functionDeclaration: `()=>{window.__firefoxPreloadUrl=location.href;if(!['https://www.nicovideo.jp','https://www.google.com','https://dic.nicovideo.jp'].includes(location.origin))return;window.__firefoxFind=function find(selector,root=document){const own=root.querySelector(selector);if(own)return own;for(const host of root.querySelectorAll('*'))if(host.shadowRoot){const found=find(selector,host.shadowRoot);if(found)return found;}return null;};document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true});}`,
   });
   await send('browsingContext.navigate', { context, url: 'https://www.nicovideo.jp/watch/sm9', wait: 'complete' });
   await send('browsingContext.activate', { context });
@@ -504,9 +504,15 @@ try {
     google,
     '<!doctype html><html><head><link rel="icon" href="data:,"></head><body><a href="https://www.nicovideo.jp/watch/sm9">検証動画</a></body></html>'
   );
-  for (const url of ['https://www.nicovideo.jp/watch/sm9', google]) {
+  const dic = 'https://dic.nicovideo.jp/a/nicocache-fixture';
+  const search = 'https://www.nicovideo.jp/search/nicocache-fixture';
+  for (const url of [dic, search]) site.documents.set(url, site.documents.get(google)!);
+  for (const url of ['https://www.nicovideo.jp/watch/sm9', search, dic, google]) {
+    site.faults.cacheMedia = true;
     await send('browsingContext.navigate', { context, url, wait: 'complete' });
-    const control = url === google ? '[data-futatsume-video="sm9"]' : '[data-futatsume-open]';
+    const control = new URL(url).pathname.startsWith('/watch/')
+      ? '[data-futatsume-open]'
+      : '[data-futatsume-video="sm9"]';
     await check(
       `window.FutatsumeWatch?.ready&&document.querySelector('${control}')?.disabled===false`,
       `現行watchV4入口を表示: ${url}`
@@ -527,6 +533,8 @@ try {
   if (requests.some((request) => new URL(request.url).searchParams.has('responseType')))
     throw new Error('FirefoxでresponseType=jsonを要求しました');
   checks.push('Firefoxの再生は版番号必須のJSON URLを要求しない');
+  if (!site.cachedMediaRequests.length) throw new Error('FirefoxでNicoCache_nlの映像中継を検証していません');
+  checks.push('FirefoxのGoogle相当ページからローカル映像をニコニコiframe経由で取得');
   const icon = /^\/\/\s*@icon\s+(.+)$/m.exec(source)?.[1]?.trim();
   if (!icon) throw new Error('配布物にアイコンがありません');
   const png = await evaluate(

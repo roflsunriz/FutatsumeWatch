@@ -35,6 +35,7 @@ interface GateInitParams {
 const PRODUCT = 'FutatsumeWatch';
 
 import { workerUtil } from '../infra/worker-util';
+import { isNicoCacheMediaUrl } from '../nico/nicocache-media';
 /*
 post = {
   id: 'PRODUCT',
@@ -128,7 +129,8 @@ const gate = () => {
 
   const uFetch = (params: GateFetchParams): Promise<unknown> => {
     const { url, options } = params;
-    if (!isWhiteHost(url) || !isNicoServiceHost(url)) {
+    const isLocalMedia = isNicoCacheMediaUrl(url) && ['GET', 'HEAD'].includes((options?.method ?? 'GET').toUpperCase());
+    if (!isLocalMedia && (!isWhiteHost(url) || !isNicoServiceHost(url))) {
       // 到達不能ホスト通知は {status, message} 形式のプロトコルのため Error 限定しない
       // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject({ status: 'fail', message: 'network error' });

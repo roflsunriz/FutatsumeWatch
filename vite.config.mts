@@ -27,7 +27,7 @@ export default defineConfig({
         author: 'roflsunriz',
         icon: `data:image/svg+xml;base64,${Buffer.from(readFileSync(new URL('./src/app/icon.svg', import.meta.url))).toString('base64')}`,
         description:
-          'ニコニコ動画の外付けプレイヤー。動画リンクや埋め込みの起動ボタンから再生。タグ編集、マイリスト／とりマイの追加・編集、コメント投稿、プレイリストに対応。0.0.34では動画情報取得時のHTTP400と現行watchV4形式に対応。独自アイコンを内蔵し、設定のインポート・エクスポートを左サイドバーへ移動。',
+          'ニコニコ動画の外付けプレイヤー。動画リンクや埋め込みの起動ボタンから再生。タグ編集、マイリスト／とりマイの追加・編集、コメント投稿、プレイリストに対応。0.0.35ではNicoCache_nlの映像中継にも対応し、Google検索からのfragLoadErrorを修正。独自アイコンと左サイドバーのインポート・エクスポートに対応。',
         match: [
           ...[
             'www',

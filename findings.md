@@ -1,5 +1,9 @@
 # 調査知見
 
+- 2026-11-10の0.0.34再調査では、直接接続のFirefox＋Tampermonkey 5.5.0で再生でき、自動プロキシ経由で`fragLoadError`を再現した。PACがニコニコ通信をNicoCache_nlへ通し、HLSの実片を`https://nicocachenl.test/media/v1/playback-sessions/{session}/files/{audio|video}/{file}`へ書き換えていた。Domandホストだけの検証とiframe側のニコニコホスト検証の両方で拒否されるため、`nicocache-media.ts`の共通判定でこのHTTPS・標準ポート・メディアファイル経路だけを許可し、iframeではGET／HEADに限定する。管理APIや任意の`.test`ホストは許可しない。
+- Google相当の固定ページだけでも、実Tampermonkey・実PAC・実動画を組み合わせると今回の失敗を再現できる。直接接続や配布物の直接注入だけの成功で実利用条件を保証しない。実Googleページはアクセス制限が返る場合があるため、ページ自体の未検証と同originでの中継検証を分ける。
+- Firefox 159で拡張機能の確認画面を検証するには、専用ブラウザを[Mozillaのsystem access設定](https://firefox-source-docs.mozilla.org/remote/Security.html#system-access)に従って起動する。Windowsの`Start-Process`では起動するPowerShell内で`MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`を設定する。Bun側の`process.env`だけでは有効化を確認できなかった。実利用プロファイルの変更は必要ない。
+
 - 2026-11-10の実動画検証で、Domandのプレイリスト・鍵は`delivery.domand.nicovideo.jp`、初期化片と音声・映像は`asset.domand.nicovideo.jp`に分かれることを確認した。外部HLSの検証では生成映像もこの2ホストに分け、Googleからの直接要求を拒否してニコニコiframe経由だけを成功させる。
 - FirefoxのStoryboardは2Dコンテキストの取得後に同じCanvasへbitmaprendererを要求すると初期化エラーになる。標準仕様でも両者は併用できないため、既存の2D描画へ統一する。機能を無効化する回避策は使わない。
 - ローカルのguardスイートは、AdGuardによるService Workerへの追加通信も未知の要求として拒否する。目的の3要求を確認できても追加要求があれば全体は失敗とし、検出を弱めず外部ソフトのないCIで再確認する。

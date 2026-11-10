@@ -71,6 +71,15 @@ test('現行watchV4詳細取得だけを読み取りとして1回通し、別動
     'repeat-blocked'
   );
 });
+
+test('NicoCache_nlの映像GETだけを採取し、管理URL・POST・再送を拒否する', () => {
+  const gate = new LiveReadGate();
+  const media = 'https://nicocachenl.test/media/v1/playback-sessions/sm9video-h264-360p/files/video/01.cmfv';
+  expect(gate.decide('POST', media, '{}')).toBe('write-not-authorized');
+  expect(gate.decide('GET', 'https://nicocachenl.test/admin/')).toBe('unrelated-host');
+  expect(gate.decide('GET', media)).toBeNull();
+  expect(gate.decide('GET', media)).toBe('repeat-blocked');
+});
 test('採取する認証ヘッダー・JSONキー・署名URLをマスクしJSONの構造を保つ', () => {
   expect(scrub({ Cookie: 'private', 'X-Access-Right-Key': 'private', 'Content-Type': 'application/json' })).toEqual({
     Cookie: '[REDACTED]',

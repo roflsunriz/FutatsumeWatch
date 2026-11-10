@@ -195,17 +195,20 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
   ],
   functionality: [
     'P1-04/media-sm9: ID・長さ・比率・実映像の識別画素・コメント・選択行が一致',
-    ...['v4-envelope', 'v4-flat', 'v4-html', 'v4-media', 'v4-external', 'v4-google'].flatMap((format) => [
-      `watchV4/${format}: 視聴ページとして初期化`,
-      `watchV4/${format}: 入口から初期HLSを再生`,
-      `watchV4/${format}: 低画質と停止状態・再生位置を保持`,
-      `watchV4/${format}: 高画質へ切り替えて停止状態・再生位置を保持`,
-      `watchV4/${format}: 旧配信権APIを要求しない`,
-    ]),
+    ...['v4-envelope', 'v4-flat', 'v4-html', 'v4-media', 'v4-external', 'v4-google', 'v4-nicocache'].flatMap(
+      (format) => [
+        `watchV4/${format}: 視聴ページとして初期化`,
+        `watchV4/${format}: 入口から初期HLSを再生`,
+        `watchV4/${format}: 低画質と停止状態・再生位置を保持`,
+        `watchV4/${format}: 高画質へ切り替えて停止状態・再生位置を保持`,
+        `watchV4/${format}: 旧配信権APIを要求しない`,
+      ]
+    ),
     'watchV4/v4-current: 入口から初期HLSを再生',
     'watchV4/v4-current: 初期HTMLのキーから配信権を取得',
     'watchV4/v4-current: responseType=jsonを要求しない',
     'watchV4/v4-google: responseType=jsonを要求しない',
+    'watchV4/v4-nicocache: ローカル映像をニコニコiframe経由で取得',
     'watchV4/v4-media: 不透明なHLS値を拒否して停止',
     'watchV4/v4-media: 正常な初期HTMLの再取得で復帰',
     'P1-04/race: 遅いA応答後もBの再生を保持',

@@ -1,7 +1,9 @@
 import { BaseLoader } from 'hls.js';
 import { netUtil } from '../../packages/lib/src/infra/net-util';
+import { isNicoCacheMediaUrl } from '../../packages/lib/src/nico/nicocache-media';
 
 export function isDomandDeliveryUrl(value: string): boolean {
+  if (isNicoCacheMediaUrl(value)) return true;
   try {
     const url = new URL(value);
     return (
