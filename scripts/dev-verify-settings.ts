@@ -16,7 +16,7 @@ import { verifyPlayerSettingEffects } from './verify-settings-player';
 const output = verificationDirectory;
 const checks: string[] = [];
 const fields: SettingsFieldResult[] = [];
-const panels = ['general', 'advanced'] as const;
+const panels = ['general'] as const;
 const panel = (name: string): string => `window.__settingsQuery('[data-fw-settings="${name}"]')`;
 export async function check(session: CdpSession, expression: string, label: string, timeout = 8000): Promise<void> {
   const deadline = Date.now() + timeout;
@@ -63,7 +63,7 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
   );
   await check(
     session,
-    `(()=>{const d=${panel('general')},s=d.querySelector('.fw-settings-sidebar'),m=d.querySelector('.fw-settings-main');return s.querySelectorAll(':scope > [data-settings-tab]').length===5&&s.querySelector('[data-shell-quality]').options.length>1&&s.querySelector('a')?.href==='https://github.com/roflsunriz/FutatsumeWatch'&&s.querySelectorAll('[data-settings-action]').length===3&&s.getBoundingClientRect().right<=m.getBoundingClientRect().left+1})()`,
+    `(()=>{const d=${panel('general')},s=d.querySelector('.fw-settings-sidebar'),m=d.querySelector('.fw-settings-main');return s.querySelectorAll('[data-settings-tab]').length===3&&s.querySelectorAll('[data-settings-file-action]').length===2&&!s.querySelector('[data-settings-tab="advanced"],[data-settings-tab="data"]')&&s.querySelector('[data-shell-quality]').options.length>1&&s.querySelector('a')?.href==='https://github.com/roflsunriz/FutatsumeWatch'&&s.querySelectorAll('[data-settings-action]').length===3&&s.getBoundingClientRect().right<=m.getBoundingClientRect().left+1})()`,
     `${width}px: 左レールへ全カテゴリ・画質・GitHub・3操作を常時表示`
   );
   let current = 'general';
@@ -71,8 +71,6 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
     ['player', 'general'],
     ['comments', 'general'],
     ['filters', 'general'],
-    ['data', 'general'],
-    ['advanced', 'advanced'],
     ['player', 'general'],
   ]) {
     await clickInside(session, current, `[data-settings-tab="${tab}"]`);
@@ -124,7 +122,6 @@ async function verifyTabs(session: CdpSession, width: number): Promise<void> {
     `${width}px: キーボードでカテゴリ切替`
   );
   if (width === 1280) {
-    await clickInside(session, 'general', '[data-settings-tab="data"]');
     await captureSettingsExport(session, { open, clickInside, check });
   }
   await mouse(session, 3, 3);
@@ -246,11 +243,6 @@ async function main(): Promise<void> {
     await verifyPlayerSettingEffects(session, { open, clickInside, check });
     for (const [name, selector, storage] of [
       ['general', '[data-setting-name="autoPlay"]', 'FutatsumeWatch_autoPlay'],
-      [
-        'advanced',
-        '[data-setting-name="enableFullScreenOnDoubleClick"]',
-        'FutatsumeWatch_enableFullScreenOnDoubleClick',
-      ],
     ] as const) {
       await open(session, name);
       if (name === 'general') await clickInside(session, name, '[data-settings-tab="player"]');
@@ -320,11 +312,11 @@ async function main(): Promise<void> {
       if (width === 390) await verifyTabs(session, width);
     }
     await verifySettingsRoundtrip(session, { open, clickInside, check });
-    await open(session, 'advanced');
+    await open(session, 'general');
     await evaluate(session, `window.FutatsumeWatch.external.execCommand('close')`);
     await check(
       session,
-      `!${panel('advanced')}.open && !document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
+      `!${panel('general')}.open && !document.querySelector('#futatsumeVideoPlayerDialog').classList.contains('is-open')`,
       'プレイヤー終了時に設定と背景も閉じる'
     );
     if (errors.length) throw Error(errors.join('\n'));

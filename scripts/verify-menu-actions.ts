@@ -202,7 +202,7 @@ export async function verifyMenuActions(session: CdpSession, check: MenuCheck): 
           if (
             url.origin === 'https://www.nicovideo.jp' &&
             url.pathname === `/watch/${watchId}` &&
-            url.searchParams.get('responseType') === 'json'
+            url.searchParams.size === 0
           )
             loadingRequests++;
         }

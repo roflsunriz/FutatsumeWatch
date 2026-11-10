@@ -352,7 +352,7 @@ try {
         return;
       }
       let body: string | undefined;
-      if ((request.bodySize ?? 0) > 0 || ['POST', 'PUT', 'PATCH'].includes(request.method)) {
+      if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method) && (request.bodySize ?? 0) > 0) {
         const data = (await send('network.getData', {
           request: request.request,
           dataType: 'request',
@@ -369,7 +369,9 @@ try {
             : header.value.value,
         ])
       );
-      const input: FixtureRequest = { method: request.method, url: request.url, postData: body, headers };
+      const requestUrl = new URL(request.url);
+      requestUrl.hash = '';
+      const input: FixtureRequest = { method: request.method, url: requestUrl.href, postData: body, headers };
       const response = await site.reply(input);
       requests.push({
         requestId: request.request,
@@ -424,7 +426,7 @@ try {
   await send('browsingContext.setViewport', { context, viewport: { width: 1280, height: 800 }, devicePixelRatio: 1 });
   await send('script.addPreloadScript', {
     contexts: [context],
-    functionDeclaration: `()=>{window.__firefoxPreloadUrl=location.href;if(location.origin!=='https://www.nicovideo.jp')return;window.__firefoxFind=function find(selector,root=document){const own=root.querySelector(selector);if(own)return own;for(const host of root.querySelectorAll('*'))if(host.shadowRoot){const found=find(selector,host.shadowRoot);if(found)return found;}return null;};document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true});}`,
+    functionDeclaration: `()=>{window.__firefoxPreloadUrl=location.href;if(!['https://www.nicovideo.jp','https://www.google.com'].includes(location.origin))return;window.__firefoxFind=function find(selector,root=document){const own=root.querySelector(selector);if(own)return own;for(const host of root.querySelectorAll('*'))if(host.shadowRoot){const found=find(selector,host.shadowRoot);if(found)return found;}return null;};document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true});}`,
   });
   await send('browsingContext.navigate', { context, url: 'https://www.nicovideo.jp/watch/sm9', wait: 'complete' });
   await send('browsingContext.activate', { context });
@@ -492,6 +494,47 @@ try {
     `!document.body.classList.contains('showNicoVideoPlayerDialog')&&${native}.paused`,
     'closeで映像を停止しページへ復帰'
   );
+  site.faults.watchFormat = 'v4-current';
+  site.documents.set(
+    'https://www.nicovideo.jp/robots.txt',
+    '<!doctype html><html><head><link rel="icon" href="data:,"></head><body></body></html>'
+  );
+  const google = 'https://www.google.com/search?q=fixture';
+  site.documents.set(
+    google,
+    '<!doctype html><html><head><link rel="icon" href="data:,"></head><body><a href="https://www.nicovideo.jp/watch/sm9">検証動画</a></body></html>'
+  );
+  for (const url of ['https://www.nicovideo.jp/watch/sm9', google]) {
+    await send('browsingContext.navigate', { context, url, wait: 'complete' });
+    const control = url === google ? '[data-futatsume-video="sm9"]' : '[data-futatsume-open]';
+    await check(
+      `window.FutatsumeWatch?.ready&&document.querySelector('${control}')?.disabled===false`,
+      `現行watchV4入口を表示: ${url}`
+    );
+    await click(control);
+    await check(
+      `${native}?.videoWidth>0&&${native}.currentTime>0.5&&!${native}.paused`,
+      `現行watchV4映像を再生: ${url}`,
+      30000
+    );
+    await check(
+      `window.FutatsumeWatch.debug.videoInfo.series?.id&&window.FutatsumeWatch.debug.nicoCommentPlayer._view.renderer.comments.length>0&&document.querySelector('[data-futatsume-comment-canvas]')?.getContext('2d').getImageData(0,0,200,100).data.some((v,i)=>i%4===3&&v>0)`,
+      `現行watchV4の詳細・コメントを表示: ${url}`
+    );
+    await pointer(100, 180, false);
+    await click('[data-shell-action="close"]');
+  }
+  if (requests.some((request) => new URL(request.url).searchParams.has('responseType')))
+    throw new Error('FirefoxでresponseType=jsonを要求しました');
+  checks.push('Firefoxの再生は版番号必須のJSON URLを要求しない');
+  const icon = /^\/\/\s*@icon\s+(.+)$/m.exec(source)?.[1]?.trim();
+  if (!icon) throw new Error('配布物にアイコンがありません');
+  const png = await evaluate(
+    `(async()=>{const image=new Image();image.src=${JSON.stringify(icon)};await image.decode();if(image.naturalWidth!==128||image.naturalHeight!==128)throw Error('icon dimensions');const canvas=document.createElement('canvas');canvas.width=canvas.height=128;canvas.getContext('2d').drawImage(image,0,0);return canvas.toDataURL('image/png').split(',')[1]})()`
+  );
+  if (typeof png !== 'string') throw new Error('内蔵アイコンを描画できません');
+  await Bun.write(resolve(run, 'firefox-manager-icon.png'), Buffer.from(png, 'base64'));
+  checks.push('Firefoxでスクリプトマネージャ用内蔵アイコンを128pxで描画');
   while (networkJobs.size) await Promise.all([...networkJobs]);
   report.cancelledRequests = [];
   for (const failure of protocolFailures) {

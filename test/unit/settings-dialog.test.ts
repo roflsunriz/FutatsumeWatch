@@ -3,7 +3,7 @@ import { configureSettingsNavigation, SettingsDialog } from '../../packages/comp
 
 Object.assign(globalThis, { ShadowRoot: window.ShadowRoot });
 const dialogs: SettingsDialog[] = [];
-function create(name: 'general' | 'advanced' = 'general'): {
+function create(name: 'general' = 'general'): {
   modal: SettingsDialog;
   root: HTMLDialogElement;
   closes: () => number;
@@ -34,24 +34,27 @@ afterEach(() => {
     dialog.close();
     dialog.element.remove();
   }
-  configureSettingsNavigation(() => {}, undefined);
+  configureSettingsNavigation();
 });
 
 describe('設定サイドバー', () => {
-  test('5カテゴリと追加操作を左に保ち、見出しと本文を右へまとめる', () => {
-    configureSettingsNavigation(
-      () => {},
-      () => {
-        const extras = document.createElement('div');
-        extras.dataset.fixtureExtras = '';
-        return extras;
-      }
-    );
+  test('3カテゴリとインポート・エクスポートを左に保ち、廃止カテゴリを置かない', () => {
+    configureSettingsNavigation(() => {
+      const extras = document.createElement('div');
+      extras.dataset.fixtureExtras = '';
+      return extras;
+    });
     const { modal, root } = create();
     modal.open();
     const sidebar = root.querySelector('.fw-settings-sidebar')!;
     const main = root.querySelector('.fw-settings-main')!;
-    expect(sidebar.querySelectorAll(':scope > [data-settings-tab]')).toHaveLength(5);
+    expect(sidebar.querySelectorAll('[data-settings-tab]')).toHaveLength(3);
+    expect(
+      [...sidebar.querySelectorAll<HTMLButtonElement>('[data-settings-file-action]')].map(
+        (button) => button.dataset.settingsFileAction
+      )
+    ).toEqual(['import', 'export']);
+    expect(sidebar.querySelector('[data-settings-tab="advanced"],[data-settings-tab="data"]')).toBeNull();
     expect(sidebar.querySelector('[data-fixture-extras]')).not.toBeNull();
     expect(main.querySelector('.fw-modal-heading')).not.toBeNull();
     expect(main.querySelector('.fw-modal-body')).not.toBeNull();
@@ -134,7 +137,7 @@ describe('共通設定ダイアログ', () => {
   });
   test('別の設定を開いたときに先の設定を閉じる', () => {
     const first = create();
-    const second = create('advanced');
+    const second = create();
     first.modal.open();
     second.modal.open();
     expect(first.root.open).toBe(false);

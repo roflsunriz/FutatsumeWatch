@@ -1,5 +1,6 @@
 import type { HlsDebounced, HlsFragmentLoaderStatic } from './types';
 import { applyWatchHlsQuality } from './watch-hls-quality';
+import { GateHlsLoader, isDomandDeliveryUrl } from './gate-hls-loader';
 
 interface HlsRuntimeConfig {
   get(key: string): unknown;
@@ -510,8 +511,10 @@ export function registerFutatsumeVideo(options: HlsElementOptions): void {
         //}
         //setTimeout(() => {Storage.gc(); }, 30000);
         //}
-        this._fragmentLoader = createFragmentLoader(Hls);
+        const bridge = location.hostname !== 'www.nicovideo.jp' && isDomandDeliveryUrl(src);
+        this._fragmentLoader = bridge ? undefined : createFragmentLoader(Hls);
         this._hlsConfig.fLoader = this._fragmentLoader;
+        this._hlsConfig.loader = bridge ? GateHlsLoader : Hls.DefaultConfig.loader;
         const hls = new Hls(this._hlsConfig);
         this._hls = hls;
 

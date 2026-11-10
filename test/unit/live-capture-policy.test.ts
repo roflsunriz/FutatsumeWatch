@@ -59,6 +59,18 @@ test('読み取りの重複・キー変更再試行・未承認書込みを送�
   gate.closed = true;
   expect(gate.decide('GET', 'https://www.nicovideo.jp/')).toBe('capture-closed');
 });
+
+test('現行watchV4詳細取得だけを読み取りとして1回通し、別動画・別本文・キー変更を拒否する', () => {
+  const gate = new LiveReadGate();
+  const url = 'https://nvapi.nicovideo.jp/v4/watch/lazy/sm9';
+  const body = JSON.stringify({ actionTrackId: 'fixture-track', keyToken: 'fixture-key' });
+  expect(gate.decide('POST', url, '{}')).toBe('write-not-authorized');
+  expect(gate.decide('POST', url.replace('sm9', 'sm100'), body)).toBe('write-not-authorized');
+  expect(gate.decide('POST', url, body)).toBeNull();
+  expect(gate.decide('POST', url, JSON.stringify({ actionTrackId: 'new-track', keyToken: 'new-key' }))).toBe(
+    'repeat-blocked'
+  );
+});
 test('採取する認証ヘッダー・JSONキー・署名URLをマスクしJSONの構造を保つ', () => {
   expect(scrub({ Cookie: 'private', 'X-Access-Right-Key': 'private', 'Content-Type': 'application/json' })).toEqual({
     Cookie: '[REDACTED]',

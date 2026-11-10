@@ -2,7 +2,7 @@ import type { BrowserSuite } from './browser-test-options';
 import { settingsCategories } from './verify-settings-fields';
 
 // 計画から固定した必須操作。実行結果から期待値を生成しない。
-const panels = ['general', 'advanced'] as const;
+const panels = ['general'] as const;
 export const requiredBrowserParents: Readonly<Partial<Record<BrowserSuite, readonly string[]>>> = {
   functionality: [
     'P1-01',
@@ -73,8 +73,7 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     '投稿取り消しでCanvasの登録から除外',
     'コメント付きPNGの生成と保存導線（ダウンロードは捕捉）',
     '保存HTMLの通信遮断・描画・シーク・再生・停止',
-    '詳細設定の変更と永続化',
-    '詳細設定を復元して閉じる',
+    '削除した詳細設定を起動・生成しない',
     '動画詳細情報へとりマイ・マイリスト追加を戻し不要な3ボタンは置かない',
     'プレイリストの有効化切替',
     'プレイリストの状態復元',
@@ -107,7 +106,7 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
     'AB指定で動画全体のリピートを解除',
     '通常リピートへの切替でAB指定を解除',
     '設定ボタンから共通設定を直接開く',
-    '左レールに5カテゴリ・画質・GitHub・3操作を平置き',
+    '左レールに3カテゴリ・インポート・エクスポート・画質・GitHub・3操作を平置き',
     '初期表示から右側へプレイヤー設定を注入',
     'チェック設定を金属調トグルとして表示',
     '金属調トグルの緑・灰状態と保存値を実クリックで切替',
@@ -166,7 +165,7 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
       `${name}: 共通の閉じるボタン`,
       `${name}: 全画面を保って背景クリックで閉じる`,
     ]),
-    ...['player', 'comments', 'filters', 'data', 'advanced'].flatMap((tab) =>
+    ...['player', 'comments', 'filters'].flatMap((tab) =>
       [1280, 390].map((width) => `${width}px: サイドバーで${tab}へ切替`)
     ),
   ],
@@ -196,13 +195,17 @@ export const requiredBrowserChecks: Readonly<Record<BrowserSuite, readonly strin
   ],
   functionality: [
     'P1-04/media-sm9: ID・長さ・比率・実映像の識別画素・コメント・選択行が一致',
-    ...['v4-envelope', 'v4-flat', 'v4-html', 'v4-media', 'v4-external'].flatMap((format) => [
+    ...['v4-envelope', 'v4-flat', 'v4-html', 'v4-media', 'v4-external', 'v4-google'].flatMap((format) => [
       `watchV4/${format}: 視聴ページとして初期化`,
       `watchV4/${format}: 入口から初期HLSを再生`,
       `watchV4/${format}: 低画質と停止状態・再生位置を保持`,
       `watchV4/${format}: 高画質へ切り替えて停止状態・再生位置を保持`,
       `watchV4/${format}: 旧配信権APIを要求しない`,
     ]),
+    'watchV4/v4-current: 入口から初期HLSを再生',
+    'watchV4/v4-current: 初期HTMLのキーから配信権を取得',
+    'watchV4/v4-current: responseType=jsonを要求しない',
+    'watchV4/v4-google: responseType=jsonを要求しない',
     'watchV4/v4-media: 不透明なHLS値を拒否して停止',
     'watchV4/v4-media: 正常な初期HTMLの再取得で復帰',
     'P1-04/race: 遅いA応答後もBの再生を保持',
@@ -323,7 +326,7 @@ function validateSettings(report: Record<string, unknown>, missing: string[]): v
     if (fields.has(value.id)) missing.push(`重複設定:${value.id}`);
     fields.set(value.id, value);
   }
-  if (requiredSettingsFields.length !== 34 || fields.size !== 34) missing.push(`設定34件:実際${fields.size}`);
+  if (requiredSettingsFields.length !== 32 || fields.size !== 32) missing.push(`設定32件:実際${fields.size}`);
   for (const required of requiredSettingsFields) {
     const field = fields.get(required.id);
     if (!field || field.key !== required.key || field.category !== required.category) {

@@ -5,6 +5,7 @@ import { mediaSpec } from '../test/fixtures/functionality/media-spec';
 import { watchV4Response } from '../test/fixtures/functionality/watch-v4';
 import { watchLoginRequired } from '../test/fixtures/functionality/watch-login-required';
 import type { WatchFixtureFormat } from '../test/fixtures/functionality/watch-v4';
+import { currentWatchV4Lazy, watchHtml } from '../test/fixtures/functionality/watch-v4-current';
 
 export interface FixtureRequest {
   url: string;
@@ -166,7 +167,7 @@ export function createOfflineSite() {
         ? JSON.stringify(
             watchV4Response(
               watch(currentWatchId).data.response as typeof base.data.response,
-              'v4-envelope',
+              faults.watchFormat === 'v4-media' ? 'v4-envelope' : faults.watchFormat,
               faults.watchHlsUrl
             )
           )
@@ -200,6 +201,14 @@ export function createOfflineSite() {
         return null;
       }
       if (url.username || url.password) return null;
+      if (
+        ['https://delivery.domand.nicovideo.jp', 'https://asset.domand.nicovideo.jp'].includes(url.origin) &&
+        /^\/fixtures\/(sm9|sm2057168|sm100)\//.test(url.pathname)
+      ) {
+        // 実測した配信CORSの条件を固定する。Googleからの直接取得は成功させない。
+        if (header(request, 'Origin') !== 'https://www.nicovideo.jp') return null;
+        url = new URL('https://fixture.invalid' + url.pathname.slice('/fixtures'.length) + url.search);
+      }
       const method = request.method.toUpperCase(),
         path = url.pathname;
       if (['GET', 'OPTIONS'].includes(method) && request.postData) return null;
@@ -233,7 +242,8 @@ export function createOfflineSite() {
       if (method === 'OPTIONS') {
         const registered =
           (url.origin === 'https://nvapi.nicovideo.jp' &&
-            ((tagPath && (query(url) || (url.searchParams.size === 1 && !!url.searchParams.get('tag')))) ||
+            ((/^\/v4\/watch\/lazy\/(sm9|sm2057168|sm100)$/.test(path) && query(url)) ||
+              (tagPath && (query(url) || (url.searchParams.size === 1 && !!url.searchParams.get('tag')))) ||
               ((hlsPath || storyboardPath) && query(url, { actionTrackId: 'fixture-track' })) ||
               (path === '/v1/comment/keys/post' &&
                 videoForThread(requestedThread) &&
@@ -253,6 +263,18 @@ export function createOfflineSite() {
               (postPath && query(url, { pc: '1' })) ||
               (actionPath && query(url))));
         return registered ? { status: 204, mime: 'text/plain', body: '' } : null;
+      }
+      const lazyId = /^\/v4\/watch\/lazy\/(sm9|sm2057168|sm100)$/.exec(path)?.[1];
+      if (method === 'POST' && url.origin === 'https://nvapi.nicovideo.jp' && lazyId && isWatch(lazyId) && query(url)) {
+        const body = bodyOf(request);
+        if (
+          !body ||
+          !keys(body, ['actionTrackId', 'keyToken']) ||
+          body.actionTrackId !== 'fixture-track' ||
+          body.keyToken !== 'fixture-lazy-key'
+        )
+          return null;
+        return json(currentWatchV4Lazy(watch(lazyId).data.response as typeof base.data.response));
       }
       if (tagPath && url.origin === 'https://nvapi.nicovideo.jp') {
         const id = tagPath[1] as WatchId;
@@ -356,6 +378,19 @@ export function createOfflineSite() {
         const match = /^\/watch\/(sm9|sm2057168|sm100)$/.exec(path),
           id = match?.[1];
         if (id && isWatch(id)) {
+          if ((query(url) || query(url, { eco: '1' })) && header(request, 'Accept') === 'text/html') {
+            if (faults.watchLoginRequired && !auth.isLogin) return json(watchLoginRequired, 400);
+            if (faults.watchDelayMs) await Bun.sleep(faults.watchDelayMs);
+            const format = faults.watchFormat === 'v4-media' ? 'v4-envelope' : faults.watchFormat;
+            const body = watchV4Response(
+              watch(id).data.response as typeof base.data.response,
+              format,
+              faults.watchHlsUrl
+            );
+            return ['v4-flat', 'v4-envelope'].includes(format)
+              ? json(body)
+              : { status: 200, mime: 'text/html; charset=utf-8', body: watchHtml(body) };
+          }
           if (query(url, { responseType: 'json' }) || query(url, { responseType: 'json', eco: '1' })) {
             if (faults.watchLoginRequired && !auth.isLogin) return json(watchLoginRequired, 400);
             if (faults.watchDelayMs) await Bun.sleep(faults.watchDelayMs);
@@ -409,7 +444,15 @@ export function createOfflineSite() {
           return {
             status: 200,
             mime: name.endsWith('.mpegts') ? 'video/mp2t' : 'application/vnd.apple.mpegurl',
-            body: new Uint8Array(await file.arrayBuffer()),
+            body:
+              new URL(request.url).hostname === 'delivery.domand.nicovideo.jp' &&
+              name !== 'master.m3u8' &&
+              name.endsWith('.m3u8')
+                ? (await file.text()).replace(
+                    /^(?:low|high)-\d{2}\.mpegts$/gm,
+                    (path) => `https://asset.domand.nicovideo.jp/fixtures/${media[1]}/${path}`
+                  )
+                : new Uint8Array(await file.arrayBuffer()),
           };
         }
       }
@@ -461,7 +504,10 @@ export function createOfflineSite() {
           outputs.push(value[0]);
         }
         const variant = outputs.length > 1 ? 'master' : outputs[0] === videoIds[0] ? 'high' : 'low';
-        const contentUrl = `https://fixture.invalid/${videoId}/${variant}.m3u8`;
+        const delivery = faults.watchFormat.startsWith('v4-current')
+          ? 'https://delivery.domand.nicovideo.jp/fixtures'
+          : 'https://fixture.invalid';
+        const contentUrl = `${delivery}/${videoId}/${variant}.m3u8`;
         deliveries.push({ videoId: path.split('/')[3]!, outputs: [...outputs], variant });
         if (faults.hlsStatus !== 200) {
           const status = faults.hlsBodyStatus ?? faults.hlsStatus;

@@ -1,5 +1,5 @@
 import { attach, attachBrowser, cleanupCdp, evaluate, listTargets } from './dev-cdp';
-import { offlineSites } from './dev-offline';
+import { offlineSites, offlineFramePreloads } from './dev-offline';
 import { clickVisible } from './dev-ui';
 import { verifyMediaIdentity } from './verify-media-identity';
 import { verificationDirectory } from './dev-verification-output';
@@ -7,21 +7,34 @@ import { verificationDirectory } from './dev-verification-output';
 export async function verifyWatchV4(source: string): Promise<string[]> {
   if (process.env.FUTATSUME_TEST_OFFLINE !== '1') throw new Error('watchV4検証はオフライン専用です');
   const labels: string[] = [];
-  for (const name of ['v4-envelope', 'v4-flat', 'v4-html', 'v4-media', 'v4-external'] as const) {
-    const format = name === 'v4-external' ? 'v4-envelope' : name;
+  for (const name of [
+    'v4-envelope',
+    'v4-flat',
+    'v4-html',
+    'v4-media',
+    'v4-external',
+    'v4-current',
+    'v4-google',
+  ] as const) {
+    const external = name === 'v4-external' || name === 'v4-google';
+    const format = name === 'v4-external' ? 'v4-envelope' : name === 'v4-google' ? 'v4-current-direct' : name;
     const browser = await attachBrowser();
     const { targetId } = (await browser.send('Target.createTarget', { url: 'about:blank' })) as { targetId: string };
     const page = await attach((await listTargets()).find((target) => target.id === targetId)!);
     const site = offlineSites.get(page)!;
     site.faults.watchFormat = format;
-    if (name === 'v4-external')
+    if (external)
       site.documents.set(
         'https://www.nicovideo.jp/robots.txt',
         '<!doctype html><html><head><link rel="icon" href="data:,"></head><body></body></html>'
       );
     const pageUrl =
-      name === 'v4-external' ? 'https://anime.nicovideo.jp/watch-v4-fixture' : 'https://www.nicovideo.jp/watch/sm9';
-    if (name === 'v4-external')
+      name === 'v4-google'
+        ? 'https://www.google.com/search?q=fixture'
+        : external
+          ? 'https://anime.nicovideo.jp/watch-v4-fixture'
+          : 'https://www.nicovideo.jp/watch/sm9';
+    if (external)
       site.documents.set(
         pageUrl,
         '<!doctype html><html><head><meta charset="utf-8"><link rel="icon" href="data:,"></head><body><main><a href="https://www.nicovideo.jp/watch/sm9">検証動画</a></main></body></html>'
@@ -75,14 +88,15 @@ export async function verifyWatchV4(source: string): Promise<string[]> {
       await page.send('Page.addScriptToEvaluateOnNewDocument', {
         source: `document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true});`,
       });
+      offlineFramePreloads.set(page, `document.addEventListener('DOMContentLoaded',()=>{${source}\n},{once:true});`);
       await page.send('Page.navigate', { url: pageUrl });
       await page.send('Page.bringToFront');
       await check(
-        `window.FutatsumeWatch?.ready&&document.body.classList.contains('is-watch')===${name !== 'v4-external'}`,
+        `window.FutatsumeWatch?.ready&&document.body.classList.contains('is-watch')===${!external}`,
         '視聴ページとして初期化',
         30000
       );
-      await click(name === 'v4-external' ? '[data-futatsume-video="sm9"]' : '[data-futatsume-open]');
+      await click(external ? '[data-futatsume-video="sm9"]' : '[data-futatsume-open]');
       await check(`${media}?.currentTime>0.5`, '入口から初期HLSを再生', 30000);
       await verifyMediaIdentity(page, 'sm9', (_session, condition, label, timeout) => check(condition, label, timeout));
       await check(
@@ -109,11 +123,14 @@ export async function verifyWatchV4(source: string): Promise<string[]> {
         30000
       );
       await quality(0);
-      await check(
-        `${media}.hls?.currentLevel>=0&&${media}.hls.autoLevelCapping===1`,
-        '自動画質を利用可能な解像度へ制限',
-        30000
-      );
+      if (name === 'v4-current')
+        await check(`${native}.readyState>=2&&${media}.paused`, '自動画質への再取得を完了', 30000);
+      if (name !== 'v4-current')
+        await check(
+          `${media}.hls?.currentLevel>=0&&${media}.hls.autoLevelCapping===1`,
+          '自動画質を利用可能な解像度へ制限',
+          30000
+        );
       if (name === 'v4-media') {
         site.faults.watchHlsUrl = 'opaque-fixture';
         await click('[data-settings-action="reload"]', root);
@@ -133,19 +150,37 @@ export async function verifyWatchV4(source: string): Promise<string[]> {
       } else {
         await click('[data-settings-close]', root);
       }
-      if (
+      if (name === 'v4-current') {
+        if (!site.deliveries.length) throw new Error('現行watchV4のアクセス権キーから配信を取得していません');
+        labels.push(`watchV4/${name}: 初期HTMLのキーから配信権を取得`);
+      } else if (
         site.deliveries.length ||
         requests.some((url) => url.includes('/access-rights/hls') || url.includes('/access-rights/storyboard'))
       )
         throw new Error('watchV4で旧配信権APIを要求しました');
-      labels.push(`watchV4/${name}: 旧配信権APIを要求しない`);
+      if (name !== 'v4-current') labels.push(`watchV4/${name}: 旧配信権APIを要求しない`);
+      if (requests.some((url) => new URL(url).searchParams.has('responseType')))
+        throw new Error('版番号必須のJSON URLを要求しました');
+      labels.push(`watchV4/${name}: responseType=jsonを要求しない`);
       const shot = (await page.send('Page.captureScreenshot', { format: 'png' })) as { data: string };
       await Bun.write(new URL(`watch-${name}.png`, verificationDirectory), Buffer.from(shot.data, 'base64'));
       await click('[data-shell-action="close"]');
     } catch (error) {
       await Bun.write(
         new URL(`watch-${name}-failure.json`, verificationDirectory),
-        JSON.stringify({ name, labels, error: String(error) }, null, 2)
+        JSON.stringify(
+          {
+            name,
+            labels,
+            error: String(error),
+            diagnostic: await evaluate(
+              page,
+              `({url:location.href,ready:window.FutatsumeWatch?.ready,entry:document.querySelector('[data-futatsume-entry]')?.outerHTML,frames:[...document.querySelectorAll('iframe')].map(f=>({src:f.src,name:f.name}))})`
+            ),
+          },
+          null,
+          2
+        )
       );
       throw error;
     } finally {

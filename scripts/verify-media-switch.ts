@@ -18,11 +18,7 @@ export async function verifyDelayedMediaSwitch(page: CdpSession, check: MediaIde
     requestId = '';
   const isA = (value: string): boolean => {
     const url = new URL(value);
-    return (
-      url.origin === 'https://www.nicovideo.jp' &&
-      url.pathname === '/watch/sm9' &&
-      url.searchParams.get('responseType') === 'json'
-    );
+    return url.origin === 'https://www.nicovideo.jp' && url.pathname === '/watch/sm9' && url.searchParams.size === 0;
   };
   const observe = (method: string, params: Record<string, unknown>): void => {
     if (method === 'Target.receivedMessageFromTarget') {

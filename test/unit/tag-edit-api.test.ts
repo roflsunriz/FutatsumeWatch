@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'bun:test';
 import { TagEditApi } from '../../packages/lib/src/nico/tag-edit-api';
 import { netUtil } from '../../packages/lib/src/infra/net-util';
+import base from '../fixtures/functionality/watch-response.json';
 
 const original = netUtil.fetch;
 afterEach(() => {
@@ -35,7 +36,9 @@ test('期限切れキーはwatch応答から一度だけ更新して同じ操作
       return Promise.resolve(Response.json({ meta: { status: 401, errorCode: 'KEY_EXPIRED' } }, { status: 401 }));
     if (calls.length === 2)
       return Promise.resolve(
-        Response.json({ data: { response: { tag: { edit: { editKey: 'fresh', isEditable: true } } } } })
+        Response.json({
+          data: { response: { ...base.data.response, tag: { edit: { editKey: 'fresh', isEditable: true } } } },
+        })
       );
     expect(new Headers(init?.headers).get('X-Tag-Edit-Key')).toBe('fresh');
     return Promise.resolve(Response.json({ meta: { status: 200 }, data: { tags: [{ name: '更新後' }] } }));

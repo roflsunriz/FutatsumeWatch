@@ -218,7 +218,6 @@ const StoryboardWorker = (() => {
       declare _info: StoryboardInfoModel | null;
       declare lastPos: unknown;
       declare ctx: WorkerCanvasContext;
-      declare bitmapCtx: WorkerCanvasContext | null;
       declare bufferCanvas: WorkerCanvas;
       declare bufferCtx: WorkerCanvasContext;
       declare images: typeof ImageCacheMap;
@@ -236,7 +235,6 @@ const StoryboardWorker = (() => {
         this._info = null;
         this.lastPos = {};
         this.ctx = canvas.getContext('2d', { alpha: false, desynchronized: true }) as WorkerCanvasContext;
-        this.bitmapCtx = canvas.getContext('bitmaprenderer');
         this.bufferCanvas = getCanvas(canvas.width, canvas.height);
         this.bufferCtx = this.bufferCanvas.getContext('2d', {
           alpha: false,
@@ -373,13 +371,8 @@ const StoryboardWorker = (() => {
           bctx.fillRect(pointerLeft, 0, cellWidth, height);
         }
 
-        if (this.bufferCanvas.transferToImageBitmap && this.bitmapCtx && this.bitmapCtx.transferFromImageBitmap) {
-          const bitmap = this.bufferCanvas.transferToImageBitmap();
-          this.bitmapCtx.transferFromImageBitmap(bitmap);
-        } else {
-          this.ctx.beginPath();
-          this.ctx.drawImage(this.bufferCanvas, 0, 0, width, height, 0, 0, width, height);
-        }
+        this.ctx.beginPath();
+        this.ctx.drawImage(this.bufferCanvas, 0, 0, width, height, 0, 0, width, height);
       }
 
       cls(): void {

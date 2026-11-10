@@ -18,6 +18,7 @@ interface GateBridge {
 }
 
 interface GateMessageParams {
+  requestId?: string;
   url?: string;
   options?: Record<string, unknown> & { credentials?: unknown; expireTime?: number };
   keys?: Array<string>;
@@ -136,6 +137,7 @@ const GateAPI = (() => {
     // }
 
     let isOk = false;
+    const fetchControllers = new Map<string, AbortController>();
 
     const pushHistory = ({ path, title = '' }: { path: string; title?: string }) => {
       // ブラウザの既読リンクの色をつけるためにreplaceStateする
@@ -315,7 +317,19 @@ const GateAPI = (() => {
             isOk = true;
             break;
           case 'fetch':
+            if (params.requestId) {
+              const requestId = params.requestId;
+              const controller = new AbortController();
+              fetchControllers.set(requestId, controller);
+              return xFetch(
+                { ...params, options: { ...params.options, signal: controller.signal } },
+                sessionId
+              ).finally(() => fetchControllers.delete(requestId));
+            }
             return xFetch(params, sessionId);
+          case 'abortFetch':
+            if (params.requestId) fetchControllers.get(params.requestId)?.abort();
+            break;
           case 'dumpConfig':
             return dumpConfig(params, sessionId);
           case 'saveConfig':

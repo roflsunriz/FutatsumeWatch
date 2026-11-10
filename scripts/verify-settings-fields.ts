@@ -1,7 +1,7 @@
 import { evaluate } from './dev-cdp';
 import type { CdpSession } from './dev-cdp';
 
-type Panel = 'general' | 'advanced';
+type Panel = 'general';
 interface Field {
   key: string;
   type: string;
@@ -53,12 +53,6 @@ export const settingsCategories: { name: string; panel: Panel; id: string; keys:
     keys: 'enableFilter removeNgMatchedUser sharedNgLevel filter.fork0 filter.fork1 filter.fork2 filter.fork3 filter.defaultThread filter.ownerThread filter.communityThread filter.nicosThread filter.easyThread filter.aiThread filter.extraCommunityThread filter.extraEasyThread wordRegFilter commandFilter userIdFilter'.split(
       ' '
     ),
-  },
-  {
-    name: 'advanced',
-    panel: 'advanced',
-    id: 'P2-10',
-    keys: 'enableFullScreenOnDoubleClick autoCloseFullScreen'.split(' '),
   },
 ];
 

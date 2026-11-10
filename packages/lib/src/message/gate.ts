@@ -153,11 +153,11 @@ const gate = () => {
     }
 
     const controller = AbortController ? new AbortController() : null;
-    if (controller) {
-      params.signal = controller.signal;
-    }
+    const onAbort = () => controller?.abort();
+    if (options?.signal?.aborted) onAbort();
+    else options?.signal?.addEventListener('abort', onAbort, { once: true });
 
-    racers.push(fetch(url, options));
+    racers.push(fetch(url, { ...options, signal: controller?.signal ?? options?.signal }));
     return Promise.race(racers)
       .catch((err: unknown) => {
         let message = 'uFetch fail';
@@ -173,6 +173,7 @@ const gate = () => {
         return Promise.reject({ status: 'fail', message });
       })
       .finally(() => {
+        options?.signal?.removeEventListener('abort', onAbort);
         if (timer) {
           clearTimeout(timer);
         }

@@ -61,8 +61,8 @@ function complete(suite: BrowserSuite) {
 
 test('必須操作を全部報告した各suiteだけを成功として数える', () => {
   for (const suite of browserSuites) expect(assertBrowserCoverage(suite, complete(suite)).count).toBeGreaterThan(0);
-  expect(requiredSettingsFields).toHaveLength(34);
-  expect(assertBrowserCoverage('settings', complete('settings')).settings).toBe(34);
+  expect(requiredSettingsFields).toHaveLength(32);
+  expect(assertBrowserCoverage('settings', complete('settings')).settings).toBe(32);
 });
 test('0件、成功フラグ欠落、成功フラグとエラーの矛盾を拒否する', () => {
   expect(() => assertBrowserCoverage('entry', { completed: true, checks: [] })).toThrow('必須ケース');
@@ -100,10 +100,10 @@ test('複合ラベルは両IDを示すが無関係な数字を親IDにしない'
   report.checks.push('項目02/03');
   expect(() => assertBrowserCoverage('functionality', report)).toThrow('P1-02');
 });
-test('設定が33件・重複・キー違いなら成功宣言でも拒否する', () => {
+test('設定が31件・重複・キー違いなら成功宣言でも拒否する', () => {
   const missing = complete('settings');
   missing.fields.pop();
-  expect(() => assertBrowserCoverage('settings', missing)).toThrow('設定34件');
+  expect(() => assertBrowserCoverage('settings', missing)).toThrow('設定32件');
   const duplicate = complete('settings');
   duplicate.fields[1] = duplicate.fields[0]!;
   expect(() => assertBrowserCoverage('settings', duplicate)).toThrow('重複設定');

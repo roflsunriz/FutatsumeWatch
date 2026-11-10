@@ -20,11 +20,11 @@ export async function captureSettingsExport(session: CdpSession, helpers: Helper
     `window.__settingsAnchorClick=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download.endsWith('.config.json')){window.__settingsExportUrl=this.href;window.__settingsExportResult=fetch(this.href).then(async response=>({json:await response.text(),mime:response.headers.get('content-type')}));return;}return window.__settingsAnchorClick.call(this);}`
   );
   try {
-    await helpers.clickInside(session, 'general', '.export-config-button');
+    await helpers.clickInside(session, 'general', '[data-settings-file-action="export"]');
     await helpers.check(
       session,
       `!!window.__settingsExportUrl`,
-      '入出力タブから設定書き出しを操作（ダウンロードは捕捉）'
+      '左サイドバーからエクスポートを操作（ダウンロードは捕捉）'
     );
     const exported = (await evaluateAsync(session, `window.__settingsExportResult`)) as { json: string; mime: string };
     if (exported.mime !== 'application/json') throw new Error('設定ファイルのMIMEがJSONではありません');
@@ -101,7 +101,6 @@ export async function verifySettingsRoundtrip(session: CdpSession, helpers: Help
       `window.FutatsumeWatch.config.props.baseChatScale===${targetScale} && window.FutatsumeWatch.config.props.baseFontBolder===${targetBold} && JSON.parse(localStorage.getItem(${JSON.stringify(before.scaleKey)}))===${targetScale} && JSON.parse(localStorage.getItem(${JSON.stringify(before.boldKey)}))===${targetBold}`,
       'P2-06/roundtrip: 書き出し対象を実入力し数値・真偽値で保存'
     );
-    await helpers.clickInside(session, 'general', '[data-settings-tab="data"]');
     const json = await captureSettingsExport(session, helpers);
     const exported = JSON.parse(json) as { baseChatScale?: number; baseFontBolder?: boolean };
     if (exported.baseChatScale !== targetScale || exported.baseFontBolder !== targetBold)
@@ -116,10 +115,9 @@ export async function verifySettingsRoundtrip(session: CdpSession, helpers: Help
       `window.FutatsumeWatch.config.props.baseChatScale!==${targetScale} && window.FutatsumeWatch.config.props.baseFontBolder!==${targetBold}`,
       'P2-06/roundtrip: 読み込み前に両設定を別の値へ実変更'
     );
-    await helpers.clickInside(session, 'general', '[data-settings-tab="data"]');
     const oldTimeOrigin = (await evaluate(session, 'performance.timeOrigin')) as number;
     await session.send('Page.setInterceptFileChooserDialog', { enabled: true });
-    await helpers.clickInside(session, 'general', '.import-config-file-select');
+    await helpers.clickInside(session, 'general', '[data-settings-file-action="import"]');
     const remote = (await session.send('Runtime.evaluate', {
       expression: `window.__settingsQuery('.import-config-file-select',${root})`,
     })) as { result: { objectId: string } };
@@ -253,7 +251,6 @@ export async function verifySettingsStorage(session: CdpSession, helpers: Helper
 
 export async function verifySettingsImportFailures(session: CdpSession, helpers: Helpers): Promise<void> {
   await helpers.open(session, 'general');
-  await helpers.clickInside(session, 'general', '[data-settings-tab="data"]');
   const original = await evaluate(session, 'window.FutatsumeWatch.config.exportJson()');
   let active = true;
   const dialogs: string[] = [];
@@ -276,7 +273,7 @@ export async function verifySettingsImportFailures(session: CdpSession, helpers:
       const file = new URL(`settings-${name}.config.json`, verificationDirectory);
       await Bun.write(file, content);
       const initialDialogs = dialogs.length;
-      await helpers.clickInside(session, 'general', '.import-config-file-select');
+      await helpers.clickInside(session, 'general', '[data-settings-file-action="import"]');
       const remote = (await session.send('Runtime.evaluate', {
         expression: `window.__settingsQuery('.import-config-file-select',window.__settingsQuery('[data-fw-settings="general"]'))`,
       })) as { result: { objectId: string } };

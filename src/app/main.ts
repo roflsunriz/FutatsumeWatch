@@ -33,7 +33,6 @@ async function start(): Promise<void> {
   if (window === window.top) {
     if (location.hostname === 'www.nicovideo.jp') await import('../../packages/lib/src/nico/modern-lazyload');
     await import('../pocket/index');
-    await import('../config/setting');
     if (location.hostname === 'www.nicovideo.jp' && location.pathname.startsWith('/my/mylist')) {
       await import('../playlist/my4');
     }

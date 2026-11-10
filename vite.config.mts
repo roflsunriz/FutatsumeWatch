@@ -25,8 +25,9 @@ export default defineConfig({
         namespace: 'https://github.com/roflsunriz/FutatsumeWatch/',
         version: VERSION,
         author: 'roflsunriz',
+        icon: `data:image/svg+xml;base64,${Buffer.from(readFileSync(new URL('./src/app/icon.svg', import.meta.url))).toString('base64')}`,
         description:
-          'ニコニコ動画の外付けプレイヤー。動画リンクや埋め込みの起動ボタンから再生。タグ編集、マイリスト／とりマイの追加・編集、コメント投稿、プレイリストに対応。シークバーのサムネイル内でコメントをプレビューし、画質・フォント・詳細サイドバーも設定できます。0.0.33ではモバイルのFWボタン・タップ後5秒の操作表示・長押しメニューを改善し、ログインが必要な動画のHTTP400をログイン案内へ変更。',
+          'ニコニコ動画の外付けプレイヤー。動画リンクや埋め込みの起動ボタンから再生。タグ編集、マイリスト／とりマイの追加・編集、コメント投稿、プレイリストに対応。0.0.34では動画情報取得時のHTTP400と現行watchV4形式に対応。独自アイコンを内蔵し、設定のインポート・エクスポートを左サイドバーへ移動。',
         match: [
           ...[
             'www',

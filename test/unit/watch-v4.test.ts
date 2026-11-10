@@ -14,6 +14,7 @@ import {
 } from '../../packages/lib/src/nico/watch-response';
 import { TagEditApi } from '../../packages/lib/src/nico/tag-edit-api';
 import { watchLoginRequired as loginRequired } from '../fixtures/functionality/watch-login-required';
+import { currentWatchV4Data, currentWatchV4Lazy, watchHtml } from '../fixtures/functionality/watch-v4-current';
 
 const originalFetch = netUtil.fetch;
 afterEach(() => {
@@ -39,6 +40,12 @@ test('未ログインの制限動画は理由とログイン後の再生手順�
   const other = structuredClone(loginRequired);
   other.data.response.reasonCode = 'OTHER';
   expect(watchLoginRequiredMessage(other)).toBeNull();
+});
+
+test('通常HTMLのHTTP400でも未ログイン拒否を解析し、他のHTTP400と区別する', async () => {
+  netUtil.fetch = () => Promise.resolve(new Response(watchHtml(loginRequired), { status: 400 }));
+  const error: unknown = await VideoInfoLoader.load('sm9', {}).catch((value: unknown) => value);
+  expect(error).toMatchObject({ message: watchLoginRequiredMessage(loginRequired) });
 });
 
 for (const format of ['v4-envelope', 'v4-flat', 'v4-html'] as const) {
@@ -68,22 +75,77 @@ for (const format of ['v4-envelope', 'v4-flat', 'v4-html'] as const) {
   });
 }
 
-test('mediaだけの応答は同じ動画の初期HTMLを一度取得してメタデータを補う', async () => {
+test('通常HTMLを1回取得し、版番号必須のresponseType=jsonを要求しない', async () => {
   const requests: string[] = [];
-  netUtil.fetch = (url) => {
+  netUtil.fetch = (url, options) => {
     requests.push(url);
+    expect(new Headers(options?.headers).get('Accept')).toBe('text/html');
     return Promise.resolve(
-      requests.length === 1
-        ? Response.json({ meta: { status: 200 }, data: { media: { hls: { url: 'opaque-fixture' } } } })
+      new URL(url).searchParams.has('responseType')
+        ? Response.json(
+            { data: { response: { reason: 'nvpcClientVersion is missing or does not match.' } } },
+            { status: 400 }
+          )
         : new Response(watchV4Html(base.data.response))
     );
   };
   const raw = (await VideoInfoLoader.load('sm9', {})) as RawVideoInfoData;
   expect(raw.watchApiData.videoDetail.id).toBe('sm9');
-  expect(requests).toEqual([
-    'https://www.nicovideo.jp/watch/sm9?responseType=json',
-    'https://www.nicovideo.jp/watch/sm9',
-  ]);
+  expect(requests).toEqual(['https://www.nicovideo.jp/watch/sm9']);
+});
+
+for (const directHls of [false, true]) {
+  test(`現行watchV4のHTMLからコメント・タグ・投稿者・シリーズを接続する（直接HLS=${directHls}）`, async () => {
+    const data = currentWatchV4Data(base.data.response, directHls);
+    const requests: string[] = [];
+    netUtil.fetch = (url, init) => {
+      requests.push(url);
+      if (url === 'https://www.nicovideo.jp/watch/sm9')
+        return Promise.resolve(new Response(watchHtml({ data: { response: { $watchV4: { data } } } })));
+      expect(url).toBe('https://nvapi.nicovideo.jp/v4/watch/lazy/sm9');
+      expect(init?.method).toBe('POST');
+      expect(typeof init?.body).toBe('string');
+      expect(JSON.parse(typeof init?.body === 'string' ? init.body : '')).toEqual({
+        actionTrackId: 'fixture-track',
+        keyToken: 'fixture-lazy-key',
+      });
+      return Promise.resolve(Response.json(currentWatchV4Lazy(base.data.response)));
+    };
+    const raw = (await VideoInfoLoader.load('sm9', {})) as RawVideoInfoData;
+    const model = new VideoInfoModel(raw);
+    expect(model.videoId).toBe('sm9');
+    expect(model.series).toEqual(base.data.response.series);
+    expect(raw.watchApiData.uploaderInfo).toMatchObject({
+      id: base.data.response.owner.id,
+      name: base.data.response.owner.nickname,
+    });
+    expect(model.tagList).toHaveLength(data.tags.items.length);
+    expect(raw.msgInfo).toMatchObject({
+      threadId: data.comment.threads.find((thread) => thread.isPostTarget)!.id,
+      nvComment: data.comment.nvComment,
+    });
+    expect(model.domandInfo?.hlsUrl).toBe(
+      directHls ? 'https://delivery.domand.nicovideo.jp/fixtures/sm9/master.m3u8' : undefined
+    );
+    expect(model.domandInfo?.accessRightKey).toBe(base.data.response.media.domand.accessRightKey);
+    expect(model.domandInfo?.availableVideoIds).toEqual(data.media.contents.videos.map((video) => video.id));
+    expect(requests).toHaveLength(2);
+  });
+}
+
+test('通常HTMLが不完全でも同じURLを再要求せず、HTTP拒否も再送しない', async () => {
+  for (const status of [200, 400]) {
+    let calls = 0;
+    netUtil.fetch = () => {
+      calls++;
+      return Promise.resolve(Response.json({ data: { media: {} } }, { status }));
+    };
+    const error: unknown = await VideoInfoLoader.load('sm9', {}).catch((value: unknown) => value);
+    expect(error).toMatchObject({
+      message: status === 400 ? '動画情報の取得に失敗しました (HTTP 400)' : '視聴ページの動画情報が不完全です',
+    });
+    expect(calls).toBe(1);
+  }
 });
 
 test('外側に残るコメント・タグを保持し、watchV4の動画情報を優先する', () => {

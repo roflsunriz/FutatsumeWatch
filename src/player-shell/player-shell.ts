@@ -79,13 +79,7 @@ export class PlayerShell {
     private readonly layoutChanged: () => void,
     private readonly onTagsChanged: (tags: { name: string; isLocked?: boolean }[]) => void
   ) {
-    configureSettingsNavigation(
-      (panel) => {
-        if (panel === 'general') this.generalSettings();
-        else this.container.querySelector<HTMLElement>('[data-command="toggleAdvancedSettings"]')?.click();
-      },
-      () => this.createSettingsSidebarExtras()
-    );
+    configureSettingsNavigation(() => this.createSettingsSidebarExtras());
     container.classList.add('fw-player');
     this.detailsLocked = this.config.props.detailsLocked === true;
     this.info = this.require('.futatsumeWatchVideoInfoPanel');

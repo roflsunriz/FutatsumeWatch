@@ -1,7 +1,6 @@
 import { netUtil } from '../infra/net-util';
-
-export const isWatchRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+import { isWatchRecord, normalizeWatchV4Data } from './watch-v4-normalize';
+export { isWatchRecord } from './watch-v4-normalize';
 
 export function watchLoginRequiredMessage(value: unknown, locale = navigator.language): string | null {
   if (!isWatchRecord(value) || !isWatchRecord(value.data)) return null;
@@ -37,19 +36,23 @@ export function unwrapWatchResponse(value: unknown): Record<string, unknown> {
       throw new Error('watchV4の動画情報がありません');
     }
     // 世代によって外側に残るコメント・タグ等も保持し、v4のフィールドを優先する。
-    return { ...response, ...response.$watchV4.data };
+    return normalizeWatchV4Data({ ...response, ...response.$watchV4.data });
   }
-  return response;
+  return normalizeWatchV4Data(response);
 }
 
-export function parseWatchResponseText(text: string): Record<string, unknown> {
+function parseWatchEnvelopeText(text: string): unknown {
   if (text.trimStart().startsWith('<')) {
     const document = new DOMParser().parseFromString(text, 'text/html');
     const json = document.querySelector('meta[name="server-response"]')?.getAttribute('content');
     if (!json) throw new Error('視聴ページに動画情報がありません');
-    return unwrapWatchResponse(JSON.parse(json) as unknown);
+    return JSON.parse(json) as unknown;
   }
-  return unwrapWatchResponse(JSON.parse(text) as unknown);
+  return JSON.parse(text) as unknown;
+}
+
+export function parseWatchResponseText(text: string): Record<string, unknown> {
+  return unwrapWatchResponse(parseWatchEnvelopeText(text));
 }
 
 export function isWatchPageResponse(text: string): boolean {
@@ -66,19 +69,17 @@ export function isWatchPageResponse(text: string): boolean {
 
 export async function loadWatchPageData(watchId: string, economy = false): Promise<Record<string, unknown>> {
   const url = new URL(`https://www.nicovideo.jp/watch/${encodeURIComponent(watchId)}`);
-  url.searchParams.set('responseType', 'json');
   if (economy) url.searchParams.set('eco', '1');
-  const queryUrl = url.href;
-  url.searchParams.delete('responseType');
-  const htmlUrl = url.href;
   const read = async (endpoint: string) => {
-    const response = (await netUtil.fetch(endpoint, { credentials: 'include' }).catch(() => {
-      throw new WatchPageNetworkError('通信エラー(network)');
-    })) as Response;
+    const response = (await netUtil
+      .fetch(endpoint, { credentials: 'include', headers: { Accept: 'text/html' } })
+      .catch(() => {
+        throw new WatchPageNetworkError('通信エラー(network)');
+      })) as Response;
     if (!response.ok) {
       let denied: unknown;
       try {
-        denied = await response.json();
+        denied = parseWatchEnvelopeText(await response.text());
       } catch {
         /* エラー本文がJSONでなくてもHTTP拒否を保持する。 */
       }
@@ -89,14 +90,33 @@ export async function loadWatchPageData(watchId: string, economy = false): Promi
     });
     return parseWatchResponseText(text);
   };
-  const data = await read(queryUrl);
-  if (!isWatchRecord(data.video) && isWatchRecord(data.media)) {
-    // media更新は完全なwatch応答ではない。同じ動画のHTMLから一度だけ取得する。
-    const complete = await read(htmlUrl);
-    if (!isWatchRecord(complete.video)) throw new Error('視聴ページの動画情報が不完全です');
-    return complete;
-  }
-  return data;
+  // responseType=jsonはnvpcClientVersionの一致が必須になった。通常HTMLを正本にし、
+  // 公式資産の版番号へ依存せず、1回の取得で初期情報とアクセス権キーを得る。
+  const data = await read(url.href);
+  if (!isWatchRecord(data.video)) throw new Error('視聴ページの動画情報が不完全です');
+  if (!isWatchRecord(data.lazy) || typeof data.lazy.authKey !== 'string' || !isWatchRecord(data.client)) return data;
+  const response = (await netUtil.fetch(`https://nvapi.nicovideo.jp/v4/watch/lazy/${encodeURIComponent(watchId)}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json;charset=utf-8',
+      'X-Request-With': 'https://www.nicovideo.jp',
+      'X-Frontend-Id': '6',
+      'X-Frontend-Version': '0',
+    },
+    body: JSON.stringify({ actionTrackId: data.client.watchTrackId, keyToken: data.lazy.authKey }),
+  })) as Response;
+  if (!response.ok) throw new Error(`動画詳細の取得に失敗しました (HTTP ${response.status})`);
+  const details: unknown = await response.json();
+  if (
+    !isWatchRecord(details) ||
+    !isWatchRecord(details.data) ||
+    !isWatchRecord(details.meta) ||
+    details.meta.status !== 200
+  )
+    throw new Error('動画詳細の応答形式が不正です');
+  return normalizeWatchV4Data(data, details.data);
 }
 
 export class WatchPageNetworkError extends Error {}
@@ -117,10 +137,15 @@ export interface WatchV4Delivery {
 }
 
 export function normalizeWatchV4Media(media: Record<string, unknown>): WatchV4Delivery | null {
-  if (!Array.isArray(media.contents)) return null;
+  const groups = Array.isArray(media.contents)
+    ? (media.contents as unknown[])
+    : isWatchRecord(media.contents)
+      ? [media.contents]
+      : null;
+  if (!groups) return null;
   const collect = (kind: 'videos' | 'audios'): WatchQuality[] => {
     const qualities = new Map<string, WatchQuality>();
-    for (const group of media.contents as unknown[]) {
+    for (const group of groups) {
       if (!isWatchRecord(group) || !Array.isArray(group[kind])) continue;
       for (const entry of group[kind] as unknown[]) {
         if (!isWatchRecord(entry) || typeof entry.id !== 'string' || !entry.id) continue;

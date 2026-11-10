@@ -4,7 +4,7 @@ ZenzaWatch 後継ユーザースクリプト。動画リンクがある場所か
 
 ## インストール
 
-Version 0.0.33
+Version 0.0.34
 
 [FutatsumeWatch.user.js](https://github.com/roflsunriz/FutatsumeWatch/raw/main/dist/FutatsumeWatch.user.js)
 
@@ -47,7 +47,11 @@ Chromeで「ユーザースクリプトを許可する」と案内された場�
 
 ### 設定を変える
 
-左上の設定ボタンを押し、左側のカテゴリを選びます。右側で各項目を変更でき、左側では画質も選べます。トグルは灰色がOFF、緑色がONです。×・Escape・背景クリックで閉じます。
+左上の設定ボタンを押し、左側の「プレイヤー」「コメント・フォント」「NG・フィルター」を選びます。右側で各項目を変更でき、左側では画質も選べます。トグルは灰色がOFF、緑色がONです。×・Escape・背景クリックで閉じます。
+
+設定をファイルへ保存する場合は左側の「エクスポート」、保存したファイルを読み込む場合は「インポート」を押します。読み込み前に確認が表示されます。「詳細設定」と「設定の入出力」のカテゴリは削除しましたが、保存済みの設定値は保持します。
+
+以下の設定画面の画像は、外部通信を使わない検証環境で撮影しています。
 
 <details>
 <summary>プレイヤーの設定</summary>
@@ -67,20 +71,6 @@ Chromeで「ユーザースクリプトを許可する」と案内された場�
 <summary>NG・フィルターの設定</summary>
 
 ![NG共有と表示するコメントの種類の設定](docs/images/settings-filters.png)
-
-</details>
-
-<details>
-<summary>設定の入出力</summary>
-
-![設定の書き出し・読み込み画面](docs/images/settings-data.png)
-
-</details>
-
-<details>
-<summary>詳細設定</summary>
-
-![ダブルクリックと再生終了時の全画面動作の設定](docs/images/settings-advanced.png)
 
 </details>
 

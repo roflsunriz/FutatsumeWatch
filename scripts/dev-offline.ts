@@ -6,6 +6,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export const offlineSites = new WeakMap<CdpSession, ReturnType<typeof createOfflineSite>>();
+// 別プロセスのiframeでも、マネージャが適用する配布物を同じ開始時点で注入する。
+export const offlineFramePreloads = new WeakMap<CdpSession, string>();
 // popupへ後から手動attachしても、初期ナビゲーションからの同じ監査sessionを使う。
 export const offlineTargetSessions = new Map<string, Promise<CdpSession>>();
 export const offlineReports = new WeakMap<
@@ -190,6 +192,11 @@ export async function installOffline(session: CdpSession, targetId?: string): Pr
     }
     try {
       await channel.send('Runtime.enable');
+      const preload = offlineFramePreloads.get(session);
+      if (targetType === 'iframe' && preload) {
+        await channel.send('Page.enable');
+        await channel.send('Page.addScriptToEvaluateOnNewDocument', { source: preload });
+      }
       await channel.send('Network.enable');
       await channel.send('Network.setCacheDisabled', { cacheDisabled: true });
       await channel.send('Network.setBypassServiceWorker', { bypass: true });

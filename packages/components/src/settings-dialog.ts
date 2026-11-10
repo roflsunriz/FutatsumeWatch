@@ -1,21 +1,14 @@
 import { SETTINGS_DIALOG_THEME } from './settings-dialog-theme';
+import { domEvent } from '../../lib/src/dom/dom-event';
 
-export type SettingsPanel = 'general' | 'advanced';
-type GeneralSection = 'player' | 'comments' | 'filters' | 'data';
-type SettingsTab = GeneralSection | Exclude<SettingsPanel, 'general'>;
-const tabs: readonly SettingsTab[] = ['player', 'comments', 'filters', 'data', 'advanced'];
-const isGeneralSection = (tab: SettingsTab): tab is GeneralSection =>
-  ['player', 'comments', 'filters', 'data'].includes(tab);
-const navigation: { section: GeneralSection; open?: (panel: SettingsPanel) => void; focusTab: boolean } = {
+export type SettingsPanel = 'general';
+type SettingsTab = 'player' | 'comments' | 'filters';
+const tabs: readonly SettingsTab[] = ['player', 'comments', 'filters'];
+const navigation: { section: SettingsTab } = {
   section: 'player',
-  focusTab: false,
 };
 let createSidebarExtras: (() => HTMLElement) | undefined;
-export function configureSettingsNavigation(
-  open: (panel: SettingsPanel) => void,
-  sidebarExtras?: () => HTMLElement
-): void {
-  navigation.open = open;
+export function configureSettingsNavigation(sidebarExtras?: () => HTMLElement): void {
   createSidebarExtras = sidebarExtras;
 }
 const labels = {
@@ -24,9 +17,9 @@ const labels = {
     player: 'プレイヤー',
     comments: 'コメント・フォント',
     filters: 'NG・フィルター',
-    data: '設定の入出力',
+    import: 'インポート',
+    export: 'エクスポート',
     navigation: '設定カテゴリ',
-    advanced: '詳細設定',
     close: '閉じる',
   },
   en: {
@@ -34,9 +27,9 @@ const labels = {
     player: 'Player',
     comments: 'Comments & fonts',
     filters: 'Filters',
-    data: 'Import & export',
+    import: 'Import',
+    export: 'Export',
     navigation: 'Settings categories',
-    advanced: 'Advanced settings',
     close: 'Close',
   },
 };
@@ -82,8 +75,6 @@ export class SettingsDialog {
     layout.className = 'fw-settings-layout';
     this.sidebar = document.createElement('nav');
     this.sidebar.className = 'fw-settings-sidebar';
-    this.sidebar.setAttribute('role', 'tablist');
-    this.sidebar.setAttribute('aria-orientation', 'vertical');
     this.sidebar.setAttribute('aria-label', text.navigation);
     const brand = document.createElement('div');
     brand.className = 'fw-settings-brand';
@@ -99,6 +90,12 @@ export class SettingsDialog {
     brandText.append(product, version);
     brand.append(menuMark, brandText);
     this.sidebar.append(brand);
+    const tablist = document.createElement('div');
+    tablist.className = 'fw-settings-tabs';
+    tablist.setAttribute('role', 'tablist');
+    tablist.setAttribute('aria-orientation', 'vertical');
+    tablist.setAttribute('aria-label', text.navigation);
+    this.sidebar.append(tablist);
     for (const tab of tabs) {
       const button = document.createElement('button');
       button.type = 'button';
@@ -120,8 +117,23 @@ export class SettingsDialog {
         next?.focus();
         next?.click();
       });
-      this.sidebar.append(button);
+      tablist.append(button);
     }
+    const transfers = document.createElement('div');
+    transfers.className = 'fw-settings-file-actions';
+    for (const action of ['import', 'export'] as const) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.settingsFileAction = action;
+      button.textContent = text[action];
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        domEvent.dispatchCommand(element, `${action}-config`, undefined);
+      });
+      transfers.append(button);
+    }
+    this.sidebar.append(transfers);
     this.sidebarExtras = document.createElement('div');
     this.sidebarExtras.className = 'fw-settings-sidebar-extras';
     this.sidebar.append(this.sidebarExtras);
@@ -197,37 +209,22 @@ export class SettingsDialog {
     this.element.showModal();
     this.active = true;
     activeSettings.dialog = this;
-    if (navigation.focusTab) {
-      navigation.focusTab = false;
-      this.sidebar.querySelector<HTMLButtonElement>('[aria-selected="true"]')?.focus();
-    }
   }
   private selectTab(tab: SettingsTab): void {
-    if (isGeneralSection(tab)) {
-      navigation.section = tab;
-      if (this.name === 'general') {
-        this.syncTabs();
-        this.body.scrollTop = 0;
-        return;
-      }
-    } else if (this.name === tab) return;
-    navigation.focusTab = true;
-    navigation.open?.(isGeneralSection(tab) ? 'general' : tab);
+    navigation.section = tab;
+    this.syncTabs();
+    this.body.scrollTop = 0;
   }
   private syncTabs(): void {
     const text = labels[navigator.language.startsWith('ja') ? 'ja' : 'en'];
-    const selected = this.name === 'general' ? navigation.section : this.name;
+    const selected = navigation.section;
     this.heading.textContent = text[selected];
     for (const button of this.sidebar.querySelectorAll<HTMLButtonElement>('[data-settings-tab]')) {
       const tab = button.dataset.settingsTab as SettingsTab;
       const active = tab === selected;
       button.setAttribute('aria-selected', String(active));
       button.tabIndex = active ? 0 : -1;
-      button.disabled = !navigation.open && (this.name !== 'general' || !isGeneralSection(tab)) && !active;
-      button.setAttribute(
-        'aria-controls',
-        this.name === 'general' && isGeneralSection(tab) ? `fw-settings-section-${tab}` : this.body.id
-      );
+      button.setAttribute('aria-controls', `fw-settings-section-${tab}`);
     }
     const sections = this.body.querySelectorAll<HTMLElement>('[data-settings-section]');
     this.body.setAttribute('role', sections.length ? 'presentation' : 'tabpanel');

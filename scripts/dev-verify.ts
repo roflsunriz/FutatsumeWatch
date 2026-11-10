@@ -134,28 +134,12 @@ async function main(): Promise<void> {
       session,
       `window.__fwQuery = function find(selector, root=document) { const found=root.querySelector(selector); if(found) return found; for(const element of root.querySelectorAll('*')) { if(element.shadowRoot) {const found=find(selector,element.shadowRoot);if(found)return found;} } return null; };`
     );
-    await click(session, 'toggleAdvancedSettings');
-    await until(session, `!!document.querySelector('.futatsumeAdvancedSettingPanel.show')`, '詳細設定を開く', 5000);
     const setting = 'enableFullScreenOnDoubleClick';
     const oldSetting = await evaluate(session, `${root}.config.getValue('${setting}')`);
-    await evaluate(
-      session,
-      `document.querySelector('.futatsumeAdvancedSettingPanel [data-setting-name="${setting}"]').click()`
-    );
     await until(
       session,
-      `${root}.config.getValue('${setting}') !== ${String(oldSetting)} && JSON.parse(localStorage.getItem('FutatsumeWatch_${setting}')) !== ${String(oldSetting)}`,
-      '詳細設定の変更と永続化',
-      5000
-    );
-    await evaluate(
-      session,
-      `document.querySelector('.futatsumeAdvancedSettingPanel [data-setting-name="${setting}"]').click(); document.querySelector('.futatsumeAdvancedSetting-close').click()`
-    );
-    await until(
-      session,
-      `!document.querySelector('.futatsumeAdvancedSettingPanel.show') && ${root}.config.getValue('${setting}') === ${String(oldSetting)}`,
-      '詳細設定を復元して閉じる',
+      `!document.querySelector('[data-command="toggleAdvancedSettings"],.futatsumeAdvancedSettingPanel')`,
+      '削除した詳細設定を起動・生成しない',
       5000
     );
     const playlistEnabled = await evaluate(session, `${root}.debug.playlist.isEnable`);

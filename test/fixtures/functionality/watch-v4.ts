@@ -1,6 +1,7 @@
 import type captured from './watch-response.json';
+import { currentWatchV4Data } from './watch-v4-current';
 
-export type WatchFixtureFormat = 'legacy' | 'v4-envelope' | 'v4-flat' | 'v4-html' | 'v4-media';
+export type WatchFixtureFormat = 'legacy' | 'v4-envelope' | 'v4-flat' | 'v4-html' | 'v4-media' | 'v4-current' | 'v4-current-direct';
 
 // NicoCache_nl 8f1954fのWatchV4UnitTestが確認した構造。本文・URL・キーは既存の人工データだけを使う。
 export function watchV4Data(data: typeof captured.data.response) {
@@ -20,6 +21,11 @@ export function watchV4Data(data: typeof captured.data.response) {
 
 export function watchV4Response(data: typeof captured.data.response, format: WatchFixtureFormat, hlsUrl?: string) {
   if (format === 'legacy') return { meta: { status: 200 }, data: { response: data } };
+  if (format === 'v4-current' || format === 'v4-current-direct') {
+    const v4 = currentWatchV4Data(data, format === 'v4-current-direct');
+    if (hlsUrl !== undefined) v4.media.hls = { url: hlsUrl };
+    return { meta: { status: 200 }, data: { response: { $watchV4: { data: v4 } } } };
+  }
   const v4 = watchV4Data(data);
   if (hlsUrl !== undefined) v4.media.hls.url = hlsUrl;
   if (format === 'v4-flat') return { meta: { status: 200 }, data: v4 };

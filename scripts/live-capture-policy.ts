@@ -125,9 +125,28 @@ export class LiveReadGate {
     }
     const sessionPath = url.pathname === `/v1/watch/${this.watchId}/access-rights/hls`;
     if (sessionPath && !productSession) return 'host-playback-suppressed';
+    const lazyPath = url.origin === 'https://nvapi.nicovideo.jp' && url.pathname === `/v4/watch/lazy/${this.watchId}`;
+    let lazyBody = false;
+    if (lazyPath && method === 'POST') {
+      try {
+        const value: unknown = JSON.parse(body);
+        lazyBody =
+          !!value &&
+          typeof value === 'object' &&
+          !Array.isArray(value) &&
+          Object.keys(value).length === 2 &&
+          'actionTrackId' in value &&
+          typeof value.actionTrackId === 'string' &&
+          'keyToken' in value &&
+          typeof value.keyToken === 'string';
+      } catch {
+        /* 不正な詳細取得は送信しない。 */
+      }
+    }
     const readPost =
       method === 'POST' &&
-      (((url.hostname === 'nvapi.nicovideo.jp' || !!this.localOrigin) && sessionPath) ||
+      ((lazyPath && lazyBody) ||
+        ((url.hostname === 'nvapi.nicovideo.jp' || !!this.localOrigin) && sessionPath) ||
         (url.hostname === 'public.nvcomment.nicovideo.jp' && url.pathname === '/v1/threads'));
     if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && !readPost) return 'write-not-authorized';
     // No cache-busting or fresh access key can turn a failed request into an allowed retry.
@@ -143,7 +162,7 @@ export class LiveReadGate {
       for (const key of [...canonical.searchParams.keys()])
         if (key !== 'responseType') canonical.searchParams.delete(key);
     canonical.searchParams.sort();
-    const canonicalBody = url.pathname.endsWith('/access-rights/hls') ? '' : body ? scrubText(body) : '';
+    const canonicalBody = url.pathname.endsWith('/access-rights/hls') || lazyPath ? '' : body ? scrubText(body) : '';
     const identity = createHash('sha256')
       .update([method, canonical.href, canonicalBody, range].join('\n'))
       .digest('hex');

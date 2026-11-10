@@ -15,4 +15,8 @@ if (parseUserscriptVersion(source) !== VERSION) throw new Error('配布物のバ
 // ESM自動検出を使わず、マネージャと同じclassic scriptとして検証する。
 new Script(source, { filename: STABLE_USERSCRIPT_FILE });
 if (/^\/\/\s*@require\s/m.test(source)) throw new Error('外部スクリプトへの依存が残っています');
+const icon = /^\/\/\s*@icon\s+data:image\/svg\+xml;base64,([^\s]+)\s*$/m.exec(source)?.[1];
+const iconSource = await readFile(new URL('../src/app/icon.svg', import.meta.url), 'utf8');
+if (!icon || Buffer.from(icon, 'base64').toString('utf8') !== iconSource)
+  throw new Error('配布物の内蔵アイコンが元のSVGと一致しません');
 console.log(`ビルド成功: ${STABLE_USERSCRIPT_FILE} (${VERSION}, ${source.length}文字)`);

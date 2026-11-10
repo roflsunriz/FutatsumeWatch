@@ -96,7 +96,7 @@ export async function verifyAuthentication(source: string): Promise<string[]> {
     page.onEvent((method, params) => {
       if (
         method === 'Network.requestWillBeSent' &&
-        String((params.request as { url: string }).url).includes('/watch/sm9?responseType=json')
+        String((params.request as { url: string }).url) === 'https://www.nicovideo.jp/watch/sm9'
       )
         deniedRequests++;
     });

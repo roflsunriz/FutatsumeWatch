@@ -109,7 +109,7 @@ try {
     throw new Error('再生時間が進んでいません');
   checks.push('起動ボタンの実クリック1回・映像デコード・時間進行・コメント画素');
   await capturePlayer(page, directory);
-  checks.push('設定5カテゴリと右4タブの実クリック切替');
+  checks.push('設定3カテゴリと右4タブの実クリック切替');
 } catch (error) {
   failures.push(String(error));
   if (page) {

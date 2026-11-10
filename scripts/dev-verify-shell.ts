@@ -30,9 +30,7 @@ async function reveal(session: CdpSession): Promise<void> {
 }
 async function click(session: CdpSession, action: string): Promise<void> {
   await reveal(session);
-  const settingsTabs: Record<string, string> = {
-    advanced: 'advanced',
-  };
+  const settingsTabs: Record<string, string> = {};
   const tab = settingsTabs[action];
   if (tab) {
     await check(
@@ -287,8 +285,8 @@ async function main(): Promise<void> {
     await screenshot(session, '1280-settings');
     await check(
       session,
-      `(()=>{const d=window.__fwQuery('[data-fw-settings="general"]'),rail=d.querySelector('.fw-settings-sidebar'),body=d.querySelector('.fw-modal-body');return rail.querySelectorAll(':scope > [data-settings-tab]').length===5&&rail.querySelectorAll('.fw-quality').length===1&&rail.querySelector('a')?.href==='https://github.com/roflsunriz/FutatsumeWatch'&&rail.querySelectorAll('[data-settings-action]').length===3&&rail.getBoundingClientRect().right<=body.getBoundingClientRect().left+1&&!d.querySelector('details')})()`,
-      '左レールに5カテゴリ・画質・GitHub・3操作を平置き'
+      `(()=>{const d=window.__fwQuery('[data-fw-settings="general"]'),rail=d.querySelector('.fw-settings-sidebar'),body=d.querySelector('.fw-modal-body');return rail.querySelectorAll('[data-settings-tab]').length===3&&rail.querySelectorAll('[data-settings-file-action]').length===2&&rail.querySelectorAll('.fw-quality').length===1&&rail.querySelector('a')?.href==='https://github.com/roflsunriz/FutatsumeWatch'&&rail.querySelectorAll('[data-settings-action]').length===3&&rail.getBoundingClientRect().right<=body.getBoundingClientRect().left+1&&!d.querySelector('details')})()`,
+      '左レールに3カテゴリ・インポート・エクスポート・画質・GitHub・3操作を平置き'
     );
     await check(
       session,
@@ -321,16 +319,11 @@ async function main(): Promise<void> {
     await deepClick(session, '[data-setting-name="autoPlay"]');
     await deepClick(session, '[data-fw-settings="general"] [data-settings-close]');
     await check(session, `!document.querySelector('futatsume-setting-panel').isOpen`, '一般設定の閉じるボタン');
-    await click(session, 'settings');
-    await click(session, 'advanced');
     await check(
       session,
-      `!!document.querySelector('.futatsumeAdvancedSettingPanel.show')`,
-      '左メニューから詳細設定を開く'
+      `!window.__fwQuery('[data-settings-tab="advanced"],[data-settings-tab="data"],[data-command="toggleAdvancedSettings"]')`,
+      '削除した設定カテゴリと詳細設定の起動処理を置かない'
     );
-    await screenshot(session, 'advanced');
-    await clickVisible(session, '.futatsumeAdvancedSetting-close');
-    await check(session, `!document.querySelector('.futatsumeAdvancedSettingPanel.show')`, '詳細設定を閉じる');
     await click(session, 'details');
     await check(
       session,

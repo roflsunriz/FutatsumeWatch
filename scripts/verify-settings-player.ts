@@ -17,7 +17,16 @@ export async function verifyPlayerSettingEffects(session: CdpSession, helpers: H
   )) as Record<(typeof keys)[number], boolean>;
   const oldPaused = (await evaluate(session, `${video}.paused`)) as boolean;
   async function setting(key: (typeof keys)[number], value: boolean): Promise<void> {
-    const name = key === 'enableFullScreenOnDoubleClick' ? 'advanced' : 'general';
+    if (key === 'enableFullScreenOnDoubleClick') {
+      await evaluate(session, `window.FutatsumeWatch.config.setValue(${JSON.stringify(key)},${value});void 0`);
+      await helpers.check(
+        session,
+        `window.FutatsumeWatch.config.getValue(${JSON.stringify(key)})===${value}`,
+        `P2-10: 旧保存値${key}=${value}を保持`
+      );
+      return;
+    }
+    const name = 'general';
     await helpers.open(session, name);
     if (name === 'general') await helpers.clickInside(session, name, '[data-settings-tab="player"]');
     const input = `[data-setting-name="${key}"]`;

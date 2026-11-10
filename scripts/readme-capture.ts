@@ -14,8 +14,6 @@ export const readmeImages = [
   'settings-player',
   'settings-comments',
   'settings-filters',
-  'settings-data',
-  'settings-advanced',
   'tab-info',
   'tab-related',
   'tab-comments',
@@ -139,14 +137,14 @@ export async function capturePlayer(session: CdpSession, directory: string): Pro
   await reveal(session);
   await clickVisible(session, '[data-shell-action="settings"]');
   let current = 'general';
-  for (const tab of ['player', 'comments', 'filters', 'data', 'advanced'] as const) {
+  for (const tab of ['player', 'comments', 'filters'] as const) {
     await until(session, `window.__settingsQuery('[data-fw-settings="${current}"]')?.open`, '設定画面');
     await clickVisible(
       session,
       `[data-settings-tab="${tab}"]`,
       `window.__settingsQuery('[data-fw-settings="${current}"]')`
     );
-    current = tab === 'advanced' ? 'advanced' : 'general';
+    current = 'general';
     await until(
       session,
       `window.__settingsQuery('[data-fw-settings="${current}"]')?.querySelector('[data-settings-tab="${tab}"]')?.getAttribute('aria-selected')==='true'`,
@@ -166,7 +164,7 @@ export async function capturePlayer(session: CdpSession, directory: string): Pro
     code: 'Escape',
     windowsVirtualKeyCode: 27,
   });
-  await until(session, `!window.__settingsQuery('[data-fw-settings="advanced"]')?.open`, '設定画面を閉じる');
+  await until(session, `!window.__settingsQuery('[data-fw-settings="general"]')?.open`, '設定画面を閉じる');
   await reveal(session);
   await clickVisible(session, '[data-shell-action="details"]');
   await until(session, `document.querySelector('.fw-player')?.dataset.panel==='details'`, '右パネル');

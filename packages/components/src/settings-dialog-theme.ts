@@ -35,7 +35,7 @@ dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
 [data-fw-settings] .fw-settings-brand small { margin-top: 2px; color: #aab4c6; font-size: 12px; }
 [data-fw-settings] .fw-settings-sidebar button { display: block; width: 100%; min-height: 44px; margin: 0 0 4px; padding: 10px 12px; text-align: start; white-space: normal; overflow-wrap: anywhere; font: inherit; color: #aab4c6; background: transparent; border: 0; border-radius: 8px; cursor: pointer; }
 [data-fw-settings] .fw-settings-sidebar button[aria-selected=true] { background: #203d3b; color: #a7ead9; box-shadow: inset 3px 0 #8ddbc7; }
-[data-fw-settings] .fw-settings-sidebar button[data-settings-tab=advanced] { margin-top: 16px; }
+[data-fw-settings] .fw-settings-file-actions { margin-top: 16px; padding-top: 12px; border-top: 1px solid #ffffff20; }
 [data-fw-settings] .fw-settings-sidebar button:disabled { opacity: .4; cursor: default; }
 [data-fw-settings] .fw-settings-sidebar-extras { margin-top: 16px; padding-top: 16px; border-top: 1px solid #ffffff20; }
 [data-fw-settings] .fw-settings-utilities { display: grid; gap: 4px; }
@@ -70,7 +70,6 @@ dialog.fw-settings-dialog[data-fw-settings] > .fw-modal-content {
 [data-fw-settings] .fw-modal-content button:hover { background: #33445a; }
 [data-fw-settings] .fw-modal-content :focus-visible { outline: 2px solid #8ddbc7; outline-offset: 2px; }
 [data-fw-settings] .fw-modal-body :is(.closeButtonContainer,.buttomContainer) { text-align: right; }
-[data-fw-settings] .fw-modal-body .import-config-file-select-label { background: #253141; color: #f1f4f9; border: 1px solid #ffffff20; border-radius: 8px; }
 @media (max-width: 480px) {
   dialog.fw-settings-dialog[data-fw-settings] { padding: 6px; }
   [data-fw-settings] .fw-modal-heading { padding: 10px 12px; }

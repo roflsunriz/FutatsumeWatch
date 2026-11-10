@@ -200,8 +200,32 @@ class CrossDomainGate extends Emitter {
       Promise.resolve((result as { dataUrl?: unknown }).dataUrl)
     );
   }
-  _fetch(url: string, options?: GateFetchOptions): Promise<AnyPromiseHandler> {
-    return this._postMessage({ command: 'fetch', params: { url, options } });
+  async _fetch(url: string, options: GateFetchOptions = {}): Promise<unknown> {
+    const { signal, headers, ...serializable } = options;
+    const safeOptions = { ...serializable, ...(headers ? { headers: Object.fromEntries(new Headers(headers)) } : {}) };
+    if (!signal) return this._postMessage({ command: 'fetch', params: { url, options: safeOptions } });
+    if (signal.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    await this._initializeFrame();
+    if (signal.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    const requestId = crypto.randomUUID();
+    let onAbort!: () => void;
+    const cancelled = new Promise<never>((_resolve, reject) => {
+      onAbort = () => {
+        void this._postMessage({ command: 'abortFetch', params: { requestId } }, false).catch((error) =>
+          console.warn('通信の中止要求に失敗しました', error)
+        );
+        reject(new DOMException('The operation was aborted', 'AbortError'));
+      };
+      signal.addEventListener('abort', onAbort, { once: true });
+    });
+    try {
+      return await Promise.race([
+        this._postMessage({ command: 'fetch', params: { url, options: safeOptions, requestId } }),
+        cancelled,
+      ]);
+    } finally {
+      signal.removeEventListener('abort', onAbort);
+    }
   }
   async fetch(resource: string | URL | Request, options: GateFetchOptions = {}): Promise<unknown> {
     let url: string = resource as string;

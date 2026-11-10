@@ -5,7 +5,7 @@ import { getAvailableFontOptions } from '../font-options';
 // import {textUtil} from '../../../lib/src/text/text-util';
 // import {cssUtil} from '../../../lib/src/css/css';
 import type { TemplateResult } from 'lit/html.js';
-import type { ElementEvents } from './base-command-element.js';
+import type { CommandDetail, ElementEvents } from './base-command-element.js';
 import type { HtmlTag } from './dialog-element.js';
 
 interface SettingTouchConf {
@@ -570,60 +570,23 @@ const { SettingPanelElement } = (() => {
             border: 1px solid currentcolor;
           }
 
-          .import-export {
-            padding: 8px;
-            text-align: center;
-            outline: none;
-          }
-
-          .export-config-button {
-            display: inline-block;
-          }
-
           .import-config-file-select {
-            position: absolute;
-            text-indent: -9999px;
-            width: 160px;
-            padding: 8px;
-            opacity: 0;
-            cursor: pointer;
-          }
-
-          .import-config-file-select-label {
-            pointer-events: none;
-            user-select: none;
-          }
-          .import-config-file-select-label,
-          .export-config-button {
-            display: inline-block;
-            width: 160px;
-            padding: 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #000;
-            background: #ccc;
-            border: 0;
+            display: none;
           }
         </style>
         <div data-revision="${state.revision}">
           ${this.getPlayerSettingMenu(html, conf)} ${this.getCommentSettingMenu(html, conf)}
           ${this.getFilterSettingMenu(html, conf)}
 
-          <section data-settings-section="data">
-            <div class="import-export">
-              <button class="export-config-button" data-command="export-config">ファイルに保存</button>
-              <input
-                type="file"
-                @change=${events.onImportFileSelect}
-                class="import-config-file-select"
-                aria-label="ファイルから読み込む"
-                accept=".json"
-                data-command="nop"
-              />
-              <div class="import-config-file-select-label">ファイルから読み込む</div>
-            </div>
-          </section>
+          <input
+            type="file"
+            @change=${events.onImportFileSelect}
+            class="import-config-file-select"
+            tabindex="-1"
+            hidden
+            accept=".json"
+            data-command="nop"
+          />
         </div>
       `);
     }
@@ -738,6 +701,16 @@ const { SettingPanelElement } = (() => {
     onOpen(): void {
       super.onOpen();
       this.state.revision = (this.state.revision as number) + 1;
+    }
+
+    onCommand(event: Event): void {
+      if ((event as CustomEvent<CommandDetail>).detail.command === 'import-config') {
+        event.preventDefault();
+        event.stopPropagation();
+        this._root?.querySelector<HTMLInputElement>('.import-config-file-select')?.click();
+        return;
+      }
+      super.onCommand(event);
     }
 
     onImportFileSelect(e: Event): void {

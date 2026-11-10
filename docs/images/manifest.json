@@ -45,28 +45,24 @@
     },
     {
       "name": "settings-player",
-      "sha256": "f9c85ecd6dd9d2e14922b8c970e6281c8d1609bcb6fd5dabf9c34f87232eec6a",
-      "bytes": 85435
+      "sha256": "84a8f3622fd0f478bda4cd6442d30dfbad8e5e2058e0a7bf6b938f9bc5f9f4a4",
+      "bytes": 73001,
+      "source": "offline-settings",
+      "version": "0.0.34"
     },
     {
       "name": "settings-comments",
-      "sha256": "e6a059c546568c7c142d1617c4e8d26ff96978e14734de6aa4dfe0731ab04f79",
-      "bytes": 87798
+      "sha256": "6fdf1284b9cd78dff85e5f7933eb407dbcabb2d2ee64a7e53c505e40accb157b",
+      "bytes": 70584,
+      "source": "offline-settings",
+      "version": "0.0.34"
     },
     {
       "name": "settings-filters",
-      "sha256": "33ebcf5d21f147e599979facb26698c56874fdd0f1a7f11bea8568d7701f05c4",
-      "bytes": 112104
-    },
-    {
-      "name": "settings-data",
-      "sha256": "4dbd4b5082f50df2b9ec9446a9aa89f66b3cd39a615882bf38c9ca8769a533ec",
-      "bytes": 54078
-    },
-    {
-      "name": "settings-advanced",
-      "sha256": "daf32f65a46a1fa2d9d0cad3121890d0715476b0b2e7f891aaae4037cf7dfaa9",
-      "bytes": 66164
+      "sha256": "d552eb9e2d1170ae79d234c71751af22c1dfff5700bcb717db67fc12e3960ce7",
+      "bytes": 85237,
+      "source": "offline-settings",
+      "version": "0.0.34"
     },
     {
       "name": "tab-info",
@@ -97,5 +93,15 @@
     "height": 240,
     "scale": 1,
     "sourceSha256": "42b51da0ee3701093e2d756791ea8217d594a2616537299ead1b8d619fb36cf2"
+  },
+  "settingsUpdate": {
+    "version": "0.0.34",
+    "source": "offline-settings",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "bundleSha256": "d690825755ce1ebff2584d3f86a941622f2a52bf1b05c9819cf6d76c8c2b829c",
+    "checks": ["3カテゴリを実クリック", "左側のインポート・エクスポート", "32項目の実入力と保存・復元"]
   }
 }

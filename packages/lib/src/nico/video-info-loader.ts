@@ -194,7 +194,13 @@ const VideoInfoLoader = (function () {
     // access-rights/storyboard の応答で判定する。
     const watchV4Media = normalizeWatchV4Media(record.media);
     const domandInfo = watchV4Media
-      ? { ...rawDomandInfo, ...watchV4Media, isStoryboardAvailable: Boolean(rawDomandInfo?.accessRightKey) }
+      ? {
+          ...rawDomandInfo,
+          ...watchV4Media,
+          ...(rawDomandInfo?.accessRightKey && record.media.hls === null ? { hlsUrl: undefined } : {}),
+          isStoryboardAvailable:
+            rawDomandInfo?.isStoryboardAvailable === true && Boolean(rawDomandInfo?.accessRightKey),
+        }
       : rawDomandInfo
         ? { ...rawDomandInfo, isStoryboardAvailable: true }
         : rawDomandInfo;
@@ -218,7 +224,8 @@ const VideoInfoLoader = (function () {
       const { id = 0, isPremium = false } = { ...viewer };
       return { id, isPremium };
     })();
-    const defaultThread = threads.find((t) => t.isDefaultPostTarget)!;
+    const defaultThread = threads.find((t) => t.isDefaultPostTarget);
+    if (!defaultThread) throw new Error('コメントの投稿先スレッド情報がありません');
     const msgInfo = {
       server: commentServer,
       threadId: defaultThread.id,
@@ -443,14 +450,7 @@ const VideoInfoLoader = (function () {
   };
 
   const loadPromise = function (watchId: string, options: WatchLoadOptions, isRetry = false): Promise<unknown> {
-    let url = `https://www.nicovideo.jp/watch/${watchId}`;
-    const query = ['responseType=json'];
-    if (options.economy === true) {
-      query.push('eco=1');
-    }
-    if (query.length > 0) {
-      url += '?' + query.join('&');
-    }
+    const url = `https://www.nicovideo.jp/watch/${encodeURIComponent(watchId)}${options.economy === true ? '?eco=1' : ''}`;
 
     return loadWatchPageData(watchId, options.economy)
       .catch((error: unknown) => {
@@ -459,7 +459,7 @@ const VideoInfoLoader = (function () {
       })
       .then((resp) => onLoadPromise(watchId, options, isRetry, resp))
       .catch((err: LoadError) => {
-        window.console.error('err', { err, isRetry, url, query });
+        window.console.error('err', { err, isRetry, url });
         if (isRetry) {
           return Promise.reject({
             watchId,
