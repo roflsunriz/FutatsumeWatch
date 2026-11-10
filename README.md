@@ -158,7 +158,39 @@ Tampermonkeyのアイコンからダッシュボードを開き、FutatsumeWatch
 
 ## 開発
 
-詳細は [findings.md](findings.md#readme-1) に移しました。
+BunでVite＋vite-plugin-monkeyを実行し、TypeScriptのimportから単一ファイルを生成。
+
+```powershell
+bun install --frozen-lockfile
+bun run lint
+bun run format
+bun run type-check
+bun run build
+bun run test
+bun audit
+```
+
+手動検証用のブラウザを起動：
+
+```powershell
+bun run dev       # 必要な環境の準備・ビルド・headed Chrome起動・TMとスクリプトの導入
+bun run dev:stop  # 手動検証用Chromeを終了
+```
+
+`bun run dev`は手動検証用。
+
+自動テスト：
+
+```powershell
+bun run test:browser          # ビルド後、別のheadless Chromeでオフラインのブラウザテスト
+bun run test:browser player   # 再生・コメント・保存
+bun run test:browser settings # 設定の実入力・保存・復元
+bun run test:browser player --live # 実サイトの読み取り・再生検証を明示実行
+```
+
+README用画像の撮影手順を確認する場合は、`bun run docs:screenshots --offline`を実行します。実サイトの撮影・画像の更新は[画像の更新手順](docs/readme-screenshots.md)を参照してください。
+
+[更新手順](how-to-update.md) / [貢献手順](CONTRIBUTING.md) / [問い合わせ](SUPPORT.md) / [セキュリティ](SECURITY.md)
 
 ## ライセンス
 
@@ -166,4 +198,6 @@ Tampermonkeyのアイコンからダッシュボードを開き、FutatsumeWatch
 
 ## 依存更新の自動処理
 
-詳細は [findings.md](findings.md#readme-2) に移しました。
+更新PRの取り込みは、必要なCIチェックにすべて成功したものだけを対象に、毎月28日18:00（Asia/Tokyo）の月末処理で行います。
+
+Dependabot は対象の依存関係を毎月28日00:00（Asia/Tokyo）に確認します。patch／minor 更新は PR のチェック（Quality）が成功した後に自動で squash merge されます。CI の失敗ジョブは 1 回だけ再実行します。再失敗した PR は残して手動で修正します。major 更新も互換性を確認し、同じ月末処理で取り込みます。

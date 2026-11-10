@@ -4,6 +4,11 @@ Keep a Changelog形式。日付はYYYY-MM-DD。
 
 ## [Unreleased]
 
+### Fixed
+
+- READMEでfindings.mdへの案内に置き換わっていた本文を復元し、構成・開発・検証の説明をREADMEから直接読めるようにした。移動後のREADME更新は保持した。
+
+
 ### Security
 
 - 開発用の `minimatch` を修正版 11.0.1 に固定し、glob パターンの処理で CPU・メモリーを大量消費する脆弱性を解消した。
